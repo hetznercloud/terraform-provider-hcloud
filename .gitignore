@@ -1,0 +1,9 @@
+/.terraform
+/bin
+*.tf
+*.tfstate
+*.tfstate.backup
+/terraform-provider-hcloud
+/*.sh
+/*.json
+/*.yaml
