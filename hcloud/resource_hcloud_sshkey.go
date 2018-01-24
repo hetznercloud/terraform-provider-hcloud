@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
+	"golang.org/x/crypto/ssh"
 )
 
 func resourceSSHKey() *schema.Resource {
@@ -40,6 +41,14 @@ func resourceSSHKey() *schema.Resource {
 }
 
 func resourceSSHKeyPublicKeyDiffSuppress(k, old, new string, d *schema.ResourceData) bool {
+	fingerprint := d.Get("fingerprint").(string)
+	if new != "" && fingerprint != "" {
+		publicKey, _, _, _, err := ssh.ParseAuthorizedKey([]byte(new))
+		if err != nil {
+			return false
+		}
+		return ssh.FingerprintLegacyMD5(publicKey) == fingerprint
+	}
 	return strings.TrimSpace(old) == strings.TrimSpace(new)
 }
 
