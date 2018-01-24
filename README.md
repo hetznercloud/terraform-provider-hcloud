@@ -1,5 +1,6 @@
 Terraform Provider for the Hetzner Cloud
 ==================
+[![Build Status](https://travis-ci.org/hetznercloud/terraform-provider-hcloud.svg?branch=master)](https://travis-ci.org/hetznercloud/terraform-provider-hcloud)
 
 **This provider is still in development. It may and will change without notice.**
 
@@ -39,7 +40,7 @@ $ make build
 Using the provider
 ----------------------
 
-Coming soon.
+See the [Hetzner Cloud Provider documentation](docs/readme.md) to get started using the Hetzner Cloud provider.
 
 Upgrading the provider
 ----------------------
