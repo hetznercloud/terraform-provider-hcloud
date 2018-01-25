@@ -140,10 +140,10 @@
   revision = "683f49123a33db61abfb241b7ac5e4af4dc54d55"
 
 [[projects]]
+  branch = "master"
   name = "github.com/hetznercloud/hcloud-go"
   packages = ["hcloud","hcloud/schema"]
-  revision = "402a89d70e7577145b7ce706a89cbc82c4aa43fe"
-  version = "v1.2.0"
+  revision = "50e14bddc51447986abb68ef8010f0da715c0c2e"
 
 [[projects]]
   name = "github.com/jmespath/go-jmespath"
@@ -237,7 +237,7 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/crypto"
-  packages = ["bcrypt","blowfish","cast5","openpgp","openpgp/armor","openpgp/elgamal","openpgp/errors","openpgp/packet","openpgp/s2k"]
+  packages = ["bcrypt","blowfish","cast5","curve25519","ed25519","ed25519/internal/edwards25519","internal/chacha20","openpgp","openpgp/armor","openpgp/elgamal","openpgp/errors","openpgp/packet","openpgp/s2k","poly1305","ssh"]
   revision = "a6600008915114d9c087fad9f03d75087b1a74df"
 
 [[projects]]
@@ -273,6 +273,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "4e3ab710b294df27d9d2fea2a29c8280d2af0063ecc1695fd013d008bd0630dd"
+  inputs-digest = "d51e6f51fc9fd4f64a751e6c9aeebf42891e5535fc9ad51326c4d4273564a62c"
   solver-name = "gps-cdcl"
   solver-version = 1

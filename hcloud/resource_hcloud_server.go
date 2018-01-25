@@ -101,6 +101,7 @@ func resourceServerCreate(d *schema.ResourceData, m interface{}) error {
 		Image: &hcloud.Image{
 			Name: d.Get("image").(string),
 		},
+		UserData: d.Get("user_data").(string),
 	}
 
 	var err error
