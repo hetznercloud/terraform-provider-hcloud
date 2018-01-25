@@ -180,6 +180,11 @@ func resourceServerRead(d *schema.ResourceData, m interface{}) error {
 		}
 	}
 
+	d.SetConnInfo(map[string]string{
+		"type": "ssh",
+		"host": server.PublicNet.IPv4.IP.String(),
+	})
+
 	return nil
 }
 
