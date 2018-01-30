@@ -1,6 +1,6 @@
 Terraform Provider for the Hetzner Cloud
 ==================
-[![Build Status](https://travis-ci.org/hetznercloud/terraform-provider-hcloud.svg?branch=master)](https://travis-ci.org/hetznercloud/terraform-provider-hcloud)
+[![GitHub release](https://img.shields.io/github/release/hetznercloud/terraform-provider-hcloud.svg)](https://github.com/hetznercloud/terraform-provider-hcloud/releases/latest) [![Build Status](https://travis-ci.org/hetznercloud/terraform-provider-hcloud.svg?branch=master)](https://travis-ci.org/hetznercloud/terraform-provider-hcloud)
 
 - Website: https://www.terraform.io
 <img src="https://cdn.rawgit.com/hashicorp/terraform-website/master/content/source/assets/images/logo-hashicorp.svg" width="600px">
@@ -38,7 +38,7 @@ To install the Hetzner Cloud Terraform provider use the binary distributions fro
 Download and uncompress the latest release for your OS. This example uses the linux binary for amd64.
 
 ```sh
-$ wget https://github.com/hcloud/terraform-provider-hcloud/releases/download/v1.0.0/terraform-provider-hcloud_v1.0.0_linux_amd64.zip
+$ wget https://github.com/hetznercloud/terraform-provider-hcloud/releases/download/v1.0.0/terraform-provider-hcloud_v1.0.0_linux_amd64.zip
 $ unzip terraform-provider-hcloud_v1.0.0_linux_amd64.zip
 ```
 
