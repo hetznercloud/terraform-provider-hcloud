@@ -38,8 +38,8 @@ To install the Hetzner Cloud Terraform provider use the binary distributions fro
 Download and uncompress the latest release for your OS. This example uses the linux binary for amd64.
 
 ```sh
-$ wget https://github.com/hetznercloud/terraform-provider-hcloud/releases/download/v1.0.0/terraform-provider-hcloud_v1.0.0_linux_amd64.zip
-$ unzip terraform-provider-hcloud_v1.0.0_linux_amd64.zip
+$ wget https://github.com/hetznercloud/terraform-provider-hcloud/releases/download/v1.1.0/terraform-provider-hcloud_v1.1.0_linux_amd64.zip
+$ unzip terraform-provider-hcloud_v1.1.0_linux_amd64.zip
 ```
 
 Now copy the binary into the Terraform plugins folder.
