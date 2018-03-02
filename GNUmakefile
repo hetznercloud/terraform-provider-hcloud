@@ -1,6 +1,7 @@
 TEST?=$$(go list ./... |grep -v 'vendor')
 GOFMT_FILES?=$$(find . -name '*.go' |grep -v vendor)
 VERSION=$(shell ./scripts/git-version.sh)
+export CGO_ENABLED:=0
 
 default: build
 
@@ -50,7 +51,7 @@ _output/terraform-provider-hcloud_%.zip: NAME=terraform-provider-hcloud_$(VERSIO
 _output/terraform-provider-hcloud_%.zip: DEST=_output/$(NAME)
 _output/terraform-provider-hcloud_%.zip: bin/%/terraform-provider-hcloud
 	mkdir -p $(DEST)
-	cp bin/$*/terraform-provider-hcloud README.md LICENSE $(DEST)
+	cp bin/$*/terraform-provider-hcloud README.md CHANGELOG.md LICENSE $(DEST)
 	cd $(DEST) && zip -r ../$(NAME).zip .
 
 test: fmtcheck
