@@ -112,6 +112,8 @@ func TestAccServer_UpdateUserData(t *testing.T) {
 					testAccCheckServerAttributes(&afterCreate),
 					resource.TestCheckResourceAttr(
 						"hcloud_server.foobar", "name", fmt.Sprintf("foo-%d", rInt)),
+					resource.TestCheckResourceAttr(
+						"hcloud_server.foobar", "user_data", userDataHashSum("stuff")),
 				),
 			},
 
@@ -121,6 +123,8 @@ func TestAccServer_UpdateUserData(t *testing.T) {
 					testAccCheckServerExists("hcloud_server.foobar", &afterUpdate),
 					resource.TestCheckResourceAttr(
 						"hcloud_server.foobar", "name", fmt.Sprintf("foo-%d", rInt)),
+					resource.TestCheckResourceAttr(
+						"hcloud_server.foobar", "user_data", userDataHashSum("updated stuff")),
 					testAccCheckServerRecreated(
 						t, &afterCreate, &afterUpdate),
 				),

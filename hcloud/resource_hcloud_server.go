@@ -2,8 +2,11 @@ package hcloud
 
 import (
 	"context"
+	"crypto/sha1"
+	"encoding/base64"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
@@ -46,9 +49,18 @@ func resourceServer() *schema.Resource {
 				Computed: true,
 			},
 			"user_data": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:             schema.TypeString,
+				Optional:         true,
+				ForceNew:         true,
+				DiffSuppressFunc: userDataDiffSuppress,
+				StateFunc: func(v interface{}) string {
+					switch v.(type) {
+					case string:
+						return userDataHashSum(v.(string))
+					default:
+						return ""
+					}
+				},
 			},
 			"ssh_keys": {
 				Type:     schema.TypeList,
@@ -87,6 +99,21 @@ func resourceServer() *schema.Resource {
 			},
 		},
 	}
+}
+
+func userDataHashSum(userData string) string {
+	sum := sha1.Sum([]byte(userData))
+	return base64.StdEncoding.EncodeToString(sum[:])
+}
+
+func userDataDiffSuppress(k, old, new string, d *schema.ResourceData) bool {
+	userData := d.Get(k).(string)
+	if new != "" && userData != "" {
+		if _, err := base64.StdEncoding.DecodeString(old); err != nil {
+			return userDataHashSum(old) == new
+		}
+	}
+	return strings.TrimSpace(old) == strings.TrimSpace(new)
 }
 
 func resourceServerCreate(d *schema.ResourceData, m interface{}) error {
