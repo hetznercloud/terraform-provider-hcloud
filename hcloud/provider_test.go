@@ -28,7 +28,7 @@ func TestProvider_impl(t *testing.T) {
 	var _ terraform.ResourceProvider = Provider()
 }
 
-func testAccPreCheck(t *testing.T) {
+func testAccHcloudPreCheck(t *testing.T) {
 	if v := os.Getenv("HCLOUD_TOKEN"); v == "" {
 		t.Fatal("HCLOUD_TOKEN must be set for acceptance tests")
 	}

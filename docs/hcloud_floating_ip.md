@@ -23,7 +23,6 @@ resource "hcloud_floating_ip" "master" {
 - `server_id` - (Optional) Server to assign the Floating IP to.
 - `home_location` - (Optional) Home location (routing is optimized for that location). Optional if server_id argument is passed.
 - `description` - (Optional) Description of the Floating IP.
-- `reverse_dns` - (Optional) Set reverse DNS records on the Floating IP.
 
 ## Attributes Reference
 
@@ -32,5 +31,4 @@ resource "hcloud_floating_ip" "master" {
 - `server_id` - Server to assign the Floating IP is assigned to.
 - `home_location` - Home location.
 - `description` - Description of the Floating IP.
-- `reverse_dns` - Reverse DNS records of the Floating IP.
 - `ip_address` - IP Address of the Floating IP.

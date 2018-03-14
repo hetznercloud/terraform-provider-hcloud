@@ -43,14 +43,6 @@ func resourceFloatingIP() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"reverse_dns": {
-				Type:     schema.TypeMap,
-				Computed: true,
-				Optional: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
 		},
 	}
 }
@@ -112,7 +104,6 @@ func resourceFloatingIPRead(d *schema.ResourceData, m interface{}) error {
 		d.Set("server_id", floatingIP.Server.ID)
 	}
 	d.Set("ip_address", floatingIP.IP.String())
-	d.Set("reverse_dns", floatingIP.DNSPtr)
 
 	return nil
 }
@@ -156,26 +147,9 @@ func resourceFloatingIPUpdate(d *schema.ResourceData, m interface{}) error {
 		d.SetPartial("server_id")
 	}
 
-	if d.HasChange("reverse_dns") {
-		oldPtrRaw, newPtrRaw := d.GetChange("reverse_dns")
-		oldPtr := getFloatingIPDNSPtr(oldPtrRaw)
-		newPtr := getFloatingIPDNSPtr(newPtrRaw)
-
-		for ip := range oldPtr {
-			if _, ok := newPtr[ip]; !ok {
-				newPtr[ip] = nil
-			}
-		}
-
-		if err := updateFloatingIPDNSPtr(ctx, client, floatingIP, newPtr); err != nil {
-			return err
-		}
-		d.SetPartial("reverse_dns")
-	}
-
 	d.Partial(false)
 
-	return nil
+	return resourceFloatingIPRead(d, m)
 }
 
 func resourceFloatingIPDelete(d *schema.ResourceData, m interface{}) error {
@@ -190,27 +164,5 @@ func resourceFloatingIPDelete(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	return nil
-}
-
-func getFloatingIPDNSPtr(raw interface{}) map[string]*string {
-	out := map[string]*string{}
-	for k, v := range raw.(map[string]interface{}) {
-		out[k] = hcloud.String(v.(string))
-	}
-	return out
-}
-
-func updateFloatingIPDNSPtr(ctx context.Context, client *hcloud.Client, floatingIP *hcloud.FloatingIP, update map[string]*string) error {
-	for ip, ptr := range update {
-		action, _, err := client.FloatingIP.ChangeDNSPtr(ctx, floatingIP, ip, ptr)
-		if err != nil {
-			return err
-		}
-		_, errCh := client.Action.WatchProgress(ctx, action)
-		if err := <-errCh; err != nil {
-			return err
-		}
-	}
 	return nil
 }

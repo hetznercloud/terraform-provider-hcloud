@@ -12,7 +12,7 @@ import (
 	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 
-func TestAccSSHKey_Basic(t *testing.T) {
+func TestAccHcloudSSHKey_Basic(t *testing.T) {
 	var key hcloud.SSHKey
 	rInt := acctest.RandInt()
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("hcloud@ssh-acceptance-test")
@@ -21,14 +21,14 @@ func TestAccSSHKey_Basic(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccHcloudPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckSSHKeyDestroy,
+		CheckDestroy: testAccHcloudCheckSSHKeyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckSSHKeyConfig_basic(rInt, publicKeyMaterial),
+				Config: testAccHcloudCheckSSHKeyConfig_basic(rInt, publicKeyMaterial),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckSSHKeyExists("hcloud_ssh_key.foobar", &key),
+					testAccHcloudCheckSSHKeyExists("hcloud_ssh_key.foobar", &key),
 					resource.TestCheckResourceAttr(
 						"hcloud_ssh_key.foobar", "name", fmt.Sprintf("foobar-%d", rInt)),
 					resource.TestCheckResourceAttr(
@@ -39,7 +39,44 @@ func TestAccSSHKey_Basic(t *testing.T) {
 	})
 }
 
-func testAccCheckSSHKeyDestroy(s *terraform.State) error {
+func TestAccHcloudSSHKey_Update(t *testing.T) {
+	var key hcloud.SSHKey
+	rInt := acctest.RandInt()
+	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("hcloud@ssh-acceptance-test")
+	if err != nil {
+		t.Fatalf("Cannot generate test SSH key pair: %s", err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccHcloudPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccHcloudCheckSSHKeyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccHcloudCheckSSHKeyConfig_basic(rInt, publicKeyMaterial),
+				Check: resource.ComposeTestCheckFunc(
+					testAccHcloudCheckSSHKeyExists("hcloud_ssh_key.foobar", &key),
+					resource.TestCheckResourceAttr(
+						"hcloud_ssh_key.foobar", "name", fmt.Sprintf("foobar-%d", rInt)),
+					resource.TestCheckResourceAttr(
+						"hcloud_ssh_key.foobar", "public_key", publicKeyMaterial),
+				),
+			},
+			{
+				Config: testAccHcloudCheckSSHKeyConfig_update(rInt, publicKeyMaterial),
+				Check: resource.ComposeTestCheckFunc(
+					testAccHcloudCheckSSHKeyExists("hcloud_ssh_key.foobar", &key),
+					resource.TestCheckResourceAttr(
+						"hcloud_ssh_key.foobar", "name", fmt.Sprintf("foobar-updated-%d", rInt)),
+					resource.TestCheckResourceAttr(
+						"hcloud_ssh_key.foobar", "public_key", publicKeyMaterial),
+				),
+			},
+		},
+	})
+}
+
+func testAccHcloudCheckSSHKeyDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*hcloud.Client)
 
 	for _, rs := range s.RootModule().Resources {
@@ -54,17 +91,17 @@ func testAccCheckSSHKeyDestroy(s *terraform.State) error {
 
 		sshKey, _, err := client.SSHKey.GetByID(context.Background(), id)
 		if err != nil {
-			return fmt.Errorf("Error checking if SSH Key is deleted: %v", err)
+			return fmt.Errorf("Error checking if SSH Key (%s) is deleted: %v", rs.Primary.ID, err)
 		}
 		if sshKey != nil {
-			return fmt.Errorf("SSH key still exists")
+			return fmt.Errorf("SSH key (%s) has not been deleted", rs.Primary.ID)
 		}
 	}
 
 	return nil
 }
 
-func testAccCheckSSHKeyExists(n string, key *hcloud.SSHKey) resource.TestCheckFunc {
+func testAccHcloudCheckSSHKeyExists(n string, key *hcloud.SSHKey) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 
@@ -97,10 +134,18 @@ func testAccCheckSSHKeyExists(n string, key *hcloud.SSHKey) resource.TestCheckFu
 	}
 }
 
-func testAccCheckSSHKeyConfig_basic(rInt int, key string) string {
+func testAccHcloudCheckSSHKeyConfig_basic(rInt int, key string) string {
 	return fmt.Sprintf(`
 resource "hcloud_ssh_key" "foobar" {
     name = "foobar-%d"
     public_key = "%s"
+}`, rInt, key)
+}
+
+func testAccHcloudCheckSSHKeyConfig_update(rInt int, key string) string {
+	return fmt.Sprintf(`
+resource "hcloud_ssh_key" "foobar" {
+		name = "foobar-updated-%d"
+		public_key = "%s"
 }`, rInt, key)
 }

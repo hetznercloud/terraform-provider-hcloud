@@ -109,9 +109,10 @@ func resourceSSHKeyUpdate(d *schema.ResourceData, m interface{}) error {
 		if err != nil {
 			return err
 		}
+		d.SetPartial("name")
 	}
 
-	return nil
+	return resourceSSHKeyRead(d, m)
 }
 
 func resourceSSHKeyDelete(d *schema.ResourceData, m interface{}) error {

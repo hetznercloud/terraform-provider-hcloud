@@ -1,6 +1,13 @@
 Changelog
 =========
 
+v1.2.0 (Unreleased)
+------
+
+* improved test coverage
+* resource update methods return the result of the read method
+* removed `reverse_dns` property of `hcloud_floating_ip`, because it was not useable, see https://github.com/hetznercloud/terraform-provider-hcloud/issues/32
+
 v1.1.0 (March 2, 2018)
 ------
 

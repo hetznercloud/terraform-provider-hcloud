@@ -17,8 +17,9 @@ func Provider() terraform.ResourceProvider {
 				Description: "The API token to access the hetzner cloud.",
 			},
 			"endpoint": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("HCLOUD_ENDPOINT", nil),
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{

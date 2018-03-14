@@ -19,48 +19,82 @@ func init() {
 	})
 }
 
-func TestAccFloatingIP_Server(t *testing.T) {
+func TestAccHcloudFloatingIP_AssignAndUpdateDescription(t *testing.T) {
 	var floatingIP hcloud.FloatingIP
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccHcloudPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckFloatingIPDestroy,
+		CheckDestroy: testAccHcloudCheckFloatingIPDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckFloatingIPConfig_server(rInt),
+				Config: testAccHcloudCheckFloatingIPConfig_server(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckFloatingIPExists("hcloud_floating_ip.foobar", &floatingIP),
+					testAccHcloudCheckFloatingIPExists("hcloud_floating_ip.floating_ip", &floatingIP),
 					resource.TestCheckResourceAttr(
-						"hcloud_floating_ip.foobar", "home_location", "fsn1"),
+						"hcloud_floating_ip.floating_ip", "home_location", "fsn1"),
+					resource.TestCheckResourceAttr(
+						"hcloud_floating_ip.floating_ip", "description", "test"),
+				),
+			},
+			{
+				Config: testAccHcloudCheckFloatingIPConfig_updateDescription(rInt),
+				Check: resource.ComposeTestCheckFunc(
+					testAccHcloudCheckFloatingIPExists("hcloud_floating_ip.floating_ip", &floatingIP),
+					resource.TestCheckResourceAttr(
+						"hcloud_floating_ip.floating_ip", "home_location", "fsn1"),
+					resource.TestCheckResourceAttr(
+						"hcloud_floating_ip.floating_ip", "description", "updated test"),
 				),
 			},
 		},
 	})
 }
 
-func testAccCheckFloatingIPConfig_server(rInt int) string {
+func testAccHcloudCheckFloatingIPConfig_server(rInt int) string {
 	return fmt.Sprintf(`
-resource "hcloud_ssh_key" "foobar" {
-  name       = "foobar-%d"
+resource "hcloud_ssh_key" "floating_ip" {
+  name       = "floating-ip-%d"
   public_key = "%s"
 }
-resource "hcloud_server" "foobar" {
-  name        = "foo-%d"
+resource "hcloud_server" "floating_ip1" {
+  name        = "floating-ip-1-%d"
   server_type = "cx11"
 	image       = "debian-9"
   datacenter  = "fsn1-dc8"
-  ssh_keys    = ["${hcloud_ssh_key.foobar.id}"]
+  ssh_keys    = ["${hcloud_ssh_key.floating_ip.id}"]
 }
 
-resource "hcloud_floating_ip" "foobar" {
-  server_id = "${hcloud_server.foobar.id}"
-  type      = "ipv4"
+resource "hcloud_floating_ip" "floating_ip" {
+  server_id   = "${hcloud_server.floating_ip1.id}"
+  type        = "ipv4"
+	description = "test"
 }`, rInt, testAccSSHPublicKey, rInt)
 }
 
-func testAccCheckFloatingIPDestroy(s *terraform.State) error {
+func testAccHcloudCheckFloatingIPConfig_updateDescription(rInt int) string {
+	return fmt.Sprintf(`
+resource "hcloud_ssh_key" "floating_ip" {
+  name       = "floating-ip-%d"
+  public_key = "%s"
+}
+resource "hcloud_server" "floating_ip1" {
+  name        = "floating-ip-1-%d"
+  server_type = "cx11"
+	image       = "debian-9"
+  datacenter  = "fsn1-dc8"
+  ssh_keys    = ["${hcloud_ssh_key.floating_ip.id}"]
+}
+
+resource "hcloud_floating_ip" "floating_ip" {
+  server_id   = "${hcloud_server.floating_ip1.id}"
+  type        = "ipv4"
+	description = "updated test"
+}`, rInt, testAccSSHPublicKey, rInt)
+}
+
+func testAccHcloudCheckFloatingIPDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*hcloud.Client)
 
 	for _, rs := range s.RootModule().Resources {
@@ -72,18 +106,22 @@ func testAccCheckFloatingIPDestroy(s *terraform.State) error {
 		if err != nil {
 			return fmt.Errorf("Floating IP id is no int: %v", err)
 		}
-		_, _, err = client.FloatingIP.GetByID(context.Background(), id)
+		var floatingIP *hcloud.FloatingIP
+		floatingIP, _, err = client.FloatingIP.GetByID(context.Background(), id)
 		if err != nil {
 			return fmt.Errorf(
-				"Error waiting for floating ip (%s) to be destroyed: %v",
+				"Error checking if floating ip (%s) is deleted: %v",
 				rs.Primary.ID, err)
+		}
+		if floatingIP != nil {
+			return fmt.Errorf("Floating ip (%s) has not been deleted", rs.Primary.ID)
 		}
 	}
 
 	return nil
 }
 
-func testAccCheckFloatingIPExists(n string, floatingIP *hcloud.FloatingIP) resource.TestCheckFunc {
+func testAccHcloudCheckFloatingIPExists(n string, floatingIP *hcloud.FloatingIP) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {

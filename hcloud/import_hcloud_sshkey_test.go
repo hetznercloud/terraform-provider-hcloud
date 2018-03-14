@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 )
 
-func TestAccSSHKey_importBasic(t *testing.T) {
+func TestAccHcloudSSHKey_importBasic(t *testing.T) {
 	resourceName := "hcloud_ssh_key.foobar"
 	rInt := acctest.RandInt()
 	publicKeyMaterial, _, err := acctest.RandSSHKeyPair("hcloud@ssh-acceptance-test")
@@ -16,12 +16,12 @@ func TestAccSSHKey_importBasic(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccHcloudPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckSSHKeyDestroy,
+		CheckDestroy: testAccHcloudCheckSSHKeyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckSSHKeyConfig_basic(rInt, publicKeyMaterial),
+				Config: testAccHcloudCheckSSHKeyConfig_basic(rInt, publicKeyMaterial),
 			},
 
 			{

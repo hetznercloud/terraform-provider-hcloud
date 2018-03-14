@@ -297,7 +297,7 @@ func resourceServerUpdate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	d.Partial(false)
-	return nil
+	return resourceServerRead(d, m)
 }
 
 func resourceServerDelete(d *schema.ResourceData, m interface{}) error {

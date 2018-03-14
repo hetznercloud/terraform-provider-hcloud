@@ -32,20 +32,20 @@ func init() {
 	}
 }
 
-func TestAccServer_Basic(t *testing.T) {
+func TestAccHcloudServer_Basic(t *testing.T) {
 	var server hcloud.Server
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccHcloudPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckServerDestroy,
+		CheckDestroy: testAccHcloudCheckServerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckServerConfig_basic(rInt),
+				Config: testAccHcloudCheckServerConfig_basic(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckServerExists("hcloud_server.foobar", &server),
-					testAccCheckServerAttributes(&server),
+					testAccHcloudCheckServerExists("hcloud_server.foobar", &server),
+					testAccHcloudCheckServerAttributes(&server),
 					resource.TestCheckResourceAttr(
 						"hcloud_server.foobar", "name", fmt.Sprintf("foo-%d", rInt)),
 					resource.TestCheckResourceAttr(
@@ -56,60 +56,66 @@ func TestAccServer_Basic(t *testing.T) {
 						"hcloud_server.foobar", "status", "running"),
 					resource.TestCheckResourceAttr(
 						"hcloud_server.foobar", "location", "fsn1"),
+					resource.TestCheckResourceAttr(
+						"hcloud_server.foobar", "backup_window", "22-02"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccServer_Update(t *testing.T) {
+func TestAccHcloudServer_Update(t *testing.T) {
 	var server hcloud.Server
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccHcloudPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckServerDestroy,
+		CheckDestroy: testAccHcloudCheckServerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckServerConfig_basic(rInt),
+				Config: testAccHcloudCheckServerConfig_basic(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckServerExists("hcloud_server.foobar", &server),
-					testAccCheckServerAttributes(&server),
+					testAccHcloudCheckServerExists("hcloud_server.foobar", &server),
+					testAccHcloudCheckServerAttributes(&server),
 					resource.TestCheckResourceAttr(
 						"hcloud_server.foobar", "name", fmt.Sprintf("foo-%d", rInt)),
+					resource.TestCheckResourceAttr(
+						"hcloud_server.foobar", "backup_window", "22-02"),
 				),
 			},
 
 			{
-				Config: testAccCheckServerConfig_RenameAndResize(rInt),
+				Config: testAccHcloudCheckServerConfig_RenameAndResize(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckServerExists("hcloud_server.foobar", &server),
-					testAccCheckServerRenamedAndResized(&server),
+					testAccHcloudCheckServerExists("hcloud_server.foobar", &server),
+					testAccHcloudCheckServerRenamedAndResized(&server),
 					resource.TestCheckResourceAttr(
 						"hcloud_server.foobar", "name", fmt.Sprintf("baz-%d", rInt)),
 					resource.TestCheckResourceAttr(
 						"hcloud_server.foobar", "server_type", "cx21"),
+					resource.TestCheckResourceAttr(
+						"hcloud_server.foobar", "backup_window", "10-14"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccServer_UpdateUserData(t *testing.T) {
+func TestAccHcloudServer_UpdateUserData(t *testing.T) {
 	var afterCreate, afterUpdate hcloud.Server
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccHcloudPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckServerDestroy,
+		CheckDestroy: testAccHcloudCheckServerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckServerConfig_basic(rInt),
+				Config: testAccHcloudCheckServerConfig_basic(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckServerExists("hcloud_server.foobar", &afterCreate),
-					testAccCheckServerAttributes(&afterCreate),
+					testAccHcloudCheckServerExists("hcloud_server.foobar", &afterCreate),
+					testAccHcloudCheckServerAttributes(&afterCreate),
 					resource.TestCheckResourceAttr(
 						"hcloud_server.foobar", "name", fmt.Sprintf("foo-%d", rInt)),
 					resource.TestCheckResourceAttr(
@@ -118,14 +124,14 @@ func TestAccServer_UpdateUserData(t *testing.T) {
 			},
 
 			{
-				Config: testAccCheckServerConfig_userdata_update(rInt),
+				Config: testAccHcloudCheckServerConfig_userdata_update(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckServerExists("hcloud_server.foobar", &afterUpdate),
+					testAccHcloudCheckServerExists("hcloud_server.foobar", &afterUpdate),
 					resource.TestCheckResourceAttr(
 						"hcloud_server.foobar", "name", fmt.Sprintf("foo-%d", rInt)),
 					resource.TestCheckResourceAttr(
 						"hcloud_server.foobar", "user_data", userDataHashSum("updated stuff")),
-					testAccCheckServerRecreated(
+					testAccHcloudCheckServerRecreated(
 						t, &afterCreate, &afterUpdate),
 				),
 			},
@@ -133,20 +139,22 @@ func TestAccServer_UpdateUserData(t *testing.T) {
 	})
 }
 
-func TestAccServer_ISO(t *testing.T) {
+func TestAccHcloudServer_ISO(t *testing.T) {
 	var server hcloud.Server
 	rInt := acctest.RandInt()
 
+	// testAccProvider.
+
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccHcloudPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckServerDestroy,
+		CheckDestroy: testAccHcloudCheckServerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckServerConfig_ISO(rInt),
+				Config: testAccHcloudCheckServerConfig_ISO(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckServerExists("hcloud_server.foobar", &server),
-					testAccCheckServerAttributes(&server),
+					testAccHcloudCheckServerExists("hcloud_server.foobar", &server),
+					testAccHcloudCheckServerAttributes(&server),
 					resource.TestCheckResourceAttr(
 						"hcloud_server.foobar", "name", fmt.Sprintf("foo-%d", rInt)),
 					resource.TestCheckResourceAttr(
@@ -157,7 +165,7 @@ func TestAccServer_ISO(t *testing.T) {
 	})
 }
 
-func testAccCheckServerDestroy(s *terraform.State) error {
+func testAccHcloudCheckServerDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*hcloud.Client)
 
 	for _, rs := range s.RootModule().Resources {
@@ -171,18 +179,22 @@ func testAccCheckServerDestroy(s *terraform.State) error {
 		}
 
 		// Try to find the Server
-		_, _, err = client.Server.GetByID(context.Background(), id)
+		var server *hcloud.Server
+		server, _, err = client.Server.GetByID(context.Background(), id)
 		if err != nil {
 			return fmt.Errorf(
-				"Error waiting for server (%s) to be destroyed: %v",
+				"Error checking if server (%s) is deleted: %v",
 				rs.Primary.ID, err)
+		}
+		if server != nil {
+			return fmt.Errorf("Server (%s) has not been deleted", rs.Primary.ID)
 		}
 	}
 
 	return nil
 }
 
-func testAccCheckServerExists(n string, server *hcloud.Server) resource.TestCheckFunc {
+func testAccHcloudCheckServerExists(n string, server *hcloud.Server) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -213,7 +225,7 @@ func testAccCheckServerExists(n string, server *hcloud.Server) resource.TestChec
 	}
 }
 
-func testAccCheckServerRenamedAndResized(server *hcloud.Server) resource.TestCheckFunc {
+func testAccHcloudCheckServerRenamedAndResized(server *hcloud.Server) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if server.ServerType.Name != "cx21" {
 			return fmt.Errorf("Bad server.ServerType.Name: %s", server.ServerType.Name)
@@ -223,7 +235,7 @@ func testAccCheckServerRenamedAndResized(server *hcloud.Server) resource.TestChe
 	}
 }
 
-func testAccCheckServerAttributes(server *hcloud.Server) resource.TestCheckFunc {
+func testAccHcloudCheckServerAttributes(server *hcloud.Server) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if server.Image.Name != "debian-9" {
 			return fmt.Errorf("Bad server.Image.Name: %s", server.Image.Name)
@@ -245,7 +257,7 @@ func testAccCheckServerAttributes(server *hcloud.Server) resource.TestCheckFunc 
 	}
 }
 
-func testAccCheckServerRecreated(t *testing.T, before, after *hcloud.Server) resource.TestCheckFunc {
+func testAccHcloudCheckServerRecreated(t *testing.T, before, after *hcloud.Server) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if before.ID == after.ID {
 			t.Fatalf("Expected change of server IDs, but both were %v", before.ID)
@@ -254,7 +266,7 @@ func testAccCheckServerRecreated(t *testing.T, before, after *hcloud.Server) res
 	}
 }
 
-func testAccCheckServerConfig_basic(rInt int) string {
+func testAccHcloudCheckServerConfig_basic(rInt int) string {
 	return fmt.Sprintf(`
 resource "hcloud_ssh_key" "foobar" {
   name       = "foobar-%d"
@@ -271,7 +283,7 @@ resource "hcloud_server" "foobar" {
 }`, rInt, testAccSSHPublicKey, rInt)
 }
 
-func testAccCheckServerConfig_ISO(rInt int) string {
+func testAccHcloudCheckServerConfig_ISO(rInt int) string {
 	return fmt.Sprintf(`
 resource "hcloud_ssh_key" "foobar" {
   name       = "foobar-%d"
@@ -288,7 +300,7 @@ resource "hcloud_server" "foobar" {
 }`, rInt, testAccSSHPublicKey, rInt)
 }
 
-func testAccCheckServerConfig_RenameAndResize(rInt int) string {
+func testAccHcloudCheckServerConfig_RenameAndResize(rInt int) string {
 	return fmt.Sprintf(`
 resource "hcloud_ssh_key" "foobar" {
   name       = "foobar-%d"
@@ -300,11 +312,12 @@ resource "hcloud_server" "foobar" {
 	image       = "debian-9"
   datacenter  = "fsn1-dc8"
 	ssh_keys  = ["${hcloud_ssh_key.foobar.id}"]
+	backup_window = "10-14"
 }
 `, rInt, testAccSSHPublicKey, rInt)
 }
 
-func testAccCheckServerConfig_userdata_update(rInt int) string {
+func testAccHcloudCheckServerConfig_userdata_update(rInt int) string {
 	return fmt.Sprintf(`
 resource "hcloud_ssh_key" "foobar" {
   name       = "foobar-%d"

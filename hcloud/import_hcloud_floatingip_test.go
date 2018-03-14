@@ -7,17 +7,17 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 )
 
-func TestAccFloatingIP_importServer(t *testing.T) {
-	resourceName := "hcloud_floating_ip.foobar"
+func TestAccHcloudFloatingIP_importServer(t *testing.T) {
+	resourceName := "hcloud_floating_ip.floating_ip"
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccHcloudPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckFloatingIPDestroy,
+		CheckDestroy: testAccHcloudCheckFloatingIPDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckFloatingIPConfig_server(rInt),
+				Config: testAccHcloudCheckFloatingIPConfig_server(rInt),
 			},
 
 			{

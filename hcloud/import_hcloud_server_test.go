@@ -7,17 +7,17 @@ import (
 	"github.com/hashicorp/terraform/helper/resource"
 )
 
-func TestAccServer_importBasic(t *testing.T) {
+func TestAccHcloudServer_importBasic(t *testing.T) {
 	resourceName := "hcloud_server.foobar"
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccPreCheck(t) },
+		PreCheck:     func() { testAccHcloudPreCheck(t) },
 		Providers:    testAccProviders,
-		CheckDestroy: testAccCheckServerDestroy,
+		CheckDestroy: testAccHcloudCheckServerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckServerConfig_basic(rInt),
+				Config: testAccHcloudCheckServerConfig_basic(rInt),
 			},
 
 			{
