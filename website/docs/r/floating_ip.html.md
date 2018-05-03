@@ -1,3 +1,11 @@
+---
+layout: "hcloud"
+page_title: "Hetzner Cloud: hcloud_floating_ip"
+sidebar_current: "docs-hcloud-resource-floating-ip"
+description: |-
+  Provides a Hetzner Cloud Floating IP to represent a publicly-accessible static IP addresses that can be mapped to one of your Servers.
+---
+
 # hcloud_floating_ip
 
 Provides a Hetzner Cloud Floating IP to represent a publicly-accessible static IP addresses that can be mapped to one of your Servers.
@@ -32,3 +40,11 @@ resource "hcloud_floating_ip" "master" {
 - `home_location` - Home location.
 - `description` - Description of the Floating IP.
 - `ip_address` - IP Address of the Floating IP.
+
+## Import
+
+Floating IPs can be imported using its `id`:
+
+```
+terraform import hcloud_floating_ip.myip <id>
+```
