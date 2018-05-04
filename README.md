@@ -56,7 +56,7 @@ Clone repository to: `$GOPATH/src/github.com/hetznercloud/terraform-provider-hcl
 
 ```sh
 $ mkdir -p $GOPATH/src/github.com/hetznercloud; cd $GOPATH/src/github.com/hetznercloud
-$ git clone git@github.com:hetznercloud/terraform-provider-hcloud
+$ git clone https://github.com/hetznercloud/terraform-provider-hcloud.git
 ```
 
 Enter the provider directory and build the provider
