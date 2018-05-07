@@ -8,7 +8,7 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/hcl2/hcl"
-	zclJSON "github.com/hashicorp/hcl2/hcl/json"
+	hclJSON "github.com/hashicorp/hcl2/hcl/json"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -54,7 +54,17 @@ func TestDecodeBody(t *testing.T) {
 				Name *string `hcl:"name"`
 			}{}),
 			0,
-		},
+		}, // name nil
+		{
+			map[string]interface{}{},
+			struct {
+				Name string `hcl:"name,optional"`
+			}{},
+			deepEquals(struct {
+				Name string `hcl:"name,optional"`
+			}{}),
+			0,
+		}, // name optional
 		{
 			map[string]interface{}{},
 			withNameExpression{},
@@ -175,8 +185,8 @@ func TestDecodeBody(t *testing.T) {
 		},
 		{
 			map[string]interface{}{
-				"name": "Ermintrude",
-				"age":  51,
+				"name":   "Ermintrude",
+				"living": true,
 			},
 			struct {
 				Name   string               `hcl:"name"`
@@ -188,7 +198,7 @@ func TestDecodeBody(t *testing.T) {
 			}{
 				Name: "Ermintrude",
 				Remain: map[string]cty.Value{
-					"age": cty.NumberIntVal(51),
+					"living": cty.True,
 				},
 			}),
 			0,
@@ -499,13 +509,13 @@ func TestDecodeBody(t *testing.T) {
 		},
 		{
 			map[string]interface{}{
-				"name": "Ermintrude",
-				"age":  13,
+				"name":   "Ermintrude",
+				"living": true,
 			},
 			map[string]cty.Value(nil),
 			deepEquals(map[string]cty.Value{
-				"name": cty.StringVal("Ermintrude"),
-				"age":  cty.NumberIntVal(13),
+				"name":   cty.StringVal("Ermintrude"),
+				"living": cty.True,
 			}),
 			0,
 		},
@@ -520,7 +530,7 @@ func TestDecodeBody(t *testing.T) {
 		}
 
 		t.Run(string(buf), func(t *testing.T) {
-			file, diags := zclJSON.Parse(buf, "test.json")
+			file, diags := hclJSON.Parse(buf, "test.json")
 			if len(diags) != 0 {
 				t.Fatalf("diagnostics while parsing: %s", diags.Error())
 			}

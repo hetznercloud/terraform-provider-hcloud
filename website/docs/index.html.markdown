@@ -34,4 +34,5 @@ resource "hcloud_server" "web" {
 
 The following arguments are supported:
 
-- `token` - (Required) This is the Hetzner Cloud API Token. This can also be specified with the `HCLOUD_TOKEN` environment variable.
+- `token` - (Required) This is the Hetzner Cloud API Token, can also be specified with the `HCLOUD_TOKEN` environment variable.
+- `endpoint` - Hetzner Cloud API endpoint, can be used to override the default API Endpoint `https://api.hetzner.cloud/v1`.

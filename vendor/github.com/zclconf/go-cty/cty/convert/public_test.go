@@ -137,6 +137,18 @@ func TestConvert(t *testing.T) {
 			}),
 		},
 		{
+			Value: cty.ListVal([]cty.Value{
+				cty.NumberIntVal(5),
+				cty.NumberIntVal(10),
+				cty.NumberIntVal(10),
+			}),
+			Type: cty.Set(cty.String),
+			Want: cty.SetVal([]cty.Value{
+				cty.StringVal("5"),
+				cty.StringVal("10"),
+			}),
+		},
+		{
 			Value: cty.TupleVal([]cty.Value{
 				cty.NumberIntVal(5),
 				cty.StringVal("hello"),

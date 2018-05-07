@@ -2,7 +2,7 @@ package hcloud
 
 import (
 	"context"
-	"fmt"
+	"log"
 	"strconv"
 	"strings"
 
@@ -74,7 +74,9 @@ func resourceSSHKeyRead(d *schema.ResourceData, m interface{}) error {
 
 	sshKeyID, err := strconv.Atoi(d.Id())
 	if err != nil {
-		return fmt.Errorf("invalid ssh key id: %v", err)
+		log.Printf("[WARN] invalid SSH key id (%s), removing from state: %v", d.Id(), err)
+		d.SetId("")
+		return nil
 	}
 
 	sshKey, _, err := client.SSHKey.GetByID(ctx, sshKeyID)
@@ -82,6 +84,7 @@ func resourceSSHKeyRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 	if sshKey == nil {
+		log.Printf("[WARN] SSH key (%s) not found, removing from state", d.Id())
 		d.SetId("")
 		return nil
 	}
@@ -98,7 +101,9 @@ func resourceSSHKeyUpdate(d *schema.ResourceData, m interface{}) error {
 
 	sshKeyID, err := strconv.Atoi(d.Id())
 	if err != nil {
-		return fmt.Errorf("invalid ssh key id: %v", err)
+		log.Printf("[WARN] invalid SSH key id (%s), removing from state: %v", d.Id(), err)
+		d.SetId("")
+		return nil
 	}
 
 	if d.HasChange("name") {
@@ -107,6 +112,11 @@ func resourceSSHKeyUpdate(d *schema.ResourceData, m interface{}) error {
 			Name: name,
 		})
 		if err != nil {
+			if hcerr, ok := err.(hcloud.Error); ok && hcerr.Code == hcloud.ErrorCodeNotFound {
+				log.Printf("[WARN] SSH key (%s) not found, removing from state", d.Id())
+				d.SetId("")
+				return nil
+			}
 			return err
 		}
 		d.SetPartial("name")
@@ -121,9 +131,15 @@ func resourceSSHKeyDelete(d *schema.ResourceData, m interface{}) error {
 
 	sshKeyID, err := strconv.Atoi(d.Id())
 	if err != nil {
-		return fmt.Errorf("invalid ssh key id: %v", err)
+		log.Printf("[WARN] invalid SSH key id (%s), removing from state: %v", d.Id(), err)
+		d.SetId("")
+		return nil
 	}
 	if _, err := client.SSHKey.Delete(ctx, &hcloud.SSHKey{ID: sshKeyID}); err != nil {
+		if hcerr, ok := err.(hcloud.Error); ok && hcerr.Code == hcloud.ErrorCodeNotFound {
+			// SSH key has already been deleted
+			return nil
+		}
 		return err
 	}
 

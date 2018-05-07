@@ -9,11 +9,22 @@ type asTraversalSupported struct {
 	RootName string
 }
 
+type asTraversalSupportedAttr struct {
+	staticExpr
+	RootName string
+	AttrName string
+}
+
 type asTraversalNotSupported struct {
 	staticExpr
 }
 
 type asTraversalDeclined struct {
+	staticExpr
+}
+
+type asTraversalWrappedDelegated struct {
+	original Expression
 	staticExpr
 }
 
@@ -25,8 +36,23 @@ func (e asTraversalSupported) AsTraversal() Traversal {
 	}
 }
 
+func (e asTraversalSupportedAttr) AsTraversal() Traversal {
+	return Traversal{
+		TraverseRoot{
+			Name: e.RootName,
+		},
+		TraverseAttr{
+			Name: e.AttrName,
+		},
+	}
+}
+
 func (e asTraversalDeclined) AsTraversal() Traversal {
 	return nil
+}
+
+func (e asTraversalWrappedDelegated) UnwrapExpression() Expression {
+	return e.original
 }
 
 func TestAbsTraversalForExpr(t *testing.T) {
@@ -45,6 +71,20 @@ func TestAbsTraversalForExpr(t *testing.T) {
 		{
 			asTraversalDeclined{},
 			"",
+		},
+		{
+			asTraversalWrappedDelegated{
+				original: asTraversalSupported{RootName: "foo"},
+			},
+			"foo",
+		},
+		{
+			asTraversalWrappedDelegated{
+				original: asTraversalWrappedDelegated{
+					original: asTraversalSupported{RootName: "foo"},
+				},
+			},
+			"foo",
 		},
 	}
 
@@ -122,6 +162,56 @@ func TestRelTraversalForExpr(t *testing.T) {
 				if test.WantFirstName != "" {
 					t.Errorf("traversal was not returned; want TraverseAttr(%q)", test.WantFirstName)
 				}
+			}
+		})
+	}
+}
+
+func TestExprAsKeyword(t *testing.T) {
+	tests := []struct {
+		Expr Expression
+		Want string
+	}{
+		{
+			asTraversalSupported{RootName: "foo"},
+			"foo",
+		},
+		{
+			asTraversalSupportedAttr{
+				RootName: "foo",
+				AttrName: "bar",
+			},
+			"",
+		},
+		{
+			asTraversalNotSupported{},
+			"",
+		},
+		{
+			asTraversalDeclined{},
+			"",
+		},
+		{
+			asTraversalWrappedDelegated{
+				original: asTraversalSupported{RootName: "foo"},
+			},
+			"foo",
+		},
+		{
+			asTraversalWrappedDelegated{
+				original: asTraversalWrappedDelegated{
+					original: asTraversalSupported{RootName: "foo"},
+				},
+			},
+			"foo",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run("", func(t *testing.T) {
+			got := ExprAsKeyword(test.Expr)
+			if got != test.Want {
+				t.Errorf("wrong result %q; want %q\ninput: %T", got, test.Want, test.Expr)
 			}
 		})
 	}

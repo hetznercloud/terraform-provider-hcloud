@@ -5,6 +5,7 @@ import (
 	"crypto/sha1"
 	"encoding/base64"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 
@@ -151,8 +152,7 @@ func resourceServerCreate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	d.SetId(strconv.Itoa(res.Server.ID))
-	_, errCh := client.Action.WatchProgress(ctx, res.Action)
-	if err := <-errCh; err != nil {
+	if err := waitForServerAction(ctx, client, res.Action, res.Server); err != nil {
 		return err
 	}
 
@@ -184,6 +184,9 @@ func resourceServerRead(d *schema.ResourceData, m interface{}) error {
 
 	server, _, err := client.Server.Get(ctx, d.Id())
 	if err != nil {
+		if resourceServerIsNotFound(err, d) {
+			return nil
+		}
 		return err
 	}
 	if server == nil {
@@ -235,6 +238,9 @@ func resourceServerUpdate(d *schema.ResourceData, m interface{}) error {
 			Name: newName.(string),
 		})
 		if err != nil {
+			if resourceServerIsNotFound(err, d) {
+				return nil
+			}
 			return err
 		}
 		d.SetPartial("name")
@@ -249,8 +255,7 @@ func resourceServerUpdate(d *schema.ResourceData, m interface{}) error {
 			if err != nil {
 				return err
 			}
-			_, errCh := client.Action.WatchProgress(ctx, action)
-			if err := <-errCh; err != nil {
+			if err := waitForServerAction(ctx, client, action, server); err != nil {
 				return err
 			}
 		}
@@ -262,8 +267,7 @@ func resourceServerUpdate(d *schema.ResourceData, m interface{}) error {
 		if err != nil {
 			return err
 		}
-		_, errCh := client.Action.WatchProgress(ctx, action)
-		if err := <-errCh; err != nil {
+		if err := waitForServerAction(ctx, client, action, server); err != nil {
 			return err
 		}
 		d.SetPartial("server_type")
@@ -306,7 +310,9 @@ func resourceServerDelete(d *schema.ResourceData, m interface{}) error {
 
 	serverID, err := strconv.Atoi(d.Id())
 	if err != nil {
-		return fmt.Errorf("invalid server id: %v", err)
+		log.Printf("[WARN] invalid server id (%s), removing from state: %v", d.Id(), err)
+		d.SetId("")
+		return nil
 	}
 	if _, err := client.Server.Delete(ctx, &hcloud.Server{ID: serverID}); err != nil {
 		return err
@@ -315,14 +321,22 @@ func resourceServerDelete(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
+func resourceServerIsNotFound(err error, d *schema.ResourceData) bool {
+	if hcerr, ok := err.(hcloud.Error); ok && hcerr.Code == hcloud.ErrorCodeNotFound {
+		log.Printf("[WARN] Server (%s) not found, removing from state", d.Id())
+		d.SetId("")
+		return true
+	}
+	return false
+}
+
 func setBackupWindow(ctx context.Context, client *hcloud.Client, server *hcloud.Server, backupWindow string) error {
 	if backupWindow == "" {
 		action, _, err := client.Server.DisableBackup(ctx, server)
 		if err != nil {
 			return err
 		}
-		_, errCh := client.Action.WatchProgress(ctx, action)
-		if err := <-errCh; err != nil {
+		if err := waitForServerAction(ctx, client, action, server); err != nil {
 			return err
 		}
 		return nil
@@ -332,8 +346,7 @@ func setBackupWindow(ctx context.Context, client *hcloud.Client, server *hcloud.
 	if err != nil {
 		return err
 	}
-	_, errCh := client.Action.WatchProgress(ctx, action)
-	if err := <-errCh; err != nil {
+	if err := waitForServerAction(ctx, client, action, server); err != nil {
 		return err
 	}
 	return nil
@@ -347,8 +360,7 @@ func setISO(ctx context.Context, client *hcloud.Client, server *hcloud.Server, i
 		if err != nil {
 			return err
 		}
-		_, errCh := client.Action.WatchProgress(ctx, action)
-		if err := <-errCh; err != nil {
+		if err := waitForServerAction(ctx, client, action, server); err != nil {
 			return err
 		}
 	}
@@ -358,8 +370,7 @@ func setISO(ctx context.Context, client *hcloud.Client, server *hcloud.Server, i
 		if err != nil {
 			return err
 		}
-		_, errCh := client.Action.WatchProgress(ctx, action)
-		if err := <-errCh; err != nil {
+		if err := waitForServerAction(ctx, client, action, server); err != nil {
 			return err
 		}
 	}
@@ -369,8 +380,7 @@ func setISO(ctx context.Context, client *hcloud.Client, server *hcloud.Server, i
 		if err != nil {
 			return err
 		}
-		_, errCh := client.Action.WatchProgress(ctx, action)
-		if err := <-errCh; err != nil {
+		if err := waitForServerAction(ctx, client, action, server); err != nil {
 			return err
 		}
 	}
@@ -385,8 +395,7 @@ func setRescue(ctx context.Context, client *hcloud.Client, server *hcloud.Server
 		if err != nil {
 			return err
 		}
-		_, errCh := client.Action.WatchProgress(ctx, action)
-		if err := <-errCh; err != nil {
+		if err := waitForServerAction(ctx, client, action, server); err != nil {
 			return err
 		}
 	}
@@ -399,8 +408,7 @@ func setRescue(ctx context.Context, client *hcloud.Client, server *hcloud.Server
 		if err != nil {
 			return err
 		}
-		_, errCh := client.Action.WatchProgress(ctx, res.Action)
-		if err := <-errCh; err != nil {
+		if err := waitForServerAction(ctx, client, res.Action, server); err != nil {
 			return err
 		}
 	}
@@ -409,8 +417,7 @@ func setRescue(ctx context.Context, client *hcloud.Client, server *hcloud.Server
 		if err != nil {
 			return err
 		}
-		_, errCh := client.Action.WatchProgress(ctx, action)
-		if err := <-errCh; err != nil {
+		if err := waitForServerAction(ctx, client, action, server); err != nil {
 			return err
 		}
 	}
@@ -432,4 +439,14 @@ func getSSHkeys(ctx context.Context, client *hcloud.Client, d *schema.ResourceDa
 		sshKeys = append(sshKeys, sshKey)
 	}
 	return
+}
+
+func waitForServerAction(ctx context.Context, client *hcloud.Client, action *hcloud.Action, server *hcloud.Server) error {
+	log.Printf("[INFO] server (%d) waiting for %q action to complete...", server.ID, action.Command)
+	_, errCh := client.Action.WatchProgress(ctx, action)
+	if err := <-errCh; err != nil {
+		return err
+	}
+	log.Printf("[INFO] server (%d) %q action succeeded", server.ID, action.Command)
+	return nil
 }
