@@ -1,6 +1,8 @@
 TEST?=$$(go list ./... |grep -v 'vendor')
 GOFMT_FILES?=$$(find . -name '*.go' |grep -v vendor)
 VERSION=$(shell ./scripts/git-version.sh)
+PKG_NAME=hcloud
+WEBSITE_REPO=github.com/hashicorp/terraform-website
 export CGO_ENABLED:=0
 
 default: build
@@ -88,4 +90,19 @@ test-compile:
 	fi
 	go test -c $(TEST) $(TESTARGS)
 
-.PHONY: build test testacc vet fmt fmtcheck errcheck vendor-status test-compile release clean clean-release
+website:
+ifeq (,$(wildcard $(GOPATH)/src/$(WEBSITE_REPO)))
+	echo "$(WEBSITE_REPO) not found in your GOPATH (necessary for layouts and assets), get-ting..."
+	git clone https://$(WEBSITE_REPO) $(GOPATH)/src/$(WEBSITE_REPO)
+endif
+	@$(MAKE) -C $(GOPATH)/src/$(WEBSITE_REPO) website-provider PROVIDER_PATH=$(shell pwd) PROVIDER_NAME=$(PKG_NAME)
+
+website-test:
+ifeq (,$(wildcard $(GOPATH)/src/$(WEBSITE_REPO)))
+	echo "$(WEBSITE_REPO) not found in your GOPATH (necessary for layouts and assets), get-ting..."
+	git clone https://$(WEBSITE_REPO) $(GOPATH)/src/$(WEBSITE_REPO)
+endif
+	@$(MAKE) -C $(GOPATH)/src/$(WEBSITE_REPO) website-provider-test PROVIDER_PATH=$(shell pwd) PROVIDER_NAME=$(PKG_NAME)
+
+
+.PHONY: build test testacc vet fmt fmtcheck errcheck vendor-status test-compile release clean clean-release website website-test
