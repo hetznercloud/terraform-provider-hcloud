@@ -57,7 +57,7 @@ _output/terraform-provider-hcloud_%.zip: bin/%/terraform-provider-hcloud
 	cd $(DEST) && zip -r ../$(NAME).zip .
 
 test: fmtcheck
-	go test -i $(TEST) || exit 1
+	go test $(TEST) || exit 1
 	echo $(TEST) | \
 		xargs -t -n4 go test $(TESTARGS) -timeout=30s -parallel=4
 
