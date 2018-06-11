@@ -17,6 +17,7 @@ import (
 
 var (
 	testAccSSHPublicKey string
+	testHcloudISOName   = "coreos_stable.iso"
 )
 
 func init() {
@@ -158,7 +159,7 @@ func TestAccHcloudServer_ISO(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"hcloud_server.foobar", "name", fmt.Sprintf("foo-%d", rInt)),
 					resource.TestCheckResourceAttr(
-						"hcloud_server.foobar", "iso", "coreos_stable_production.iso"),
+						"hcloud_server.foobar", "iso", testHcloudISOName),
 				),
 			},
 		},
@@ -295,9 +296,9 @@ resource "hcloud_server" "foobar" {
   image       = "debian-9"
   datacenter  = "fsn1-dc8"
 	backup_window = "22-02"
-	iso         = "coreos_stable_production.iso"
+	iso         = "%s"
 	ssh_keys  = ["${hcloud_ssh_key.foobar.id}"]
-}`, rInt, testAccSSHPublicKey, rInt)
+}`, rInt, testAccSSHPublicKey, rInt, testHcloudISOName)
 }
 
 func testAccHcloudCheckServerConfig_RenameAndResize(rInt int) string {
