@@ -5,5 +5,5 @@ go:
 before_script:
   - go get github.com/golang/lint/golint
 script:
-  - make testacc
+  - make test
   - make
