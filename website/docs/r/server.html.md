@@ -3,12 +3,12 @@ layout: "hcloud"
 page_title: "Hetzner Cloud: hcloud_server"
 sidebar_current: "docs-hcloud-resource-server"
 description: |-
-  Provides an Hetzner Cloud server resource. This can be used to create, modify, and delete Servers. Servers also support provisioning.
+  Provides an Hetzner Cloud server resource. This can be used to create, modify, and delete servers. Servers also support provisioning.
 ---
 
 # hcloud_server
 
-Provides an Hetzner Cloud server resource. This can be used to create, modify, and delete Servers. Servers also support [provisioning](https://www.terraform.io/docs/provisioners/index.html).
+Provides an Hetzner Cloud server resource. This can be used to create, modify, and delete servers. Servers also support [provisioning](https://www.terraform.io/docs/provisioners/index.html).
 
 ## Example Usage
 
