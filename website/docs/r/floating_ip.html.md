@@ -12,7 +12,7 @@ Provides a Hetzner Cloud Floating IP to represent a publicly-accessible static I
 
 ## Example Usage
 
-```
+```hcl
 resource "hcloud_server" "node1" {
   name = "node1"
   image = "debian-9"
