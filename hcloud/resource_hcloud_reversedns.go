@@ -7,12 +7,15 @@ import (
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
+	"net"
+	"strings"
 )
 
 func resourceReverseDns() *schema.Resource {
 	return &schema.Resource{
 		Read:   resourceReverseDnsRead,
-		Update: resourceReverseDnsUpdate,
+		Create: resourceReverseDnsCreate,
+		Delete: resourceReverseDnsDelete,
 
 		Schema: map[string]*schema.Schema{
 			"server_id": {
@@ -25,9 +28,7 @@ func resourceReverseDns() *schema.Resource {
 			},
 			"ip_address": {
 				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-				ForceNew: true,
+				Required: true,
 			},
 
 			"dns_ptr": {
@@ -58,9 +59,10 @@ func resourceReverseDnsRead(d *schema.ResourceData, m interface{}) error {
 	} else {
 		rdnsType = "server"
 	}
+
+	ipAddress := string(d.Get("ip_address").(string))
 	if rdnsType == "floating_ip" {
 		floatingIP, _, err := client.FloatingIP.GetByID(ctx, id)
-		d.SetId("f-" + string(id) + "-" + string(floatingIP.IP))
 		if err != nil {
 			return err
 		}
@@ -69,12 +71,24 @@ func resourceReverseDnsRead(d *schema.ResourceData, m interface{}) error {
 			d.SetId("")
 			return nil
 		}
-
-		d.Set("ip_address", floatingIP.IP)
-		d.Set("dns_ptr", floatingIP.DNSPtrForIP(floatingIP.IP))
+		if floatingIP.Type == "ipv4" {
+			if strings.Count(ipAddress, ".") != 4 {
+				log.Printf("[WARN] Floating IP (%s) is an ipv4 but you write an ipv6, removing from state", d.Id())
+				d.SetId("")
+				return nil
+			}
+		} else if floatingIP.Type == "ipv6" {
+			if strings.Count(ipAddress, ":") > 1 {
+				log.Printf("[WARN] Floating IP (%s) is an ipv6 but you write an invalid ip, removing from state", d.Id())
+				d.SetId("")
+				return nil
+			}
+		}
+		d.SetId("f-" + string(id) + "-" + ipAddress)
+		d.Set("dns_ptr", floatingIP.DNSPtrForIP(d.Get("ip_address").(net.IP)))
 	} else if rdnsType == "server" {
 		server, _, err := client.Server.Get(ctx, string(id))
-		d.SetId("s-" + string(id) + "-" + string(server.PublicNet.IPv4.IP))
+
 		if err != nil {
 			return err
 		}
@@ -83,13 +97,23 @@ func resourceReverseDnsRead(d *schema.ResourceData, m interface{}) error {
 			d.SetId("")
 			return nil
 		}
-		d.Set("ip_address", server.PublicNet.IPv4.IP)
-		d.Set("dns_ptr", server.PublicNet.IPv4.DNSPtr)
+		if strings.Count(ipAddress, ".") != 4 {
+			d.SetId("s-" + string(id) + "-" + ipAddress)
+			d.Set("dns_ptr", server.PublicNet.IPv4.DNSPtr)
+		} else if strings.Count(ipAddress, ":") > 1 {
+			for rdns := range server.PublicNet.IPv6.DNSPtr {
+				if rdns == ipAddress {
+					d.SetId("s-" + string(id) + "-" + ipAddress)
+					d.Set("dns_ptr", server.PublicNet.IPv6.DNSPtrForIP(d.Get("ip_address").(net.IP)))
+				}
+			}
+		}
+
 	}
 	return nil
 }
 
-func resourceReverseDnsUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceReverseDnsCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*hcloud.Client)
 	ctx := context.Background()
 	id, err := strconv.Atoi(d.Get("server_id").(string))
@@ -97,7 +121,7 @@ func resourceReverseDnsUpdate(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		id, err = strconv.Atoi(d.Get("floating_ip_id").(string))
 		if err != nil {
-			log.Printf("[WARN] invalid id (%s), removing from state: %v", d.Id(), err)
+			log.Printf("[WARN] Invalid id (%s), removing from state: %v", d.Id(), err)
 			d.SetId("")
 			return nil
 		} else {
@@ -106,7 +130,7 @@ func resourceReverseDnsUpdate(d *schema.ResourceData, m interface{}) error {
 	} else {
 		rdnsType = "server"
 	}
-	d.Partial(true)
+
 	if rdnsType == "floating_ip" {
 		if d.HasChange("dns_ptr") {
 			floatingIP, _, err := client.FloatingIP.GetByID(ctx, id)
@@ -125,7 +149,6 @@ func resourceReverseDnsUpdate(d *schema.ResourceData, m interface{}) error {
 			if err := waitForFloatingIPAction(ctx, client, action, floatingIP); err != nil {
 				return err
 			}
-			d.SetPartial("dns_ptr")
 		}
 	} else if rdnsType == "server" {
 		server, _, err := client.Server.GetByID(ctx, id)
@@ -133,7 +156,7 @@ func resourceReverseDnsUpdate(d *schema.ResourceData, m interface{}) error {
 			return err
 		}
 		if server == nil {
-			log.Printf("[WARN] Floating IP (%s) not found, removing from state", d.Id())
+			log.Printf("[WARN] Server (%s) not found, removing from state", d.Id())
 			d.SetId("")
 			return nil
 		}
@@ -144,10 +167,63 @@ func resourceReverseDnsUpdate(d *schema.ResourceData, m interface{}) error {
 		if err := waitForServerAction(ctx, client, action, server); err != nil {
 			return err
 		}
-		d.SetPartial("dns_ptr")
+
+	}
+	return resourceReverseDnsRead(d, m)
+}
+func resourceReverseDnsDelete(d *schema.ResourceData, m interface{}) error {
+	client := m.(*hcloud.Client)
+	ctx := context.Background()
+	id, err := strconv.Atoi(d.Get("server_id").(string))
+	rdnsType := ""
+	if err != nil {
+		id, err = strconv.Atoi(d.Get("floating_ip_id").(string))
+		if err != nil {
+			log.Printf("[WARN] invalid id (%s), removing from state: %v", d.Id(), err)
+			d.SetId("")
+			return nil
+		} else {
+			rdnsType = "floating_ip"
+		}
+	} else {
+		rdnsType = "server"
 	}
 
-	d.Partial(false)
+	if rdnsType == "floating_ip" {
+		if d.HasChange("dns_ptr") {
+			floatingIP, _, err := client.FloatingIP.GetByID(ctx, id)
+			if err != nil {
+				return err
+			}
+			if floatingIP == nil {
+				log.Printf("[WARN] Floating IP (%s) not found, removing from state", d.Id())
+				d.SetId("")
+				return nil
+			}
+			ip := d.Get("ip_address").(string)
+			action, _, err := client.FloatingIP.ChangeDNSPtr(ctx, floatingIP, ip, nil)
 
-	return resourceReverseDnsRead(d, m)
+			if err := waitForFloatingIPAction(ctx, client, action, floatingIP); err != nil {
+				return err
+			}
+		}
+	} else if rdnsType == "server" {
+		server, _, err := client.Server.GetByID(ctx, id)
+		if err != nil {
+			return err
+		}
+		if server == nil {
+			log.Printf("[WARN] Server (%s) not found, removing from state", d.Id())
+			d.SetId("")
+			return nil
+		}
+		ip := d.Get("ip_address").(string)
+		action, _, err := client.Server.ChangeDNSPtr(ctx, server, ip, nil)
+
+		if err := waitForServerAction(ctx, client, action, server); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
