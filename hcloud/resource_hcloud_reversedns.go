@@ -52,6 +52,7 @@ func resourceReverseDnsRead(d *schema.ResourceData, m interface{}) error {
 			d.SetId("")
 			return nil
 		} else {
+
 			rdnsType = "floating_ip"
 		}
 	} else {
@@ -59,6 +60,7 @@ func resourceReverseDnsRead(d *schema.ResourceData, m interface{}) error {
 	}
 	if rdnsType == "floating_ip" {
 		floatingIP, _, err := client.FloatingIP.GetByID(ctx, id)
+		d.SetId("f-" + string(id) + "-" + string(floatingIP.IP))
 		if err != nil {
 			return err
 		}
@@ -72,6 +74,7 @@ func resourceReverseDnsRead(d *schema.ResourceData, m interface{}) error {
 		d.Set("dns_ptr", floatingIP.DNSPtrForIP(floatingIP.IP))
 	} else if rdnsType == "server" {
 		server, _, err := client.Server.Get(ctx, string(id))
+		d.SetId("s-" + string(id) + "-" + string(server.PublicNet.IPv4.IP))
 		if err != nil {
 			return err
 		}
