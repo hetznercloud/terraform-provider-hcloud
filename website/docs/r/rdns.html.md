@@ -6,7 +6,7 @@ description: |-
   Provides a Hetzner Cloud Reverse DNS Entry to represent a reverse dns entry for a Hetzner Cloud Floating IP or a Hetzner Cloud server.
 ---
 
-# hcloud_floating_ip
+# hcloud_rdns
 
 Provides a Hetzner Cloud Reverse DNS Entry to represent a reverse dns entry for a Hetzner Cloud Floating IP or a Hetzner Cloud server.
 
