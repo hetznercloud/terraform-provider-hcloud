@@ -2,11 +2,9 @@ package hcloud
 
 import (
 	"context"
-	"log"
-	"strconv"
-
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
+	"log"
 	"net"
 	"strings"
 )
@@ -21,14 +19,17 @@ func resourceReverseDns() *schema.Resource {
 			"server_id": {
 				Type:     schema.TypeInt,
 				Optional: true,
+				ForceNew: true,
 			},
 			"floating_ip_id": {
 				Type:     schema.TypeInt,
 				Optional: true,
+				ForceNew: true,
 			},
 			"ip_address": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 
 			"dns_ptr": {
@@ -44,11 +45,11 @@ func resourceReverseDnsRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*hcloud.Client)
 	ctx := context.Background()
 
-	id, err := strconv.Atoi(d.Get("server_id").(string))
+	id, err := d.Get("server_id").(int)
 	rdnsType := ""
-	if err != nil {
-		id, err = strconv.Atoi(d.Get("floating_ip_id").(string))
-		if err != nil {
+	if err != false {
+		id, err = d.Get("floating_ip_id").(int)
+		if err != false {
 			log.Printf("[WARN] invalid id (%s), removing from state: %v", d.Id(), err)
 			d.SetId("")
 			return nil
@@ -116,11 +117,11 @@ func resourceReverseDnsRead(d *schema.ResourceData, m interface{}) error {
 func resourceReverseDnsCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*hcloud.Client)
 	ctx := context.Background()
-	id, err := strconv.Atoi(d.Get("server_id").(string))
+	id, err := d.Get("server_id").(int)
 	rdnsType := ""
-	if err != nil {
-		id, err = strconv.Atoi(d.Get("floating_ip_id").(string))
-		if err != nil {
+	if err != false {
+		id, err = d.Get("floating_ip_id").(int)
+		if err != false {
 			log.Printf("[WARN] Invalid id (%s), removing from state: %v", d.Id(), err)
 			d.SetId("")
 			return nil
@@ -174,11 +175,11 @@ func resourceReverseDnsCreate(d *schema.ResourceData, m interface{}) error {
 func resourceReverseDnsDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*hcloud.Client)
 	ctx := context.Background()
-	id, err := strconv.Atoi(d.Get("server_id").(string))
+	id, err := d.Get("server_id").(int)
 	rdnsType := ""
-	if err != nil {
-		id, err = strconv.Atoi(d.Get("floating_ip_id").(string))
-		if err != nil {
+	if err != false {
+		id, err = d.Get("floating_ip_id").(int)
+		if err != false {
 			log.Printf("[WARN] invalid id (%s), removing from state: %v", d.Id(), err)
 			d.SetId("")
 			return nil
