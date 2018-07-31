@@ -46,6 +46,7 @@ func resourceReverseDnsRead(d *schema.ResourceData, m interface{}) error {
 	ctx := context.Background()
 
 	id, err := d.Get("server_id").(int)
+	ipAddress := string(d.Get("ip_address").(string))
 	rdnsType := ""
 	if err != false {
 		id, err = d.Get("floating_ip_id").(int)
@@ -54,14 +55,15 @@ func resourceReverseDnsRead(d *schema.ResourceData, m interface{}) error {
 			d.SetId("")
 			return nil
 		} else {
-
+			d.SetId("f-" + string(id) + "-" + ipAddress)
 			rdnsType = "floating_ip"
 		}
 	} else {
+		d.SetId("s-" + string(id) + "-" + ipAddress)
 		rdnsType = "server"
 	}
 
-	ipAddress := string(d.Get("ip_address").(string))
+	log.Printf("[WARN] Floating IP (%s) not found, removing from state", ipAddress)
 	if rdnsType == "floating_ip" {
 		floatingIP, _, err := client.FloatingIP.GetByID(ctx, id)
 		if err != nil {
@@ -85,7 +87,7 @@ func resourceReverseDnsRead(d *schema.ResourceData, m interface{}) error {
 				return nil
 			}
 		}
-		d.SetId("f-" + string(id) + "-" + ipAddress)
+
 		d.Set("dns_ptr", floatingIP.DNSPtrForIP(d.Get("ip_address").(net.IP)))
 	} else if rdnsType == "server" {
 		server, _, err := client.Server.Get(ctx, string(id))
@@ -117,12 +119,12 @@ func resourceReverseDnsRead(d *schema.ResourceData, m interface{}) error {
 func resourceReverseDnsCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*hcloud.Client)
 	ctx := context.Background()
-	id, err := d.Get("server_id").(int)
+	id, ok := d.GetOk("server_id")
 	rdnsType := ""
-	if err != false {
-		id, err = d.Get("floating_ip_id").(int)
-		if err != false {
-			log.Printf("[WARN] Invalid id (%s), removing from state: %v", d.Id(), err)
+	if ok == false {
+		id, ok = d.GetOk("floating_ip_id")
+		if ok == false {
+			log.Printf("[WARN] Invalid id (%s), removing from state: %v", d.Id(), ok)
 			d.SetId("")
 			return nil
 		} else {
@@ -134,7 +136,7 @@ func resourceReverseDnsCreate(d *schema.ResourceData, m interface{}) error {
 
 	if rdnsType == "floating_ip" {
 
-		floatingIP, _, err := client.FloatingIP.GetByID(ctx, id)
+		floatingIP, _, err := client.FloatingIP.GetByID(ctx, id.(int))
 		if err != nil {
 			return err
 		}
@@ -145,14 +147,14 @@ func resourceReverseDnsCreate(d *schema.ResourceData, m interface{}) error {
 		}
 		ip := d.Get("ip_address").(string)
 		ptr := d.Get("dns_ptr").(string)
-		d.SetId("f-" + string(id) + "-" + ip)
+		d.SetId("f-" + string(id.(int)) + "-" + ip)
 		action, _, err := client.FloatingIP.ChangeDNSPtr(ctx, floatingIP, ip, &ptr)
 
 		if err := waitForFloatingIPAction(ctx, client, action, floatingIP); err != nil {
 			return err
 		}
 	} else if rdnsType == "server" {
-		server, _, err := client.Server.GetByID(ctx, id)
+		server, _, err := client.Server.GetByID(ctx, id.(int))
 		if err != nil {
 			return err
 		}
@@ -163,13 +165,17 @@ func resourceReverseDnsCreate(d *schema.ResourceData, m interface{}) error {
 		}
 		ip := d.Get("ip_address").(string)
 		ptr := d.Get("dns_ptr").(string)
-		d.SetId("s-" + string(id) + "-" + ip)
+		d.SetId("s-" + string(id.(int)) + "-" + ip)
 		action, _, err := client.Server.ChangeDNSPtr(ctx, server, ip, &ptr)
 
 		if err := waitForServerAction(ctx, client, action, server); err != nil {
 			return err
 		}
 
+	} else {
+		log.Printf("[WARN] RDNS Type (%s) not found, removing from state", rdnsType)
+		d.SetId("")
+		return nil
 	}
 	return resourceReverseDnsRead(d, m)
 }
