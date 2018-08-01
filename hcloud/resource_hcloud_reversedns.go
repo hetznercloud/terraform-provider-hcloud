@@ -62,6 +62,12 @@ func resourceReverseDnsRead(d *schema.ResourceData, m interface{}) error {
 	} else {
 		rdnsType = "server"
 	}
+	ip := net.ParseIP(d.Get("ip_address").(string))
+	if ip == nil {
+		log.Printf("[WARN] The ip you provide (%s) is not valid, removing from state", ipAddress)
+		d.SetId("")
+		return nil
+	}
 	switch {
 	case rdnsType == "floating_ip":
 		floatingIP, _, err := client.FloatingIP.GetByID(ctx, id.(int))
@@ -73,6 +79,7 @@ func resourceReverseDnsRead(d *schema.ResourceData, m interface{}) error {
 			d.SetId("")
 			return nil
 		}
+
 		switch floatingIP.Type {
 		case "ipv4":
 			if strings.Count(ipAddress, ".") != 3 {
@@ -87,7 +94,7 @@ func resourceReverseDnsRead(d *schema.ResourceData, m interface{}) error {
 				return nil
 			}
 		}
-		d.Set("dns_ptr", floatingIP.DNSPtrForIP(net.ParseIP(d.Get("ip_address").(string))))
+		d.Set("dns_ptr", floatingIP.DNSPtrForIP(ip))
 		d.SetId(fmt.Sprintf("f-%d-"+ipAddress, id))
 	case rdnsType == "server":
 		server, _, err := client.Server.GetByID(ctx, id.(int))
@@ -107,7 +114,7 @@ func resourceReverseDnsRead(d *schema.ResourceData, m interface{}) error {
 			for rdns := range server.PublicNet.IPv6.DNSPtr {
 				if rdns == ipAddress {
 					d.SetId(fmt.Sprintf("s-%d-"+ipAddress, id))
-					d.Set("dns_ptr", server.PublicNet.IPv6.DNSPtrForIP(d.Get("ip_address").(net.IP)))
+					d.Set("dns_ptr", server.PublicNet.IPv6.DNSPtrForIP(ip))
 				}
 			}
 		}
