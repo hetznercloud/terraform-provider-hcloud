@@ -27,7 +27,7 @@ func TestAccHcloudReverseDNSCreateAndChange(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccHcloudCheckServerExists("hcloud_server.rdns1", &server),
 					resource.TestCheckResourceAttr(
-						"hcloud_rdns.rdns_server", "dns_ptr", "example-updated.com"),
+						"hcloud_rdns.rdns_server", "dns_ptr", "example.com"),
 				),
 			},
 			{
@@ -35,7 +35,7 @@ func TestAccHcloudReverseDNSCreateAndChange(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccHcloudCheckServerExists("hcloud_server.rdns1", &server),
 					resource.TestCheckResourceAttr(
-						"hcloud_rdns.rdns_floating_ip", "dns_ptr", "floating-ip-updated.com"),
+						"hcloud_rdns.rdns_floating_ip", "dns_ptr", "floating-ip.com"),
 				),
 			},
 		},
@@ -58,11 +58,6 @@ resource "hcloud_rdns" "rdns_server" {
   server_id   = "${hcloud_server.rdns1.id}"
   ip_address  = "${hcloud_server.rdns1.ipv4_address}"
   dns_ptr     = "example.com"
-}
-resource "hcloud_rdns" "rdns_server" {
-  server_id   = "${hcloud_server.rdns1.id}"
-  ip_address  = "${hcloud_server.rdns1.ipv4_address}"
-  dns_ptr     = "example-updated.com"
 }
 `, rInt, testAccSSHPublicKey, rInt)
 }
@@ -88,11 +83,6 @@ resource "hcloud_rdns" "rdns_floating_ip" {
   floating_ip_id = "${hcloud_floating_ip.rdns_floating_ip.id}"
   ip_address     = "${hcloud_floating_ip.rdns_floating_ip.ip_address}"
   dns_ptr        = "floating-ip.com"
-}
-resource "hcloud_rdns" "rdns_floating_ip" {
-  floating_ip_id = "${hcloud_floating_ip.rdns_floating_ip.id}"
-  ip_address     = "${hcloud_floating_ip.rdns_floating_ip.ip_address}"
-  dns_ptr        = "floating-ip-updated.com"
 }
 `, rInt, testAccSSHPublicKey, rInt)
 }
