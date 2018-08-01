@@ -23,7 +23,7 @@ func TestAccHcloudReverseDNSCreateAndChange(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testacchcloudcheckreversednsconfigServer(rInt),
+				Config: testAccHcloudCheckReverseDnsConfigServer(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccHcloudCheckServerExists("hcloud_server.rdns1", &server),
 					resource.TestCheckResourceAttr(
@@ -31,7 +31,7 @@ func TestAccHcloudReverseDNSCreateAndChange(t *testing.T) {
 				),
 			},
 			{
-				Config: testacchcloudcheckreversednsconfigFloatingIp(rInt),
+				Config: testAccHcloudCheckReverseDnsConfigFloatingIp(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccHcloudCheckServerExists("hcloud_server.rdns1", &server),
 					resource.TestCheckResourceAttr(
@@ -41,7 +41,7 @@ func TestAccHcloudReverseDNSCreateAndChange(t *testing.T) {
 		},
 	})
 }
-func testacchcloudcheckreversednsconfigServer(rInt int) string {
+func testAccHcloudCheckReverseDnsConfigServer(rInt int) string {
 	return fmt.Sprintf(`
 resource "hcloud_ssh_key" "rdns" {
   name       = "rdns-%d"
@@ -61,7 +61,7 @@ resource "hcloud_rdns" "rdns_server" {
 }
 `, rInt, testAccSSHPublicKey, rInt)
 }
-func testacchcloudcheckreversednsconfigFloatingIp(rInt int) string {
+func testAccHcloudCheckReverseDnsConfigFloatingIp(rInt int) string {
 	return fmt.Sprintf(`
 resource "hcloud_ssh_key" "rdns" {
   name       = "rdns-%d"
