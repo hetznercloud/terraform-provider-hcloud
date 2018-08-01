@@ -19,9 +19,8 @@ func TestAccHcloudReverseDNSCreateAndChange(t *testing.T) {
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:     func() { testAccHcloudPreCheck(t) },
-		Providers:    testAccProviders,
-		CheckDestroy: testAccHcloudCheckFloatingIPDestroy,
+		PreCheck:  func() { testAccHcloudPreCheck(t) },
+		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccHcloudCheckReverseDnsConfig_server(rInt),
@@ -43,7 +42,7 @@ resource "hcloud_ssh_key" "rdns" {
 resource "hcloud_server" "rdns1" {
   name        = "rdns-1-%d"
   server_type = "cx11"
-	image       = "debian-9"
+  image       = "debian-9"
   datacenter  = "fsn1-dc8"
   ssh_keys    = ["${hcloud_ssh_key.rdns.id}"]
 }
