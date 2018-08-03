@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
@@ -53,11 +52,11 @@ func resourceReverseDNSRead(d *schema.ResourceData, m interface{}) error {
 	if ok == false {
 		id, ok = d.GetOk("floating_ip_id")
 		switch {
-		case ok == false:
+		case !ok:
 			log.Printf("[WARN] Invalid id (%s), removing from state: %v", d.Id(), ok)
 			d.SetId("")
 			return nil
-		case ok == true:
+		case ok:
 			rdnsType = "floating_ip"
 		}
 	} else {
@@ -65,8 +64,7 @@ func resourceReverseDNSRead(d *schema.ResourceData, m interface{}) error {
 	}
 	ip := net.ParseIP(d.Get("ip_address").(string))
 	if ip == nil {
-		log.Printf("[WARN] The ip you provide (%s) is not valid, removing from state", ipAddress)
-		d.SetId("")
+		log.Printf("[ERR] The ip you provide (%s) is not valid", ipAddress)
 		return nil
 	}
 	switch {
@@ -81,22 +79,28 @@ func resourceReverseDNSRead(d *schema.ResourceData, m interface{}) error {
 			return nil
 		}
 
+		ip = net.ParseIP(ipAddress)
 		switch floatingIP.Type {
 		case "ipv4":
-			if strings.Count(ipAddress, ".") != 3 {
+			if ip.To4() == nil {
 				log.Printf("[WARN] Floating IP (%s) is an ipv4 floating ip but you dont write a valid one, removing from state", d.Id())
 				d.SetId("")
 				return nil
 			}
 		case "ipv6":
-			if strings.Count(ipAddress, ":") > 1 {
+			if ip.To16() == nil {
 				log.Printf("[WARN] Floating IP (%s) is an ipv6 but you write an invalid ip, removing from state", d.Id())
 				d.SetId("")
 				return nil
 			}
 		}
-		d.Set("dns_ptr", floatingIP.DNSPtrForIP(ip))
-		d.SetId(fmt.Sprintf("f-%d-"+ipAddress, id))
+		dnsPtr := floatingIP.DNSPtrForIP(ip)
+		if dnsPtr != "" {
+			d.Set("dnsPtr", dnsPtr)
+			d.SetId(generateRDNSID(nil, floatingIP, ipAddress))
+		} else {
+			d.SetId("")
+		}
 	case rdnsType == "server":
 		server, _, err := client.Server.GetByID(ctx, id.(int))
 
@@ -108,14 +112,15 @@ func resourceReverseDNSRead(d *schema.ResourceData, m interface{}) error {
 			d.SetId("")
 			return nil
 		}
-		if strings.Count(ipAddress, ".") != 4 {
-			d.SetId(fmt.Sprintf("s-%d-"+ipAddress, id))
-			d.Set("dns_ptr", server.PublicNet.IPv4.DNSPtr)
-		} else if strings.Count(ipAddress, ":") > 1 {
+		ip = net.ParseIP(ipAddress)
+		if ip.To4() != nil {
+			d.SetId(generateRDNSID(server, nil, ipAddress))
+			d.Set("dnsPtr", server.PublicNet.IPv4.DNSPtr)
+		} else if ip.To16() != nil {
 			for rdns := range server.PublicNet.IPv6.DNSPtr {
 				if rdns == ipAddress {
-					d.SetId(fmt.Sprintf("s-%d-"+ipAddress, id))
-					d.Set("dns_ptr", server.PublicNet.IPv6.DNSPtrForIP(ip))
+					d.SetId(generateRDNSID(server, nil, ipAddress))
+					d.Set("dnsPtr", server.PublicNet.IPv6.DNSPtrForIP(ip))
 				}
 			}
 		}
@@ -136,15 +141,17 @@ func resourceReverseDNSCreate(d *schema.ResourceData, m interface{}) error {
 	if ok == false {
 		id, ok = d.GetOk("floating_ip_id")
 		switch {
-		case ok == false:
+		case ok:
 			log.Printf("[WARN] Invalid id (%s), removing from state: %v", d.Id(), ok)
 			d.SetId("")
 			return nil
 		}
-		d.SetId(fmt.Sprintf("f-%d-"+ip, id))
-		rdnsType = "floating_ip"
+		floatingIP, _, _ := client.FloatingIP.GetByID(ctx, id.(int))
+		d.SetId(generateRDNSID(nil, floatingIP, ip))
+		rdnsType = "floatingIP"
 	} else {
-		d.SetId(fmt.Sprintf("s-%d-"+ip, id))
+		server, _, _ := client.Server.GetByID(ctx, id.(int))
+		d.SetId(generateRDNSID(server, nil, ip))
 		rdnsType = "server"
 	}
 
@@ -238,4 +245,13 @@ func resourceReverseDNSDelete(d *schema.ResourceData, m interface{}) error {
 	}
 
 	return nil
+}
+func generateRDNSID(server *hcloud.Server, floatingIP *hcloud.FloatingIP, ip string) string {
+	if server != nil {
+		return fmt.Sprintf("s-%d-%s", server.ID, ip)
+	}
+	if floatingIP != nil {
+		return fmt.Sprintf("f-%d-%s", floatingIP.ID, ip)
+	}
+	return ""
 }
