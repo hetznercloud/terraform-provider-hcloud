@@ -26,7 +26,7 @@ func Provider() terraform.ResourceProvider {
 			"hcloud_server":      resourceServer(),
 			"hcloud_floating_ip": resourceFloatingIP(),
 			"hcloud_ssh_key":     resourceSSHKey(),
-			"hcloud_rdns":        resourceReverseDns(),
+			"hcloud_rdns":        resourceReverseDNS(),
 		},
 		ConfigureFunc: providerConfigure,
 	}

@@ -3,18 +3,19 @@ package hcloud
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/hetznercloud/hcloud-go/hcloud"
 	"log"
 	"net"
 	"strings"
+
+	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 
-func resourceReverseDns() *schema.Resource {
+func resourceReverseDNS() *schema.Resource {
 	return &schema.Resource{
-		Read:   resourceReverseDnsRead,
-		Create: resourceReverseDnsCreate,
-		Delete: resourceReverseDnsDelete,
+		Read:   resourceReverseDNSRead,
+		Create: resourceReverseDNSCreate,
+		Delete: resourceReverseDNSDelete,
 
 		Schema: map[string]*schema.Schema{
 			"server_id": {
@@ -42,7 +43,7 @@ func resourceReverseDns() *schema.Resource {
 	}
 }
 
-func resourceReverseDnsRead(d *schema.ResourceData, m interface{}) error {
+func resourceReverseDNSRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*hcloud.Client)
 	ctx := context.Background()
 
@@ -123,7 +124,7 @@ func resourceReverseDnsRead(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceReverseDnsCreate(d *schema.ResourceData, m interface{}) error {
+func resourceReverseDNSCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*hcloud.Client)
 	ctx := context.Background()
 	ip := d.Get("ip_address").(string)
@@ -180,9 +181,9 @@ func resourceReverseDnsCreate(d *schema.ResourceData, m interface{}) error {
 		}
 
 	}
-	return resourceReverseDnsRead(d, m)
+	return resourceReverseDNSRead(d, m)
 }
-func resourceReverseDnsDelete(d *schema.ResourceData, m interface{}) error {
+func resourceReverseDNSDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*hcloud.Client)
 	ctx := context.Background()
 	id, err := d.Get("server_id").(int)

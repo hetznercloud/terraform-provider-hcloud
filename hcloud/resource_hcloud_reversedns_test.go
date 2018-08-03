@@ -2,10 +2,11 @@ package hcloud
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hetznercloud/hcloud-go/hcloud"
-	"testing"
 )
 
 func init() {
@@ -23,7 +24,7 @@ func TestAccHcloudReverseDNSCreateAndChange(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccHcloudCheckReverseDnsConfigServer(rInt),
+				Config: testAccHcloudCheckReverseDNSConfigServer(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccHcloudCheckServerExists("hcloud_server.rdns1", &server),
 					resource.TestCheckResourceAttr(
@@ -31,7 +32,7 @@ func TestAccHcloudReverseDNSCreateAndChange(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccHcloudCheckReverseDnsConfigFloatingIp(rInt),
+				Config: testAccHcloudCheckReverseDNSConfigFloatingIp(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccHcloudCheckServerExists("hcloud_server.rdns1", &server),
 					resource.TestCheckResourceAttr(
@@ -41,7 +42,7 @@ func TestAccHcloudReverseDNSCreateAndChange(t *testing.T) {
 		},
 	})
 }
-func testAccHcloudCheckReverseDnsConfigServer(rInt int) string {
+func testAccHcloudCheckReverseDNSConfigServer(rInt int) string {
 	return fmt.Sprintf(`
 resource "hcloud_ssh_key" "rdns" {
   name       = "rdns-%d"
@@ -61,7 +62,7 @@ resource "hcloud_rdns" "rdns_server" {
 }
 `, rInt, testAccSSHPublicKey, rInt)
 }
-func testAccHcloudCheckReverseDnsConfigFloatingIp(rInt int) string {
+func testAccHcloudCheckReverseDNSConfigFloatingIp(rInt int) string {
 	return fmt.Sprintf(`
 resource "hcloud_ssh_key" "rdns" {
   name       = "rdns-%d"
