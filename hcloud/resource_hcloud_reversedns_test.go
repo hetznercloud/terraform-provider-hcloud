@@ -32,9 +32,9 @@ func TestAccHcloudReverseDNSCreateAndChange(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccHcloudCheckReverseDNSConfigFloatingIp(rInt),
+				Config: testAccHcloudCheckReverseDNSConfigFloatingIP(rInt),
 				Check: resource.ComposeTestCheckFunc(
-					testAccHcloudCheckServerExists("hcloud_server.rdns1", &server),
+					testAccHcloudCheckServerExists("hcloud_server.rdns2", &server),
 					resource.TestCheckResourceAttr(
 						"hcloud_rdns.rdns_floating_ip", "dns_ptr", "floating-ip.com"),
 				),
@@ -62,27 +62,27 @@ resource "hcloud_rdns" "rdns_server" {
 }
 `, rInt, testAccSSHPublicKey, rInt)
 }
-func testAccHcloudCheckReverseDNSConfigFloatingIp(rInt int) string {
+func testAccHcloudCheckReverseDNSConfigFloatingIP(rInt int) string {
 	return fmt.Sprintf(`
 resource "hcloud_ssh_key" "rdns" {
   name       = "rdns-%d"
   public_key = "%s"
 }
 resource "hcloud_server" "rdns2" {
-  name        = "rdns-1-%d"
+  name        = "rdns-2-%d"
   server_type = "cx11"
   image       = "debian-9"
   datacenter  = "fsn1-dc8"
   ssh_keys    = ["${hcloud_ssh_key.rdns.id}"]
 }
-resource "hcloud_floating_ip" "rdns_floating_ip" {
+resource "hcloud_floating_ip" "floating_ip" {
   type      = "ipv4"
   server_id = "${hcloud_server.rdns2.id}"
 }
 
 resource "hcloud_rdns" "rdns_floating_ip" {
-  floating_ip_id = "${hcloud_floating_ip.rdns_floating_ip.id}"
-  ip_address     = "${hcloud_floating_ip.rdns_floating_ip.ip_address}"
+  floating_ip_id = "${hcloud_floating_ip.floating_ip.id}"
+  ip_address     = "${hcloud_floating_ip.floating_ip.ip_address}"
   dns_ptr        = "floating-ip.com"
 }
 `, rInt, testAccSSHPublicKey, rInt)
