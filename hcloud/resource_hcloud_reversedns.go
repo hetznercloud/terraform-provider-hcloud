@@ -47,60 +47,42 @@ func resourceReverseDNS() *schema.Resource {
 
 func resourceReverseDNSRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*hcloud.Client)
-	ipAddress := string(d.Get("ip_address").(string))
+	ipAddress := d.Get("ip_address").(string)
 	server, floatingIP, err := lookupRDNSID(d.Id(), client)
 
-	switch {
-	case err != nil:
+	if err != nil {
 		log.Printf("[WARN] Invalid id (%s), removing from state: %s", d.Id(), err)
 		d.SetId("")
-		return nil
+		return err
 	}
 	ip := net.ParseIP(d.Get("ip_address").(string))
 	if ip == nil {
-		log.Printf("[ERR] The ip you provide (%s) is not valid", ipAddress)
-		return nil
+		return fmt.Errorf("the ip you provide (%s) is not valid", ipAddress)
 	}
 	switch {
 	case floatingIP != nil:
-		if floatingIP == nil {
-			log.Printf("[WARN] Floating IP (%s) not found, removing from state", d.Id())
-			d.SetId("")
-			return nil
-		}
-
-		ip = net.ParseIP(ipAddress)
-		switch floatingIP.Type {
-		case "ipv4":
-			if ip.To4() == nil {
-				log.Printf("[WARN] Floating IP (%s) is an ipv4 floating ip but you dont write a valid one, removing from state", d.Id())
-				d.SetId("")
-				return nil
-			}
-		case "ipv6":
-			if ip.To16() == nil {
-				log.Printf("[WARN] Floating IP (%s) is an ipv6 but you write an invalid ip, removing from state", d.Id())
-				d.SetId("")
-				return nil
-			}
-		}
 		dnsPtr := floatingIP.DNSPtrForIP(ip)
 		if dnsPtr != "" {
 			d.Set("dnsPtr", dnsPtr)
+			d.Set("floating_ip_id", floatingIP.ID)
+			d.Set("ip_address", ipAddress)
 			d.SetId(generateRDNSID(nil, floatingIP, ipAddress))
 		} else {
 			d.SetId("")
 		}
 	case server != nil:
-		ip = net.ParseIP(ipAddress)
 		if ip.To4() != nil {
 			d.SetId(generateRDNSID(server, nil, ipAddress))
 			d.Set("dnsPtr", server.PublicNet.IPv4.DNSPtr)
+			d.Set("server_id", server.ID)
+			d.Set("ip_address", server.PublicNet.IPv4.IP)
 		} else if ip.To16() != nil {
 			for rdns := range server.PublicNet.IPv6.DNSPtr {
 				if rdns == ipAddress {
 					d.SetId(generateRDNSID(server, nil, ipAddress))
 					d.Set("dnsPtr", server.PublicNet.IPv6.DNSPtrForIP(ip))
+					d.Set("ip_address", ipAddress)
+					d.Set("server_id", server.ID)
 				}
 			}
 		}
