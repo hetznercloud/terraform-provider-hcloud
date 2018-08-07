@@ -40,7 +40,6 @@ func resourceReverseDNS() *schema.Resource {
 			"dns_ptr": {
 				Type:     schema.TypeString,
 				Required: true,
-				ForceNew: true,
 			},
 		},
 	}
