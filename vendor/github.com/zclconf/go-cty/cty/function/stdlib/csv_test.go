@@ -58,7 +58,7 @@ func TestCSVDecode(t *testing.T) {
 		{
 			cty.StringVal(`invalid"thing"`),
 			cty.DynamicVal,
-			`line 1, column 7: bare " in non-quoted-field`,
+			`parse error on line 1, column 7: bare " in non-quoted-field`,
 		},
 		{
 			cty.UnknownVal(cty.String),
