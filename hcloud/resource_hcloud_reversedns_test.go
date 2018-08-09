@@ -15,6 +15,7 @@ func init() {
 		F:    testSweepRDNS,
 	})
 }
+
 func TestAccHcloudReverseDNSCreateAndChange(t *testing.T) {
 	var server hcloud.Server
 	rInt := acctest.RandInt()
@@ -42,6 +43,7 @@ func TestAccHcloudReverseDNSCreateAndChange(t *testing.T) {
 		},
 	})
 }
+
 func testAccHcloudCheckReverseDNSConfigServer(rInt int) string {
 	return fmt.Sprintf(`
 resource "hcloud_ssh_key" "rdns" {
@@ -62,6 +64,7 @@ resource "hcloud_rdns" "rdns_server" {
 }
 `, rInt, testAccSSHPublicKey, rInt)
 }
+
 func testAccHcloudCheckReverseDNSConfigFloatingIP(rInt int) string {
 	return fmt.Sprintf(`
 resource "hcloud_ssh_key" "rdns" {
@@ -87,6 +90,7 @@ resource "hcloud_rdns" "rdns_floating_ip" {
 }
 `, rInt, testAccSSHPublicKey, rInt)
 }
+
 func testSweepRDNS(region string) error {
 	testSweepFloatingIps(region)
 	testSweepServers(region)

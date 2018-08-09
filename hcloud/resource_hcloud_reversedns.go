@@ -2,6 +2,7 @@ package hcloud
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net"
@@ -36,7 +37,6 @@ func resourceReverseDNS() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
-
 			"dns_ptr": {
 				Type:     schema.TypeString,
 				Required: true,
@@ -46,48 +46,59 @@ func resourceReverseDNS() *schema.Resource {
 }
 
 func resourceReverseDNSRead(d *schema.ResourceData, m interface{}) error {
+	ctx := context.Background()
 	client := m.(*hcloud.Client)
-	ipAddress := d.Get("ip_address").(string)
-	server, floatingIP, err := lookupRDNSID(d.Id(), client)
 
-	if err != nil {
+	server, floatingIP, ip, err := lookupRDNSID(ctx, d.Id(), client)
+	if err == errInvalidRDNSID {
 		log.Printf("[WARN] Invalid id (%s), removing from state: %s", d.Id(), err)
 		d.SetId("")
+		return nil
+	}
+	if err != nil {
 		return err
 	}
-	ip := net.ParseIP(d.Get("ip_address").(string))
-	if ip == nil {
-		return fmt.Errorf("the ip you provide (%s) is not valid", ipAddress)
+	if server == nil && floatingIP == nil {
+		log.Printf("[WARN] RDNS entry (%s) not found, removing from state", d.Id())
+		d.SetId("")
+		return nil
 	}
-	switch {
-	case floatingIP != nil:
+
+	if floatingIP != nil {
 		dnsPtr := floatingIP.DNSPtrForIP(ip)
-		if dnsPtr != "" {
-			d.Set("dnsPtr", dnsPtr)
-			d.Set("floating_ip_id", floatingIP.ID)
-			d.Set("ip_address", ipAddress)
-			d.SetId(generateRDNSID(nil, floatingIP, ipAddress))
-		} else {
+		if dnsPtr == "" {
+			log.Printf("[WARN] RDNS entry (%s) not found, removing from state", d.Id())
 			d.SetId("")
-		}
-	case server != nil:
-		if ip.To4() != nil {
-			d.SetId(generateRDNSID(server, nil, ipAddress))
-			d.Set("dnsPtr", server.PublicNet.IPv4.DNSPtr)
-			d.Set("server_id", server.ID)
-			d.Set("ip_address", server.PublicNet.IPv4.IP)
-		} else if ip.To16() != nil {
-			for rdns := range server.PublicNet.IPv6.DNSPtr {
-				if rdns == ipAddress {
-					d.SetId(generateRDNSID(server, nil, ipAddress))
-					d.Set("dnsPtr", server.PublicNet.IPv6.DNSPtrForIP(ip))
-					d.Set("ip_address", ipAddress)
-					d.Set("server_id", server.ID)
-				}
-			}
+			return nil
 		}
 
+		d.Set("dnsPtr", dnsPtr)
+		d.Set("floating_ip_id", floatingIP.ID)
+		d.Set("ip_address", ip.String())
+		d.SetId(generateRDNSID(nil, floatingIP, ip.String()))
+		return nil
 	}
+
+	if ip.To4() != nil {
+		d.SetId(generateRDNSID(server, nil, ip.String()))
+		d.Set("dnsPtr", server.PublicNet.IPv4.DNSPtr)
+		d.Set("server_id", server.ID)
+		d.Set("ip_address", server.PublicNet.IPv4.IP)
+		return nil
+	}
+
+	for rdns := range server.PublicNet.IPv6.DNSPtr {
+		if rdns == ip.String() {
+			d.SetId(generateRDNSID(server, nil, ip.String()))
+			d.Set("dnsPtr", server.PublicNet.IPv6.DNSPtrForIP(ip))
+			d.Set("ip_address", ip.String())
+			d.Set("server_id", server.ID)
+			return nil
+		}
+	}
+
+	log.Printf("[WARN] RDNS entry (%s) not found, removing from state", d.Id())
+	d.SetId("")
 	return nil
 }
 
@@ -161,13 +172,26 @@ func resourceReverseDNSCreate(d *schema.ResourceData, m interface{}) error {
 	}
 	return resourceReverseDNSRead(d, m)
 }
+
 func resourceReverseDNSUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*hcloud.Client)
 	ctx := context.Background()
-	server, floatingIP, err := lookupRDNSID(d.Id(), client)
+
+	server, floatingIP, _, err := lookupRDNSID(ctx, d.Id(), client)
+	if err == errInvalidRDNSID {
+		log.Printf("[WARN] Invalid id (%s), removing from state: %s", d.Id(), err)
+		d.SetId("")
+		return nil
+	}
 	if err != nil {
 		return err
 	}
+	if server == nil && floatingIP == nil {
+		log.Printf("[WARN] RDNS entry (%s) not found, removing from state", d.Id())
+		d.SetId("")
+		return nil
+	}
+
 	ip := d.Get("ip_address").(string)
 	ptr := d.Get("dns_ptr").(string)
 
@@ -199,10 +223,26 @@ func resourceReverseDNSUpdate(d *schema.ResourceData, m interface{}) error {
 	}
 	return resourceReverseDNSRead(d, m)
 }
+
 func resourceReverseDNSDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*hcloud.Client)
 	ctx := context.Background()
-	server, floatingIP, err := lookupRDNSID(d.Id(), client)
+
+	server, floatingIP, _, err := lookupRDNSID(ctx, d.Id(), client)
+	if err == errInvalidRDNSID {
+		log.Printf("[WARN] Invalid id (%s), removing from state: %s", d.Id(), err)
+		d.SetId("")
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	if server == nil && floatingIP == nil {
+		log.Printf("[WARN] RDNS entry (%s) not found, removing from state", d.Id())
+		d.SetId("")
+		return nil
+	}
+
 	if err != nil {
 		log.Printf("[WARN] Invalid id (%s), removing from state: %s", d.Id(), err)
 		d.SetId("")
@@ -232,6 +272,7 @@ func resourceReverseDNSDelete(d *schema.ResourceData, m interface{}) error {
 
 	return nil
 }
+
 func generateRDNSID(server *hcloud.Server, floatingIP *hcloud.FloatingIP, ip string) string {
 	if server != nil {
 		return fmt.Sprintf("s-%d-%s", server.ID, ip)
@@ -241,18 +282,47 @@ func generateRDNSID(server *hcloud.Server, floatingIP *hcloud.FloatingIP, ip str
 	}
 	return ""
 }
-func lookupRDNSID(id string, client *hcloud.Client) (server *hcloud.Server, floatingIP *hcloud.FloatingIP, err error) {
 
-	ctx := context.Background()
-	ids := strings.Split(id, "-")
-	_id, _ := strconv.Atoi(ids[1])
-	switch ids[0] {
-	case "s":
-		server, _, err = client.Server.GetByID(ctx, _id)
-	case "f":
-		floatingIP, _, err = client.FloatingIP.GetByID(ctx, _id)
-	default:
-		err = fmt.Errorf("Can not lookup the id, type is unknown")
+var errInvalidRDNSID = errors.New("invalid rdns id")
+
+// lookupRDNSID parses the terraform rdns record id and returns the associated server or floating ip
+//
+// id format: <prefix>-<resource id>-<ip address>
+// Examples:
+// s-123-192.168.100.1 (reverse dns entry on server with id 123, ip 192.168.100.1)
+// f-123-2001:db8::1 (reverse dns entry on floating ip with id 123, ip 2001:db8::1)
+func lookupRDNSID(ctx context.Context, terraformID string, client *hcloud.Client) (
+	server *hcloud.Server, floatingIP *hcloud.FloatingIP, ip net.IP, err error) {
+	if terraformID == "" {
+		err = errInvalidRDNSID
+		return
 	}
-	return server, floatingIP, err
+
+	parts := strings.SplitN(terraformID, "-", 3)
+	if len(parts) != 3 {
+		err = errInvalidRDNSID
+		return
+	}
+
+	id, err := strconv.Atoi(parts[1])
+	if err != nil {
+		err = errInvalidRDNSID
+		return
+	}
+
+	ip = net.ParseIP(parts[2])
+	if ip != nil {
+		err = errInvalidRDNSID
+		return
+	}
+
+	switch parts[0] {
+	case "s":
+		server, _, err = client.Server.GetByID(ctx, id)
+	case "f":
+		floatingIP, _, err = client.FloatingIP.GetByID(ctx, id)
+	default:
+		err = errInvalidRDNSID
+	}
+	return
 }
