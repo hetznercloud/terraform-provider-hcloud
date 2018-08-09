@@ -108,33 +108,15 @@ func resourceReverseDNSCreate(d *schema.ResourceData, m interface{}) error {
 	ip := d.Get("ip_address").(string)
 	ptr := d.Get("dns_ptr").(string)
 
-	rdnsType := ""
-
 	id, ok := d.GetOk("server_id")
-	if ok == false {
+	if !ok {
 		id, ok = d.GetOk("floating_ip_id")
 		if !ok {
 			log.Printf("[WARN] Invalid id (%s), removing from state: %v", d.Id(), ok)
 			d.SetId("")
 			return nil
 		}
-		floatingIP, _, err := client.FloatingIP.GetByID(ctx, id.(int))
-		if err != nil {
-			return err
-		}
-		d.SetId(generateRDNSID(nil, floatingIP, ip))
-		rdnsType = "floatingIP"
-	} else {
-		server, _, err := client.Server.GetByID(ctx, id.(int))
-		if err != nil {
-			return err
-		}
-		d.SetId(generateRDNSID(server, nil, ip))
-		rdnsType = "server"
-	}
 
-	switch rdnsType {
-	case "floatingIP":
 		floatingIP, _, err := client.FloatingIP.GetByID(ctx, id.(int))
 		if err != nil {
 			return err
@@ -144,32 +126,38 @@ func resourceReverseDNSCreate(d *schema.ResourceData, m interface{}) error {
 			d.SetId("")
 			return nil
 		}
+
+		d.SetId(generateRDNSID(nil, floatingIP, ip))
 		action, _, err := client.FloatingIP.ChangeDNSPtr(ctx, floatingIP, ip, &ptr)
 		if err != nil {
 			return err
 		}
+
 		if err := waitForFloatingIPAction(ctx, client, action, floatingIP); err != nil {
 			return err
 		}
-	case "server":
-		server, _, err := client.Server.GetByID(ctx, id.(int))
-		if err != nil {
-			return err
-		}
-		if server == nil {
-			log.Printf("[WARN] Server (%s) not found, removing from state", d.Id())
-			d.SetId("")
-			return nil
-		}
-		action, _, err := client.Server.ChangeDNSPtr(ctx, server, ip, &ptr)
-		if err != nil {
-			return err
-		}
-		if err := waitForServerAction(ctx, client, action, server); err != nil {
-			return err
-		}
-
+		return resourceReverseDNSRead(d, m)
 	}
+
+	server, _, err := client.Server.GetByID(ctx, id.(int))
+	if err != nil {
+		return err
+	}
+	if server == nil {
+		log.Printf("[WARN] Server (%s) not found, removing from state", d.Id())
+		d.SetId("")
+		return nil
+	}
+
+	d.SetId(generateRDNSID(server, nil, ip))
+	action, _, err := client.Server.ChangeDNSPtr(ctx, server, ip, &ptr)
+	if err != nil {
+		return err
+	}
+	if err := waitForServerAction(ctx, client, action, server); err != nil {
+		return err
+	}
+
 	return resourceReverseDNSRead(d, m)
 }
 
@@ -197,9 +185,6 @@ func resourceReverseDNSUpdate(d *schema.ResourceData, m interface{}) error {
 
 	if floatingIP != nil {
 		if d.HasChange("dns_ptr") {
-			if err != nil {
-				return err
-			}
 			action, _, err := client.FloatingIP.ChangeDNSPtr(ctx, floatingIP, ip, &ptr)
 			if err != nil {
 				return err
@@ -209,9 +194,6 @@ func resourceReverseDNSUpdate(d *schema.ResourceData, m interface{}) error {
 			}
 		}
 	} else if server != nil {
-		if err != nil {
-			return err
-		}
 		action, _, err := client.Server.ChangeDNSPtr(ctx, server, ip, &ptr)
 		if err != nil {
 			return err
