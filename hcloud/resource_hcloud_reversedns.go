@@ -183,8 +183,8 @@ func resourceReverseDNSUpdate(d *schema.ResourceData, m interface{}) error {
 	ip := d.Get("ip_address").(string)
 	ptr := d.Get("dns_ptr").(string)
 
-	if floatingIP != nil {
-		if d.HasChange("dns_ptr") {
+	if d.HasChange("dns_ptr") {
+		if floatingIP != nil {
 			action, _, err := client.FloatingIP.ChangeDNSPtr(ctx, floatingIP, ip, &ptr)
 			if err != nil {
 				return err
@@ -192,16 +192,16 @@ func resourceReverseDNSUpdate(d *schema.ResourceData, m interface{}) error {
 			if err := waitForFloatingIPAction(ctx, client, action, floatingIP); err != nil {
 				return err
 			}
-		}
-	} else if server != nil {
-		action, _, err := client.Server.ChangeDNSPtr(ctx, server, ip, &ptr)
-		if err != nil {
-			return err
-		}
-		if err := waitForServerAction(ctx, client, action, server); err != nil {
-			return err
-		}
+		} else if server != nil {
+			action, _, err := client.Server.ChangeDNSPtr(ctx, server, ip, &ptr)
+			if err != nil {
+				return err
+			}
+			if err := waitForServerAction(ctx, client, action, server); err != nil {
+				return err
+			}
 
+		}
 	}
 	return resourceReverseDNSRead(d, m)
 }
@@ -210,7 +210,7 @@ func resourceReverseDNSDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*hcloud.Client)
 	ctx := context.Background()
 
-	server, floatingIP, _, err := lookupRDNSID(ctx, d.Id(), client)
+	server, floatingIP, ip, err := lookupRDNSID(ctx, d.Id(), client)
 	if err == errInvalidRDNSID {
 		log.Printf("[WARN] Invalid id (%s), removing from state: %s", d.Id(), err)
 		d.SetId("")
@@ -225,31 +225,31 @@ func resourceReverseDNSDelete(d *schema.ResourceData, m interface{}) error {
 		return nil
 	}
 
-	if err != nil {
-		log.Printf("[WARN] Invalid id (%s), removing from state: %s", d.Id(), err)
-		d.SetId("")
+	if floatingIP != nil {
+		action, _, err := client.FloatingIP.ChangeDNSPtr(ctx, floatingIP, ip.String(), nil)
+		if err != nil {
+			if hcerr, ok := err.(hcloud.Error); ok && hcerr.Code == hcloud.ErrorCodeNotFound {
+				// floating ip has already been deleted
+				return nil
+			}
+			return err
+		}
+		if err := waitForFloatingIPAction(ctx, client, action, floatingIP); err != nil {
+			return err
+		}
 		return nil
 	}
-	if floatingIP != nil {
-		if d.HasChange("dns_ptr") {
-			ip := d.Get("ip_address").(string)
-			action, _, err := client.FloatingIP.ChangeDNSPtr(ctx, floatingIP, ip, nil)
-			if err != nil {
-				return err
-			}
-			if err := waitForFloatingIPAction(ctx, client, action, floatingIP); err != nil {
-				return err
-			}
+
+	action, _, err := client.Server.ChangeDNSPtr(ctx, server, ip.String(), nil)
+	if err != nil {
+		if hcerr, ok := err.(hcloud.Error); ok && hcerr.Code == hcloud.ErrorCodeNotFound {
+			// server has already been deleted
+			return nil
 		}
-	} else if server != nil {
-		ip := d.Get("ip_address").(string)
-		action, _, err := client.Server.ChangeDNSPtr(ctx, server, ip, nil)
-		if err != nil {
-			return err
-		}
-		if err := waitForServerAction(ctx, client, action, server); err != nil {
-			return err
-		}
+		return err
+	}
+	if err := waitForServerAction(ctx, client, action, server); err != nil {
+		return err
 	}
 
 	return nil
