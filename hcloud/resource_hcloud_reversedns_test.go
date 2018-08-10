@@ -43,6 +43,7 @@ func TestAccHcloudReverseDNSServerIPv4CreateAndChange(t *testing.T) {
 		},
 	})
 }
+
 func TestAccHcloudReverseDNSServerIPv6CreateAndChange(t *testing.T) {
 	var server hcloud.Server
 	rInt := acctest.RandInt()
@@ -82,6 +83,7 @@ func TestAccHcloudReverseDNSFloatingIpIpv4CreateAndChange(t *testing.T) {
 		},
 	})
 }
+
 func TestAccHcloudReverseDNSFloatingIpIpv6CreateAndChange(t *testing.T) {
 	var server hcloud.Server
 	rInt := acctest.RandInt()
@@ -95,12 +97,13 @@ func TestAccHcloudReverseDNSFloatingIpIpv6CreateAndChange(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccHcloudCheckServerExists("hcloud_server.rdns3", &server),
 					resource.TestCheckResourceAttr(
-						"hcloud_rdns.floating_ip_v6", "dns_ptr", "floating-ip.com"),
+						"hcloud_rdns.rdns_floating_ip_v6", "dns_ptr", "floating-ip.com"),
 				),
 			},
 		},
 	})
 }
+
 func testAccHcloudCheckReverseDNSIPv4ConfigServer(rInt int) string {
 	return fmt.Sprintf(`
 resource "hcloud_ssh_key" "foobar_rdns" {
@@ -127,7 +130,7 @@ resource "hcloud_ssh_key" "foobar_rdns" {
   name       = "foobar-%d"
   public_key = "%s"
 }
-resource "hcloud_server" "rdns2" {
+resource "hcloud_server" "rdns4" {
   name        = "rdns-ipv6-%d"
   server_type = "cx11"
   image       = "debian-9"
@@ -135,8 +138,8 @@ resource "hcloud_server" "rdns2" {
   ssh_keys    = ["${hcloud_ssh_key.foobar_rdns.id}"]
 }
 resource "hcloud_rdns" "rdns_server_v6" {
-  server_id   = "${hcloud_server.rdns2.id}"
-  ip_address  = "${cidrhost(hcloud_server.rdns2.ipv6_network,2)}"
+  server_id   = "${hcloud_server.rdns4.id}"
+  ip_address  = "${cidrhost(hcloud_server.rdns4.ipv6_network,2)}"
   dns_ptr     = "example.com"
 }
 `, rInt, testAccRDNSSSHPublicKey, rInt)

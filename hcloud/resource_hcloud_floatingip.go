@@ -111,7 +111,11 @@ func resourceFloatingIPRead(d *schema.ResourceData, m interface{}) error {
 		d.Set("server_id", floatingIP.Server.ID)
 	}
 	d.Set("ip_address", floatingIP.IP.String())
-	d.Set("ip_network", floatingIP.Network.String())
+	if floatingIP.Type == "ipv4" {
+		d.Set("ip_network", floatingIP.IP.String())
+	} else {
+		d.Set("ip_network", floatingIP.Network.String())
+	}
 	return nil
 }
 
