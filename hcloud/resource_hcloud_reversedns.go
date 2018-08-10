@@ -293,7 +293,7 @@ func lookupRDNSID(ctx context.Context, terraformID string, client *hcloud.Client
 	}
 
 	ip = net.ParseIP(parts[2])
-	if ip != nil {
+	if ip == nil {
 		err = errInvalidRDNSID
 		return
 	}

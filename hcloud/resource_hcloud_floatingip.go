@@ -43,6 +43,10 @@ func resourceFloatingIP() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"ip_network": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -107,7 +111,7 @@ func resourceFloatingIPRead(d *schema.ResourceData, m interface{}) error {
 		d.Set("server_id", floatingIP.Server.ID)
 	}
 	d.Set("ip_address", floatingIP.IP.String())
-
+	d.Set("ip_network", floatingIP.Network.String())
 	return nil
 }
 

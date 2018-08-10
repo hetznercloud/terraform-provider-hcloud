@@ -136,7 +136,7 @@ resource "hcloud_server" "rdns2" {
 }
 resource "hcloud_rdns" "rdns_server_v6" {
   server_id   = "${hcloud_server.rdns2.id}"
-  ip_address  = "${cidrhost(hcloud_server.rdns2.ipv6_address,2)}"
+  ip_address  = "${cidrhost(hcloud_server.rdns2.ipv6_network,2)}"
   dns_ptr     = "example.com"
 }
 `, rInt, testAccRDNSSSHPublicKey, rInt)
@@ -186,7 +186,7 @@ resource "hcloud_floating_ip" "floating_ip_v6" {
 
 resource "hcloud_rdns" "rdns_floating_ip_v6" {
   floating_ip_id = "${hcloud_floating_ip.floating_ip_v6.id}"
-  ip_address     = "${cidrhost(hcloud_floating_ip.floating_ip_v6.ip_address,2)}"
+  ip_address     = "${cidrhost(hcloud_floating_ip.floating_ip_v6.ip_network,2)}"
   dns_ptr        = "floating-ip.com"
 }
 `, rInt, testAccRDNSSSHPublicKey, rInt)

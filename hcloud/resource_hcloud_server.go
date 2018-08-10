@@ -82,7 +82,7 @@ func resourceServer() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"ipv6_address": {
+			"ipv6_network": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -200,7 +200,7 @@ func resourceServerRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("status", server.Status)
 	d.Set("server_type", server.ServerType.Name)
 	d.Set("ipv4_address", server.PublicNet.IPv4.IP.String())
-	d.Set("ipv6_address", server.PublicNet.IPv6.IP.String())
+	d.Set("ipv6_network", server.PublicNet.IPv6.Network.String())
 	d.Set("backup_window", server.BackupWindow)
 	if server.Image != nil {
 		if server.Image.Name != "" {
