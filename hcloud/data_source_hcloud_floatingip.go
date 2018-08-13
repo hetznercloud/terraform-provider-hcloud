@@ -12,7 +12,6 @@ import (
 func dataSourceHcloudFloatingIP() *schema.Resource {
 	return &schema.Resource{
 		Read: dataSourceHcloudFloatingIPRead,
-
 		Schema: map[string]*schema.Schema{
 			"ip_address": {
 				Type:     schema.TypeString,
@@ -37,7 +36,6 @@ func dataSourceHcloudFloatingIP() *schema.Resource {
 
 func setFloatingIPSchema(d *schema.ResourceData, f *hcloud.FloatingIP) error {
 	d.SetId(strconv.Itoa(f.ID))
-
 	if err := d.Set("ip_address", f.IP.String()); err != nil {
 		return err
 	}
