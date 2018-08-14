@@ -72,7 +72,7 @@ func resourceReverseDNSRead(d *schema.ResourceData, m interface{}) error {
 			return nil
 		}
 
-		d.Set("dnsPtr", dnsPtr)
+		d.Set("dns_ptr", dnsPtr)
 		d.Set("floating_ip_id", floatingIP.ID)
 		d.Set("ip_address", ip.String())
 		d.SetId(generateRDNSID(nil, floatingIP, ip.String()))
@@ -81,7 +81,7 @@ func resourceReverseDNSRead(d *schema.ResourceData, m interface{}) error {
 
 	if ip.To4() != nil {
 		d.SetId(generateRDNSID(server, nil, ip.String()))
-		d.Set("dnsPtr", server.PublicNet.IPv4.DNSPtr)
+		d.Set("dns_ptr", server.PublicNet.IPv4.DNSPtr)
 		d.Set("server_id", server.ID)
 		d.Set("ip_address", server.PublicNet.IPv4.IP)
 		return nil
@@ -90,7 +90,7 @@ func resourceReverseDNSRead(d *schema.ResourceData, m interface{}) error {
 	for rdns := range server.PublicNet.IPv6.DNSPtr {
 		if rdns == ip.String() {
 			d.SetId(generateRDNSID(server, nil, ip.String()))
-			d.Set("dnsPtr", server.PublicNet.IPv6.DNSPtrForIP(ip))
+			d.Set("dns_ptr", server.PublicNet.IPv6.DNSPtrForIP(ip))
 			d.Set("ip_address", ip.String())
 			d.Set("server_id", server.ID)
 			return nil
