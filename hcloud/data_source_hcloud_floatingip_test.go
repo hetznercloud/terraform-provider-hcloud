@@ -36,7 +36,7 @@ func TestAccHcloudDataSourceFloatingIP(t *testing.T) {
 		},
 	})
 
-	testDataSourceCleaup()
+	testDataSourceCleanup()
 
 }
 
@@ -66,6 +66,6 @@ data "hcloud_floating_ip" "ip_1" {
 }`, ip.IP)
 }
 
-func testDataSourceCleaup() {
+func testDataSourceCleanup() {
 	testSweepFloatingIps("all")
 }
