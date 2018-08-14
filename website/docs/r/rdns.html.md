@@ -52,5 +52,5 @@ Reverse DNS entries can be imported using a compound ID with the following forma
 terraform import hcloud_rdns.myrdns s-123-192.168.100.1
 
 # import reverse dns entry on floating ip with id 123, ip 2001:db8::1
-terraform import hcloud_rdns.myrdns
+terraform import hcloud_rdns.myrdns f-123-2001:db8::1
 ```
