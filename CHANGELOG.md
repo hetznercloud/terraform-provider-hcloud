@@ -1,4 +1,13 @@
-## 1.2.1 (Unreleased)
+## 1.3.0 (Unreleased)
+
+FEATURES:
+
+- **New Resource**: `hcloud_rnds` Manage reverse DNS entries for servers and Floating IPs.
+
+IMPROVEMENTS:
+
+- resource/hcloud_server: Add `ipv6_network` attribute.
+
 ## 1.2.0 (June 07, 2018)
 
 NOTES:
