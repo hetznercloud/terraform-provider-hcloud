@@ -24,7 +24,7 @@ func init() {
 	}
 }
 
-func TestAccHcloudReverseDNSServerIPv4CreateAndChange(t *testing.T) {
+func TestAccHcloudReverseDNSServerCreateAndChange(t *testing.T) {
 	var server hcloud.Server
 	rInt := acctest.RandInt()
 
@@ -33,31 +33,29 @@ func TestAccHcloudReverseDNSServerIPv4CreateAndChange(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccHcloudCheckReverseDNSIPv4ConfigServer(rInt),
+				Config: testAccHcloudCheckReverseDNSConfigServer(rInt, "example.hetzner.cloud"),
 				Check: resource.ComposeTestCheckFunc(
 					testAccHcloudCheckServerExists("hcloud_server.rdns1", &server),
+					// IPv4
 					resource.TestCheckResourceAttr(
-						"hcloud_rdns.rdns_server_v4", "dns_ptr", "example.com"),
+						"hcloud_rdns.rdns_server_v4", "dns_ptr", "example.hetzner.cloud"),
+
+					// IPv6
+					resource.TestCheckResourceAttr(
+						"hcloud_rdns.rdns_server_v6", "dns_ptr", "example.hetzner.cloud"),
 				),
 			},
-		},
-	})
-}
-
-func TestAccHcloudReverseDNSServerIPv6CreateAndChange(t *testing.T) {
-	var server hcloud.Server
-	rInt := acctest.RandInt()
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:  func() { testAccHcloudPreCheck(t) },
-		Providers: testAccProviders,
-		Steps: []resource.TestStep{
 			{
-				Config: testAccHcloudCheckReverseDNSIPv6ConfigServer(rInt),
+				Config: testAccHcloudCheckReverseDNSConfigServer(rInt, "new-example.hetzner.cloud"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccHcloudCheckServerExists("hcloud_server.rdns4", &server),
+					testAccHcloudCheckServerExists("hcloud_server.rdns1", &server),
+					// IPv4
 					resource.TestCheckResourceAttr(
-						"hcloud_rdns.rdns_server_v6", "dns_ptr", "example.com"),
+						"hcloud_rdns.rdns_server_v4", "dns_ptr", "new-example.hetzner.cloud"),
+
+					// IPv6
+					resource.TestCheckResourceAttr(
+						"hcloud_rdns.rdns_server_v6", "dns_ptr", "new-example.hetzner.cloud"),
 				),
 			},
 		},
@@ -65,7 +63,7 @@ func TestAccHcloudReverseDNSServerIPv6CreateAndChange(t *testing.T) {
 }
 
 func TestAccHcloudReverseDNSFloatingIpIpv4CreateAndChange(t *testing.T) {
-	var server hcloud.Server
+	var floatingIP hcloud.FloatingIP
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
@@ -73,11 +71,19 @@ func TestAccHcloudReverseDNSFloatingIpIpv4CreateAndChange(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccHcloudCheckReverseDNSIPv4ConfigFloatingIP(rInt),
+				Config: testAccHcloudCheckReverseDNSIPv4ConfigFloatingIP(rInt, "example.hetzner.cloud"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccHcloudCheckServerExists("hcloud_server.rdns2", &server),
+					testAccHcloudCheckFloatingIPExists("hcloud_floating_ip.floating_ip_v4", &floatingIP),
 					resource.TestCheckResourceAttr(
-						"hcloud_rdns.rdns_floating_ip_v4", "dns_ptr", "floating-ip.com"),
+						"hcloud_rdns.rdns_floating_ip_v4", "dns_ptr", "example.hetzner.cloud"),
+				),
+			},
+			{
+				Config: testAccHcloudCheckReverseDNSIPv4ConfigFloatingIP(rInt, "new-example.hetzner.cloud"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccHcloudCheckFloatingIPExists("hcloud_floating_ip.floating_ip_v4", &floatingIP),
+					resource.TestCheckResourceAttr(
+						"hcloud_rdns.rdns_floating_ip_v4", "dns_ptr", "new-example.hetzner.cloud"),
 				),
 			},
 		},
@@ -85,7 +91,7 @@ func TestAccHcloudReverseDNSFloatingIpIpv4CreateAndChange(t *testing.T) {
 }
 
 func TestAccHcloudReverseDNSFloatingIpIpv6CreateAndChange(t *testing.T) {
-	var server hcloud.Server
+	var floatingIP hcloud.FloatingIP
 	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
@@ -93,18 +99,26 @@ func TestAccHcloudReverseDNSFloatingIpIpv6CreateAndChange(t *testing.T) {
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccHcloudCheckReverseDNSIPv6ConfigFloatingIP(rInt),
+				Config: testAccHcloudCheckReverseDNSIPv6ConfigFloatingIP(rInt, "example.hetzner.cloud"),
 				Check: resource.ComposeTestCheckFunc(
-					testAccHcloudCheckServerExists("hcloud_server.rdns3", &server),
+					testAccHcloudCheckFloatingIPExists("hcloud_floating_ip.floating_ip_v6", &floatingIP),
 					resource.TestCheckResourceAttr(
-						"hcloud_rdns.rdns_floating_ip_v6", "dns_ptr", "floating-ip.com"),
+						"hcloud_rdns.rdns_floating_ip_v6", "dns_ptr", "example.hetzner.cloud"),
+				),
+			},
+			{
+				Config: testAccHcloudCheckReverseDNSIPv6ConfigFloatingIP(rInt, "new-example.hetzner.cloud"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccHcloudCheckFloatingIPExists("hcloud_floating_ip.floating_ip_v6", &floatingIP),
+					resource.TestCheckResourceAttr(
+						"hcloud_rdns.rdns_floating_ip_v6", "dns_ptr", "new-example.hetzner.cloud"),
 				),
 			},
 		},
 	})
 }
 
-func testAccHcloudCheckReverseDNSIPv4ConfigServer(rInt int) string {
+func testAccHcloudCheckReverseDNSConfigServer(rInt int, dnsPtr string) string {
 	return fmt.Sprintf(`
 resource "hcloud_ssh_key" "foobar_rdns" {
   name       = "foobar-%d"
@@ -120,80 +134,52 @@ resource "hcloud_server" "rdns1" {
 resource "hcloud_rdns" "rdns_server_v4" {
   server_id   = "${hcloud_server.rdns1.id}"
   ip_address  = "${hcloud_server.rdns1.ipv4_address}"
-  dns_ptr     = "example.com"
-}
-`, rInt, testAccRDNSSSHPublicKey, rInt)
-}
-func testAccHcloudCheckReverseDNSIPv6ConfigServer(rInt int) string {
-	return fmt.Sprintf(`
-resource "hcloud_ssh_key" "foobar_rdns" {
-  name       = "foobar-%d"
-  public_key = "%s"
-}
-resource "hcloud_server" "rdns4" {
-  name        = "rdns-ipv6-%d"
-  server_type = "cx11"
-  image       = "debian-9"
-  datacenter  = "fsn1-dc8"
-  ssh_keys    = ["${hcloud_ssh_key.foobar_rdns.id}"]
+  dns_ptr     = "%s"
 }
 resource "hcloud_rdns" "rdns_server_v6" {
-  server_id   = "${hcloud_server.rdns4.id}"
-  ip_address  = "${cidrhost(hcloud_server.rdns4.ipv6_network,2)}"
-  dns_ptr     = "example.com"
+	server_id   = "${hcloud_server.rdns1.id}"
+	ip_address  = "${hcloud_server.rdns1.ipv6_address}"
+	dns_ptr     = "%s"
 }
-`, rInt, testAccRDNSSSHPublicKey, rInt)
+`, rInt, testAccRDNSSSHPublicKey, rInt, dnsPtr, dnsPtr)
 }
-func testAccHcloudCheckReverseDNSIPv4ConfigFloatingIP(rInt int) string {
+
+func testAccHcloudCheckReverseDNSIPv4ConfigFloatingIP(rInt int, dnsPtr string) string {
 	return fmt.Sprintf(`
 resource "hcloud_ssh_key" "foobar_rdns" {
   name       = "foobar-%d"
   public_key = "%s"
-}
-resource "hcloud_server" "rdns2" {
-  name        = "rdns-ipv4-%d"
-  server_type = "cx11"
-  image       = "debian-9"
-  datacenter  = "fsn1-dc8"
-  ssh_keys    = ["${hcloud_ssh_key.foobar_rdns.id}"]
 }
 resource "hcloud_floating_ip" "floating_ip_v4" {
   type      = "ipv4"
-  server_id = "${hcloud_server.rdns2.id}"
+	home_location = "fsn1"
 }
-
 resource "hcloud_rdns" "rdns_floating_ip_v4" {
   floating_ip_id = "${hcloud_floating_ip.floating_ip_v4.id}"
   ip_address     = "${hcloud_floating_ip.floating_ip_v4.ip_address}"
-  dns_ptr        = "floating-ip.com"
+  dns_ptr        = "%s"
 }
-`, rInt, testAccRDNSSSHPublicKey, rInt)
+`, rInt, testAccRDNSSSHPublicKey, dnsPtr)
 }
-func testAccHcloudCheckReverseDNSIPv6ConfigFloatingIP(rInt int) string {
+
+func testAccHcloudCheckReverseDNSIPv6ConfigFloatingIP(rInt int, dnsPtr string) string {
 	return fmt.Sprintf(`
 resource "hcloud_ssh_key" "foobar_rdns" {
   name       = "foobar-%d"
   public_key = "%s"
 }
-resource "hcloud_server" "rdns3" {
-  name        = "rdns-ipv6-%d"
-  server_type = "cx11"
-  image       = "debian-9"
-  datacenter  = "fsn1-dc8"
-  ssh_keys    = ["${hcloud_ssh_key.foobar_rdns.id}"]
-}
 resource "hcloud_floating_ip" "floating_ip_v6" {
   type      = "ipv6"
-  server_id = "${hcloud_server.rdns3.id}"
+	home_location = "fsn1"
 }
-
 resource "hcloud_rdns" "rdns_floating_ip_v6" {
   floating_ip_id = "${hcloud_floating_ip.floating_ip_v6.id}"
-  ip_address     = "${cidrhost(hcloud_floating_ip.floating_ip_v6.ip_network,2)}"
-  dns_ptr        = "floating-ip.com"
+  ip_address     = "${hcloud_floating_ip.floating_ip_v6.ip_address}"
+  dns_ptr        = "%s"
 }
-`, rInt, testAccRDNSSSHPublicKey, rInt)
+`, rInt, testAccRDNSSSHPublicKey, dnsPtr)
 }
+
 func testSweepRDNS(region string) error {
 	testSweepFloatingIps(region)
 	testSweepServers(region)
