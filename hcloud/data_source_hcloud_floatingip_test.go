@@ -50,7 +50,7 @@ func createTestFloatingIP() (*hcloud.FloatingIP, error) {
 		Description:  hcloud.String(description),
 		HomeLocation: &hcloud.Location{Name: "hel1"},
 	}
-	
+
 	response, _, err := client.FloatingIP.Create(ctx, opts)
 	if err != nil {
 		return nil, err
