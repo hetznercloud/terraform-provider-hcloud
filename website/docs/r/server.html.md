@@ -51,7 +51,8 @@ The following attributes are exported:
 - `backup_window` - The backup window of the server, if enabled.
 - `iso` - Name of the mounted ISO image.
 - `ipv4_address` - The IPv4 address.
-- `ipv6_address` - The IPv6 address.
+- `ipv6_address` - The first IPv6 address of the assigned network.
+- `ipv6_network` - The IPv6 network.
 - `status` - The status of the server.
 
 ## Import

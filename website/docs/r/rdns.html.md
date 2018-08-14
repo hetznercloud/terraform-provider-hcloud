@@ -43,8 +43,7 @@ resource "hcloud_rdns" "master" {
 
 ## Import
 
-Reverse DNS entries can be imported using a compound ID with the following format:
-
+Reverse DNS entries can be imported using a compound ID with the following format:  
 `<prefix (s for server/ f for floating ip)>-<server or floating ip ID>-<IP address>`
 
 ```
