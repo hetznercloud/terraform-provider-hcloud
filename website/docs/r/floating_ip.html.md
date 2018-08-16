@@ -40,6 +40,7 @@ resource "hcloud_floating_ip" "master" {
 - `home_location` - Home location.
 - `description` - Description of the Floating IP.
 - `ip_address` - IP Address of the Floating IP.
+- `ip_network` - IPv6 subnet. (Only set if `type` is `ipv6`)
 
 ## Import
 
