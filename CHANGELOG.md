@@ -2,11 +2,15 @@
 
 FEATURES:
 
-- **New Resource**: `hcloud_rnds` Manage reverse DNS entries for servers and Floating IPs.
+* **New Resource**: `hcloud_rnds` Manage reverse DNS entries for servers and Floating IPs.
 
 IMPROVEMENTS:
 
-- resource/hcloud_server: Add `ipv6_network` attribute.
+* resource/hcloud_server: Add `ipv6_network` attribute.
+
+NOTES:
+
+* Updated hcloud-go to `v1.8.0`
 
 ## 1.2.0 (June 07, 2018)
 
