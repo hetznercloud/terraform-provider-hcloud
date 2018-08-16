@@ -4,4 +4,4 @@
 
 [[constraint]]
   name = "github.com/hetznercloud/hcloud-go"
-  version = "v1.6.0"
+  version = "v1.8.0"

@@ -2260,6 +2260,100 @@ func (c *IoTAnalytics) ListPipelinesPagesWithContext(ctx aws.Context, input *Lis
 	return p.Err()
 }
 
+const opListTagsForResource = "ListTagsForResource"
+
+// ListTagsForResourceRequest generates a "aws/request.Request" representing the
+// client's request for the ListTagsForResource operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfuly.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListTagsForResource for more information on using the ListTagsForResource
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the ListTagsForResourceRequest method.
+//    req, resp := client.ListTagsForResourceRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/ListTagsForResource
+func (c *IoTAnalytics) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
+	op := &request.Operation{
+		Name:       opListTagsForResource,
+		HTTPMethod: "GET",
+		HTTPPath:   "/tags",
+	}
+
+	if input == nil {
+		input = &ListTagsForResourceInput{}
+	}
+
+	output = &ListTagsForResourceOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListTagsForResource API operation for AWS IoT Analytics.
+//
+// Lists the tags (metadata) which you have assigned to the resource.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS IoT Analytics's
+// API operation ListTagsForResource for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeInvalidRequestException "InvalidRequestException"
+//   The request was not valid.
+//
+//   * ErrCodeInternalFailureException "InternalFailureException"
+//   There was an internal failure.
+//
+//   * ErrCodeServiceUnavailableException "ServiceUnavailableException"
+//   The service is temporarily unavailable.
+//
+//   * ErrCodeThrottlingException "ThrottlingException"
+//   The request was denied due to request throttling.
+//
+//   * ErrCodeLimitExceededException "LimitExceededException"
+//   The command caused an internal limit to be exceeded.
+//
+//   * ErrCodeResourceNotFoundException "ResourceNotFoundException"
+//   A resource with the specified name could not be found.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/ListTagsForResource
+func (c *IoTAnalytics) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
+	req, out := c.ListTagsForResourceRequest(input)
+	return out, req.Send()
+}
+
+// ListTagsForResourceWithContext is the same as ListTagsForResource with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListTagsForResource for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *IoTAnalytics) ListTagsForResourceWithContext(ctx aws.Context, input *ListTagsForResourceInput, opts ...request.Option) (*ListTagsForResourceOutput, error) {
+	req, out := c.ListTagsForResourceRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opPutLoggingOptions = "PutLoggingOptions"
 
 // PutLoggingOptionsRequest generates a "aws/request.Request" representing the
@@ -2307,6 +2401,12 @@ func (c *IoTAnalytics) PutLoggingOptionsRequest(input *PutLoggingOptionsInput) (
 // PutLoggingOptions API operation for AWS IoT Analytics.
 //
 // Sets or updates the AWS IoT Analytics logging options.
+//
+// Note that if you update the value of any loggingOptions field, it takes up
+// to one minute for the change to take effect. Also, if you change the policy
+// attached to the role you specified in the roleArn field (for example, to
+// correct an invalid policy) it takes up to 5 minutes for that change to take
+// effect.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2619,6 +2719,195 @@ func (c *IoTAnalytics) StartPipelineReprocessing(input *StartPipelineReprocessin
 // for more information on using Contexts.
 func (c *IoTAnalytics) StartPipelineReprocessingWithContext(ctx aws.Context, input *StartPipelineReprocessingInput, opts ...request.Option) (*StartPipelineReprocessingOutput, error) {
 	req, out := c.StartPipelineReprocessingRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opTagResource = "TagResource"
+
+// TagResourceRequest generates a "aws/request.Request" representing the
+// client's request for the TagResource operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfuly.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See TagResource for more information on using the TagResource
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the TagResourceRequest method.
+//    req, resp := client.TagResourceRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/TagResource
+func (c *IoTAnalytics) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
+	op := &request.Operation{
+		Name:       opTagResource,
+		HTTPMethod: "POST",
+		HTTPPath:   "/tags",
+	}
+
+	if input == nil {
+		input = &TagResourceInput{}
+	}
+
+	output = &TagResourceOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// TagResource API operation for AWS IoT Analytics.
+//
+// Adds to or modifies the tags of the given resource. Tags are metadata which
+// can be used to manage a resource.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS IoT Analytics's
+// API operation TagResource for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeInvalidRequestException "InvalidRequestException"
+//   The request was not valid.
+//
+//   * ErrCodeInternalFailureException "InternalFailureException"
+//   There was an internal failure.
+//
+//   * ErrCodeServiceUnavailableException "ServiceUnavailableException"
+//   The service is temporarily unavailable.
+//
+//   * ErrCodeThrottlingException "ThrottlingException"
+//   The request was denied due to request throttling.
+//
+//   * ErrCodeLimitExceededException "LimitExceededException"
+//   The command caused an internal limit to be exceeded.
+//
+//   * ErrCodeResourceNotFoundException "ResourceNotFoundException"
+//   A resource with the specified name could not be found.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/TagResource
+func (c *IoTAnalytics) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
+	req, out := c.TagResourceRequest(input)
+	return out, req.Send()
+}
+
+// TagResourceWithContext is the same as TagResource with the addition of
+// the ability to pass a context and additional request options.
+//
+// See TagResource for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *IoTAnalytics) TagResourceWithContext(ctx aws.Context, input *TagResourceInput, opts ...request.Option) (*TagResourceOutput, error) {
+	req, out := c.TagResourceRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opUntagResource = "UntagResource"
+
+// UntagResourceRequest generates a "aws/request.Request" representing the
+// client's request for the UntagResource operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfuly.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UntagResource for more information on using the UntagResource
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the UntagResourceRequest method.
+//    req, resp := client.UntagResourceRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/UntagResource
+func (c *IoTAnalytics) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
+	op := &request.Operation{
+		Name:       opUntagResource,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/tags",
+	}
+
+	if input == nil {
+		input = &UntagResourceInput{}
+	}
+
+	output = &UntagResourceOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// UntagResource API operation for AWS IoT Analytics.
+//
+// Removes the given tags (metadata) from the resource.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS IoT Analytics's
+// API operation UntagResource for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeInvalidRequestException "InvalidRequestException"
+//   The request was not valid.
+//
+//   * ErrCodeInternalFailureException "InternalFailureException"
+//   There was an internal failure.
+//
+//   * ErrCodeServiceUnavailableException "ServiceUnavailableException"
+//   The service is temporarily unavailable.
+//
+//   * ErrCodeThrottlingException "ThrottlingException"
+//   The request was denied due to request throttling.
+//
+//   * ErrCodeLimitExceededException "LimitExceededException"
+//   The command caused an internal limit to be exceeded.
+//
+//   * ErrCodeResourceNotFoundException "ResourceNotFoundException"
+//   A resource with the specified name could not be found.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/iotanalytics-2017-11-27/UntagResource
+func (c *IoTAnalytics) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
+	req, out := c.UntagResourceRequest(input)
+	return out, req.Send()
+}
+
+// UntagResourceWithContext is the same as UntagResource with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UntagResource for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *IoTAnalytics) UntagResourceWithContext(ctx aws.Context, input *UntagResourceInput, opts ...request.Option) (*UntagResourceOutput, error) {
+	req, out := c.UntagResourceRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -3285,10 +3574,10 @@ type Channel struct {
 	Arn *string `locationName:"arn" type:"string"`
 
 	// When the channel was created.
-	CreationTime *time.Time `locationName:"creationTime" type:"timestamp" timestampFormat:"unix"`
+	CreationTime *time.Time `locationName:"creationTime" type:"timestamp"`
 
 	// When the channel was last updated.
-	LastUpdateTime *time.Time `locationName:"lastUpdateTime" type:"timestamp" timestampFormat:"unix"`
+	LastUpdateTime *time.Time `locationName:"lastUpdateTime" type:"timestamp"`
 
 	// The name of the channel.
 	Name *string `locationName:"name" min:"1" type:"string"`
@@ -3417,6 +3706,30 @@ func (s *ChannelActivity) SetNext(v string) *ChannelActivity {
 	return s
 }
 
+// Statistics information about the channel.
+type ChannelStatistics struct {
+	_ struct{} `type:"structure"`
+
+	// The estimated size of the channel.
+	Size *EstimatedResourceSize `locationName:"size" type:"structure"`
+}
+
+// String returns the string representation
+func (s ChannelStatistics) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ChannelStatistics) GoString() string {
+	return s.String()
+}
+
+// SetSize sets the Size field's value.
+func (s *ChannelStatistics) SetSize(v *EstimatedResourceSize) *ChannelStatistics {
+	s.Size = v
+	return s
+}
+
 // A summary of information about a channel.
 type ChannelSummary struct {
 	_ struct{} `type:"structure"`
@@ -3425,10 +3738,10 @@ type ChannelSummary struct {
 	ChannelName *string `locationName:"channelName" min:"1" type:"string"`
 
 	// When the channel was created.
-	CreationTime *time.Time `locationName:"creationTime" type:"timestamp" timestampFormat:"unix"`
+	CreationTime *time.Time `locationName:"creationTime" type:"timestamp"`
 
 	// The last time the channel was updated.
-	LastUpdateTime *time.Time `locationName:"lastUpdateTime" type:"timestamp" timestampFormat:"unix"`
+	LastUpdateTime *time.Time `locationName:"lastUpdateTime" type:"timestamp"`
 
 	// The status of the channel.
 	Status *string `locationName:"status" type:"string" enum:"ChannelStatus"`
@@ -3478,6 +3791,9 @@ type CreateChannelInput struct {
 
 	// How long, in days, message data is kept for the channel.
 	RetentionPeriod *RetentionPeriod `locationName:"retentionPeriod" type:"structure"`
+
+	// Metadata which can be used to manage the channel.
+	Tags []*Tag `locationName:"tags" min:"1" type:"list"`
 }
 
 // String returns the string representation
@@ -3499,9 +3815,22 @@ func (s *CreateChannelInput) Validate() error {
 	if s.ChannelName != nil && len(*s.ChannelName) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("ChannelName", 1))
 	}
+	if s.Tags != nil && len(s.Tags) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Tags", 1))
+	}
 	if s.RetentionPeriod != nil {
 		if err := s.RetentionPeriod.Validate(); err != nil {
 			invalidParams.AddNested("RetentionPeriod", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Tags != nil {
+		for i, v := range s.Tags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Tags", i), err.(request.ErrInvalidParams))
+			}
 		}
 	}
 
@@ -3520,6 +3849,12 @@ func (s *CreateChannelInput) SetChannelName(v string) *CreateChannelInput {
 // SetRetentionPeriod sets the RetentionPeriod field's value.
 func (s *CreateChannelInput) SetRetentionPeriod(v *RetentionPeriod) *CreateChannelInput {
 	s.RetentionPeriod = v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateChannelInput) SetTags(v []*Tag) *CreateChannelInput {
+	s.Tags = v
 	return s
 }
 
@@ -3633,6 +3968,9 @@ type CreateDatasetInput struct {
 	// DatasetName is a required field
 	DatasetName *string `locationName:"datasetName" min:"1" type:"string" required:"true"`
 
+	// Metadata which can be used to manage the data set.
+	Tags []*Tag `locationName:"tags" min:"1" type:"list"`
+
 	// A list of triggers. A trigger causes data set content to be populated at
 	// a specified time or time interval. The list of triggers can be empty or contain
 	// up to five DataSetTrigger objects.
@@ -3664,6 +4002,9 @@ func (s *CreateDatasetInput) Validate() error {
 	if s.DatasetName != nil && len(*s.DatasetName) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("DatasetName", 1))
 	}
+	if s.Tags != nil && len(s.Tags) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Tags", 1))
+	}
 	if s.Actions != nil {
 		for i, v := range s.Actions {
 			if v == nil {
@@ -3671,6 +4012,16 @@ func (s *CreateDatasetInput) Validate() error {
 			}
 			if err := v.Validate(); err != nil {
 				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Actions", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.Tags != nil {
+		for i, v := range s.Tags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Tags", i), err.(request.ErrInvalidParams))
 			}
 		}
 	}
@@ -3690,6 +4041,12 @@ func (s *CreateDatasetInput) SetActions(v []*DatasetAction) *CreateDatasetInput 
 // SetDatasetName sets the DatasetName field's value.
 func (s *CreateDatasetInput) SetDatasetName(v string) *CreateDatasetInput {
 	s.DatasetName = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateDatasetInput) SetTags(v []*Tag) *CreateDatasetInput {
+	s.Tags = v
 	return s
 }
 
@@ -3741,6 +4098,9 @@ type CreateDatastoreInput struct {
 
 	// How long, in days, message data is kept for the data store.
 	RetentionPeriod *RetentionPeriod `locationName:"retentionPeriod" type:"structure"`
+
+	// Metadata which can be used to manage the data store.
+	Tags []*Tag `locationName:"tags" min:"1" type:"list"`
 }
 
 // String returns the string representation
@@ -3762,9 +4122,22 @@ func (s *CreateDatastoreInput) Validate() error {
 	if s.DatastoreName != nil && len(*s.DatastoreName) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("DatastoreName", 1))
 	}
+	if s.Tags != nil && len(s.Tags) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Tags", 1))
+	}
 	if s.RetentionPeriod != nil {
 		if err := s.RetentionPeriod.Validate(); err != nil {
 			invalidParams.AddNested("RetentionPeriod", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Tags != nil {
+		for i, v := range s.Tags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Tags", i), err.(request.ErrInvalidParams))
+			}
 		}
 	}
 
@@ -3783,6 +4156,12 @@ func (s *CreateDatastoreInput) SetDatastoreName(v string) *CreateDatastoreInput 
 // SetRetentionPeriod sets the RetentionPeriod field's value.
 func (s *CreateDatastoreInput) SetRetentionPeriod(v *RetentionPeriod) *CreateDatastoreInput {
 	s.RetentionPeriod = v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateDatastoreInput) SetTags(v []*Tag) *CreateDatastoreInput {
+	s.Tags = v
 	return s
 }
 
@@ -3845,6 +4224,9 @@ type CreatePipelineInput struct {
 	//
 	// PipelineName is a required field
 	PipelineName *string `locationName:"pipelineName" min:"1" type:"string" required:"true"`
+
+	// Metadata which can be used to manage the pipeline.
+	Tags []*Tag `locationName:"tags" min:"1" type:"list"`
 }
 
 // String returns the string representation
@@ -3872,6 +4254,9 @@ func (s *CreatePipelineInput) Validate() error {
 	if s.PipelineName != nil && len(*s.PipelineName) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("PipelineName", 1))
 	}
+	if s.Tags != nil && len(s.Tags) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Tags", 1))
+	}
 	if s.PipelineActivities != nil {
 		for i, v := range s.PipelineActivities {
 			if v == nil {
@@ -3879,6 +4264,16 @@ func (s *CreatePipelineInput) Validate() error {
 			}
 			if err := v.Validate(); err != nil {
 				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "PipelineActivities", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.Tags != nil {
+		for i, v := range s.Tags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Tags", i), err.(request.ErrInvalidParams))
 			}
 		}
 	}
@@ -3898,6 +4293,12 @@ func (s *CreatePipelineInput) SetPipelineActivities(v []*PipelineActivity) *Crea
 // SetPipelineName sets the PipelineName field's value.
 func (s *CreatePipelineInput) SetPipelineName(v string) *CreatePipelineInput {
 	s.PipelineName = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreatePipelineInput) SetTags(v []*Tag) *CreatePipelineInput {
+	s.Tags = v
 	return s
 }
 
@@ -3944,10 +4345,10 @@ type Dataset struct {
 	Arn *string `locationName:"arn" type:"string"`
 
 	// When the data set was created.
-	CreationTime *time.Time `locationName:"creationTime" type:"timestamp" timestampFormat:"unix"`
+	CreationTime *time.Time `locationName:"creationTime" type:"timestamp"`
 
 	// The last time the data set was updated.
-	LastUpdateTime *time.Time `locationName:"lastUpdateTime" type:"timestamp" timestampFormat:"unix"`
+	LastUpdateTime *time.Time `locationName:"lastUpdateTime" type:"timestamp"`
 
 	// The name of the data set.
 	Name *string `locationName:"name" min:"1" type:"string"`
@@ -4135,13 +4536,13 @@ type DatasetSummary struct {
 	_ struct{} `type:"structure"`
 
 	// The time the data set was created.
-	CreationTime *time.Time `locationName:"creationTime" type:"timestamp" timestampFormat:"unix"`
+	CreationTime *time.Time `locationName:"creationTime" type:"timestamp"`
 
 	// The name of the data set.
 	DatasetName *string `locationName:"datasetName" min:"1" type:"string"`
 
 	// The last time the data set was updated.
-	LastUpdateTime *time.Time `locationName:"lastUpdateTime" type:"timestamp" timestampFormat:"unix"`
+	LastUpdateTime *time.Time `locationName:"lastUpdateTime" type:"timestamp"`
 
 	// The status of the data set.
 	Status *string `locationName:"status" type:"string" enum:"DatasetStatus"`
@@ -4213,10 +4614,10 @@ type Datastore struct {
 	Arn *string `locationName:"arn" type:"string"`
 
 	// When the data store was created.
-	CreationTime *time.Time `locationName:"creationTime" type:"timestamp" timestampFormat:"unix"`
+	CreationTime *time.Time `locationName:"creationTime" type:"timestamp"`
 
 	// The last time the data store was updated.
-	LastUpdateTime *time.Time `locationName:"lastUpdateTime" type:"timestamp" timestampFormat:"unix"`
+	LastUpdateTime *time.Time `locationName:"lastUpdateTime" type:"timestamp"`
 
 	// The name of the data store.
 	Name *string `locationName:"name" min:"1" type:"string"`
@@ -4339,18 +4740,42 @@ func (s *DatastoreActivity) SetName(v string) *DatastoreActivity {
 	return s
 }
 
+// Statistics information about the data store.
+type DatastoreStatistics struct {
+	_ struct{} `type:"structure"`
+
+	// The estimated size of the data store.
+	Size *EstimatedResourceSize `locationName:"size" type:"structure"`
+}
+
+// String returns the string representation
+func (s DatastoreStatistics) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DatastoreStatistics) GoString() string {
+	return s.String()
+}
+
+// SetSize sets the Size field's value.
+func (s *DatastoreStatistics) SetSize(v *EstimatedResourceSize) *DatastoreStatistics {
+	s.Size = v
+	return s
+}
+
 // A summary of information about a data store.
 type DatastoreSummary struct {
 	_ struct{} `type:"structure"`
 
 	// When the data store was created.
-	CreationTime *time.Time `locationName:"creationTime" type:"timestamp" timestampFormat:"unix"`
+	CreationTime *time.Time `locationName:"creationTime" type:"timestamp"`
 
 	// The name of the data store.
 	DatastoreName *string `locationName:"datastoreName" min:"1" type:"string"`
 
 	// The last time the data store was updated.
-	LastUpdateTime *time.Time `locationName:"lastUpdateTime" type:"timestamp" timestampFormat:"unix"`
+	LastUpdateTime *time.Time `locationName:"lastUpdateTime" type:"timestamp"`
 
 	// The status of the data store.
 	Status *string `locationName:"status" type:"string" enum:"DatastoreStatus"`
@@ -4683,6 +5108,9 @@ type DescribeChannelInput struct {
 	//
 	// ChannelName is a required field
 	ChannelName *string `location:"uri" locationName:"channelName" min:"1" type:"string" required:"true"`
+
+	// If true, include statistics about the channel in the response.
+	IncludeStatistics *bool `location:"querystring" locationName:"includeStatistics" type:"boolean"`
 }
 
 // String returns the string representation
@@ -4717,11 +5145,21 @@ func (s *DescribeChannelInput) SetChannelName(v string) *DescribeChannelInput {
 	return s
 }
 
+// SetIncludeStatistics sets the IncludeStatistics field's value.
+func (s *DescribeChannelInput) SetIncludeStatistics(v bool) *DescribeChannelInput {
+	s.IncludeStatistics = &v
+	return s
+}
+
 type DescribeChannelOutput struct {
 	_ struct{} `type:"structure"`
 
 	// An object that contains information about the channel.
 	Channel *Channel `locationName:"channel" type:"structure"`
+
+	// Statistics about the channel. Included if the 'includeStatistics' parameter
+	// is set to true in the request.
+	Statistics *ChannelStatistics `locationName:"statistics" type:"structure"`
 }
 
 // String returns the string representation
@@ -4737,6 +5175,12 @@ func (s DescribeChannelOutput) GoString() string {
 // SetChannel sets the Channel field's value.
 func (s *DescribeChannelOutput) SetChannel(v *Channel) *DescribeChannelOutput {
 	s.Channel = v
+	return s
+}
+
+// SetStatistics sets the Statistics field's value.
+func (s *DescribeChannelOutput) SetStatistics(v *ChannelStatistics) *DescribeChannelOutput {
+	s.Statistics = v
 	return s
 }
 
@@ -4811,6 +5255,9 @@ type DescribeDatastoreInput struct {
 	//
 	// DatastoreName is a required field
 	DatastoreName *string `location:"uri" locationName:"datastoreName" min:"1" type:"string" required:"true"`
+
+	// If true, include statistics about the data store in the response.
+	IncludeStatistics *bool `location:"querystring" locationName:"includeStatistics" type:"boolean"`
 }
 
 // String returns the string representation
@@ -4845,11 +5292,21 @@ func (s *DescribeDatastoreInput) SetDatastoreName(v string) *DescribeDatastoreIn
 	return s
 }
 
+// SetIncludeStatistics sets the IncludeStatistics field's value.
+func (s *DescribeDatastoreInput) SetIncludeStatistics(v bool) *DescribeDatastoreInput {
+	s.IncludeStatistics = &v
+	return s
+}
+
 type DescribeDatastoreOutput struct {
 	_ struct{} `type:"structure"`
 
 	// Information about the data store.
 	Datastore *Datastore `locationName:"datastore" type:"structure"`
+
+	// Statistics about the data store. Included if the 'includeStatistics' parameter
+	// is set to true in the request.
+	Statistics *DatastoreStatistics `locationName:"statistics" type:"structure"`
 }
 
 // String returns the string representation
@@ -4865,6 +5322,12 @@ func (s DescribeDatastoreOutput) GoString() string {
 // SetDatastore sets the Datastore field's value.
 func (s *DescribeDatastoreOutput) SetDatastore(v *Datastore) *DescribeDatastoreOutput {
 	s.Datastore = v
+	return s
+}
+
+// SetStatistics sets the Statistics field's value.
+func (s *DescribeDatastoreOutput) SetStatistics(v *DatastoreStatistics) *DescribeDatastoreOutput {
+	s.Statistics = v
 	return s
 }
 
@@ -5180,6 +5643,39 @@ func (s *DeviceShadowEnrichActivity) SetThingName(v string) *DeviceShadowEnrichA
 	return s
 }
 
+// The estimated size of the resource.
+type EstimatedResourceSize struct {
+	_ struct{} `type:"structure"`
+
+	// The time when the estimate of the size of the resource was made.
+	EstimatedOn *time.Time `locationName:"estimatedOn" type:"timestamp"`
+
+	// The estimated size of the resource in bytes.
+	EstimatedSizeInBytes *float64 `locationName:"estimatedSizeInBytes" type:"double"`
+}
+
+// String returns the string representation
+func (s EstimatedResourceSize) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s EstimatedResourceSize) GoString() string {
+	return s.String()
+}
+
+// SetEstimatedOn sets the EstimatedOn field's value.
+func (s *EstimatedResourceSize) SetEstimatedOn(v time.Time) *EstimatedResourceSize {
+	s.EstimatedOn = &v
+	return s
+}
+
+// SetEstimatedSizeInBytes sets the EstimatedSizeInBytes field's value.
+func (s *EstimatedResourceSize) SetEstimatedSizeInBytes(v float64) *EstimatedResourceSize {
+	s.EstimatedSizeInBytes = &v
+	return s
+}
+
 // An activity that filters a message based on its attributes.
 type FilterActivity struct {
 	_ struct{} `type:"structure"`
@@ -5315,7 +5811,7 @@ type GetDatasetContentOutput struct {
 	Status *DatasetContentStatus `locationName:"status" type:"structure"`
 
 	// The time when the request was made.
-	Timestamp *time.Time `locationName:"timestamp" type:"timestamp" timestampFormat:"unix"`
+	Timestamp *time.Time `locationName:"timestamp" type:"timestamp"`
 }
 
 // String returns the string representation
@@ -5757,6 +6253,70 @@ func (s *ListPipelinesOutput) SetPipelineSummaries(v []*PipelineSummary) *ListPi
 	return s
 }
 
+type ListTagsForResourceInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the resource whose tags you want to list.
+	//
+	// ResourceArn is a required field
+	ResourceArn *string `location:"querystring" locationName:"resourceArn" min:"20" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s ListTagsForResourceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ListTagsForResourceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListTagsForResourceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListTagsForResourceInput"}
+	if s.ResourceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceArn"))
+	}
+	if s.ResourceArn != nil && len(*s.ResourceArn) < 20 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceArn", 20))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetResourceArn sets the ResourceArn field's value.
+func (s *ListTagsForResourceInput) SetResourceArn(v string) *ListTagsForResourceInput {
+	s.ResourceArn = &v
+	return s
+}
+
+type ListTagsForResourceOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The tags (metadata) which you have assigned to the resource.
+	Tags []*Tag `locationName:"tags" min:"1" type:"list"`
+}
+
+// String returns the string representation
+func (s ListTagsForResourceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ListTagsForResourceOutput) GoString() string {
+	return s.String()
+}
+
+// SetTags sets the Tags field's value.
+func (s *ListTagsForResourceOutput) SetTags(v []*Tag) *ListTagsForResourceOutput {
+	s.Tags = v
+	return s
+}
+
 // Information about logging options.
 type LoggingOptions struct {
 	_ struct{} `type:"structure"`
@@ -5921,12 +6481,15 @@ func (s *MathActivity) SetNext(v string) *MathActivity {
 type Message struct {
 	_ struct{} `type:"structure"`
 
-	// The ID you wish to assign to the message.
+	// The ID you wish to assign to the message. Each "messageId" must be unique
+	// within each batch sent.
 	//
 	// MessageId is a required field
 	MessageId *string `locationName:"messageId" min:"1" type:"string" required:"true"`
 
-	// The payload of the message.
+	// The payload of the message. This may be a JSON string or a Base64-encoded
+	// string representing binary data (in which case you must decode it by means
+	// of a pipeline activity).
 	//
 	// Payload is automatically base64 encoded/decoded by the SDK.
 	//
@@ -5986,10 +6549,10 @@ type Pipeline struct {
 	Arn *string `locationName:"arn" type:"string"`
 
 	// When the pipeline was created.
-	CreationTime *time.Time `locationName:"creationTime" type:"timestamp" timestampFormat:"unix"`
+	CreationTime *time.Time `locationName:"creationTime" type:"timestamp"`
 
 	// The last time the pipeline was updated.
-	LastUpdateTime *time.Time `locationName:"lastUpdateTime" type:"timestamp" timestampFormat:"unix"`
+	LastUpdateTime *time.Time `locationName:"lastUpdateTime" type:"timestamp"`
 
 	// The name of the pipeline.
 	Name *string `locationName:"name" min:"1" type:"string"`
@@ -6216,10 +6779,10 @@ type PipelineSummary struct {
 	_ struct{} `type:"structure"`
 
 	// When the pipeline was created.
-	CreationTime *time.Time `locationName:"creationTime" type:"timestamp" timestampFormat:"unix"`
+	CreationTime *time.Time `locationName:"creationTime" type:"timestamp"`
 
 	// When the pipeline was last updated.
-	LastUpdateTime *time.Time `locationName:"lastUpdateTime" type:"timestamp" timestampFormat:"unix"`
+	LastUpdateTime *time.Time `locationName:"lastUpdateTime" type:"timestamp"`
 
 	// The name of the pipeline.
 	PipelineName *string `locationName:"pipelineName" min:"1" type:"string"`
@@ -6395,7 +6958,7 @@ type ReprocessingSummary struct {
 	_ struct{} `type:"structure"`
 
 	// The time the pipeline reprocessing was created.
-	CreationTime *time.Time `locationName:"creationTime" type:"timestamp" timestampFormat:"unix"`
+	CreationTime *time.Time `locationName:"creationTime" type:"timestamp"`
 
 	// The 'reprocessingId' returned by "StartPipelineReprocessing".
 	Id *string `locationName:"id" type:"string"`
@@ -6586,14 +7149,14 @@ type SampleChannelDataInput struct {
 	ChannelName *string `location:"uri" locationName:"channelName" min:"1" type:"string" required:"true"`
 
 	// The end of the time window from which sample messages are retrieved.
-	EndTime *time.Time `location:"querystring" locationName:"endTime" type:"timestamp" timestampFormat:"unix"`
+	EndTime *time.Time `location:"querystring" locationName:"endTime" type:"timestamp"`
 
 	// The number of sample messages to be retrieved. The limit is 10, the default
 	// is also 10.
 	MaxMessages *int64 `location:"querystring" locationName:"maxMessages" min:"1" type:"integer"`
 
 	// The start of the time window from which sample messages are retrieved.
-	StartTime *time.Time `location:"querystring" locationName:"startTime" type:"timestamp" timestampFormat:"unix"`
+	StartTime *time.Time `location:"querystring" locationName:"startTime" type:"timestamp"`
 }
 
 // String returns the string representation
@@ -6814,7 +7377,7 @@ type StartPipelineReprocessingInput struct {
 	_ struct{} `type:"structure"`
 
 	// The end time (exclusive) of raw message data that is reprocessed.
-	EndTime *time.Time `locationName:"endTime" type:"timestamp" timestampFormat:"unix"`
+	EndTime *time.Time `locationName:"endTime" type:"timestamp"`
 
 	// The name of the pipeline on which to start reprocessing.
 	//
@@ -6822,7 +7385,7 @@ type StartPipelineReprocessingInput struct {
 	PipelineName *string `location:"uri" locationName:"pipelineName" min:"1" type:"string" required:"true"`
 
 	// The start time (inclusive) of raw message data that is reprocessed.
-	StartTime *time.Time `locationName:"startTime" type:"timestamp" timestampFormat:"unix"`
+	StartTime *time.Time `locationName:"startTime" type:"timestamp"`
 }
 
 // String returns the string representation
@@ -6890,6 +7453,219 @@ func (s StartPipelineReprocessingOutput) GoString() string {
 func (s *StartPipelineReprocessingOutput) SetReprocessingId(v string) *StartPipelineReprocessingOutput {
 	s.ReprocessingId = &v
 	return s
+}
+
+// A set of key/value pairs which are used to manage the resource.
+type Tag struct {
+	_ struct{} `type:"structure"`
+
+	// The tag's key.
+	//
+	// Key is a required field
+	Key *string `locationName:"key" min:"1" type:"string" required:"true"`
+
+	// The tag's value.
+	//
+	// Value is a required field
+	Value *string `locationName:"value" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s Tag) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s Tag) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *Tag) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "Tag"}
+	if s.Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("Key"))
+	}
+	if s.Key != nil && len(*s.Key) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Key", 1))
+	}
+	if s.Value == nil {
+		invalidParams.Add(request.NewErrParamRequired("Value"))
+	}
+	if s.Value != nil && len(*s.Value) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Value", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetKey sets the Key field's value.
+func (s *Tag) SetKey(v string) *Tag {
+	s.Key = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *Tag) SetValue(v string) *Tag {
+	s.Value = &v
+	return s
+}
+
+type TagResourceInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the resource whose tags will be modified.
+	//
+	// ResourceArn is a required field
+	ResourceArn *string `location:"querystring" locationName:"resourceArn" min:"20" type:"string" required:"true"`
+
+	// The new or modified tags for the resource.
+	//
+	// Tags is a required field
+	Tags []*Tag `locationName:"tags" min:"1" type:"list" required:"true"`
+}
+
+// String returns the string representation
+func (s TagResourceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s TagResourceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *TagResourceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "TagResourceInput"}
+	if s.ResourceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceArn"))
+	}
+	if s.ResourceArn != nil && len(*s.ResourceArn) < 20 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceArn", 20))
+	}
+	if s.Tags == nil {
+		invalidParams.Add(request.NewErrParamRequired("Tags"))
+	}
+	if s.Tags != nil && len(s.Tags) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Tags", 1))
+	}
+	if s.Tags != nil {
+		for i, v := range s.Tags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Tags", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetResourceArn sets the ResourceArn field's value.
+func (s *TagResourceInput) SetResourceArn(v string) *TagResourceInput {
+	s.ResourceArn = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *TagResourceInput) SetTags(v []*Tag) *TagResourceInput {
+	s.Tags = v
+	return s
+}
+
+type TagResourceOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s TagResourceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s TagResourceOutput) GoString() string {
+	return s.String()
+}
+
+type UntagResourceInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the resource whose tags will be removed.
+	//
+	// ResourceArn is a required field
+	ResourceArn *string `location:"querystring" locationName:"resourceArn" min:"20" type:"string" required:"true"`
+
+	// The keys of those tags which will be removed.
+	//
+	// TagKeys is a required field
+	TagKeys []*string `location:"querystring" locationName:"tagKeys" min:"1" type:"list" required:"true"`
+}
+
+// String returns the string representation
+func (s UntagResourceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s UntagResourceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UntagResourceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UntagResourceInput"}
+	if s.ResourceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceArn"))
+	}
+	if s.ResourceArn != nil && len(*s.ResourceArn) < 20 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceArn", 20))
+	}
+	if s.TagKeys == nil {
+		invalidParams.Add(request.NewErrParamRequired("TagKeys"))
+	}
+	if s.TagKeys != nil && len(s.TagKeys) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("TagKeys", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetResourceArn sets the ResourceArn field's value.
+func (s *UntagResourceInput) SetResourceArn(v string) *UntagResourceInput {
+	s.ResourceArn = &v
+	return s
+}
+
+// SetTagKeys sets the TagKeys field's value.
+func (s *UntagResourceInput) SetTagKeys(v []*string) *UntagResourceInput {
+	s.TagKeys = v
+	return s
+}
+
+type UntagResourceOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s UntagResourceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s UntagResourceOutput) GoString() string {
+	return s.String()
 }
 
 type UpdateChannelInput struct {

@@ -6,6 +6,7 @@
     "jsonVersion":"1.1",
     "protocol":"json",
     "serviceFullName":"AWS Glue",
+    "serviceId":"Glue",
     "signatureVersion":"v4",
     "targetPrefix":"AWSGlue",
     "uid":"glue-2017-03-31"
@@ -1191,7 +1192,8 @@
       "members":{
         "JobName":{"shape":"NameString"},
         "Arguments":{"shape":"GenericMap"},
-        "Timeout":{"shape":"Timeout"}
+        "Timeout":{"shape":"Timeout"},
+        "NotificationProperty":{"shape":"NotificationProperty"}
       }
     },
     "ActionList":{
@@ -1708,7 +1710,8 @@
       "type":"structure",
       "members":{
         "S3Targets":{"shape":"S3TargetList"},
-        "JdbcTargets":{"shape":"JdbcTargetList"}
+        "JdbcTargets":{"shape":"JdbcTargetList"},
+        "DynamoDBTargets":{"shape":"DynamoDBTargetList"}
       }
     },
     "CreateClassifierRequest":{
@@ -1788,6 +1791,7 @@
         "SecurityGroupIds":{"shape":"StringList"},
         "SubnetId":{"shape":"GenericString"},
         "PublicKey":{"shape":"GenericString"},
+        "PublicKeys":{"shape":"PublicKeysList"},
         "NumberOfNodes":{"shape":"IntegerValue"},
         "ExtraPythonLibsS3Path":{"shape":"GenericString"},
         "ExtraJarsS3Path":{"shape":"GenericString"}
@@ -1844,7 +1848,8 @@
         "Connections":{"shape":"ConnectionsList"},
         "MaxRetries":{"shape":"MaxRetries"},
         "AllocatedCapacity":{"shape":"IntegerValue"},
-        "Timeout":{"shape":"Timeout"}
+        "Timeout":{"shape":"Timeout"},
+        "NotificationProperty":{"shape":"NotificationProperty"}
       }
     },
     "CreateJobResponse":{
@@ -2215,7 +2220,8 @@
         "LastUpdateStatus":{"shape":"GenericString"},
         "CreatedTimestamp":{"shape":"TimestampValue"},
         "LastModifiedTimestamp":{"shape":"TimestampValue"},
-        "PublicKey":{"shape":"GenericString"}
+        "PublicKey":{"shape":"GenericString"},
+        "PublicKeys":{"shape":"PublicKeysList"}
       }
     },
     "DevEndpointCustomLibraries":{
@@ -2228,6 +2234,16 @@
     "DevEndpointList":{
       "type":"list",
       "member":{"shape":"DevEndpoint"}
+    },
+    "DynamoDBTarget":{
+      "type":"structure",
+      "members":{
+        "Path":{"shape":"Path"}
+      }
+    },
+    "DynamoDBTargetList":{
+      "type":"list",
+      "member":{"shape":"DynamoDBTarget"}
     },
     "EntityNotFoundException":{
       "type":"structure",
@@ -2255,6 +2271,7 @@
         "MaxConcurrentRuns":{"shape":"MaxConcurrentRuns"}
       }
     },
+    "ExecutionTime":{"type":"integer"},
     "FieldType":{"type":"string"},
     "FilterString":{
       "type":"string",
@@ -2845,7 +2862,8 @@
         "Connections":{"shape":"ConnectionsList"},
         "MaxRetries":{"shape":"MaxRetries"},
         "AllocatedCapacity":{"shape":"IntegerValue"},
-        "Timeout":{"shape":"Timeout"}
+        "Timeout":{"shape":"Timeout"},
+        "NotificationProperty":{"shape":"NotificationProperty"}
       }
     },
     "JobBookmarkEntry":{
@@ -2886,8 +2904,9 @@
         "ErrorMessage":{"shape":"ErrorString"},
         "PredecessorRuns":{"shape":"PredecessorList"},
         "AllocatedCapacity":{"shape":"IntegerValue"},
-        "ExecutionTime":{"shape":"IntegerValue"},
-        "Timeout":{"shape":"Timeout"}
+        "ExecutionTime":{"shape":"ExecutionTime"},
+        "Timeout":{"shape":"Timeout"},
+        "NotificationProperty":{"shape":"NotificationProperty"}
       }
     },
     "JobRunList":{
@@ -2918,7 +2937,8 @@
         "Connections":{"shape":"ConnectionsList"},
         "MaxRetries":{"shape":"MaxRetries"},
         "AllocatedCapacity":{"shape":"IntegerValue"},
-        "Timeout":{"shape":"Timeout"}
+        "Timeout":{"shape":"Timeout"},
+        "NotificationProperty":{"shape":"NotificationProperty"}
       }
     },
     "JsonClassifier":{
@@ -2973,7 +2993,8 @@
       "type":"structure",
       "members":{
         "Jdbc":{"shape":"CodeGenNodeArgs"},
-        "S3":{"shape":"CodeGenNodeArgs"}
+        "S3":{"shape":"CodeGenNodeArgs"},
+        "DynamoDB":{"shape":"CodeGenNodeArgs"}
       }
     },
     "LocationMap":{
@@ -3064,6 +3085,17 @@
     "NonNegativeInteger":{
       "type":"integer",
       "min":0
+    },
+    "NotificationProperty":{
+      "type":"structure",
+      "members":{
+        "NotifyDelayAfter":{"shape":"NotifyDelayAfter"}
+      }
+    },
+    "NotifyDelayAfter":{
+      "type":"integer",
+      "box":true,
+      "min":1
     },
     "OperationTimeoutException":{
       "type":"structure",
@@ -3197,6 +3229,11 @@
         "ROLE",
         "GROUP"
       ]
+    },
+    "PublicKeysList":{
+      "type":"list",
+      "member":{"shape":"GenericString"},
+      "max":5
     },
     "PythonScript":{"type":"string"},
     "ResetJobBookmarkRequest":{
@@ -3369,7 +3406,8 @@
         "JobRunId":{"shape":"IdString"},
         "Arguments":{"shape":"GenericMap"},
         "AllocatedCapacity":{"shape":"IntegerValue"},
-        "Timeout":{"shape":"Timeout"}
+        "Timeout":{"shape":"Timeout"},
+        "NotificationProperty":{"shape":"NotificationProperty"}
       }
     },
     "StartJobRunResponse":{
@@ -3694,6 +3732,8 @@
       "members":{
         "EndpointName":{"shape":"GenericString"},
         "PublicKey":{"shape":"GenericString"},
+        "AddPublicKeys":{"shape":"PublicKeysList"},
+        "DeletePublicKeys":{"shape":"PublicKeysList"},
         "CustomLibraries":{"shape":"DevEndpointCustomLibraries"},
         "UpdateEtlLibraries":{"shape":"BooleanValue"}
       }
