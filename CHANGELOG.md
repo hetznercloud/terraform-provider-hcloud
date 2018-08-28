@@ -3,7 +3,7 @@
 FEATURES:
 
 * **New Resource**: `hcloud_rnds` Manage reverse DNS entries for servers and Floating IPs.
-* **New Provider Config**: `poll_interval`  Configures the interval in which actions are polled by the client. Default `500ms`. Increase this interval if you run into rate limiting errors. .
+* **New Provider Config**: `poll_interval`  Configures the interval in which actions are polled by the client. Default `500ms`. Increase this interval if you run into rate limiting errors.
 
 IMPROVEMENTS:
 
