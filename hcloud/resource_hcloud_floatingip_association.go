@@ -116,7 +116,6 @@ func resourceFloatingIPAssociationUpdate(d *schema.ResourceData, m interface{}) 
 		return nil
 	}
 
-
 	if d.HasChange("server_id") {
 		floatingIPID, ok := d.GetOk("floating_ip_id")
 		if !ok {
