@@ -28,7 +28,7 @@ func dataSourceHcloudSSHKey() *schema.Resource {
 				Optional: true,
 			},
 			"public_key": {
-				Type: schema.TypeString,
+				Type:     schema.TypeString,
 				Computed: true,
 			},
 		},
