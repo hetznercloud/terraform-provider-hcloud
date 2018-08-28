@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/terraform"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 
@@ -18,8 +19,9 @@ func init() {
 }
 
 func TestAccHcloudFloatingIPAssociation_Create(t *testing.T) {
-	floatingIP := hcloud.FloatingIP{ID: acctest.RandInt()}
-	server := hcloud.Server{ID: acctest.RandInt()}
+	var server hcloud.Server
+	var floatingIP hcloud.FloatingIP
+	rInt := acctest.RandInt()
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccHcloudPreCheck(t) },
@@ -27,17 +29,56 @@ func TestAccHcloudFloatingIPAssociation_Create(t *testing.T) {
 		CheckDestroy: testAccHcloudCheckFloatingIPDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccHcloudCheckFloatingIPAssociationConfig(server.ID),
+				Config: testAccHcloudCheckFloatingIPAssociationConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccHcloudCheckFloatingIPExists("hcloud_floating_ip.foobar", &floatingIP),
-					resource.TestCheckResourceAttr(
-						"hcloud_floating_ip_association.foobar", "floating_ip_id", strconv.Itoa(floatingIP.ID)),
+					testAccHcloudCheckFloatingIPAssociationFloatingIP("hcloud_floating_ip_association.foobar", &floatingIP),
 					testAccHcloudCheckServerExists("hcloud_server.foobar", &server),
-					resource.TestCheckResourceAttr(
-						"hcloud_floating_ip_association.foobar", "server_id", strconv.Itoa(server.ID))),
+					testAccHcloudCheckFloatingIPAssociationServer("hcloud_floating_ip_association.foobar", &server),
+				),
 			},
 		},
 	})
+}
+
+func testAccHcloudCheckFloatingIPAssociationFloatingIP(n string, floatingIP *hcloud.FloatingIP) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("Not found: %s", n)
+		}
+
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("No Record ID is set")
+		}
+		id := rs.Primary.Attributes["floating_ip_id"]
+
+		if id != strconv.Itoa(floatingIP.ID) {
+			return fmt.Errorf("Floating IP Association Floating IP id is not valid: %v", id)
+		}
+
+		return nil
+	}
+}
+
+func testAccHcloudCheckFloatingIPAssociationServer(n string, server *hcloud.Server) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("Not found: %s", n)
+		}
+
+		if rs.Primary.ID == "" {
+			return fmt.Errorf("No Record ID is set")
+		}
+		id := rs.Primary.Attributes["server_id"]
+
+		if id != strconv.Itoa(server.ID) {
+			return fmt.Errorf("Floating IP Association Server id is not valid: %v", id)
+		}
+
+		return nil
+	}
 }
 
 func testAccHcloudCheckFloatingIPAssociationConfig(serverID int) string {
@@ -47,7 +88,6 @@ resource "hcloud_server" "foobar" {
   server_type = "cx11"
   image       = "debian-9"
   datacenter  = "fsn1-dc8"
-  ssh_keys    = ["${hcloud_ssh_key.foobar.id}"]
 }
 
 resource "hcloud_floating_ip" "foobar" {
@@ -56,7 +96,6 @@ resource "hcloud_floating_ip" "foobar" {
 }
 
 resource "hcloud_floating_ip_association" "foobar" {
-  type           = "ipv4"
   floating_ip_id = "${hcloud_floating_ip.foobar.id}"
   server_id      = "${hcloud_server.foobar.id}"
 }

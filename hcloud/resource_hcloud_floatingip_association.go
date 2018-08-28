@@ -95,7 +95,9 @@ func resourceFloatingIPAssociationRead(d *schema.ResourceData, m interface{}) er
 	if floatingIP.Server != nil {
 		server.ID = floatingIP.Server.ID
 	} else {
-		server.ID = 0
+		log.Printf("[WARN] Floating IP (%v) is not associated to a server, removing Floating IP Association from state", d.Get("floating_ip_id"))
+		d.SetId("")
+		return nil
 	}
 
 	d.Set("server_id", server.ID)
@@ -114,7 +116,7 @@ func resourceFloatingIPAssociationUpdate(d *schema.ResourceData, m interface{}) 
 		return nil
 	}
 
-	d.Partial(true)
+
 	if d.HasChange("server_id") {
 		floatingIPID, ok := d.GetOk("floating_ip_id")
 		if !ok {
@@ -136,9 +138,7 @@ func resourceFloatingIPAssociationUpdate(d *schema.ResourceData, m interface{}) 
 				return err
 			}
 		}
-		d.SetPartial("server_id")
 	}
-	d.Partial(false)
 
 	return resourceFloatingIPAssociationRead(d, m)
 }
