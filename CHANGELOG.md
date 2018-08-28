@@ -3,6 +3,7 @@
 FEATURES:
 
 - **New Resource**: `hcloud_rnds` Manage reverse DNS entries for servers and Floating IPs.
+- **New Datasource**: `hcloud_floating_ip` Lookup Floating ips.
 
 IMPROVEMENTS:
 
