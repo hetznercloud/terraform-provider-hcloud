@@ -103,7 +103,7 @@ func resourceFloatingIPAssociationDelete(d *schema.ResourceData, m interface{}) 
 
 	floatingIPID, err := strconv.Atoi(d.Id())
 	if err != nil {
-		log.Printf("[WARN] Invalid id (%s) , removing from state: %v", d.Id(), err)
+		log.Printf("[WARN] Invalid id (%s), removing from state: %v", d.Id(), err)
 		d.SetId("")
 		return nil
 	}
