@@ -3,6 +3,7 @@
 FEATURES:
 
 * **New Resource**: `hcloud_rnds` Manage reverse DNS entries for servers and Floating IPs.
+* **New Provider Config**: `poll_interval` for easily configure the poll interval.
 
 IMPROVEMENTS:
 
