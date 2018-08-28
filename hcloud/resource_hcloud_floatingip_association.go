@@ -2,7 +2,6 @@ package hcloud
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"strconv"
 
@@ -14,7 +13,6 @@ func resourceFloatingIPAssociation() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceFloatingIPAssociationCreate,
 		Read:   resourceFloatingIPAssociationRead,
-		Update: resourceFloatingIPAssociationUpdate,
 		Delete: resourceFloatingIPAssociationDelete,
 
 		Schema: map[string]*schema.Schema{
@@ -26,6 +24,7 @@ func resourceFloatingIPAssociation() *schema.Resource {
 			"server_id": {
 				Type:     schema.TypeInt,
 				Required: true,
+				ForceNew: true,
 			},
 		},
 	}
@@ -35,16 +34,11 @@ func resourceFloatingIPAssociationCreate(d *schema.ResourceData, m interface{}) 
 	client := m.(*hcloud.Client)
 	ctx := context.Background()
 
-	floatingIPID, ok := d.GetOk("floating_ip_id")
-	if !ok {
-		return fmt.Errorf("could not find floating ip id")
-	}
+	floatingIPID := d.Get("floating_ip_id")
 	floatingIP := &hcloud.FloatingIP{ID: floatingIPID.(int)}
 
-	serverID, ok := d.GetOk("server_id")
-	if !ok {
-		return fmt.Errorf("could not find server id")
-	}
+	serverID := d.Get("server_id")
+
 	server := &hcloud.Server{ID: serverID.(int)}
 
 	_, _, err := client.FloatingIP.Assign(ctx, floatingIP, server)
@@ -62,16 +56,16 @@ func resourceFloatingIPAssociationRead(d *schema.ResourceData, m interface{}) er
 	client := m.(*hcloud.Client)
 	ctx := context.Background()
 
-	_, err := strconv.Atoi(d.Id())
+	floatingIPID, err := strconv.Atoi(d.Id())
 	if err != nil {
-		log.Printf("[WARN] Floating IP Association ID (%s) not found, removing from state: %v", d.Id(), err)
+		log.Printf("[WARN] Floating IP ID (%s) not found, removing from state: %v", d.Id(), err)
 		d.SetId("")
 		return nil
 	}
 
 	// 'floating_ip_id' and 'server_id' is 'Required' and 'TypeInt'
 	// therefore the cast should always work
-	floatingIP, _, err := client.FloatingIP.GetByID(ctx, d.Get("floating_ip_id").(int))
+	floatingIP, _, err := client.FloatingIP.GetByID(ctx, floatingIPID)
 	if err != nil {
 		return err
 	}
@@ -92,74 +86,29 @@ func resourceFloatingIPAssociationRead(d *schema.ResourceData, m interface{}) er
 	}
 
 	// check if correct server is associated
-	if floatingIP.Server != nil {
-		server.ID = floatingIP.Server.ID
-	} else {
+	if floatingIP.Server == nil {
 		log.Printf("[WARN] Floating IP (%v) is not associated to a server, removing Floating IP Association from state", d.Get("floating_ip_id"))
 		d.SetId("")
 		return nil
 	}
 
-	d.Set("server_id", server.ID)
+	d.Set("server_id", floatingIP.Server.ID)
 	d.Set("floating_ip_id", floatingIP.ID)
 	return nil
-}
-
-func resourceFloatingIPAssociationUpdate(d *schema.ResourceData, m interface{}) error {
-	client := m.(*hcloud.Client)
-	ctx := context.Background()
-
-	_, err := strconv.Atoi(d.Id())
-	if err != nil {
-		log.Printf("[WARN] Floating IP Association ID (%s) not found, removing from state: %v", d.Id(), err)
-		d.SetId("")
-		return nil
-	}
-
-	if d.HasChange("server_id") {
-		floatingIPID, ok := d.GetOk("floating_ip_id")
-		if !ok {
-			log.Printf("[WARN] Floating IP ID (%v) not found, removing Floating IP Association from state", d.Get("floating_ip_id"))
-			d.SetId("")
-			return nil
-		}
-		floatingIP := &hcloud.FloatingIP{ID: floatingIPID.(int)}
-
-		serverID := d.Get("server_id").(int)
-		if serverID == 0 {
-			_, _, err := client.FloatingIP.Unassign(ctx, floatingIP)
-			if err != nil {
-				return err
-			}
-		} else {
-			_, _, err := client.FloatingIP.Assign(ctx, floatingIP, &hcloud.Server{ID: serverID})
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	return resourceFloatingIPAssociationRead(d, m)
 }
 
 func resourceFloatingIPAssociationDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*hcloud.Client)
 	ctx := context.Background()
 
-	_, err := strconv.Atoi(d.Id())
+	floatingIPID, err := strconv.Atoi(d.Id())
 	if err != nil {
-		log.Printf("[WARN] Floating IP Association ID (%s) not found, removing from state: %v", d.Id(), err)
+		log.Printf("[WARN] Invalid id (%s) , removing from state: %v", d.Id(), err)
 		d.SetId("")
 		return nil
 	}
 
-	floatingIPID, ok := d.GetOk("floating_ip_id")
-	if !ok {
-		log.Printf("[WARN] Floating IP ID (%v) not found, removing Floating IP Association from state", d.Get("floating_ip_id"))
-		d.SetId("")
-		return nil
-	}
-	floatingIP := &hcloud.FloatingIP{ID: floatingIPID.(int)}
+	floatingIP := &hcloud.FloatingIP{ID: floatingIPID}
 
 	_, _, err = client.FloatingIP.Unassign(ctx, floatingIP)
 	if err != nil {
