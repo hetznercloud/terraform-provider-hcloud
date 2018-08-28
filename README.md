@@ -1,6 +1,6 @@
 Terraform Provider for the Hetzner Cloud
 ==================
-[![GitHub release](https://img.shields.io/github/release/hetznercloud/terraform-provider-hcloud.svg)](https://github.com/hetznercloud/terraform-provider-hcloud/releases/latest) [![Build Status](https://travis-ci.org/hetznercloud/terraform-provider-hcloud.svg?branch=master)](https://travis-ci.org/hetznercloud/terraform-provider-hcloud)
+[![GitHub release](https://img.shields.io/github/release/hetznercloud/terraform-provider-hcloud.svg)](https://github.com/hetznercloud/terraform-provider-hcloud/releases/latest) [![Build Status](https://travis-ci.org/terraform-providers/terraform-provider-hcloud.svg?branch=master)](https://travis-ci.org/terraform-providers/terraform-provider-hcloud)
 
 - Website: https://www.terraform.io
 - Documentation: https://www.terraform.io/docs/providers/hcloud/index.html

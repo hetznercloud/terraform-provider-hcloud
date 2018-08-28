@@ -3,16 +3,16 @@ layout: "hcloud"
 page_title: "Hetzner Cloud: hcloud_floating_ip"
 sidebar_current: "docs-hcloud-resource-floating-ip"
 description: |-
-  Provides a Hetzner Cloud Floating IP to represent a publicly-accessible static IP addresses that can be mapped to one of your Servers.
+  Provides a Hetzner Cloud Floating IP to represent a publicly-accessible static IP address that can be mapped to one of your servers.
 ---
 
 # hcloud_floating_ip
 
-Provides a Hetzner Cloud Floating IP to represent a publicly-accessible static IP addresses that can be mapped to one of your Servers.
+Provides a Hetzner Cloud Floating IP to represent a publicly-accessible static IP address that can be mapped to one of your servers.
 
 ## Example Usage
 
-```
+```hcl
 resource "hcloud_server" "node1" {
   name = "node1"
   image = "debian-9"
@@ -40,6 +40,7 @@ resource "hcloud_floating_ip" "master" {
 - `home_location` - Home location.
 - `description` - Description of the Floating IP.
 - `ip_address` - IP Address of the Floating IP.
+- `ip_network` - IPv6 subnet. (Only set if `type` is `ipv6`)
 
 ## Import
 
