@@ -24,6 +24,7 @@ resource "hcloud_server" "main" {
 ## Argument Reference
 - `id` - ID of the Image.
 - `name` - Name of the Image.
+
 ## Attributes Reference
 - `id` - Unique ID of the Image.
 - `name` - Name of the Image.
