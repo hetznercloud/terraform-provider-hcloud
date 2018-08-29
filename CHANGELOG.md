@@ -4,10 +4,15 @@ FEATURES:
 
 - **New Resource**: `hcloud_rnds` Manage reverse DNS entries for servers and Floating IPs.
 - **New Datasource**: `hcloud_floating_ip` Lookup Floating ips.
+- **New Provider Config**: `poll_interval`  Configures the interval in which actions are polled by the client. Default `500ms`. Increase this interval if you run into rate limiting errors.
 
 IMPROVEMENTS:
 
-- resource/hcloud_server: Add `ipv6_network` attribute.
+* resource/hcloud_server: Add `ipv6_network` attribute.
+
+NOTES:
+
+* Updated hcloud-go to `v1.8.0`
 
 ## 1.2.0 (June 07, 2018)
 
