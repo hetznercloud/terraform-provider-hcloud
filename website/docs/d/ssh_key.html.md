@@ -27,6 +27,7 @@ resource "hcloud_server" "main" {
 - `id` - ID of the SSH Key.
 - `name` - Name of the SSH Key.
 - `fingerprint` - Fingerprint of the SSH Key.
+
 ## Attributes Reference
 - `id` - Unique ID of the SSH Key.
 - `name` - Name of the SSH Key.
