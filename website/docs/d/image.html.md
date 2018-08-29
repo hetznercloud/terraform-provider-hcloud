@@ -5,9 +5,9 @@ sidebar_current: "docs-hcloud-datasource-image"
 description: |-
   Provides details about a specific Hetzner Cloud Image.
 ---
- # Data Source: hcloud_sshkey
- Provides details about a Hetzner Cloud Image.
- This resource can be useful when you need to determine a Image, that is not managed by terraform.
+# Data Source: hcloud_sshkey
+Provides details about a Hetzner Cloud Image.
+This resource can be useful when you need to determine a Image, that is not managed by terraform.
 ## Example Usage
 ```hcl
 data "hcloud_image" "image_1" {
@@ -21,11 +21,11 @@ resource "hcloud_server" "main" {
   image  = "${data.hcloud_image.image_1.name}"
 }
 ```
- ## Argument Reference
- - `id` - ID of the Image.
- - `name` - Name of the Image.
- ## Attributes Reference
- - `id` - Unique ID of the Image.
+## Argument Reference
+- `id` - ID of the Image.
+- `name` - Name of the Image.
+## Attributes Reference
+- `id` - Unique ID of the Image.
 - `name` - Name of the Image.
 - `type` - Type of the Image, could be `system`,`backup` or `snapshot.
 - `status` - Status of the Image.
