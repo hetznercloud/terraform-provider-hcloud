@@ -31,6 +31,7 @@ func Provider() terraform.ResourceProvider {
 			"hcloud_rdns":        resourceReverseDNS(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
+			"hcloud_image": dataSourceHcloudImage(),
 			"hcloud_floating_ip": dataSourceHcloudFloatingIP(),
 		},
 		ConfigureFunc: providerConfigure,
