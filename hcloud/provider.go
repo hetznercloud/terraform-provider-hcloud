@@ -1,6 +1,8 @@
 package hcloud
 
 import (
+	"time"
+
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/hetznercloud/hcloud-go/hcloud"
@@ -30,6 +32,7 @@ func Provider() terraform.ResourceProvider {
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"hcloud_image": dataSourceHcloudImage(),
+			"hcloud_floating_ip": dataSourceHcloudFloatingIP(),
 		},
 		ConfigureFunc: providerConfigure,
 	}
@@ -41,6 +44,13 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	}
 	if endpoint, ok := d.GetOk("endpoint"); ok {
 		opts = append(opts, hcloud.WithEndpoint(endpoint.(string)))
+	}
+	if pollInterval, ok := d.GetOk("poll_interval"); ok {
+		pollInterval, err := time.ParseDuration(pollInterval.(string))
+		if err != nil {
+			return nil, err
+		}
+		opts = append(opts, hcloud.WithPollInterval(pollInterval))
 	}
 	return hcloud.NewClient(opts...), nil
 }
