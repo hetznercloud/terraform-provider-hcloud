@@ -9,11 +9,11 @@ import (
 	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 
-func resourceFloatingIPAssociation() *schema.Resource {
+func resourceFloatingIPAssignment() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceFloatingIPAssociationCreate,
-		Read:   resourceFloatingIPAssociationRead,
-		Delete: resourceFloatingIPAssociationDelete,
+		Create: resourceFloatingIPAssignmentCreate,
+		Read:   resourceFloatingIPAssignmentRead,
+		Delete: resourceFloatingIPAssignmentDelete,
 
 		Schema: map[string]*schema.Schema{
 			"floating_ip_id": {
@@ -30,7 +30,7 @@ func resourceFloatingIPAssociation() *schema.Resource {
 	}
 }
 
-func resourceFloatingIPAssociationCreate(d *schema.ResourceData, m interface{}) error {
+func resourceFloatingIPAssignmentCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*hcloud.Client)
 	ctx := context.Background()
 
@@ -49,10 +49,10 @@ func resourceFloatingIPAssociationCreate(d *schema.ResourceData, m interface{}) 
 	// Since a floating ip can only be assigned to one server
 	// we can use the floating ip id as floating ip association id.
 	d.SetId(strconv.Itoa(floatingIP.ID))
-	return resourceFloatingIPAssociationRead(d, m)
+	return resourceFloatingIPAssignmentRead(d, m)
 }
 
-func resourceFloatingIPAssociationRead(d *schema.ResourceData, m interface{}) error {
+func resourceFloatingIPAssignmentRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*hcloud.Client)
 	ctx := context.Background()
 
@@ -97,7 +97,7 @@ func resourceFloatingIPAssociationRead(d *schema.ResourceData, m interface{}) er
 	return nil
 }
 
-func resourceFloatingIPAssociationDelete(d *schema.ResourceData, m interface{}) error {
+func resourceFloatingIPAssignmentDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*hcloud.Client)
 	ctx := context.Background()
 
