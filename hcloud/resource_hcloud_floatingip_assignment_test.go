@@ -12,13 +12,13 @@ import (
 )
 
 func init() {
-	resource.AddTestSweepers("hcloud_floating_ip_association", &resource.Sweeper{
-		Name: "hcloud_floating_ip_association",
+	resource.AddTestSweepers("hcloud_floating_ip_assignment", &resource.Sweeper{
+		Name: "hcloud_floating_ip_assignment",
 		F:    testSweepFloatingIps,
 	})
 }
 
-func TestAccHcloudFloatingIPAssociation_Create(t *testing.T) {
+func TestAccHcloudFloatingIPAssignment_Create(t *testing.T) {
 	var server hcloud.Server
 	var floatingIP hcloud.FloatingIP
 	rInt := acctest.RandInt()
@@ -29,19 +29,19 @@ func TestAccHcloudFloatingIPAssociation_Create(t *testing.T) {
 		CheckDestroy: testAccHcloudCheckFloatingIPDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccHcloudCheckFloatingIPAssociationConfig(rInt),
+				Config: testAccHcloudCheckFloatingIPAssignmentConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccHcloudCheckFloatingIPExists("hcloud_floating_ip.foobar", &floatingIP),
-					testAccHcloudCheckFloatingIPAssociationFloatingIP("hcloud_floating_ip_association.foobar", &floatingIP),
+					testAccHcloudCheckFloatingIPAssignmentFloatingIP("hcloud_floating_ip_assignment.foobar", &floatingIP),
 					testAccHcloudCheckServerExists("hcloud_server.foobar", &server),
-					testAccHcloudCheckFloatingIPAssociationServer("hcloud_floating_ip_association.foobar", &server),
+					testAccHcloudCheckFloatingIPAssignmentServer("hcloud_floating_ip_assignment.foobar", &server),
 				),
 			},
 		},
 	})
 }
 
-func testAccHcloudCheckFloatingIPAssociationFloatingIP(n string, floatingIP *hcloud.FloatingIP) resource.TestCheckFunc {
+func testAccHcloudCheckFloatingIPAssignmentFloatingIP(n string, floatingIP *hcloud.FloatingIP) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -54,14 +54,14 @@ func testAccHcloudCheckFloatingIPAssociationFloatingIP(n string, floatingIP *hcl
 		id := rs.Primary.Attributes["floating_ip_id"]
 
 		if id != strconv.Itoa(floatingIP.ID) {
-			return fmt.Errorf("Floating IP Association Floating IP id is not valid: %v", id)
+			return fmt.Errorf("Floating IP Assignment Floating IP id is not valid: %v", id)
 		}
 
 		return nil
 	}
 }
 
-func testAccHcloudCheckFloatingIPAssociationServer(n string, server *hcloud.Server) resource.TestCheckFunc {
+func testAccHcloudCheckFloatingIPAssignmentServer(n string, server *hcloud.Server) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -74,14 +74,14 @@ func testAccHcloudCheckFloatingIPAssociationServer(n string, server *hcloud.Serv
 		id := rs.Primary.Attributes["server_id"]
 
 		if id != strconv.Itoa(server.ID) {
-			return fmt.Errorf("Floating IP Association Server id is not valid: %v", id)
+			return fmt.Errorf("Floating IP Assignment Server id is not valid: %v", id)
 		}
 
 		return nil
 	}
 }
 
-func testAccHcloudCheckFloatingIPAssociationConfig(serverID int) string {
+func testAccHcloudCheckFloatingIPAssignmentConfig(serverID int) string {
 	return fmt.Sprintf(`
 resource "hcloud_server" "foobar" {
   name        = "foo-%d"
@@ -95,7 +95,7 @@ resource "hcloud_floating_ip" "foobar" {
   home_location = "nbg1"
 }
 
-resource "hcloud_floating_ip_association" "foobar" {
+resource "hcloud_floating_ip_assignment" "foobar" {
   floating_ip_id = "${hcloud_floating_ip.foobar.id}"
   server_id      = "${hcloud_server.foobar.id}"
 }

@@ -1,14 +1,14 @@
 ---
 layout: "hcloud"
-page_title: "Hetzner Cloud: hcloud_floating_ip_association"
-sidebar_current: "docs-hcloud-resource-floating-ip-association"
+page_title: "Hetzner Cloud: hcloud_floating_ip_assignment"
+sidebar_current: "docs-hcloud-resource-floating-ip-assignment"
 description: |-
-  Provides a Hetzner Cloud Floating IP Association to associate a Floating IP to a Hetzner Cloud Server.
+  Provides a Hetzner Cloud Floating IP Assignment to assign a Floating IP to a Hetzner Cloud Server.
 ---
 
 # hcloud_floating_ip_assignment
 
-Provides a Hetzner Cloud Floating IP Association to associate a Floating IP to a Hetzner Cloud Server. Deleting a Floating IP Association disassociates the Floating IP from the Server.
+Provides a Hetzner Cloud Floating IP Assignment to assign a Floating IP to a Hetzner Cloud Server. Deleting a Floating IP Assignment will unassign the Floating IP from the Server.
 
 ## Example Usage
 
