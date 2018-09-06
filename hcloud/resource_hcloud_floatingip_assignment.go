@@ -108,12 +108,17 @@ func resourceFloatingIPAssignmentDelete(d *schema.ResourceData, m interface{}) e
 		return nil
 	}
 
-	floatingIP := &hcloud.FloatingIP{ID: floatingIPID}
-
-	_, _, err = client.FloatingIP.Unassign(ctx, floatingIP)
-	if err != nil {
-		return err
+	floatingIP, _, err := client.FloatingIP.GetByID(ctx, floatingIPID)
+	if floatingIP == nil {
+		log.Printf("[WARN] Floating IP ID (%v) not found, removing Floating IP Association from state", d.Get("floating_ip_id"))
+		d.SetId("")
+		return nil
 	}
-
+	if floatingIP.Server != nil {
+		_, _, err = client.FloatingIP.Unassign(ctx, floatingIP)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
