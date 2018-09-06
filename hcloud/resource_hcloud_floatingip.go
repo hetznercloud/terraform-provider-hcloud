@@ -105,16 +105,7 @@ func resourceFloatingIPRead(d *schema.ResourceData, m interface{}) error {
 		return nil
 	}
 
-	d.Set("description", floatingIP.Description)
-	d.Set("home_location", floatingIP.HomeLocation.Name)
-	d.Set("type", floatingIP.Type)
-	if floatingIP.Server != nil {
-		d.Set("server_id", floatingIP.Server.ID)
-	}
-	d.Set("ip_address", floatingIP.IP.String())
-	if floatingIP.Type == hcloud.FloatingIPTypeIPv6 {
-		d.Set("ip_network", floatingIP.Network.String())
-	}
+	setFloatingIPSchema(d, floatingIP)
 	return nil
 }
 
@@ -207,6 +198,20 @@ func resourceFloatingIPIsNotFound(err error, d *schema.ResourceData) bool {
 		return true
 	}
 	return false
+}
+
+func setFloatingIPSchema(d *schema.ResourceData, f *hcloud.FloatingIP) {
+	d.SetId(strconv.Itoa(f.ID))
+	d.Set("ip_address", f.IP.String())
+	if f.Type == hcloud.FloatingIPTypeIPv6 {
+		d.Set("ip_network", f.Network.String())
+	}
+	if f.Server != nil {
+		d.Set("server_id", f.Server.ID)
+	}
+	d.Set("type", f.Type)
+	d.Set("home_location", f.HomeLocation.Name)
+	d.Set("description", f.Description)
 }
 
 func waitForFloatingIPAction(ctx context.Context, client *hcloud.Client, action *hcloud.Action, floatingIP *hcloud.FloatingIP) error {
