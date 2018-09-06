@@ -22,7 +22,7 @@ This resource can be useful when you need to determine a Floating IP ID based on
 data "hcloud_floating_ip" "ip_1" {
   ip_address = "1.2.3.4"
 }
- resource "hcloud_floating_ip_association" "main" {
+ resource "hcloud_floating_ip_assignment" "main" {
   count          = "${var.counter}"
   floating_ip_id = "${data.hcloud_floating_ip.ip_1.id}"
   server_id      = "${hcloud_server.main.id}"
