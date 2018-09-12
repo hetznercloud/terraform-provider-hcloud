@@ -1,4 +1,4 @@
-## 1.3.0 (Unreleased)
+## 1.3.0 (September 12, 2018)
 
 FEATURES:
 
@@ -13,7 +13,7 @@ IMPROVEMENTS:
 
 NOTES:
 
-* Updated hcloud-go to `v1.8.0`
+* Updated hcloud-go to `v1.9.0`
 
 ## 1.2.0 (June 07, 2018)
 
