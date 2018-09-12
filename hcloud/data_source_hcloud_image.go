@@ -50,6 +50,14 @@ func dataSourceHcloudImage() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"labels": {
+				Type:     schema.TypeMap,
+				Computed: true,
+			},
+			"selector": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 		},
 	}
 }
@@ -80,7 +88,23 @@ func dataSourceHcloudImageRead(d *schema.ResourceData, m interface{}) (err error
 		setImageSchema(d, i)
 		return
 	}
-	return fmt.Errorf("please specify an id or name to lookup the image")
+	if selector, ok := d.GetOk("selector"); ok {
+		var allImages []*hcloud.Image
+		opts := hcloud.ImageListOpts{hcloud.ListOpts{LabelSelector: selector.(string)}}
+		allImages, err = client.Image.AllWithOpts(ctx, opts)
+		if err != nil {
+			return err
+		}
+		if len(allImages) == 0 {
+			return fmt.Errorf("no image found for selector %q", selector)
+		}
+		if len(allImages) > 1 {
+			return fmt.Errorf("more than one image found for selector %q", selector)
+		}
+		setImageSchema(d, allImages[0])
+		return
+	}
+	return fmt.Errorf("please specify am id, a name or a selector to lookup the image")
 }
 
 func setImageSchema(d *schema.ResourceData, i *hcloud.Image) {
@@ -93,4 +117,5 @@ func setImageSchema(d *schema.ResourceData, i *hcloud.Image) {
 	d.Set("os_version", i.OSVersion)
 	d.Set("rapid_deploy", i.RapidDeploy)
 	d.Set("deprecated", i.Deprecated)
+	d.Set("labels", i.Labels)
 }

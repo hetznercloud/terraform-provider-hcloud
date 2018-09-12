@@ -41,6 +41,14 @@ func dataSourceHcloudFloatingIP() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"labels": {
+				Type:     schema.TypeMap,
+				Computed: true,
+			},
+			"selector": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 		},
 	}
 }
@@ -79,5 +87,26 @@ func dataSourceHcloudFloatingIPRead(d *schema.ResourceData, m interface{}) (err 
 		return fmt.Errorf("no Floating IP found with ip_address %s", ip)
 	}
 
-	return fmt.Errorf("please specify a id or ip_address to lookup the FloatingIP")
+	if selector, ok := d.GetOk("selector"); ok {
+		var allIPs []*hcloud.FloatingIP
+		opts := hcloud.FloatingIPListOpts{
+			ListOpts: hcloud.ListOpts{
+				LabelSelector: selector.(string),
+			},
+		}
+		allIPs, err = client.FloatingIP.AllWithOpts(ctx, opts)
+		if err != nil {
+			return err
+		}
+		if len(allIPs) == 0 {
+			return fmt.Errorf("no Floating IP found for selector %q", selector)
+		}
+		if len(allIPs) > 1 {
+			return fmt.Errorf("more than one Floating IP found for selector %q", selector)
+		}
+		setFloatingIPSchema(d, allIPs[0])
+		return
+	}
+
+	return fmt.Errorf("please specify a id, ip_address or a selector to lookup the FloatingIP")
 }

@@ -31,6 +31,14 @@ func dataSourceHcloudSSHKey() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"labels": {
+				Type:     schema.TypeMap,
+				Computed: true,
+			},
+			"selector": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 		},
 	}
 }
@@ -71,12 +79,25 @@ func dataSourceHcloudSSHKeyRead(d *schema.ResourceData, m interface{}) (err erro
 		setSSHKeySchema(d, s)
 		return
 	}
-	return fmt.Errorf("please specify a id or name to lookup the sshkey")
-}
-
-func setSSHKeySchema(d *schema.ResourceData, s *hcloud.SSHKey) {
-	d.SetId(strconv.Itoa(s.ID))
-	d.Set("name", s.Name)
-	d.Set("fingerprint", s.Fingerprint)
-	d.Set("public_key", s.PublicKey)
+	if selector, ok := d.GetOk("selector"); ok {
+		var allKeys []*hcloud.SSHKey
+		opts := hcloud.SSHKeyListOpts{
+			ListOpts: hcloud.ListOpts{
+				LabelSelector: selector.(string),
+			},
+		}
+		allKeys, err = client.SSHKey.AllWithOpts(ctx, opts)
+		if err != nil {
+			return err
+		}
+		if len(allKeys) == 0 {
+			return fmt.Errorf("no sshkey found for selector %q", selector)
+		}
+		if len(allKeys) > 1 {
+			return fmt.Errorf("more than one sshkey found for selector %q", selector)
+		}
+		setSSHKeySchema(d, allKeys[0])
+		return
+	}
+	return fmt.Errorf("please specify a id, a name, a fingerprint or a selector to lookup the sshkey")
 }
