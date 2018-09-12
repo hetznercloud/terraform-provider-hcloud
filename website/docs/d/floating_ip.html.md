@@ -17,6 +17,7 @@ This resource can be useful when you need to determine a Floating IP ID based on
 # Data Source: hcloud_floating_ip
 Provides details about a Hetzner Cloud Floating IP.
 This resource can be useful when you need to determine a Floating IP ID based on the IP address.
+
 ## Example Usage
 ```hcl
 data "hcloud_floating_ip" "ip_1" {
@@ -28,8 +29,9 @@ data "hcloud_floating_ip" "ip_1" {
   server_id      = "${hcloud_server.main.id}"
 }
 ```
- ## Argument Reference
- - `ip_address` - IP address of the Floating IP.
- ## Attributes Reference
- - `id` - Unique ID of the Floating IP.
+## Argument Reference
+- `ip_address` - IP address of the Floating IP.
+
+## Attributes Reference
+- `id` - Unique ID of the Floating IP.
 - `ip_address` - IP address of the Floating IP.

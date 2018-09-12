@@ -1,7 +1,7 @@
 ---
 layout: "hcloud"
 page_title: "Hetzner Cloud: hcloud_floating_ip"
-sidebar_current: "docs-hcloud-resource-floating-ip"
+sidebar_current: "docs-hcloud-resource-floating-ip-x"
 description: |-
   Provides a Hetzner Cloud Floating IP to represent a publicly-accessible static IP address that can be mapped to one of your servers.
 ---
@@ -41,6 +41,7 @@ resource "hcloud_floating_ip" "master" {
 - `description` - Description of the Floating IP.
 - `ip_address` - IP Address of the Floating IP.
 - `ip_network` - IPv6 subnet. (Only set if `type` is `ipv6`)
+- `labels` - User-defined labels (key-value pairs)
 
 ## Import
 

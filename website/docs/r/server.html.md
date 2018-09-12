@@ -55,6 +55,7 @@ The following attributes are exported:
 - `ipv6_network` - The IPv6 network.
 - `status` - The status of the server.
 - `labels` - User-defined labels (key-value pairs)
+
 ## Import
 
 Servers can be imported using the server `id`:

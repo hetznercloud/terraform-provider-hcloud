@@ -35,6 +35,7 @@ The following attributes are exported:
 - `name` - The name of the SSH key
 - `public_key` - The text of the public key
 - `fingerprint` - The fingerprint of the SSH key
+- `labels` - User-defined labels (key-value pairs)
 
 ## Import
 
