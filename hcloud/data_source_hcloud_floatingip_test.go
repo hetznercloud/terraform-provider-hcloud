@@ -38,6 +38,13 @@ func TestAccHcloudDataSourceFloatingIP(t *testing.T) {
 						"data.hcloud_floating_ip.ip_2", "home_location", "fsn1"),
 					resource.TestCheckResourceAttr(
 						"data.hcloud_floating_ip.ip_2", "description", "Hashi Test"),
+
+					resource.TestCheckResourceAttr(
+						"data.hcloud_floating_ip.ip_3", "type", "ipv4"),
+					resource.TestCheckResourceAttr(
+						"data.hcloud_floating_ip.ip_3", "home_location", "fsn1"),
+					resource.TestCheckResourceAttr(
+						"data.hcloud_floating_ip.ip_3", "description", "Hashi Test"),
 				),
 			},
 		},
@@ -48,17 +55,28 @@ func TestAccHcloudDataSourceFloatingIP(t *testing.T) {
 
 func testAccHcloudCheckFloatingIPDataSourceConfig() string {
 	return fmt.Sprintf(`
+variable "labels" {
+  type = "map"
+  default = {
+    "key" = "value"
+  }
+}
 resource "hcloud_floating_ip" "floating_ip" {
   type      = "ipv4"
   home_location = "fsn1"
-	description = "Hashi Test"
+  description = "Hashi Test"
+  labels  = "${var.labels}"
 }
 data "hcloud_floating_ip" "ip_1" {
   ip_address = "${hcloud_floating_ip.floating_ip.ip_address}"
 }
 data "hcloud_floating_ip" "ip_2" {
   id = "${hcloud_floating_ip.floating_ip.id}"
-}`)
+}
+data "hcloud_floating_ip" "ip_3" {
+  selector =  "key=${hcloud_floating_ip.floating_ip.labels["key"]}"
+}
+`)
 }
 
 func testDataSourceCleanup() {

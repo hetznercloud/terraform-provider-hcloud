@@ -36,7 +36,7 @@ The following arguments are supported:
 - `backup_window` - (Optional) Enable and configure backups for a server. Time window (UTC) in which the backup will run, choices: `22-02` `02-06` `06-10` `10-14` `14-18` `18-22`
 - `iso` - (Optional) Name of an ISO image to mount.
 - `rescue` - (Optional) Enable and boot in to the specified rescue system. This enables simple installation of custom operating systems. `linux64` `linux32` or `freebsd64`
-
+- `labels` - (Optional) User-defined labels (key-value pairs) should be created with.
 
 ## Attributes Reference
 
@@ -54,7 +54,7 @@ The following attributes are exported:
 - `ipv6_address` - The first IPv6 address of the assigned network.
 - `ipv6_network` - The IPv6 network.
 - `status` - The status of the server.
-
+- `labels` - User-defined labels (key-value pairs)
 ## Import
 
 Servers can be imported using the server `id`:
