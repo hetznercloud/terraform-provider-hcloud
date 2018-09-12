@@ -32,6 +32,8 @@ func Provider() terraform.ResourceProvider {
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"hcloud_floating_ip": dataSourceHcloudFloatingIP(),
+			"hcloud_image":       dataSourceHcloudImage(),
+			"hcloud_ssh_key":     dataSourceHcloudSSHKey(),
 		},
 		ConfigureFunc: providerConfigure,
 	}
