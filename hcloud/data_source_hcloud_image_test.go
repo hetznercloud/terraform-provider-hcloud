@@ -44,5 +44,6 @@ data "hcloud_image" "image_1" {
 }
 data "hcloud_image" "image_2" {
   id = 168855
-}`)
+}
+`)
 }

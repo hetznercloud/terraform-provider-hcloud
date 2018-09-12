@@ -47,6 +47,10 @@ func resourceFloatingIP() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"labels": {
+				Type:     schema.TypeMap,
+				Optional: true,
+			},
 		},
 	}
 }
@@ -65,6 +69,13 @@ func resourceFloatingIPCreate(d *schema.ResourceData, m interface{}) error {
 	}
 	if homeLocation, ok := d.GetOk("home_location"); ok {
 		opts.HomeLocation = &hcloud.Location{Name: homeLocation.(string)}
+	}
+	if labels, ok := d.GetOk("labels"); ok {
+		tmpLabels := make(map[string]string)
+		for k, v := range labels.(map[string]interface{}) {
+			tmpLabels[k] = v.(string)
+		}
+		opts.Labels = tmpLabels
 	}
 
 	res, _, err := client.FloatingIP.Create(ctx, opts)
@@ -163,7 +174,23 @@ func resourceFloatingIPUpdate(d *schema.ResourceData, m interface{}) error {
 		}
 		d.SetPartial("server_id")
 	}
-
+	if d.HasChange("labels") {
+		labels := d.Get("labels")
+		tmpLabels := make(map[string]string)
+		for k, v := range labels.(map[string]interface{}) {
+			tmpLabels[k] = v.(string)
+		}
+		_, _, err := client.FloatingIP.Update(ctx, floatingIP, hcloud.FloatingIPUpdateOpts{
+			Labels: tmpLabels,
+		})
+		if err != nil {
+			if resourceFloatingIPIsNotFound(err, d) {
+				return nil
+			}
+			return err
+		}
+		d.SetPartial("labels")
+	}
 	d.Partial(false)
 
 	return resourceFloatingIPRead(d, m)
@@ -211,6 +238,7 @@ func setFloatingIPSchema(d *schema.ResourceData, f *hcloud.FloatingIP) {
 	d.Set("type", f.Type)
 	d.Set("home_location", f.HomeLocation.Name)
 	d.Set("description", f.Description)
+	d.Set("labels", f.Labels)
 }
 
 func waitForFloatingIPAction(ctx context.Context, client *hcloud.Client, action *hcloud.Action, floatingIP *hcloud.FloatingIP) error {

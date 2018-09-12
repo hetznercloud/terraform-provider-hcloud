@@ -102,6 +102,10 @@ func resourceServer() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"labels": {
+				Type:     schema.TypeMap,
+				Optional: true,
+			},
 		},
 	}
 }
@@ -148,6 +152,13 @@ func resourceServerCreate(d *schema.ResourceData, m interface{}) error {
 
 	if location, ok := d.GetOk("location"); ok {
 		opts.Location = &hcloud.Location{Name: location.(string)}
+	}
+	if labels, ok := d.GetOk("labels"); ok {
+		tmpLabels := make(map[string]string)
+		for k, v := range labels.(map[string]interface{}) {
+			tmpLabels[k] = v.(string)
+		}
+		opts.Labels = tmpLabels
 	}
 
 	res, _, err := client.Server.Create(ctx, opts)
@@ -207,6 +218,7 @@ func resourceServerRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("ipv6_address", server.PublicNet.IPv6.IP.String())
 	d.Set("ipv6_network", server.PublicNet.IPv6.Network.String())
 	d.Set("backup_window", server.BackupWindow)
+	d.Set("labels", server.Labels)
 	if server.Image != nil {
 		if server.Image.Name != "" {
 			d.Set("image", server.Image.Name)
@@ -250,7 +262,23 @@ func resourceServerUpdate(d *schema.ResourceData, m interface{}) error {
 		}
 		d.SetPartial("name")
 	}
-
+	if d.HasChange("labels") {
+		labels := d.Get("labels")
+		tmpLabels := make(map[string]string)
+		for k, v := range labels.(map[string]interface{}) {
+			tmpLabels[k] = v.(string)
+		}
+		_, _, err := client.Server.Update(ctx, server, hcloud.ServerUpdateOpts{
+			Labels: tmpLabels,
+		})
+		if err != nil {
+			if resourceServerIsNotFound(err, d) {
+				return nil
+			}
+			return err
+		}
+		d.SetPartial("labels")
+	}
 	if d.HasChange("server_type") {
 		serverType := d.Get("server_type").(string)
 		keepDisk := d.Get("keep_disk").(bool)
