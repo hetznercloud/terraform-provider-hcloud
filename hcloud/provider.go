@@ -30,11 +30,13 @@ func Provider() terraform.ResourceProvider {
 			"hcloud_floating_ip_assignment": resourceFloatingIPAssignment(),
 			"hcloud_ssh_key":                resourceSSHKey(),
 			"hcloud_rdns":                   resourceReverseDNS(),
+			"hcloud_volume":                 resourceVolume(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"hcloud_floating_ip": dataSourceHcloudFloatingIP(),
 			"hcloud_image":       dataSourceHcloudImage(),
 			"hcloud_ssh_key":     dataSourceHcloudSSHKey(),
+			"hcloud_volume":      dataSourceHcloudVolume(),
 		},
 		ConfigureFunc: providerConfigure,
 	}
