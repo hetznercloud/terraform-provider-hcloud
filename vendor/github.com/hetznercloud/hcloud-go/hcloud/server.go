@@ -33,6 +33,7 @@ type Server struct {
 	Image           *Image
 	Protection      ServerProtection
 	Labels          map[string]string
+	Volumes         []int
 }
 
 // ServerProtection represents the protection level of a server.

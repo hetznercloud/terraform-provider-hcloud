@@ -126,6 +126,7 @@ func ServerFromSchema(s schema.Server) *Server {
 		RescueEnabled:   s.RescueEnabled,
 		Datacenter:      DatacenterFromSchema(s.Datacenter),
 		Locked:          s.Locked,
+		Volumes:         s.Volumes,
 		Protection: ServerProtection{
 			Delete:  s.Protection.Delete,
 			Rebuild: s.Protection.Rebuild,
@@ -274,6 +275,25 @@ func ImageFromSchema(s schema.Image) *Image {
 		i.Labels[key] = value
 	}
 	return i
+}
+
+// VolumeFromSchema converts a schema.Volume to a Volume.
+func VolumeFromSchema(s schema.Volume) *Volume {
+	v := &Volume{
+		ID:       s.ID,
+		Name:     s.Name,
+		Server:   s.Server,
+		Location: LocationFromSchema(s.Location),
+		Size:     s.Size,
+		Protection: VolumeProtection{
+			Delete: s.Protection.Delete,
+		},
+	}
+	v.Labels = map[string]string{}
+	for key, value := range s.Labels {
+		v.Labels[key] = value
+	}
+	return v
 }
 
 // PaginationFromSchema converts a schema.MetaPagination to a Pagination.

@@ -352,7 +352,8 @@ func TestServerFromSchema(t *testing.T) {
 		"labels": {
 			"key": "value",
 			"key2": "value2"
-		}
+		},
+		"volumes": [123,456,789]
 	}`)
 
 	var s schema.Server
@@ -414,6 +415,9 @@ func TestServerFromSchema(t *testing.T) {
 	}
 	if server.Labels["key"] != "value" || server.Labels["key2"] != "value2" {
 		t.Errorf("unexpected Labels: %v", server.Labels)
+	}
+	if len(s.Volumes) != 3 {
+		t.Errorf("unexpected Volumes Length: %v", len(s.Volumes))
 	}
 }
 
@@ -834,6 +838,61 @@ func TestImageFromSchema(t *testing.T) {
 	}
 	if image.Labels["key"] != "value" || image.Labels["key2"] != "value2" {
 		t.Errorf("unexpected Labels: %v", image.Labels)
+	}
+}
+
+func TestVolumeFromSchema(t *testing.T) {
+	data := []byte(`{
+		"id": 4711,
+		"created": "2016-01-30T23:50+00:00",
+		"name": "Database Storage",
+		"server": null,
+		"location": {
+			"id": 1,
+			"name": "fsn1",
+			"description": "Falkenstein DC Park 1",
+			"country": "DE",
+			"city": "Falkenstein",
+			"latitude": 50.47612,
+			"longitude": 12.370071
+		},
+		"size": 42,
+		"protection": {
+			"delete": true
+		},
+		"labels": {
+			"Key": "Value",
+			"Key2": "Value2"
+		}
+	}`)
+	var s schema.Volume
+	if err := json.Unmarshal(data, &s); err != nil {
+		t.Fatal(err)
+	}
+	volume := VolumeFromSchema(s)
+	if volume.ID != 4711 {
+		t.Errorf("unexpected ID: %v", volume.ID)
+	}
+	if volume.Name != "Database Storage" {
+		t.Errorf("unexpected Name: %v", volume.Name)
+	}
+	if volume.Server != nil {
+		t.Errorf("unexpected Server: %v", volume.Server)
+	}
+	if volume.Location == nil || volume.Location.ID != 1 {
+		t.Errorf("unexpected Location: %v", volume.Location)
+	}
+	if volume.Size != 42 {
+		t.Errorf("unexpected Size: %v", volume.Size)
+	}
+	if !volume.Protection.Delete {
+		t.Errorf("unexpected value for Protection.Delete: %v", volume.Protection.Delete)
+	}
+	if volume.Labels["Key"] != "Value" {
+		t.Errorf("unexpected Label.Key: %v", volume.Labels["Key"])
+	}
+	if volume.Labels["Key2"] != "Value2" {
+		t.Errorf("unexpected Label.Key2: %v", volume.Labels["Key2"])
 	}
 }
 

@@ -308,15 +308,16 @@
   revision = "3520598351bb3500a49ae9563f5539666ae0a27c"
 
 [[projects]]
-  digest = "1:1b79d88420696df682c299357e19ec422e5fd6d183baa1dccde286eee83336b1"
+  branch = "implement-volumes"
+  digest = "1:dcfd3fc73ef3825fe6d5890fe62aa1e03ada45e6a711e7e20e283b63b8d40f28"
   name = "github.com/hetznercloud/hcloud-go"
   packages = [
     "hcloud",
     "hcloud/schema",
   ]
   pruneopts = ""
-  revision = "6ff899c25535e0712de9f8f19bafc9a5717603c3"
-  version = "v1.9.0"
+  revision = "ac6f6ef2b8250103a0c805f2bd767a442c741a1a"
+  source = "ssh://git@git.hetzner.company:222/hc/integrations/hcloud-go.git"
 
 [[projects]]
   digest = "1:6f49eae0c1e5dab1dafafee34b207aeb7a42303105960944828c2079b92fc88e"
