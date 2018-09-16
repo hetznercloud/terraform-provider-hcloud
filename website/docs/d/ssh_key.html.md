@@ -24,12 +24,12 @@ resource "hcloud_server" "main" {
 }
 ```
 ## Argument Reference
-- `id` - ID of the SSH Key.
-- `name` - Name of the SSH Key.
-- `fingerprint` - Fingerprint of the SSH Key.
+- `id` - (Optional, string) ID of the SSH Key.
+- `name` - (Optional, string) Name of the SSH Key.
+- `fingerprint` - (Optional, string) Fingerprint of the SSH Key.
 
 ## Attributes Reference
-- `id` - Unique ID of the SSH Key.
-- `name` - Name of the SSH Key.
-- `fingerprint` - Fingerprint of the SSH Key.
-- `public_key` - Public Key of the SSH Key.
+- `id` - (int) Unique ID of the SSH Key.
+- `name` - (string) Name of the SSH Key.
+- `fingerprint` - (string) Fingerprint of the SSH Key.
+- `public_key` - (string) Public Key of the SSH Key.

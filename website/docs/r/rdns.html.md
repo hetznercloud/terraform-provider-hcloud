@@ -28,22 +28,22 @@ resource "hcloud_rdns" "master" {
 
 ## Argument Reference
 
-- `dns_ptr` - (Required) The DNS address the `ip_address` should resolve to.
-- `ip_address` - (Required) The IP address that should point to `dns_ptr`.
-- `server_id` - (Required) The server the `ip_address` belongs to.
-- `floating_ip_id` - (Required) The Floating IP the `ip_address` belongs to.
+- `dns_ptr` - (Required, string) The DNS address the `ip_address` should resolve to.
+- `ip_address` - (Required, string) The IP address that should point to `dns_ptr`.
+- `server_id` - (Required, int) The server the `ip_address` belongs to.
+- `floating_ip_id` - (Required, int) The Floating IP the `ip_address` belongs to.
 
 ## Attributes Reference
 
-- `id` - Unique ID of the Reverse DNS Entry.
-- `dns_ptr` - DNS pointer for the IP address.
-- `ip_address` - IP address.
-- `server_id` - The server the IP address belongs to.
-- `floating_ip_id` - The Floating IP the IP address belongs to.
+- `id` - (int) Unique ID of the Reverse DNS Entry.
+- `dns_ptr` - (string) DNS pointer for the IP address.
+- `ip_address` - (string) IP address.
+- `server_id` - (int) The server the IP address belongs to.
+- `floating_ip_id` - (int) The Floating IP the IP address belongs to.
 
 ## Import
 
-Reverse DNS entries can be imported using a compound ID with the following format:  
+Reverse DNS entries can be imported using a compound ID with the following format:
 `<prefix (s for server/ f for floating ip)>-<server or floating ip ID>-<IP address>`
 
 ```

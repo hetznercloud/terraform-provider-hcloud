@@ -24,18 +24,18 @@ resource "hcloud_ssh_key" "default" {
 
 The following arguments are supported:
 
-- `name` - (Required) Name of the SSH key.
-- `public_key` - (Required) The public key. If this is a file, it can be read using the file interpolation function
+- `name` - (Required, string) Name of the SSH key.
+- `public_key` - (Required, string) The public key. If this is a file, it can be read using the file interpolation function
 
 ## Attributes Reference
 
 The following attributes are exported:
 
-- `id` - The unique ID of the key.
-- `name` - The name of the SSH key
-- `public_key` - The text of the public key
-- `fingerprint` - The fingerprint of the SSH key
-- `labels` - User-defined labels (key-value pairs)
+- `id` - (int) The unique ID of the key.
+- `name` - (string) The name of the SSH key
+- `public_key` - (string) The text of the public key
+- `fingerprint` - (string) The fingerprint of the SSH key
+- `labels` - (map) User-defined labels (key-value pairs)
 
 ## Import
 
