@@ -26,7 +26,6 @@ func TestAccHcloudDataSourceVolume(t *testing.T) {
 						"data.hcloud_volume.volume_2", "name", fmt.Sprintf("volume-%d", rInt)),
 					resource.TestCheckResourceAttr(
 						"data.hcloud_volume.volume_3", "name", fmt.Sprintf("volume-%d", rInt)),
-
 				),
 			},
 		},

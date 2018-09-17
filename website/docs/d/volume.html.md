@@ -16,12 +16,15 @@ data "hcloud_volume" "volume_1" {
 data "hcloud_volume" "volume_2" {
   name = "my-volume"
 }
-
+data "hcloud_volume" "volume_3" {
+  selector = "key=value"
+}
 ```
+
 ## Argument Reference
 - `id` - ID of the volume.
 - `name` - Name of the volume.
-- `selector` - Label Selector.
+- `selector` - Label Selector. For more information about possible values, visit the [Hetzner Cloud Documentation](https://docs.hetzner.cloud/#overview-label-selector).
 
 ## Attributes Reference
 - `id` - Unique ID of the volume.
