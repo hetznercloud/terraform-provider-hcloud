@@ -46,5 +46,5 @@ resource "hcloud_volume" "master" {
 Volumes can be imported using its `id`:
 
 ```
-terraform import hcloud_volume.myip <id>
+terraform import hcloud_volume.myvolume <id>
 ```
