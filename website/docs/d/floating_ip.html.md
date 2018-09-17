@@ -34,7 +34,7 @@ resource "hcloud_floating_ip_assignment" "main" {
 ```
 ## Argument Reference
 - `ip_address` - (Optional, string) IP address of the Floating IP.
-- `selector` - (Optional, string) Label selector for the [label selector](https://docs.hetzner.cloud/#overview-label-selector).
+- `selector` - (Optional, string) [Label selector](https://docs.hetzner.cloud/#overview-label-selector)
 
 ## Attributes Reference
 - `id` - (int) Unique ID of the Floating IP.

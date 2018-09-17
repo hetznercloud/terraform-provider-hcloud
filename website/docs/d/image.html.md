@@ -27,8 +27,7 @@ resource "hcloud_server" "main" {
 ## Argument Reference
 - `id` - (Optional, string) ID of the Image.
 - `name` - (Optional, string) Name of the Image.
-- `selector` - (Optional, string) Label selector for the [label selector](https://docs.hetzner.cloud/#overview-label-selector).
-
+- `selector` - (Optional, string) [Label selector](https://docs.hetzner.cloud/#overview-label-selector)
 
 ## Attributes Reference
 - `id` - (int) Unique ID of the Image.

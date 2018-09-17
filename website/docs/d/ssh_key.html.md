@@ -30,7 +30,7 @@ resource "hcloud_server" "main" {
 - `id` - (Optional, string) ID of the SSH Key.
 - `name` - (Optional, string) Name of the SSH Key.
 - `fingerprint` - (Optional, string) Fingerprint of the SSH Key.
-- `selector` - (Optional, string) Label selector for the [label selector](https://docs.hetzner.cloud/#overview-label-selector).
+- `selector` - (Optional, string) [Label selector](https://docs.hetzner.cloud/#overview-label-selector)
 
 ## Attributes Reference
 - `id` - (int) Unique ID of the SSH Key.
