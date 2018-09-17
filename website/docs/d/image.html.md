@@ -16,6 +16,9 @@ data "hcloud_image" "image_1" {
 data "hcloud_image" "image_2" {
   name = "ubuntu-18.04"
 }
+data "hcloud_image" "image_3" {
+  selector = "key=value"
+}
 
 resource "hcloud_server" "main" {
   image  = "${data.hcloud_image.image_1.name}"
@@ -24,6 +27,7 @@ resource "hcloud_server" "main" {
 ## Argument Reference
 - `id` - (Optional, string) ID of the Image.
 - `name` - (Optional, string) Name of the Image.
+- `selector` - (Optional, string) [Label selector](https://docs.hetzner.cloud/#overview-label-selector)
 
 ## Attributes Reference
 - `id` - (int) Unique ID of the Image.
