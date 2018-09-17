@@ -33,11 +33,11 @@ resource "hcloud_floating_ip" "master" {
 
 ## Argument Reference
 
-- `floating_ip_id` - (Required) ID of the Floating IP.
-- `server_id` - (Required) Server to assign the Floating IP to.
+- `floating_ip_id` - (Required, int) ID of the Floating IP.
+- `server_id` - (Required, int) Server to assign the Floating IP to.
 
 ## Attributes Reference
 
-- `id` - Unique ID of the Floating IP Assignment.
-- `floating_ip_id` - ID of the Floating IP.
-- `server_id` - Server the Floating IP was assigned to.
+- `id` - (int) Unique ID of the Floating IP Assignment.
+- `floating_ip_id` - (int) ID of the Floating IP.
+- `server_id` - (int) Server the Floating IP was assigned to.

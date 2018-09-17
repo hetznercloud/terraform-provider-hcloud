@@ -27,21 +27,21 @@ resource "hcloud_floating_ip" "master" {
 
 ## Argument Reference
 
-- `type` - (Required) Type of the Floating IP. `ipv4` `ipv6`
-- `server_id` - (Optional) Server to assign the Floating IP to.
-- `home_location` - (Optional) Home location (routing is optimized for that location). Optional if server_id argument is passed.
-- `description` - (Optional) Description of the Floating IP.
+- `type` - (Required, string) Type of the Floating IP. `ipv4` `ipv6`
+- `server_id` - (Optional, int) Server to assign the Floating IP to.
+- `home_location` - (Optional, string) Home location (routing is optimized for that location). Optional if server_id argument is passed.
+- `description` - (Optional, string) Description of the Floating IP.
 
 ## Attributes Reference
 
-- `id` - Unique ID of the Floating IP.
-- `type` - Type of the Floating IP.
-- `server_id` - Server to assign the Floating IP is assigned to.
-- `home_location` - Home location.
-- `description` - Description of the Floating IP.
-- `ip_address` - IP Address of the Floating IP.
-- `ip_network` - IPv6 subnet. (Only set if `type` is `ipv6`)
-- `labels` - User-defined labels (key-value pairs)
+- `id` - (int) Unique ID of the Floating IP.
+- `type` - (string) Type of the Floating IP.
+- `server_id` - (int) Server to assign the Floating IP is assigned to.
+- `home_location` - (string) Home location.
+- `description` - (string) Description of the Floating IP.
+- `ip_address` - (string) IP Address of the Floating IP.
+- `ip_network` - (string) IPv6 subnet. (Only set if `type` is `ipv6`)
+- `labels` - (map) User-defined labels (key-value pairs)
 
 ## Import
 

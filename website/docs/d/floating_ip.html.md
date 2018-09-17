@@ -30,8 +30,8 @@ data "hcloud_floating_ip" "ip_1" {
 }
 ```
 ## Argument Reference
-- `ip_address` - IP address of the Floating IP.
+- `ip_address` - (Optional, string) IP address of the Floating IP.
 
 ## Attributes Reference
-- `id` - Unique ID of the Floating IP.
-- `ip_address` - IP address of the Floating IP.
+- `id` - (int) Unique ID of the Floating IP.
+- `ip_address` - (string) IP address of the Floating IP.
