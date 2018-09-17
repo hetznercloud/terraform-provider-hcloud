@@ -19,6 +19,9 @@ data "hcloud_ssh_key" "ssh_key_2" {
 data "hcloud_ssh_key" "ssh_key_3" {
   fingerprint = "43:51:43:a1:b5:fc:8b:b7:0a:3a:a9:b1:0f:66:73:a8"
 }
+data "hcloud_ssh_key" "ssh_key_4" {
+  selector = "key=value"
+}
 resource "hcloud_server" "main" {
   ssh_keys  = ["${data.hcloud_ssh_key.ssh_key_1.id}","${data.hcloud_ssh_key.ssh_key_2.id}","${data.hcloud_ssh_key.ssh_key_3.id}"]
 }
@@ -27,6 +30,7 @@ resource "hcloud_server" "main" {
 - `id` - (Optional, string) ID of the SSH Key.
 - `name` - (Optional, string) Name of the SSH Key.
 - `fingerprint` - (Optional, string) Fingerprint of the SSH Key.
+- `selector` - (Optional, string) Label selector for the [label selector](https://docs.hetzner.cloud/#overview-label-selector).
 
 ## Attributes Reference
 - `id` - (int) Unique ID of the SSH Key.
