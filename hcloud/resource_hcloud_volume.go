@@ -70,12 +70,12 @@ func resourceVolumeCreate(d *schema.ResourceData, m interface{}) error {
 		opts.Labels = tmpLabels
 	}
 
-	volume, _, err := client.Volume.Create(ctx, opts)
+	result, _, err := client.Volume.Create(ctx, opts)
 	if err != nil {
 		return err
 	}
 
-	d.SetId(strconv.Itoa(volume.ID))
+	d.SetId(strconv.Itoa(result.Volume.ID))
 
 	return resourceVolumeRead(d, m)
 }

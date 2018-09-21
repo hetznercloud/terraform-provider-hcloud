@@ -1,8 +1,0 @@
-[[constraint]]
-  name = "github.com/hashicorp/terraform"
-  version = "0.11.7"
-
-[[constraint]]
-  name = "github.com/hetznercloud/hcloud-go"
-  branch = "implement-volumes"
-  source = "ssh://git@git.hetzner.company:222/hc/integrations/hcloud-go.git"
