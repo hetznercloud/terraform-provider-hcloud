@@ -13,9 +13,9 @@ import (
 )
 
 func init() {
-	resource.AddTestSweepers("hcloud_floating_ip", &resource.Sweeper{
-		Name: "hcloud_floating_ip",
-		F:    testSweepFloatingIps,
+	resource.AddTestSweepers("hcloud_volume", &resource.Sweeper{
+		Name: "hcloud_volume",
+		F:    testSweepVolumes,
 	})
 }
 
@@ -33,7 +33,7 @@ func TestAccHcloudVolume_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccHcloudCheckVolumeExists("hcloud_volume.foobar", &volume),
 					resource.TestCheckResourceAttr(
-						"hcloud_volume.foobar", "name", fmt.Sprintf("foo-%d", rInt)),
+						"hcloud_volume.foobar", "name", fmt.Sprintf("foo-volume-%d", rInt)),
 					resource.TestCheckResourceAttr(
 						"hcloud_volume.foobar", "size", "10"),
 				),
@@ -43,9 +43,9 @@ func TestAccHcloudVolume_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccHcloudCheckVolumeExists("hcloud_volume.foobar", &volume),
 					resource.TestCheckResourceAttr(
-						"hcloud_volume.foobar", "name", fmt.Sprintf("foo-%d", rInt)),
+						"hcloud_volume.foobar", "name", fmt.Sprintf("foo-volume-%d", rInt)),
 					resource.TestCheckResourceAttr(
-						"hcloud_volume.foobar", "size", "100"),
+						"hcloud_volume.foobar", "size", "15"),
 				),
 			},
 		},
@@ -55,8 +55,9 @@ func TestAccHcloudVolume_Basic(t *testing.T) {
 func testAccHcloudCheckVolumeConfig_basic(rInt int) string {
 	return fmt.Sprintf(`
 resource "hcloud_volume" "foobar" {
-  name       = "foobar-%d"
+  name       = "foo-volume-%d"
   size       = 10
+  location   = "nbg1"
 }
 `, rInt)
 }
@@ -64,8 +65,9 @@ resource "hcloud_volume" "foobar" {
 func testAccHcloudCheckVolumeConfig_resize(rInt int) string {
 	return fmt.Sprintf(`
 resource "hcloud_volume" "foobar" {
-  name       = "foobar-%d"
-  size       = 100
+  name       = "foo-volume-%d"
+  size       = 15
+  location   = "nbg1"
 }
 `, rInt)
 }

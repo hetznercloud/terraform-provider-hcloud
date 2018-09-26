@@ -196,7 +196,7 @@ func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 	}
 	d.Partial(false)
 
-	return resourceFloatingIPRead(d, m)
+	return resourceVolumeRead(d, m)
 }
 
 func resourceVolumeDelete(d *schema.ResourceData, m interface{}) error {

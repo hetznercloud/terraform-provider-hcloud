@@ -40,9 +40,10 @@ variable "labels" {
   }
 }
 resource "hcloud_volume" "volume_ds" {
-  name    = "volume-%d"
-  size    = 123
-  labels  = "${var.labels}"
+  name       = "volume-%d"
+  size       = 10
+  labels     = "${var.labels}"
+  location   = "nbg1"
 }
 data "hcloud_volume" "volume_1" {
   name = "${hcloud_volume.volume_ds.name}"
