@@ -75,8 +75,9 @@ func resourceServer() *schema.Resource {
 				Default:  false,
 			},
 			"backup_window": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:       schema.TypeString,
+				Deprecated: "You should remove this property from your terraform configuration.",
+				Optional:   true,
 			},
 			"ipv4_address": {
 				Type:     schema.TypeString,
