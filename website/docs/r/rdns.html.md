@@ -35,7 +35,7 @@ resource "hcloud_floating_ip" "floating1" {
 }
 
 resource "hcloud_rdns" "floating_master" {
-  server_id = "${hcloud_floating_ip.floating1.id}"
+  floating_ip_id = "${hcloud_floating_ip.floating1.id}"
   ip_address = "${hcloud_floating_ip.floating1.ipv4_address}"
   dns_ptr = "example.com"
 }
