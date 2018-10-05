@@ -1,4 +1,8 @@
 ## 1.4.0 (Unreleased)
+
+NOTES:
+* **Deprecation**: resource/hcloud_server: `backup_window`, will be removed in the near future.
+
 ## 1.3.0 (September 12, 2018)
 
 FEATURES:

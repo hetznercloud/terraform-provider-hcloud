@@ -33,7 +33,6 @@ The following arguments are supported:
 - `user_data` - (Optional, string) Cloud-Init user data to use during server creation
 - `ssh_keys` - (Optional, list) SSH key IDs or names which should be injected into the server at creation time
 - `keep_disk` - (Optional, bool) If true, do not upgrade the disk. This allows downgrading the server type later.
-- `backup_window` - (Optional, string) Enable and configure backups for a server. Time window (UTC) in which the backup will run, choices: `22-02` `02-06` `06-10` `10-14` `14-18` `18-22`
 - `iso` - (Optional, string) Name of an ISO image to mount.
 - `rescue` - (Optional, string) Enable and boot in to the specified rescue system. This enables simple installation of custom operating systems. `linux64` `linux32` or `freebsd64`
 - `labels` - (Optional, map) User-defined labels (key-value pairs) should be created with.
