@@ -30,11 +30,13 @@ func Provider() terraform.ResourceProvider {
 			"hcloud_floating_ip_assignment": resourceFloatingIPAssignment(),
 			"hcloud_ssh_key":                resourceSSHKey(),
 			"hcloud_rdns":                   resourceReverseDNS(),
+			"hcloud_volume":                 resourceVolume(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"hcloud_floating_ip": dataSourceHcloudFloatingIP(),
 			"hcloud_image":       dataSourceHcloudImage(),
 			"hcloud_ssh_key":     dataSourceHcloudSSHKey(),
+			"hcloud_volume":      dataSourceHcloudVolume(),
 		},
 		ConfigureFunc: providerConfigure,
 	}
@@ -43,6 +45,7 @@ func Provider() terraform.ResourceProvider {
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	opts := []hcloud.ClientOption{
 		hcloud.WithToken(d.Get("token").(string)),
+		hcloud.WithApplication("hcloud-terraform", "1.4.0"),
 	}
 	if endpoint, ok := d.GetOk("endpoint"); ok {
 		opts = append(opts, hcloud.WithEndpoint(endpoint.(string)))

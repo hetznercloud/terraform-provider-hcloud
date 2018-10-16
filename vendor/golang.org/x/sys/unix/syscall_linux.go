@@ -1288,7 +1288,11 @@ func Mount(source string, target string, fstype string, flags uintptr, data stri
 //sys	Fchownat(dirfd int, path string, uid int, gid int, flags int) (err error)
 //sys	fcntl(fd int, cmd int, arg int) (val int, err error)
 //sys	Fdatasync(fd int) (err error)
+//sys	Fgetxattr(fd int, attr string, dest []byte) (sz int, err error)
+//sys	Flistxattr(fd int, dest []byte) (sz int, err error)
 //sys	Flock(fd int, how int) (err error)
+//sys	Fremovexattr(fd int, attr string) (err error)
+//sys	Fsetxattr(fd int, attr string, dest []byte, flags int) (err error)
 //sys	Fsync(fd int) (err error)
 //sys	Getdents(fd int, buf []byte) (n int, err error) = SYS_GETDENTS64
 //sysnb	Getpgid(pid int) (pgid int, err error)
@@ -1316,6 +1320,7 @@ func Getpgrp() (pid int) {
 //sys	Llistxattr(path string, dest []byte) (sz int, err error)
 //sys	Lremovexattr(path string, attr string) (err error)
 //sys	Lsetxattr(path string, attr string, data []byte, flags int) (err error)
+//sys	MemfdCreate(name string, flags int) (fd int, err error)
 //sys	Mkdirat(dirfd int, path string, mode uint32) (err error)
 //sys	Mknodat(dirfd int, path string, mode uint32, dev int) (err error)
 //sys	Nanosleep(time *Timespec, leftover *Timespec) (err error)
@@ -1501,11 +1506,7 @@ func Faccessat(dirfd int, path string, mode uint32, flags int) (err error) {
 // EpollPwait
 // EpollWaitOld
 // Execve
-// Fgetxattr
-// Flistxattr
 // Fork
-// Fremovexattr
-// Fsetxattr
 // Futex
 // GetKernelSyms
 // GetMempolicy
