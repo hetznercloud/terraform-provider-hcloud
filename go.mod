@@ -1,7 +1,5 @@
 module github.com/terraform-providers/terraform-provider-hcloud
 
-replace github.com/hetznercloud/hcloud-go => ../../hetznercloud/hcloud-go
-
 require (
 	cloud.google.com/go v0.28.0 // indirect
 	github.com/apparentlymart/go-cidr v1.0.0 // indirect
@@ -23,7 +21,7 @@ require (
 	github.com/hashicorp/logutils v1.0.0 // indirect
 	github.com/hashicorp/terraform v0.11.8
 	github.com/hashicorp/yamux v0.0.0-20180917205041-7221087c3d28 // indirect
-	github.com/hetznercloud/hcloud-go v1.9.0
+	github.com/hetznercloud/hcloud-go v1.10.0
 	github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af // indirect
 	github.com/kr/pty v1.1.3 // indirect
 	github.com/mattn/go-isatty v0.0.4 // indirect

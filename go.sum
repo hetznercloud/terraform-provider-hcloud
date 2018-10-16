@@ -85,8 +85,8 @@ github.com/hashicorp/terraform v0.11.8/go.mod h1:uN1KUiT7Wdg61fPwsGXQwK3c8PmpIVZ
 github.com/hashicorp/yamux v0.0.0-20180604194846-3520598351bb/go.mod h1:+NfK9FKeTrX5uv1uIXGdwYDTeHna2qgaIlx54MXqjAM=
 github.com/hashicorp/yamux v0.0.0-20180917205041-7221087c3d28 h1:gACvD6C1jev87LpraglGaxsDUGA8qg7Uz+Xh6dWKtIQ=
 github.com/hashicorp/yamux v0.0.0-20180917205041-7221087c3d28/go.mod h1:+NfK9FKeTrX5uv1uIXGdwYDTeHna2qgaIlx54MXqjAM=
-github.com/hetznercloud/hcloud-go v1.9.0 h1:AIOh7JxAaW/Rn/EVryBfFA0eoozFPjhgPIhZZClbtcg=
-github.com/hetznercloud/hcloud-go v1.9.0/go.mod h1:g5pff0YNAZywQaivY/CmhUYFVp7oP0nu3MiODC2W4Hw=
+github.com/hetznercloud/hcloud-go v1.10.0 h1:hfJGx6bH8yN1LiDskOiXlJpgbI5Io/27LYuWi5cGEPE=
+github.com/hetznercloud/hcloud-go v1.10.0/go.mod h1:g5pff0YNAZywQaivY/CmhUYFVp7oP0nu3MiODC2W4Hw=
 github.com/jmespath/go-jmespath v0.0.0-20160202185014-0b12d6b521d8/go.mod h1:Nht3zPeWKUH0NzdCt2Blrr5ys8VGpn0CEB0cQHVjt7k=
 github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af h1:pmfjZENx5imkbgOkpRUYLnmbU7UEFbjtDA2hxJ1ichM=
 github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af/go.mod h1:Nht3zPeWKUH0NzdCt2Blrr5ys8VGpn0CEB0cQHVjt7k=

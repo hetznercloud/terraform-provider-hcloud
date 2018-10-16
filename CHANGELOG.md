@@ -1,4 +1,10 @@
 ## 1.4.0 (Unreleased)
+
+FEATURES:
+
+* **New Resource**: `hcloud_volume` Manage volumes.
+* **New Datasource**: `hcloud_volume` Lookup volumes.
+
 ## 1.3.0 (September 12, 2018)
 
 FEATURES:

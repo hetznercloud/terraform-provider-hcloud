@@ -126,7 +126,6 @@ func ServerFromSchema(s schema.Server) *Server {
 		RescueEnabled:   s.RescueEnabled,
 		Datacenter:      DatacenterFromSchema(s.Datacenter),
 		Locked:          s.Locked,
-		Volumes:         s.Volumes,
 		Protection: ServerProtection{
 			Delete:  s.Protection.Delete,
 			Rebuild: s.Protection.Rebuild,
@@ -150,6 +149,9 @@ func ServerFromSchema(s schema.Server) *Server {
 	server.Labels = map[string]string{}
 	for key, value := range s.Labels {
 		server.Labels[key] = value
+	}
+	for _, id := range s.Volumes {
+		server.Volumes = append(server.Volumes, &Volume{ID: id})
 	}
 	return server
 }
@@ -280,14 +282,18 @@ func ImageFromSchema(s schema.Image) *Image {
 // VolumeFromSchema converts a schema.Volume to a Volume.
 func VolumeFromSchema(s schema.Volume) *Volume {
 	v := &Volume{
-		ID:       s.ID,
-		Name:     s.Name,
-		Server:   s.Server,
-		Location: LocationFromSchema(s.Location),
-		Size:     s.Size,
+		ID:          s.ID,
+		Name:        s.Name,
+		Location:    LocationFromSchema(s.Location),
+		Size:        s.Size,
+		LinuxDevice: s.LinuxDevice,
 		Protection: VolumeProtection{
 			Delete: s.Protection.Delete,
 		},
+		Created: s.Created,
+	}
+	if s.Server != nil {
+		v.Server = &Server{ID: *s.Server}
 	}
 	v.Labels = map[string]string{}
 	for key, value := range s.Labels {

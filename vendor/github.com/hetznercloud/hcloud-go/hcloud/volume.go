@@ -8,19 +8,22 @@ import (
 	"fmt"
 	"net/url"
 	"strconv"
+	"time"
 
 	"github.com/hetznercloud/hcloud-go/hcloud/schema"
 )
 
 // Volume represents a volume in the Hetzner Cloud.
 type Volume struct {
-	ID         int
-	Name       string
-	Server     *int
-	Location   *Location
-	Size       int
-	Protection VolumeProtection
-	Labels     map[string]string
+	ID          int
+	Name        string
+	Server      *Server
+	Location    *Location
+	Size        int
+	Protection  VolumeProtection
+	Labels      map[string]string
+	LinuxDevice string
+	Created     time.Time
 }
 
 // VolumeProtection represents the protection level of a volume.
@@ -144,14 +147,14 @@ func (o VolumeCreateOpts) Validate() error {
 	if o.Name == "" {
 		return errors.New("missing name")
 	}
-	if o.Size == 0 {
-		return errors.New("size can not be 0")
+	if o.Size <= 0 {
+		return errors.New("size must be greater than 0")
 	}
 	if o.Server == nil && o.Location == nil {
-		return errors.New("missing server or location")
+		return errors.New("one of server or location must be provided")
 	}
 	if o.Server != nil && o.Location != nil {
-		return errors.New("one of server or location must be empty")
+		return errors.New("only one of server or location must be provided")
 	}
 	return nil
 }
@@ -175,15 +178,11 @@ func (c *VolumeClient) Create(ctx context.Context, opts VolumeCreateOpts) (Volum
 		reqBody.Labels = &opts.Labels
 	}
 	if opts.Server != nil {
-		if opts.Server.ID != 0 {
-			reqBody.Server = strconv.Itoa(opts.Server.ID)
-		} else {
-			reqBody.Server = opts.Server.Name
-		}
+		reqBody.Server = Int(opts.Server.ID)
 	}
 	if opts.Location != nil {
 		if opts.Location.ID != 0 {
-			reqBody.Location = strconv.Itoa(opts.Location.ID)
+			reqBody.Location = opts.Location.ID
 		} else {
 			reqBody.Location = opts.Location.Name
 		}

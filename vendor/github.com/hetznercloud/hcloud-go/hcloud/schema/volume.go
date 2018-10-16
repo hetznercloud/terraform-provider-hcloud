@@ -1,14 +1,18 @@
 package schema
 
+import "time"
+
 // Volume defines the schema of a volume.
 type Volume struct {
-	ID         int               `json:"id"`
-	Name       string            `json:"name"`
-	Server     *int              `json:"server"`
-	Location   Location          `json:"location"`
-	Size       int               `json:"size"`
-	Protection VolumeProtection  `json:"protection"`
-	Labels     map[string]string `json:"labels"`
+	ID          int               `json:"id"`
+	Name        string            `json:"name"`
+	Server      *int              `json:"server"`
+	Location    Location          `json:"location"`
+	Size        int               `json:"size"`
+	Protection  VolumeProtection  `json:"protection"`
+	Labels      map[string]string `json:"labels"`
+	LinuxDevice string            `json:"linux_device"`
+	Created     time.Time         `json:"created"`
 }
 
 // VolumeCreateRequest defines the schema of the request
@@ -16,8 +20,8 @@ type Volume struct {
 type VolumeCreateRequest struct {
 	Name     string             `json:"name"`
 	Size     int                `json:"size"`
-	Server   string             `json:"server,omitempty"`
-	Location string             `json:"location,omitempty"`
+	Server   *int               `json:"server,omitempty"`
+	Location interface{}        `json:"location,omitempty"` // int, string, or nil
 	Labels   *map[string]string `json:"labels,omitempty"`
 }
 
