@@ -1,9 +1,10 @@
 sudo: false
 language: go
+env:
+  - GO111MODULE=on
 go:
   - 1.11
 before_script:
-  - export GO111MODULES=on
   - go get github.com/golang/lint/golint
 script:
   - make test
