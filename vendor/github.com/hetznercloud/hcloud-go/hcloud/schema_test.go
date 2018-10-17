@@ -352,7 +352,8 @@ func TestServerFromSchema(t *testing.T) {
 		"labels": {
 			"key": "value",
 			"key2": "value2"
-		}
+		},
+		"volumes": [123, 456, 789]
 	}`)
 
 	var s schema.Server
@@ -414,6 +415,12 @@ func TestServerFromSchema(t *testing.T) {
 	}
 	if server.Labels["key"] != "value" || server.Labels["key2"] != "value2" {
 		t.Errorf("unexpected Labels: %v", server.Labels)
+	}
+	if len(s.Volumes) != 3 {
+		t.Errorf("unexpected number of volumes: %v", len(s.Volumes))
+	}
+	if s.Volumes[0] != 123 || s.Volumes[1] != 456 || s.Volumes[2] != 789 {
+		t.Errorf("unexpected volumes: %v", s.Volumes)
 	}
 }
 
@@ -834,6 +841,68 @@ func TestImageFromSchema(t *testing.T) {
 	}
 	if image.Labels["key"] != "value" || image.Labels["key2"] != "value2" {
 		t.Errorf("unexpected Labels: %v", image.Labels)
+	}
+}
+
+func TestVolumeFromSchema(t *testing.T) {
+	data := []byte(`{
+		"id": 4711,
+		"created": "2016-01-30T23:50:11+00:00",
+		"name": "db-storage",
+		"server": 2,
+		"location": {
+			"id": 1,
+			"name": "fsn1",
+			"description": "Falkenstein DC Park 1",
+			"country": "DE",
+			"city": "Falkenstein",
+			"latitude": 50.47612,
+			"longitude": 12.370071
+		},
+		"size": 42,
+		"linux_device":"/dev/disk/by-id/scsi-0HC_volume_1",
+		"protection": {
+			"delete": true
+		},
+		"labels": {
+			"key": "value",
+			"key2": "value2"
+		}
+	}`)
+	var s schema.Volume
+	if err := json.Unmarshal(data, &s); err != nil {
+		t.Fatal(err)
+	}
+	volume := VolumeFromSchema(s)
+	if volume.ID != 4711 {
+		t.Errorf("unexpected ID: %v", volume.ID)
+	}
+	if volume.Name != "db-storage" {
+		t.Errorf("unexpected name: %v", volume.Name)
+	}
+	if !volume.Created.Equal(time.Date(2016, 1, 30, 23, 50, 11, 0, time.UTC)) {
+		t.Errorf("unexpected created date: %s", volume.Created)
+	}
+	if volume.Server == nil {
+		t.Error("no server")
+	}
+	if volume.Server != nil && volume.Server.ID != 2 {
+		t.Errorf("unexpected server ID: %v", volume.Server.ID)
+	}
+	if volume.Location == nil || volume.Location.ID != 1 {
+		t.Errorf("unexpected location: %v", volume.Location)
+	}
+	if volume.Size != 42 {
+		t.Errorf("unexpected size: %v", volume.Size)
+	}
+	if !volume.Protection.Delete {
+		t.Errorf("unexpected value for delete protection: %v", volume.Protection.Delete)
+	}
+	if len(volume.Labels) != 2 {
+		t.Errorf("unexpected number of labels: %d", len(volume.Labels))
+	}
+	if volume.Labels["key"] != "value" || volume.Labels["key2"] != "value2" {
+		t.Errorf("unexpected labels: %v", volume.Labels)
 	}
 }
 

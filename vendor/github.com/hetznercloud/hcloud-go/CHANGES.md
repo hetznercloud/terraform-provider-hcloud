@@ -1,5 +1,11 @@
 # Changes
 
+## v1.10.0
+
+* Add `WithApplication()` client option to provide an application name and version
+  that will be included in the `User-Agent` HTTP header
+* Add support for volumes
+
 ## v1.9.0
 
 * Add `AllWithOpts()` to server, Floating IP, image, and SSH key client

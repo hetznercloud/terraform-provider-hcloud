@@ -164,6 +164,7 @@ func resourceServerCreate(d *schema.ResourceData, m interface{}) error {
 
 	res, _, err := client.Server.Create(ctx, opts)
 	if err != nil {
+		println(err)
 		return err
 	}
 
