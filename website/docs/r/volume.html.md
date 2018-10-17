@@ -30,8 +30,8 @@ resource "hcloud_volume" "master" {
 
 - `name` - (Required, string) Name of the volume to create (must be unique per project).
 - `size` - (Required, int) Size of the volume (in GB).
-- `server_id` - (Optional, int) Server to attach the Volume to.
-- `location` - (Optional, string) Home location (routing is optimized for that location). Optional if server_id argument is passed.
+- `server_id` - (Optional, int) Server to attach the Volume to, Optional if location argument is passed.
+- `location` - (Optional, string) Location of the volume to create, Optional if server_id argument is passed.
 
 
 ## Attributes Reference
