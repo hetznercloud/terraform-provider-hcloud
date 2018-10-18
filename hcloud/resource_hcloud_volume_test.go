@@ -36,6 +36,8 @@ func TestAccHcloudVolume_Basic(t *testing.T) {
 						"hcloud_volume.foobar", "name", fmt.Sprintf("foo-volume-%d", rInt)),
 					resource.TestCheckResourceAttr(
 						"hcloud_volume.foobar", "size", "10"),
+					resource.TestCheckResourceAttr(
+						"hcloud_volume.foobar", "location", "nbg1"),
 				),
 			},
 			{
@@ -46,6 +48,32 @@ func TestAccHcloudVolume_Basic(t *testing.T) {
 						"hcloud_volume.foobar", "name", fmt.Sprintf("foo-volume-%d", rInt)),
 					resource.TestCheckResourceAttr(
 						"hcloud_volume.foobar", "size", "15"),
+					resource.TestCheckResourceAttr(
+						"hcloud_volume.foobar", "location", "nbg1"),
+				),
+			},
+			{
+				Config: testAccHcloudCheckVolumeConfig_WithServer(rInt),
+				Check: resource.ComposeTestCheckFunc(
+					testAccHcloudCheckVolumeExists("hcloud_volume.foobar", &volume),
+					resource.TestCheckResourceAttr(
+						"hcloud_volume.foobar", "name", fmt.Sprintf("foo-volume-%d", rInt)),
+					resource.TestCheckResourceAttr(
+						"hcloud_volume.foobar", "size", "15"),
+					resource.TestCheckResourceAttr(
+						"hcloud_volume.foobar", "location", "nbg1"),
+				),
+			},
+			{
+				Config: testAccHcloudCheckVolumeConfig_WithAnotherServer(rInt),
+				Check: resource.ComposeTestCheckFunc(
+					testAccHcloudCheckVolumeExists("hcloud_volume.foobar", &volume),
+					resource.TestCheckResourceAttr(
+						"hcloud_volume.foobar", "name", fmt.Sprintf("foo-volume-%d", rInt)),
+					resource.TestCheckResourceAttr(
+						"hcloud_volume.foobar", "size", "15"),
+					resource.TestCheckResourceAttr(
+						"hcloud_volume.foobar", "location", "nbg1"),
 				),
 			},
 		},
@@ -70,6 +98,38 @@ resource "hcloud_volume" "foobar" {
   location   = "nbg1"
 }
 `, rInt)
+}
+
+func testAccHcloudCheckVolumeConfig_WithServer(rInt int) string {
+	return fmt.Sprintf(`
+resource "hcloud_server" "server_volume_foobar" {
+  name        = "foo-volume-server-%d"
+  server_type = "cx11"
+  image       = "debian-9"
+  datacenter  = "nbg1-dc3"
+}
+resource "hcloud_volume" "foobar" {
+  name       = "foo-volume-%d"
+  size       = 15
+  server_id  = "${hcloud_server.server_volume_foobar.id}"
+}
+`, rInt, rInt)
+}
+
+func testAccHcloudCheckVolumeConfig_WithAnotherServer(rInt int) string {
+	return fmt.Sprintf(`
+resource "hcloud_server" "server_another_volume_foobar" {
+  name        = "foo-volume-server-%d"
+  server_type = "cx11"
+  image       = "debian-9"
+  datacenter  = "nbg1-dc3"
+}
+resource "hcloud_volume" "foobar" {
+  name       = "foo-volume-%d"
+  size       = 15
+  server_id  = "${hcloud_server.server_another_volume_foobar.id}"
+}
+`, rInt, rInt)
 }
 
 func testAccHcloudCheckVolumeDestroy(s *terraform.State) error {

@@ -22,7 +22,7 @@ func dataSourceHcloudVolume() *schema.Resource {
 				Optional: true,
 			},
 			"size": {
-				Type:     schema.TypeString,
+				Type:     schema.TypeInt,
 				Computed: true,
 			},
 			"labels": {
@@ -32,6 +32,19 @@ func dataSourceHcloudVolume() *schema.Resource {
 			"selector": {
 				Type:     schema.TypeString,
 				Optional: true,
+			},
+			"location": {
+				Type:     schema.TypeString,
+				Optional: true,
+				ForceNew: true,
+			},
+			"server": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"linux_device": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 		},
 	}
@@ -82,5 +95,5 @@ func dataSourceHcloudVolumeRead(d *schema.ResourceData, m interface{}) (err erro
 		setVolumeSchema(d, allVolumes[0])
 		return
 	}
-	return fmt.Errorf("please specify a id, a name or a selector to lookup the volume")
+	return fmt.Errorf("please specify an id, a name or a selector to lookup the volume")
 }

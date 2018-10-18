@@ -37,11 +37,14 @@ func resourceVolume() *schema.Resource {
 			"server_id": {
 				Type:     schema.TypeInt,
 				Optional: true,
-				Computed: true,
 			},
 			"labels": {
 				Type:     schema.TypeMap,
 				Optional: true,
+			},
+			"linux_device": {
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 		},
 	}
@@ -147,6 +150,18 @@ func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 				return err
 			}
 		} else {
+			if volume.Server != nil {
+				action, _, err := client.Volume.Detach(ctx, volume)
+				if err != nil {
+					if resourceVolumeIsNotFound(err, d) {
+						return nil
+					}
+					return err
+				}
+				if err := waitForVolumeAction(ctx, client, action, volume); err != nil {
+					return err
+				}
+			}
 			action, _, err := client.Volume.Attach(ctx, volume, &hcloud.Server{ID: serverID})
 			if err != nil {
 				if resourceVolumeIsNotFound(err, d) {
@@ -209,9 +224,26 @@ func resourceVolumeDelete(d *schema.ResourceData, m interface{}) error {
 		d.SetId("")
 		return nil
 	}
-	if _, err := client.Volume.Delete(ctx, &hcloud.Volume{ID: volumeID}); err != nil {
+	volume, _, err := client.Volume.GetByID(ctx, volumeID)
+	if err != nil {
+		return err
+	}
+
+	if volume.Server != nil {
+		action, _, _ := client.Volume.Detach(ctx, volume)
+		if err != nil {
+			if resourceVolumeIsNotFound(err, d) {
+				return nil
+			}
+			return err
+		}
+		if err := waitForVolumeAction(ctx, client, action, volume); err != nil {
+			return err
+		}
+	}
+	if _, err := client.Volume.Delete(ctx, volume); err != nil {
 		if hcerr, ok := err.(hcloud.Error); ok && hcerr.Code == hcloud.ErrorCodeNotFound {
-			// server has already been deleted
+			// volume has already been deleted
 			return nil
 		}
 		return err
@@ -235,9 +267,10 @@ func setVolumeSchema(d *schema.ResourceData, v *hcloud.Volume) {
 	d.Set("size", v.Size)
 	d.Set("location", v.Location.Name)
 	if v.Server != nil {
-		d.Set("server_id", v.Server)
+		d.Set("server_id", v.Server.ID)
 	}
 	d.Set("labels", v.Labels)
+	d.Set("linux_device", v.LinuxDevice)
 }
 
 func waitForVolumeAction(ctx context.Context, client *hcloud.Client, action *hcloud.Action, volume *hcloud.Volume) error {

@@ -30,8 +30,8 @@ resource "hcloud_volume" "master" {
 
 - `name` - (Required, string) Name of the volume to create (must be unique per project).
 - `size` - (Required, int) Size of the volume (in GB).
-- `server_id` - (Optional, int) Server to attach the Volume to, Optional if location argument is passed.
-- `location` - (Optional, string) Location of the volume to create, Optional if server_id argument is passed.
+- `server` - (Optional, int) Server to attach the Volume to, optional if location argument is passed.
+- `location` - (Optional, string) Location of the volume to create, optional if server_id argument is passed.
 
 
 ## Attributes Reference
@@ -39,11 +39,13 @@ resource "hcloud_volume" "master" {
 - `id` - Unique ID of the volume.
 - `name` - Name of the volume.
 - `size` - Size of the volume.
-- `labels` - User-defined labels (key-value pairs)
+- `labels` - User-defined labels (key-value pairs).
+- `linux_device` - 	Device path on the file system for the Volume.
+
 
 ## Import
 
-Volumes can be imported using its `id`:
+Volumes can be imported using their `id`:
 
 ```
 terraform import hcloud_volume.myvolume <id>
