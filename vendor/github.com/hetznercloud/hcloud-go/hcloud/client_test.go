@@ -262,3 +262,25 @@ func TestClientDo(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
+
+func TestBuildUserAgent(t *testing.T) {
+	testCases := []struct {
+		name               string
+		applicationName    string
+		applicationVersion string
+		userAgent          string
+	}{
+		{"with application name and version", "test", "1.0", "test/1.0 " + UserAgent},
+		{"with application name but no version", "test", "", "test " + UserAgent},
+		{"without application name and version", "", "", UserAgent},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			client := NewClient(WithApplication(testCase.applicationName, testCase.applicationVersion))
+			if client.userAgent != testCase.userAgent {
+				t.Errorf("unexpected user agent: %v", client.userAgent)
+			}
+		})
+	}
+}

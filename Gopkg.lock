@@ -308,15 +308,15 @@
   revision = "3520598351bb3500a49ae9563f5539666ae0a27c"
 
 [[projects]]
-  digest = "1:1b79d88420696df682c299357e19ec422e5fd6d183baa1dccde286eee83336b1"
+  digest = "1:12481c8a03559f34f9331ae85ff9a591b83517cfa4947824f2a61f8da5e1f10e"
   name = "github.com/hetznercloud/hcloud-go"
   packages = [
     "hcloud",
     "hcloud/schema",
   ]
   pruneopts = ""
-  revision = "6ff899c25535e0712de9f8f19bafc9a5717603c3"
-  version = "v1.9.0"
+  revision = "2798131998b49288e9da4ecef6e38f3d665fcbb2"
+  version = "v1.10.0"
 
 [[projects]]
   digest = "1:6f49eae0c1e5dab1dafafee34b207aeb7a42303105960944828c2079b92fc88e"

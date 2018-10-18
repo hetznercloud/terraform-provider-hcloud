@@ -128,7 +128,7 @@ resource "hcloud_server" "rdns1" {
   name        = "rdns-ipv4-%d"
   server_type = "cx11"
   image       = "debian-9"
-  datacenter  = "fsn1-dc8"
+  datacenter  = "fsn1-dc14"
   ssh_keys    = ["${hcloud_ssh_key.foobar_rdns.id}"]
 }
 resource "hcloud_rdns" "rdns_server_v4" {

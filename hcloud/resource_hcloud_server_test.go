@@ -277,7 +277,7 @@ resource "hcloud_server" "foobar" {
   name          = "foo-%d"
   server_type   = "cx11"
   image         = "debian-9"
-  datacenter    = "fsn1-dc8"
+  datacenter    = "fsn1-dc14"
 	user_data     = "stuff"
 	backup_window = "22-02"
 	ssh_keys  = ["${hcloud_ssh_key.foobar.id}"]
@@ -294,7 +294,7 @@ resource "hcloud_server" "foobar" {
   name        = "foo-%d"
   server_type = "cx11"
   image       = "debian-9"
-  datacenter  = "fsn1-dc8"
+  datacenter  = "fsn1-dc14"
 	backup_window = "22-02"
 	iso         = "%s"
 	ssh_keys  = ["${hcloud_ssh_key.foobar.id}"]
@@ -311,7 +311,7 @@ resource "hcloud_server" "foobar" {
   name        = "baz-%d"
   server_type = "cx21"
 	image       = "debian-9"
-  datacenter  = "fsn1-dc8"
+  datacenter  = "fsn1-dc14"
 	ssh_keys  = ["${hcloud_ssh_key.foobar.id}"]
 	backup_window = "10-14"
 }
@@ -328,7 +328,7 @@ resource "hcloud_server" "foobar" {
   name      = "foo-%d"
   server_type = "cx11"
 	image       = "debian-9"
-  datacenter  = "fsn1-dc8"
+  datacenter  = "fsn1-dc14"
 	user_data   = "updated stuff"
 	ssh_keys  = ["${hcloud_ssh_key.foobar.id}"]
 }

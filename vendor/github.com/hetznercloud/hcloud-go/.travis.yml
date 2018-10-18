@@ -3,6 +3,7 @@ language: go
 go:
   - "1.9"
   - "1.10"
+  - "1.11"
 before_script:
   - go get github.com/golang/lint/golint
 script:

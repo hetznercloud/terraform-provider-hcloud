@@ -87,7 +87,7 @@ resource "hcloud_server" "foobar" {
   name        = "foo-%d"
   server_type = "cx11"
   image       = "debian-9"
-  datacenter  = "fsn1-dc8"
+  datacenter  = "fsn1-dc14"
 }
 
 resource "hcloud_floating_ip" "foobar" {
