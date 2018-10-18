@@ -12,6 +12,7 @@ Provides a Hetzner Cloud Reverse DNS Entry to create, modify and reset reverse d
 
 ## Example Usage
 
+For servers:
 ```hcl
 resource "hcloud_server" "node1" {
   name = "node1"
@@ -26,6 +27,19 @@ resource "hcloud_rdns" "master" {
 }
 ```
 
+For Floating IPs:
+```hcl
+resource "hcloud_floating_ip" "floating1" {
+  home_location = "ngb1"
+  type = "ipv4"
+}
+
+resource "hcloud_rdns" "floating_master" {
+  floating_ip_id = "${hcloud_floating_ip.floating1.id}"
+  ip_address = "${hcloud_floating_ip.floating1.ipv4_address}"
+  dns_ptr = "example.com"
+}
+```
 ## Argument Reference
 
 - `dns_ptr` - (Required, string) The DNS address the `ip_address` should resolve to.
