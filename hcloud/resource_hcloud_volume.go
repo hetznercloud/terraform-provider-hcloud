@@ -118,7 +118,13 @@ func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 		d.SetId("")
 		return nil
 	}
-	volume := &hcloud.Volume{ID: id}
+	volume, _, err := client.Volume.GetByID(ctx, id)
+	if err != nil {
+		if resourceVolumeIsNotFound(err, d) {
+			return nil
+		}
+		return err
+	}
 
 	d.Partial(true)
 
