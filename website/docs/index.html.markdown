@@ -8,7 +8,7 @@ description: |-
 
 # Hetzner Cloud Provider
 
-The Hetzner Cloud (hcloud) provider is used to interact with the resources supported by Hetzner Cloud. The provider needs to be configured with the proper credentials before it can be used.
+The Hetzner Cloud (hcloud) provider is used to interact with the resources supported by [Hetzner Cloud](https://www.hetzner.com/cloud). The provider needs to be configured with the proper credentials before it can be used.
 
 Use the navigation to the left to read about the available resources.
 
