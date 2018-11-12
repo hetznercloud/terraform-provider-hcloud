@@ -1,4 +1,11 @@
 ## 1.5.0 (Unreleased)
+
+IMPROVEMENTS:
+* resources/hcloud_server: Add `backups` attribute for enable or disable backups.
+
+NOTES:
+* **Read Only**: resources/hcloud_server: `backup_window`, removed the ability to set the attribute. This attribute is now read only.
+
 ## 1.4.0 (October 18, 2018)
 
 FEATURES:

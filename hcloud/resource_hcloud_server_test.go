@@ -58,7 +58,7 @@ func TestAccHcloudServer_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"hcloud_server.foobar", "location", "fsn1"),
 					resource.TestCheckResourceAttr(
-						"hcloud_server.foobar", "backup_window", "22-02"),
+						"hcloud_server.foobar", "backups", "true"),
 				),
 			},
 		},
@@ -82,7 +82,7 @@ func TestAccHcloudServer_Update(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"hcloud_server.foobar", "name", fmt.Sprintf("foo-%d", rInt)),
 					resource.TestCheckResourceAttr(
-						"hcloud_server.foobar", "backup_window", "22-02"),
+						"hcloud_server.foobar", "backups", "true"),
 				),
 			},
 
@@ -96,7 +96,7 @@ func TestAccHcloudServer_Update(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"hcloud_server.foobar", "server_type", "cx21"),
 					resource.TestCheckResourceAttr(
-						"hcloud_server.foobar", "backup_window", "10-14"),
+						"hcloud_server.foobar", "backups", "false"),
 				),
 			},
 		},
@@ -250,7 +250,7 @@ func testAccHcloudCheckServerAttributes(server *hcloud.Server) resource.TestChec
 			return fmt.Errorf("Bad server.Datacenter.Location.Name: %s", server.Datacenter.Location.Name)
 		}
 
-		if server.BackupWindow != "22-02" {
+		if server.BackupWindow == "" {
 			return fmt.Errorf("Bad server.BackupWindow: %s", server.BackupWindow)
 		}
 
@@ -278,9 +278,9 @@ resource "hcloud_server" "foobar" {
   server_type   = "cx11"
   image         = "debian-9"
   datacenter    = "fsn1-dc14"
-	user_data     = "stuff"
-	backup_window = "22-02"
-	ssh_keys  = ["${hcloud_ssh_key.foobar.id}"]
+  user_data     = "stuff"
+  backups       = true
+  ssh_keys      = ["${hcloud_ssh_key.foobar.id}"]
 }`, rInt, testAccSSHPublicKey, rInt)
 }
 
@@ -295,9 +295,9 @@ resource "hcloud_server" "foobar" {
   server_type = "cx11"
   image       = "debian-9"
   datacenter  = "fsn1-dc14"
-	backup_window = "22-02"
-	iso         = "%s"
-	ssh_keys  = ["${hcloud_ssh_key.foobar.id}"]
+  backups     = true
+  iso         = "%s"
+  ssh_keys    = ["${hcloud_ssh_key.foobar.id}"]
 }`, rInt, testAccSSHPublicKey, rInt, testHcloudISOName)
 }
 
@@ -310,10 +310,10 @@ resource "hcloud_ssh_key" "foobar" {
 resource "hcloud_server" "foobar" {
   name        = "baz-%d"
   server_type = "cx21"
-	image       = "debian-9"
+  image       = "debian-9"
   datacenter  = "fsn1-dc14"
-	ssh_keys  = ["${hcloud_ssh_key.foobar.id}"]
-	backup_window = "10-14"
+  ssh_keys    = ["${hcloud_ssh_key.foobar.id}"]
+  backups     = "false"
 }
 `, rInt, testAccSSHPublicKey, rInt)
 }
@@ -327,10 +327,10 @@ resource "hcloud_ssh_key" "foobar" {
 resource "hcloud_server" "foobar" {
   name      = "foo-%d"
   server_type = "cx11"
-	image       = "debian-9"
+  image       = "debian-9"
   datacenter  = "fsn1-dc14"
-	user_data   = "updated stuff"
-	ssh_keys  = ["${hcloud_ssh_key.foobar.id}"]
+  user_data   = "updated stuff"
+  ssh_keys  = ["${hcloud_ssh_key.foobar.id}"]
 }
 `, rInt, testAccSSHPublicKey, rInt)
 }
