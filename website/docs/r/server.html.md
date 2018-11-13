@@ -49,7 +49,7 @@ The following attributes are exported:
 - `location` - (string) The location name.
 - `datacenter` - (string) The datacenter name.
 - `backup_window` - (string) The backup window of the server, if enabled.
-- `backups` - (boolean) Backups enabled or not.
+- `backups` - (boolean) Whether backups are enabled.
 - `iso` - (string) Name of the mounted ISO image.
 - `ipv4_address` - (string) The IPv4 address.
 - `ipv6_address` - (string) The first IPv6 address of the assigned network.

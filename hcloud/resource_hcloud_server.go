@@ -178,7 +178,7 @@ func resourceServerCreate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	backups := d.Get("backups").(bool)
-	if err := setBackupWindow(ctx, client, res.Server, backups); err != nil {
+	if err := setBackups(ctx, client, res.Server, backups); err != nil {
 		return err
 	}
 
@@ -311,12 +311,12 @@ func resourceServerUpdate(d *schema.ResourceData, m interface{}) error {
 		d.SetPartial("server_type")
 	}
 
-	if d.HasChange("backup") {
-		backups := d.Get("backup").(bool)
-		if err := setBackupWindow(ctx, client, server, backups); err != nil {
+	if d.HasChange("backups") {
+		backups := d.Get("backups").(bool)
+		if err := setBackups(ctx, client, server, backups); err != nil {
 			return err
 		}
-		d.SetPartial("backup")
+		d.SetPartial("backups")
 	}
 
 	if d.HasChange("iso") {
@@ -368,8 +368,8 @@ func resourceServerIsNotFound(err error, d *schema.ResourceData) bool {
 	return false
 }
 
-func setBackupWindow(ctx context.Context, client *hcloud.Client, server *hcloud.Server, backups bool) error {
-	if server.BackupWindow != "" && backups == false {
+func setBackups(ctx context.Context, client *hcloud.Client, server *hcloud.Server, backups bool) error {
+	if server.BackupWindow != "" && !backups {
 		action, _, err := client.Server.DisableBackup(ctx, server)
 		if err != nil {
 			return err
@@ -379,7 +379,7 @@ func setBackupWindow(ctx context.Context, client *hcloud.Client, server *hcloud.
 		}
 		return nil
 	}
-	if server.BackupWindow == "" && backups == true {
+	if server.BackupWindow == "" && backups {
 		action, _, err := client.Server.EnableBackup(ctx, server, "")
 		if err != nil {
 			return err

@@ -313,7 +313,7 @@ resource "hcloud_server" "foobar" {
   image       = "debian-9"
   datacenter  = "fsn1-dc14"
   ssh_keys    = ["${hcloud_ssh_key.foobar.id}"]
-  backups     = "false"
+  backups     =  false
 }
 `, rInt, testAccSSHPublicKey, rInt)
 }
