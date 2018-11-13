@@ -1,0 +1,43 @@
+---
+layout: "hcloud"
+page_title: "Hetzner Cloud: hcloud_volume_attachment"
+sidebar_current: "docs-hcloud-resource-volume-attachment"
+description: |-
+  Provides a Hetzner Cloud Volume attachment to attach a Volume to a Hetzner Cloud Server.
+---
+
+# hcloud_volume_attachment
+
+Provides a Hetzner Cloud Volume attachment to attach a Volume to a Hetzner Cloud Server. Deleting a Volume Attachment will detach the Volume from the Server.
+
+## Example Usage
+
+```hcl
+resource "hcloud_volume_attachment" "main" {
+  volume_id = "${hcloud_volume.master.id}"
+  server_id = "${hcloud_server.node1.id}"
+}
+
+resource "hcloud_server" "node1" {
+  name = "node1"
+  image = "debian-9"
+  server_type = "cx11"
+  datacenter = "nbg1-dc3"
+}
+
+resource "hcloud_volume" "master" {
+  location = "nbg1"
+  size     = 10
+}
+```
+
+## Argument Reference
+
+- `volume_id` - (Required, int) ID of the Volume.
+- `server_id` - (Required, int) Server to attach the Volume to.
+
+## Attributes Reference
+
+- `id` - (int) Unique ID of the Volume Attachment.
+- `volume_id` - (int) ID of the Volume.
+- `server_id` - (int) Server the Volume was attached to.

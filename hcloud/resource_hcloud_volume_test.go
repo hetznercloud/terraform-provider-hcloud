@@ -204,6 +204,12 @@ func testSweepVolumes(region string) error {
 	}
 
 	for _, volume := range volumes {
+		if volume.Server != nil {
+			action, _, _ := client.Volume.Detach(ctx, volume)
+			if err := waitForVolumeAction(ctx, client, action, volume); err != nil {
+				return err
+			}
+		}
 		if _, err := client.Volume.Delete(ctx, volume); err != nil {
 			return err
 		}

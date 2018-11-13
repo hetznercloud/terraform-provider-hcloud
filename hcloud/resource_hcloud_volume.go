@@ -37,6 +37,7 @@ func resourceVolume() *schema.Resource {
 			"server_id": {
 				Type:     schema.TypeInt,
 				Optional: true,
+				Computed: true,
 			},
 			"labels": {
 				Type:     schema.TypeMap,
