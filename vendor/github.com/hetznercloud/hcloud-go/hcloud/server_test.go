@@ -269,6 +269,9 @@ func TestServersCreateWithSSHKeys(t *testing.T) {
 			Server: schema.Server{
 				ID: 1,
 			},
+			NextActions: []schema.Action{
+				{ID: 2},
+			},
 		})
 	})
 
@@ -293,6 +296,9 @@ func TestServersCreateWithSSHKeys(t *testing.T) {
 	}
 	if result.RootPassword != "" {
 		t.Errorf("expected no root password, got: %v", result.RootPassword)
+	}
+	if len(result.NextActions) != 1 || result.NextActions[0].ID != 2 {
+		t.Errorf("unexpected next actions: %v", result.NextActions)
 	}
 }
 

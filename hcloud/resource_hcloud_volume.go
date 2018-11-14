@@ -78,7 +78,15 @@ func resourceVolumeCreate(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
+	if err := waitForVolumeAction(ctx, client, result.Action, result.Volume); err != nil {
+		return err
+	}
+	for _, nextAction := range result.NextActions {
+		if err := waitForVolumeAction(ctx, client, nextAction, result.Volume); err != nil {
+			return err
+		}
 
+	}
 	d.SetId(strconv.Itoa(result.Volume.ID))
 
 	return resourceVolumeRead(d, m)
@@ -237,7 +245,7 @@ func resourceVolumeDelete(d *schema.ResourceData, m interface{}) error {
 	}
 
 	if volume.Server != nil {
-		action, _, _ := client.Volume.Detach(ctx, volume)
+		action, _, err := client.Volume.Detach(ctx, volume)
 		if err != nil {
 			if resourceVolumeIsNotFound(err, d) {
 				return nil
