@@ -77,7 +77,12 @@ func resourceServer() *schema.Resource {
 			"backup_window": {
 				Type:       schema.TypeString,
 				Deprecated: "You should remove this property from your terraform configuration.",
-				Optional:   true,
+				Computed:   true,
+			},
+			"backups": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
 			},
 			"ipv4_address": {
 				Type:     schema.TypeString,
@@ -172,11 +177,9 @@ func resourceServerCreate(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	backupWindow := d.Get("backup_window").(string)
-	if backupWindow != "" {
-		if err := setBackupWindow(ctx, client, res.Server, backupWindow); err != nil {
-			return err
-		}
+	backups := d.Get("backups").(bool)
+	if err := setBackups(ctx, client, res.Server, backups); err != nil {
+		return err
 	}
 
 	if iso, ok := d.GetOk("iso"); ok {
@@ -219,6 +222,7 @@ func resourceServerRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("ipv6_address", server.PublicNet.IPv6.IP.String())
 	d.Set("ipv6_network", server.PublicNet.IPv6.Network.String())
 	d.Set("backup_window", server.BackupWindow)
+	d.Set("backups", server.BackupWindow != "")
 	d.Set("labels", server.Labels)
 	if server.Image != nil {
 		if server.Image.Name != "" {
@@ -307,12 +311,12 @@ func resourceServerUpdate(d *schema.ResourceData, m interface{}) error {
 		d.SetPartial("server_type")
 	}
 
-	if d.HasChange("backup_window") {
-		backupWindow := d.Get("backup_window").(string)
-		if err := setBackupWindow(ctx, client, server, backupWindow); err != nil {
+	if d.HasChange("backups") {
+		backups := d.Get("backups").(bool)
+		if err := setBackups(ctx, client, server, backups); err != nil {
 			return err
 		}
-		d.SetPartial("backup_window")
+		d.SetPartial("backups")
 	}
 
 	if d.HasChange("iso") {
@@ -364,8 +368,8 @@ func resourceServerIsNotFound(err error, d *schema.ResourceData) bool {
 	return false
 }
 
-func setBackupWindow(ctx context.Context, client *hcloud.Client, server *hcloud.Server, backupWindow string) error {
-	if backupWindow == "" {
+func setBackups(ctx context.Context, client *hcloud.Client, server *hcloud.Server, backups bool) error {
+	if server.BackupWindow != "" && !backups {
 		action, _, err := client.Server.DisableBackup(ctx, server)
 		if err != nil {
 			return err
@@ -375,13 +379,14 @@ func setBackupWindow(ctx context.Context, client *hcloud.Client, server *hcloud.
 		}
 		return nil
 	}
-
-	action, _, err := client.Server.EnableBackup(ctx, server, backupWindow)
-	if err != nil {
-		return err
-	}
-	if err := waitForServerAction(ctx, client, action, server); err != nil {
-		return err
+	if server.BackupWindow == "" && backups {
+		action, _, err := client.Server.EnableBackup(ctx, server, "")
+		if err != nil {
+			return err
+		}
+		if err := waitForServerAction(ctx, client, action, server); err != nil {
+			return err
+		}
 	}
 	return nil
 }
