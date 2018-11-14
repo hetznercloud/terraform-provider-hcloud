@@ -85,7 +85,7 @@ func resourceFloatingIPAssignmentRead(d *schema.ResourceData, m interface{}) err
 		return nil
 	}
 
-	// check if correct server is associated
+	// check if floating api is assigned to any server
 	if floatingIP.Server == nil {
 		log.Printf("[WARN] Floating IP (%v) is not associated to a server, removing Floating IP Association from state", d.Get("floating_ip_id"))
 		d.SetId("")

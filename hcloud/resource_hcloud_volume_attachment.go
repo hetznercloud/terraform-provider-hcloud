@@ -87,7 +87,7 @@ func resourceVolumeAttachmentRead(d *schema.ResourceData, m interface{}) error {
 		return nil
 	}
 
-	// check if correct server is attached
+	// check if volume is attached to any server
 	if volume.Server == nil {
 		log.Printf("[WARN] Volume (%v) is not attached to a server, removing volume attachment from state", d.Get("volume_id"))
 		d.SetId("")
