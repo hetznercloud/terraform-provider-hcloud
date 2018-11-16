@@ -1,10 +1,14 @@
 ## 1.5.0 (Unreleased)
 
+FEATURES:
+* **New Resource**: `hcloud_volume_attachment` Manage the attachment between volumes and servers.
+
 IMPROVEMENTS:
 * resources/hcloud_server: Add `backups` attribute to enable or disable backups.
 
 NOTES:
 * **Read Only**: resources/hcloud_server: `backup_window`, removed the ability to set the attribute. This attribute is now read only.
+* Updated hcloud-go to `v1.11.0`
 
 ## 1.4.0 (October 18, 2018)
 
