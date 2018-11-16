@@ -70,6 +70,27 @@ func TestActionFromSchema(t *testing.T) {
 	}
 }
 
+func TestActionsFromSchema(t *testing.T) {
+	data := []byte(`[
+		{
+			"id": 13,
+			"command": "create_server"
+		},
+		{
+			"id": 14,
+			"command": "start_server"
+		}
+	]`)
+	var s []schema.Action
+	if err := json.Unmarshal(data, &s); err != nil {
+		t.Fatal(err)
+	}
+	actions := ActionsFromSchema(s)
+	if len(actions) != 2 || actions[0].ID != 13 || actions[1].ID != 14 {
+		t.Fatal("unexpected actions")
+	}
+}
+
 func TestFloatingIPFromSchema(t *testing.T) {
 	t.Run("IPv6", func(t *testing.T) {
 		data := []byte(`{

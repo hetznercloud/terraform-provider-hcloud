@@ -242,7 +242,27 @@ func TestVolumeClientCreateWithServer(t *testing.T) {
 						"type": "volume"
 					}
 				]
-			}
+			},
+			"next_actions": [
+				{
+					"id": 3,
+					"command": "attach_volume",
+					"status": "running",
+					"progress": 0,
+					"started": "2016-01-30T23:50:15+00:00",
+					"finished": null,
+					"resources": [
+						{
+							"id": 42,
+							"type": "server"
+						},
+						{
+							"id": 1,
+							"type": "volume"
+						}
+					]
+				}
+			]
 		}`)
 	})
 
@@ -261,6 +281,9 @@ func TestVolumeClientCreateWithServer(t *testing.T) {
 	}
 	if result.Action.ID != 2 {
 		t.Errorf("unexpected action ID: %v", result.Action.ID)
+	}
+	if len(result.NextActions) != 1 || result.NextActions[0].ID != 3 {
+		t.Errorf("unexpected next actions: %v", result.NextActions)
 	}
 }
 

@@ -176,6 +176,12 @@ func resourceServerCreate(d *schema.ResourceData, m interface{}) error {
 	if err := waitForServerAction(ctx, client, res.Action, res.Server); err != nil {
 		return err
 	}
+	for _, nextAction := range res.NextActions {
+		if err := waitForServerAction(ctx, client, nextAction, res.Server); err != nil {
+			return err
+		}
+
+	}
 
 	backups := d.Get("backups").(bool)
 	if err := setBackups(ctx, client, res.Server, backups); err != nil {

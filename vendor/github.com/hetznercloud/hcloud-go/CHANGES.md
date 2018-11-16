@@ -1,5 +1,9 @@
 # Changes
 
+## v1.11.0
+
+* Add `NextActions` to `ServerCreateResult` and `VolumeCreateResult`
+
 ## v1.10.0
 
 * Add `WithApplication()` client option to provide an application name and version

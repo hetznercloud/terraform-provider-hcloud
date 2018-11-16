@@ -5,6 +5,6 @@ go:
   - "1.10"
   - "1.11"
 before_script:
-  - go get github.com/golang/lint/golint
+  - go get golang.org/x/lint/golint
 script:
   - script/checkall.bash
