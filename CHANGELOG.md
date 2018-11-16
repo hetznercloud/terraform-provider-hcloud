@@ -1,4 +1,4 @@
-## 1.5.0 (Unreleased)
+## 1.5.0 (November 16, 2018)
 
 FEATURES:
 * **New Resource**: `hcloud_volume_attachment` Manage the attachment between volumes and servers.
