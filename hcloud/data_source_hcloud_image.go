@@ -3,6 +3,8 @@ package hcloud
 import (
 	"context"
 	"fmt"
+	"log"
+	"sort"
 	"strconv"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -58,6 +60,10 @@ func dataSourceHcloudImage() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"most_recent": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
 		},
 	}
 }
@@ -99,7 +105,13 @@ func dataSourceHcloudImageRead(d *schema.ResourceData, m interface{}) (err error
 			return fmt.Errorf("no image found for selector %q", selector)
 		}
 		if len(allImages) > 1 {
-			return fmt.Errorf("more than one image found for selector %q", selector)
+			if _, ok := d.GetOk("most_recent"); !ok {
+				return fmt.Errorf("more than one image found for selector %q", selector)
+			}
+			sort.Slice(allImages, func(i, j int) bool {
+				return allImages[i].Created.After(allImages[j].Created)
+			})
+			log.Printf("[INFO] %d images found for selector %q, using %d as the most recent one", len(allImages), selector, allImages[0].ID)
 		}
 		setImageSchema(d, allImages[0])
 		return
