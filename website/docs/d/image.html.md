@@ -28,6 +28,7 @@ resource "hcloud_server" "main" {
 - `id` - (Optional, string) ID of the Image.
 - `name` - (Optional, string) Name of the Image.
 - `selector` - (Optional, string) [Label selector](https://docs.hetzner.cloud/#overview-label-selector)
+- `most_recent` - (Optional, bool) If more than one result is returned, use the most recent Image.
 
 ## Attributes Reference
 - `id` - (int) Unique ID of the Image.

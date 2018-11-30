@@ -3,8 +3,10 @@ package hcloud
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 
 func init() {
@@ -37,6 +39,27 @@ func TestAccHcloudDataSourceImage(t *testing.T) {
 		},
 	})
 }
+func TestAccHcloudDataSourceImageSort(t *testing.T) {
+	testImageList := []*hcloud.Image{
+		&hcloud.Image{
+			ID:      5,
+			Created: time.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
+		},
+		&hcloud.Image{
+			ID:      6,
+			Created: time.Date(2011, 1, 1, 0, 0, 0, 0, time.UTC),
+		},
+		&hcloud.Image{
+			ID:      7,
+			Created: time.Date(2018, 1, 1, 0, 0, 0, 0, time.UTC),
+		}}
+	oldestImage := testImageList[2]
+	sortImageListByCreated(testImageList)
+	if testImageList[0].ID != oldestImage.ID {
+		t.Fatalf("sortImageListByCreated did not sort by date: expected %d/%s but got %d/%s", oldestImage.ID, oldestImage.Created, testImageList[0].ID, testImageList[0].Created)
+	}
+}
+
 func testAccHcloudCheckImageDataSourceConfig() string {
 	return fmt.Sprintf(`
 data "hcloud_image" "image_1" {
