@@ -1,7 +1,7 @@
 ---
 layout: "hcloud"
 page_title: "Hetzner Cloud: hcloud_volume"
-sidebar_current: "docs-hcloud-resource-volume"
+sidebar_current: "docs-hcloud-resource-volume-x"
 description: |-
   Provides a Hetzner Cloud volume resource to manage volumes.
 ---
