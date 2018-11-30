@@ -109,7 +109,6 @@ func dataSourceHcloudImageRead(d *schema.ResourceData, m interface{}) (err error
 				return fmt.Errorf("more than one image found for selector %q", selector)
 			}
 			sortImageListByCreated(allImages)
-			// log.Printf("most_recent is %v", mostRecent)
 			log.Printf("[INFO] %d images found for selector %q, using %d as the most recent one", len(allImages), selector, allImages[0].ID)
 		}
 		setImageSchema(d, allImages[0])
