@@ -146,10 +146,6 @@ resource "hcloud_rdns" "rdns_server_v6" {
 
 func testAccHcloudCheckReverseDNSIPv4ConfigFloatingIP(rInt int, dnsPtr string) string {
 	return fmt.Sprintf(`
-resource "hcloud_ssh_key" "foobar_rdns" {
-  name       = "foobar-%d"
-  public_key = "%s"
-}
 resource "hcloud_floating_ip" "floating_ip_v4" {
   type      = "ipv4"
 	home_location = "fsn1"
@@ -159,15 +155,11 @@ resource "hcloud_rdns" "rdns_floating_ip_v4" {
   ip_address     = "${hcloud_floating_ip.floating_ip_v4.ip_address}"
   dns_ptr        = "%s"
 }
-`, rInt, testAccRDNSSSHPublicKey, dnsPtr)
+`, dnsPtr)
 }
 
 func testAccHcloudCheckReverseDNSIPv6ConfigFloatingIP(rInt int, dnsPtr string) string {
 	return fmt.Sprintf(`
-resource "hcloud_ssh_key" "foobar_rdns" {
-  name       = "foobar-%d"
-  public_key = "%s"
-}
 resource "hcloud_floating_ip" "floating_ip_v6" {
   type      = "ipv6"
 	home_location = "fsn1"
@@ -177,7 +169,7 @@ resource "hcloud_rdns" "rdns_floating_ip_v6" {
   ip_address     = "${hcloud_floating_ip.floating_ip_v6.ip_address}"
   dns_ptr        = "%s"
 }
-`, rInt, testAccRDNSSSHPublicKey, dnsPtr)
+`, dnsPtr)
 }
 
 func testSweepRDNS(region string) error {
