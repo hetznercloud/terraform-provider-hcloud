@@ -1,7 +1,10 @@
-## 1.6.0 (Unreleased)
+## 1.6.1 (Unreleased)
 
 IMPROVEMENTS:
 * datasource/hcloud_image: Add `most_recent` attribute to get the latest image when multiple images has the same label.
+
+BUG FIXES:
+* Fix an error on volume_attachment creation, when server was locked.
 
 ## 1.5.0 (November 16, 2018)
 

@@ -41,6 +41,32 @@ func TestAccHcloudVolumeAttachment_Create(t *testing.T) {
 	})
 }
 
+func TestAccHcloudVolumeAttachment_CreateMany(t *testing.T) {
+	var server hcloud.Server
+	var volume hcloud.Volume
+	var volume2 hcloud.Volume
+	rInt := acctest.RandInt()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccHcloudPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccHcloudCheckVolumeDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccHcloudCheckMultipleVolumeAttachmentConfig(rInt),
+				Check: resource.ComposeTestCheckFunc(
+					testAccHcloudCheckVolumeExists("hcloud_volume_attachment.foobar_attachment", &volume),
+					testAccHcloudCheckVolumeAttachmentVolume("hcloud_volume_attachment.foobar_attachment", &volume),
+					testAccHcloudCheckVolumeExists("hcloud_volume_attachment.foobar_attachment2", &volume2),
+					testAccHcloudCheckVolumeAttachmentVolume("hcloud_volume_attachment.foobar_attachment2", &volume2),
+					testAccHcloudCheckServerExists("hcloud_server.foobar", &server),
+					testAccHcloudCheckVolumeAttachmentServer("hcloud_volume_attachment.foobar_attachment", &server),
+				),
+			},
+		},
+	})
+}
+
 func testAccHcloudCheckVolumeAttachmentVolume(n string, volume *hcloud.Volume) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -101,4 +127,36 @@ resource "hcloud_volume" "foobar_volume" {
   name     = "foo-volume-%d"
 }
 `, serverID, serverID)
+}
+
+func testAccHcloudCheckMultipleVolumeAttachmentConfig(serverID int) string {
+	return fmt.Sprintf(`
+resource "hcloud_volume_attachment" "foobar_attachment" {
+  volume_id = "${hcloud_volume.foobar_volume.id}"
+  server_id = "${hcloud_server.foobar.id}"
+}
+
+resource "hcloud_volume_attachment" "foobar_attachment2" {
+  volume_id = "${hcloud_volume.foobar_volume2.id}"
+  server_id = "${hcloud_server.foobar.id}"
+}
+
+resource "hcloud_server" "foobar" {
+  name        = "foo-%d"
+  server_type = "cx11"
+  image       = "debian-9"
+  datacenter  = "nbg1-dc3"
+}
+
+resource "hcloud_volume" "foobar_volume" {
+  size     = 10
+  location = "nbg1"
+  name     = "foo-volume-%d"
+}
+resource "hcloud_volume" "foobar_volume2" {
+  size     = 10
+  location = "nbg1"
+  name     = "foo-volume-2-%d"
+}
+`, serverID, serverID, serverID)
 }

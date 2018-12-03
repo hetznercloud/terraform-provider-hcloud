@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"strconv"
+	"time"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
@@ -43,6 +44,11 @@ func resourceVolumeAttachmentCreate(d *schema.ResourceData, m interface{}) error
 
 	action, _, err := client.Volume.Attach(ctx, volume, server)
 	if err != nil {
+		if hcloud.IsError(err, "locked") {
+			log.Printf("[INFO] Server (%v) locked, retrying in 1 second", serverID)
+			time.Sleep(time.Second)
+			return resourceVolumeAttachmentCreate(d, m)
+		}
 		return err
 	}
 	if err := waitForVolumeAction(ctx, client, action, volume); err != nil {
@@ -119,6 +125,11 @@ func resourceVolumeAttachmentDelete(d *schema.ResourceData, m interface{}) error
 	if volume.Server != nil {
 		action, _, err := client.Volume.Detach(ctx, volume)
 		if err != nil {
+			if hcloud.IsError(err, "locked") {
+				log.Printf("[INFO] Server (%v) locked, retrying in 1 second", volume.Server.ID)
+				time.Sleep(time.Second)
+				return resourceVolumeAttachmentDelete(d, m)
+			}
 			return err
 		}
 		if err := waitForVolumeAction(ctx, client, action, volume); err != nil {

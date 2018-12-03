@@ -33,6 +33,7 @@ resource "hcloud_volume" "master" {
 - `server` - (Optional, int) Server to attach the Volume to, optional if location argument is passed.
 - `location` - (Optional, string) Location of the volume to create, optional if server_id argument is passed.
 
+**Note:** When you want to add multiple volumes to a server, please use the `hcloud_volume_attachment` resource and the `location` argument instead of the `server_id` argument.
 
 ## Attributes Reference
 
