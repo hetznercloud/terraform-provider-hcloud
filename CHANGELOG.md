@@ -1,4 +1,4 @@
-## 1.6.0 (Unreleased)
+## 1.6.0 (December 03, 2018)
 
 IMPROVEMENTS:
 * datasource/hcloud_image: Add `most_recent` attribute to get the latest image when multiple images has the same label.
