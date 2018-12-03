@@ -45,7 +45,7 @@ func resourceVolumeAttachmentCreate(d *schema.ResourceData, m interface{}) error
 	action, _, err := client.Volume.Attach(ctx, volume, server)
 	if err != nil {
 		if hcloud.IsError(err, "locked") {
-			log.Printf("[INFO] Server (%v) locked, retrying one 1 second", serverID)
+			log.Printf("[INFO] Server (%v) locked, retrying in one second", serverID)
 			time.Sleep(time.Second)
 			return resourceVolumeAttachmentCreate(d, m)
 		}
