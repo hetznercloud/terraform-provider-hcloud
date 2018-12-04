@@ -34,6 +34,8 @@ func Provider() terraform.ResourceProvider {
 			"hcloud_volume_attachment":      resourceVolumeAttachment(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
+			"hcloud_datacenter":  dataSourceHcloudDatacenter(),
+			"hcloud_datacenters": dataSourceHcloudDatacenters(),
 			"hcloud_floating_ip": dataSourceHcloudFloatingIP(),
 			"hcloud_image":       dataSourceHcloudImage(),
 			"hcloud_ssh_key":     dataSourceHcloudSSHKey(),
