@@ -1,4 +1,9 @@
-## 1.6.1 (Unreleased)
+## 1.7.0 (Unreleased)
+
+FEATURES:
+* **New Datasource**: `hcloud_datacenter` Lookup a datacenter.
+* **New Datasource**: `hcloud_datacenters` Lookup all datacenters.
+
 ## 1.6.0 (December 03, 2018)
 
 IMPROVEMENTS:
