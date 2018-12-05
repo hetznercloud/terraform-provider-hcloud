@@ -4,5 +4,5 @@ go:
   - 1.9
 script:
   - make test
-  - make testacc
+  - travis_wait 30 make testacc
   - make
