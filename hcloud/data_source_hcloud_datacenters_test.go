@@ -21,8 +21,6 @@ func TestAccHcloudDataSourceDatasources(t *testing.T) {
 				Config: testAccHcloudCheckDatacentersDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.hcloud_datacenters.ds", "datacenter_ids.#", "4"),
-					resource.TestCheckResourceAttr(
 						"data.hcloud_datacenters.ds", "datacenter_ids.0", "1"),
 					resource.TestCheckResourceAttr(
 						"data.hcloud_datacenters.ds", "datacenter_ids.1", "2"),
@@ -31,8 +29,6 @@ func TestAccHcloudDataSourceDatasources(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.hcloud_datacenters.ds", "datacenter_ids.3", "4"),
 					resource.TestCheckResourceAttr(
-						"data.hcloud_datacenters.ds", "names.#", "4"),
-					resource.TestCheckResourceAttr(
 						"data.hcloud_datacenters.ds", "names.0", "fsn1-dc8"),
 					resource.TestCheckResourceAttr(
 						"data.hcloud_datacenters.ds", "names.1", "nbg1-dc3"),
@@ -40,8 +36,6 @@ func TestAccHcloudDataSourceDatasources(t *testing.T) {
 						"data.hcloud_datacenters.ds", "names.2", "hel1-dc2"),
 					resource.TestCheckResourceAttr(
 						"data.hcloud_datacenters.ds", "names.3", "fsn1-dc14"),
-					resource.TestCheckResourceAttr(
-						"data.hcloud_datacenters.ds", "descriptions.#", "4"),
 					resource.TestCheckResourceAttr(
 						"data.hcloud_datacenters.ds", "descriptions.0", "Falkenstein 1 DC 8"),
 					resource.TestCheckResourceAttr(
