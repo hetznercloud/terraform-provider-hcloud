@@ -114,7 +114,7 @@ func dataSourceHcloudImageRead(d *schema.ResourceData, m interface{}) (err error
 		setImageSchema(d, allImages[0])
 		return
 	}
-	return fmt.Errorf("please specify am id, a name or a selector to lookup the image")
+	return fmt.Errorf("please specify an id, a name or a selector to lookup the image")
 }
 
 func sortImageListByCreated(imageList []*hcloud.Image) {
