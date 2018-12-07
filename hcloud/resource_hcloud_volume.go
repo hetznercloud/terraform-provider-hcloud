@@ -47,6 +47,14 @@ func resourceVolume() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"automount": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
+			"format": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 		},
 	}
 }
@@ -72,6 +80,12 @@ func resourceVolumeCreate(d *schema.ResourceData, m interface{}) error {
 			tmpLabels[k] = v.(string)
 		}
 		opts.Labels = tmpLabels
+	}
+	if automount, ok := d.GetOk("automount"); ok {
+		opts.Automount = hcloud.Bool(automount.(bool))
+	}
+	if format, ok := d.GetOk("format"); ok {
+		opts.Format = hcloud.String(format.(string))
 	}
 
 	result, _, err := client.Volume.Create(ctx, opts)
@@ -178,6 +192,7 @@ func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 				}
 			}
 			action, _, err := client.Volume.Attach(ctx, volume, &hcloud.Server{ID: serverID})
+
 			if err != nil {
 				if resourceVolumeIsNotFound(err, d) {
 					return nil

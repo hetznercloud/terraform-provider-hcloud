@@ -23,6 +23,7 @@ resource "hcloud_volume" "master" {
   name = "volume1"
   size = 50
   server_id = "${hcloud_server.node1.id}"
+  automount = true
 }
 ```
 
@@ -32,6 +33,8 @@ resource "hcloud_volume" "master" {
 - `size` - (Required, int) Size of the volume (in GB).
 - `server` - (Optional, int) Server to attach the Volume to, optional if location argument is passed.
 - `location` - (Optional, string) Location of the volume to create, optional if server_id argument is passed.
+- `automout` - (Optional, bool) Automount the volume after the attachment, server_id must be provider
+- `format` - (Optional, string) Format volume after creation. `xfs` or `ext4`
 
 **Note:** When you want to attach multiple volumes to a server, please use the `hcloud_volume_attachment` resource and the `location` argument instead of the `server_id` argument.
 
@@ -42,7 +45,6 @@ resource "hcloud_volume" "master" {
 - `size` - Size of the volume.
 - `labels` - User-defined labels (key-value pairs).
 - `linux_device` - 	Device path on the file system for the Volume.
-
 
 ## Import
 

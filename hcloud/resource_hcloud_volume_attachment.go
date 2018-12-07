@@ -27,6 +27,11 @@ func resourceVolumeAttachment() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
+			"automount": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -42,9 +47,16 @@ func resourceVolumeAttachmentCreate(d *schema.ResourceData, m interface{}) error
 
 	server := &hcloud.Server{ID: serverID.(int)}
 
-	action, _, err := client.Volume.Attach(ctx, volume, server)
+	opts := hcloud.VolumeAttachOpts{
+		Server: server,
+	}
+	if automount, ok := d.GetOk("automount"); ok {
+		opts.Automount = hcloud.Bool(automount.(bool))
+	}
+
+	action, _, err := client.Volume.AttachWithOpts(ctx, volume, opts)
 	if err != nil {
-		if hcloud.IsError(err, "locked") {
+		if hcloud.IsError(err, hcloud.ErrorCodeLocked) {
 			log.Printf("[INFO] Server (%v) locked, retrying in one second", serverID)
 			time.Sleep(time.Second)
 			return resourceVolumeAttachmentCreate(d, m)
@@ -125,7 +137,7 @@ func resourceVolumeAttachmentDelete(d *schema.ResourceData, m interface{}) error
 	if volume.Server != nil {
 		action, _, err := client.Volume.Detach(ctx, volume)
 		if err != nil {
-			if hcloud.IsError(err, "locked") {
+			if hcloud.IsError(err, hcloud.ErrorCodeLocked) {
 				log.Printf("[INFO] Server (%v) locked, retrying in one second", volume.Server.ID)
 				time.Sleep(time.Second)
 				return resourceVolumeAttachmentDelete(d, m)

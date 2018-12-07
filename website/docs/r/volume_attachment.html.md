@@ -16,6 +16,7 @@ Provides a Hetzner Cloud Volume attachment to attach a Volume to a Hetzner Cloud
 resource "hcloud_volume_attachment" "main" {
   volume_id = "${hcloud_volume.master.id}"
   server_id = "${hcloud_server.node1.id}"
+  automount = true
 }
 
 resource "hcloud_server" "node1" {
@@ -35,6 +36,7 @@ resource "hcloud_volume" "master" {
 
 - `volume_id` - (Required, int) ID of the Volume.
 - `server_id` - (Required, int) Server to attach the Volume to.
+- `automout` - (Optional, bool) Automount the volume after the attachment, server_id must be provider
 
 ## Attributes Reference
 
