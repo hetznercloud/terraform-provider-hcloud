@@ -342,6 +342,56 @@ func TestServersCreateWithoutSSHKeys(t *testing.T) {
 	}
 }
 
+func TestServersCreateWithVolumes(t *testing.T) {
+	env := newTestEnv()
+	defer env.Teardown()
+
+	env.Mux.HandleFunc("/servers", func(w http.ResponseWriter, r *http.Request) {
+		var reqBody schema.ServerCreateRequest
+		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+			t.Fatal(err)
+		}
+		if len(reqBody.Volumes) != 2 || reqBody.Volumes[0] != 1 || reqBody.Volumes[1] != 2 {
+			t.Errorf("unexpected Volumes: %v", reqBody.Volumes)
+		}
+		if reqBody.Automount == nil || !*reqBody.Automount {
+			t.Errorf("unexpected Automount: %v", reqBody.Automount)
+		}
+		json.NewEncoder(w).Encode(schema.ServerCreateResponse{
+			Server: schema.Server{
+				ID: 1,
+			},
+			NextActions: []schema.Action{
+				{ID: 2},
+			},
+		})
+	})
+
+	ctx := context.Background()
+	result, _, err := env.Client.Server.Create(ctx, ServerCreateOpts{
+		Name:       "test",
+		ServerType: &ServerType{ID: 1},
+		Image:      &Image{ID: 2},
+		Volumes: []*Volume{
+			{ID: 1},
+			{ID: 2},
+		},
+		Automount: Bool(true),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Server == nil {
+		t.Fatal("no server")
+	}
+	if result.Server.ID != 1 {
+		t.Errorf("unexpected server ID: %v", result.Server.ID)
+	}
+	if len(result.NextActions) != 1 || result.NextActions[0].ID != 2 {
+		t.Errorf("unexpected next actions: %v", result.NextActions)
+	}
+}
+
 func TestServersCreateWithDatacenterID(t *testing.T) {
 	env := newTestEnv()
 	defer env.Teardown()
