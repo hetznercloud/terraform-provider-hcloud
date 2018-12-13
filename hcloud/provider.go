@@ -38,6 +38,8 @@ func Provider() terraform.ResourceProvider {
 			"hcloud_datacenters": dataSourceHcloudDatacenters(),
 			"hcloud_floating_ip": dataSourceHcloudFloatingIP(),
 			"hcloud_image":       dataSourceHcloudImage(),
+			"hcloud_location":    dataSourceHcloudLocation(),
+			"hcloud_locations":   dataSourceHcloudLocations(),
 			"hcloud_ssh_key":     dataSourceHcloudSSHKey(),
 			"hcloud_volume":      dataSourceHcloudVolume(),
 		},
