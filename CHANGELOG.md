@@ -5,7 +5,7 @@ FEATURES:
 * **New Datasource**: `hcloud_locations` Lookup all locations.
 * **New Datasource**: `hcloud_datacenter` Lookup a datacenter.
 * **New Datasource**: `hcloud_datacenters` Lookup all datacenters.
-* Volumes Automounting is now available for `hcloud_volume` and `hcloud_volume_attachment`
+* Volume Automounting is now available for `hcloud_volume` and `hcloud_volume_attachment`
 
 ## 1.6.0 (December 03, 2018)
 
