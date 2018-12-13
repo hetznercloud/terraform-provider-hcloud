@@ -36,7 +36,7 @@ resource "hcloud_volume" "master" {
 
 - `volume_id` - (Required, int) ID of the Volume.
 - `server_id` - (Required, int) Server to attach the Volume to.
-- `automout` - (Optional, bool) Automount the volume after the attachment, server_id must be provider
+- `automount` - (Optional, bool) Automount the volume upon attaching it.
 
 ## Attributes Reference
 
