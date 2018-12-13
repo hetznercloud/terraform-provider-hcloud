@@ -112,6 +112,7 @@ func testAccHcloudCheckVolumeAttachmentConfig(serverID int) string {
 resource "hcloud_volume_attachment" "foobar_attachment" {
   volume_id = "${hcloud_volume.foobar_volume.id}"
   server_id = "${hcloud_server.foobar.id}"
+  automount = true
 }
 
 resource "hcloud_server" "foobar" {

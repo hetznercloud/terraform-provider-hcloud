@@ -311,6 +311,12 @@ func TestVolumeClientCreateWithLocation(t *testing.T) {
 		if reqBody.Labels == nil || (*reqBody.Labels)["key"] != "value" {
 			t.Errorf("unexpected labels in request: %v", reqBody.Labels)
 		}
+		if reqBody.Automount != nil {
+			t.Errorf("unexpected automount in request: %v", reqBody.Automount)
+		}
+		if reqBody.Format != nil {
+			t.Errorf("unexpected format in request: %v", reqBody.Automount)
+		}
 		fmt.Fprint(w, `{
 			"volume": {
 				"id": 1,
@@ -353,7 +359,77 @@ func TestVolumeClientCreateWithLocation(t *testing.T) {
 		t.Errorf("unexpected volume ID: %v", result.Volume.ID)
 	}
 }
+func TestVolumeClientCreateWithAutomount(t *testing.T) {
+	env := newTestEnv()
+	defer env.Teardown()
 
+	env.Mux.HandleFunc("/volumes", func(w http.ResponseWriter, r *http.Request) {
+		var reqBody schema.VolumeCreateRequest
+		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+			t.Fatal(err)
+		}
+		if reqBody.Name != "my-volume" {
+			t.Errorf("unexpected volume name in request: %v", reqBody.Name)
+		}
+		if reqBody.Size != 42 {
+			t.Errorf("unexpected volume size in request: %v", reqBody.Size)
+		}
+		if reqBody.Server == nil || *reqBody.Server != 1 {
+			t.Errorf("unexpected server in request: %v", reqBody.Server)
+		}
+		if reqBody.Labels == nil || (*reqBody.Labels)["key"] != "value" {
+			t.Errorf("unexpected labels in request: %v", reqBody.Labels)
+		}
+		if *reqBody.Automount != true {
+			t.Errorf("unexpected automount in request: %v", reqBody.Automount)
+		}
+		if *reqBody.Format != "xfs" {
+			t.Errorf("unexpected format in request: %v", reqBody.Automount)
+		}
+		fmt.Fprint(w, `{
+			"volume": {
+				"id": 1,
+				"created": "2016-01-30T23:50:11+00:00",
+				"name": "my-volume",
+				"server": 1,
+				"location": {
+					"id": 1,
+					"name": "fsn1",
+					"description": "Falkenstein DC Park 1",
+					"country": "DE",
+					"city": "Falkenstein",
+					"latitude": 50.47612,
+					"longitude": 12.370071
+				},
+				"size": 42,
+				"linux_device":"/dev/disk/by-id/scsi-0HC_volume_1",
+				"protection": {
+					"delete": true
+				},
+				"labels": {
+					"key": "value"
+				}
+			}
+		}`)
+	})
+
+	ctx := context.Background()
+	opts := VolumeCreateOpts{
+		Name:      "my-volume",
+		Size:      42,
+		Server:    &Server{ID: 1},
+		Labels:    map[string]string{"key": "value"},
+		Automount: Bool(true),
+		Format:    String("xfs"),
+	}
+	result, _, err := env.Client.Volume.Create(ctx, opts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Volume.ID != 1 {
+		t.Errorf("unexpected volume ID: %v", result.Volume.ID)
+	}
+}
 func TestVolumeClientUpdate(t *testing.T) {
 	var (
 		ctx    = context.Background()
