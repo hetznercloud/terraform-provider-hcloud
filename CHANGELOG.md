@@ -1,4 +1,4 @@
-## 1.7.0 (Unreleased)
+## 1.7.0 (December 18, 2018)
 
 FEATURES:
 * **New Datasource**: `hcloud_location` Lookup a location.
