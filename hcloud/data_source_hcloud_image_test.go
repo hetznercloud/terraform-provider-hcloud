@@ -41,15 +41,15 @@ func TestAccHcloudDataSourceImage(t *testing.T) {
 }
 func TestAccHcloudDataSourceImageSort(t *testing.T) {
 	testImageList := []*hcloud.Image{
-		&hcloud.Image{
+		{
 			ID:      5,
 			Created: time.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 		},
-		&hcloud.Image{
+		{
 			ID:      6,
 			Created: time.Date(2011, 1, 1, 0, 0, 0, 0, time.UTC),
 		},
-		&hcloud.Image{
+		{
 			ID:      7,
 			Created: time.Date(2018, 1, 1, 0, 0, 0, 0, time.UTC),
 		}}

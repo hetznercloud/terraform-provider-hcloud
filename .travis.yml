@@ -1,7 +1,7 @@
 sudo: false
 language: go
 go:
-  - 1.9
+  - "1.11.x"
 script:
   - make test
   - travis_wait 30 make testacc
