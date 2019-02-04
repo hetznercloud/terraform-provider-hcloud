@@ -21,11 +21,11 @@ func TestAccHcloudDataSourceDatasource(t *testing.T) {
 				Config: testAccHcloudCheckDatacenterDataSourceConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.hcloud_datacenter.ds_1", "id", "1"),
+						"data.hcloud_datacenter.ds_1", "id", "4"),
 					resource.TestCheckResourceAttr(
-						"data.hcloud_datacenter.ds_1", "name", "fsn1-dc8"),
+						"data.hcloud_datacenter.ds_1", "name", "fsn1-dc14"),
 					resource.TestCheckResourceAttr(
-						"data.hcloud_datacenter.ds_1", "description", "Falkenstein 1 DC 8"),
+						"data.hcloud_datacenter.ds_1", "description", "Falkenstein 1 DC14"),
 					resource.TestCheckResourceAttr(
 						"data.hcloud_datacenter.ds_2", "id", "4"),
 					resource.TestCheckResourceAttr(
@@ -41,7 +41,7 @@ func TestAccHcloudDataSourceDatasource(t *testing.T) {
 func testAccHcloudCheckDatacenterDataSourceConfig() string {
 	return fmt.Sprintf(`
 data "hcloud_datacenter" "ds_1" {
-  name = "fsn1-dc8"
+  name = "fsn1-dc14"
 }
 data "hcloud_datacenter" "ds_2" {
   id = 4
