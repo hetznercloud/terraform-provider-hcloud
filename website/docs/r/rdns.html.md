@@ -32,7 +32,7 @@ For Floating IPs:
 
 ```hcl
 resource "hcloud_floating_ip" "floating1" {
-  home_location = "ngb1"
+  home_location = "nbg1"
   type = "ipv4"
 }
 
