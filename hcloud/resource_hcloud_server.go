@@ -218,25 +218,7 @@ func resourceServerRead(d *schema.ResourceData, m interface{}) error {
 		d.SetId("")
 		return nil
 	}
-
-	d.Set("name", server.Name)
-	d.Set("datacenter", server.Datacenter.Name)
-	d.Set("location", server.Datacenter.Location.Name)
-	d.Set("status", server.Status)
-	d.Set("server_type", server.ServerType.Name)
-	d.Set("ipv4_address", server.PublicNet.IPv4.IP.String())
-	d.Set("ipv6_address", server.PublicNet.IPv6.IP.String())
-	d.Set("ipv6_network", server.PublicNet.IPv6.Network.String())
-	d.Set("backup_window", server.BackupWindow)
-	d.Set("backups", server.BackupWindow != "")
-	d.Set("labels", server.Labels)
-	if server.Image != nil {
-		if server.Image.Name != "" {
-			d.Set("image", server.Image.Name)
-		} else {
-			d.Set("image", server.Image.ID)
-		}
-	}
+	setServerSchema(d, server)
 
 	d.SetConnInfo(map[string]string{
 		"type": "ssh",
@@ -494,4 +476,26 @@ func waitForServerAction(ctx context.Context, client *hcloud.Client, action *hcl
 	}
 	log.Printf("[INFO] server (%d) %q action succeeded", server.ID, action.Command)
 	return nil
+}
+
+func setServerSchema(d *schema.ResourceData, s *hcloud.Server) {
+	d.SetId(strconv.Itoa(s.ID))
+	d.Set("name", s.Name)
+	d.Set("datacenter", s.Datacenter.Name)
+	d.Set("location", s.Datacenter.Location.Name)
+	d.Set("status", s.Status)
+	d.Set("server_type", s.ServerType.Name)
+	d.Set("ipv4_address", s.PublicNet.IPv4.IP.String())
+	d.Set("ipv6_address", s.PublicNet.IPv6.IP.String())
+	d.Set("ipv6_network", s.PublicNet.IPv6.Network.String())
+	d.Set("backup_window", s.BackupWindow)
+	d.Set("backups", s.BackupWindow != "")
+	d.Set("labels", s.Labels)
+	if s.Image != nil {
+		if s.Image.Name != "" {
+			d.Set("image", s.Image.Name)
+		} else {
+			d.Set("image", s.Image.ID)
+		}
+	}
 }

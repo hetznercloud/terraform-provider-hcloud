@@ -1,4 +1,8 @@
 ## 1.8.0 (Unreleased)
+
+FEATURES:
+* **New Datasource**: `hcloud_server` Lookup a server.
+
 ## 1.7.0 (December 18, 2018)
 
 FEATURES:
