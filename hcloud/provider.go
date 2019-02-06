@@ -1,6 +1,7 @@
 package hcloud
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -17,6 +18,13 @@ func Provider() terraform.ResourceProvider {
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("HCLOUD_TOKEN", nil),
 				Description: "The API token to access the hetzner cloud.",
+				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+					token := val.(string)
+					if len(token) != 64 {
+						errs = append(errs, fmt.Errorf("%q must be 64 characters long. Your token is %d characters long", key, len(token)))
+					}
+					return
+				},
 			},
 			"endpoint": {
 				Type:        schema.TypeString,
