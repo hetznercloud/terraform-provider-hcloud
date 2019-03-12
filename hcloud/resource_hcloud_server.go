@@ -33,12 +33,12 @@ func resourceServer() *schema.Resource {
 				Required: true,
 			},
 			"image": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
+				Type:     schema.TypeString,
+				Required: true,
+				ForceNew: true,
 				ValidateFunc: func(val interface{}, key string) (i []string, errors []error) {
 					image := val.(string)
-					if len(image) == 0{
+					if len(image) == 0 {
 						errors = append(errors, fmt.Errorf("%q must have more then 0 characters. Have you set the name instead of an ID?", key))
 					}
 					return
@@ -153,7 +153,7 @@ func resourceServerCreate(d *schema.ResourceData, m interface{}) error {
 		ServerType: &hcloud.ServerType{
 			Name: d.Get("server_type").(string),
 		},
-		Image: image,
+		Image:    image,
 		UserData: d.Get("user_data").(string),
 	}
 
