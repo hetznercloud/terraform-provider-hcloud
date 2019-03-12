@@ -17,7 +17,7 @@ import (
 
 var (
 	testAccSSHPublicKey string
-	testHcloudISOName   = "coreos_stable.iso"
+	testHcloudISOName   = "coreos_production_iso_image.iso"
 )
 
 func init() {
