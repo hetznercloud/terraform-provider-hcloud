@@ -33,9 +33,16 @@ func resourceServer() *schema.Resource {
 				Required: true,
 			},
 			"image": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:             schema.TypeString,
+				Required:         true,
+				ForceNew:         true,
+				ValidateFunc: func(val interface{}, key string) (i []string, errors []error) {
+					image := val.(string)
+					if len(image) == 0{
+						errors = append(errors, fmt.Errorf("%q must have more then 0 characters. Have you set the name instead of an ID?", key))
+					}
+					return
+				},
 			},
 			"location": {
 				Type:     schema.TypeString,
@@ -135,18 +142,21 @@ func resourceServerCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*hcloud.Client)
 	ctx := context.Background()
 
+	var err error
+	image, _, err := client.Image.Get(ctx, d.Get("image").(string))
+	if err != nil {
+		return err
+	}
+
 	opts := hcloud.ServerCreateOpts{
 		Name: d.Get("name").(string),
 		ServerType: &hcloud.ServerType{
 			Name: d.Get("server_type").(string),
 		},
-		Image: &hcloud.Image{
-			Name: d.Get("image").(string),
-		},
+		Image: image,
 		UserData: d.Get("user_data").(string),
 	}
 
-	var err error
 	opts.SSHKeys, err = getSSHkeys(ctx, client, d)
 	if err != nil {
 		return err
