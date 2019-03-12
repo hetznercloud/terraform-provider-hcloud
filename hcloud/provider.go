@@ -59,7 +59,7 @@ func Provider() terraform.ResourceProvider {
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	opts := []hcloud.ClientOption{
 		hcloud.WithToken(d.Get("token").(string)),
-		hcloud.WithApplication("hcloud-terraform", "1.4.0"),
+		hcloud.WithApplication("hcloud-terraform", "1.8.1"),
 	}
 	if endpoint, ok := d.GetOk("endpoint"); ok {
 		opts = append(opts, hcloud.WithEndpoint(endpoint.(string)))
