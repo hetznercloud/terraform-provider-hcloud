@@ -1,4 +1,4 @@
-## 1.8.1 (Unreleased)
+## 1.8.1 (March 12, 2019)
 
 BUG FIXES:
 * Fix an error on server creation, when a image id was given instead of a image name.
