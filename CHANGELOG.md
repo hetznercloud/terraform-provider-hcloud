@@ -1,4 +1,21 @@
 ## 1.9.0 (Unreleased)
+
+IMPROVEMENTS:
+
+* datasource/hcloud_server: Add `with_status` attribute to get images by their status.
+* datasource/hcloud_image: Add `with_status` attribute to get servers by their status.
+* datasource/hcloud_volume: Add `with_status` attribute to get volumes by their status.
+
+* Added `with_selector` to all datasources that support label selectors.
+
+NOTES:
+
+* **Deprecation**: datasource/hcloud_server: `selector`, will be removed in the near future.
+* **Deprecation**: datasource/hcloud_floating_ip: `selector`, will be removed in the near future.
+* **Deprecation**: datasource/hcloud_image: `selector`, will be removed in the near future.
+* **Deprecation**: datasource/hcloud_ssh_key: `selector`, will be removed in the near future.
+* **Deprecation**: datasource/hcloud_volume: `selector`, will be removed in the near future.
+
 ## 1.8.1 (March 12, 2019)
 
 BUG FIXES:

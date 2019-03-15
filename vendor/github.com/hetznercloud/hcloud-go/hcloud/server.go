@@ -53,6 +53,24 @@ const (
 
 	// ServerStatusRunning is the status when a server is running.
 	ServerStatusRunning ServerStatus = "running"
+
+	// ServerStatusStarting is the status when a server is being started.
+	ServerStatusStarting ServerStatus = "starting"
+
+	// ServerStatusStopping is the status when a server is being stopped.
+	ServerStatusStopping ServerStatus = "stopping"
+
+	// ServerStatusMigrating is the status when a server is being migrated.
+	ServerStatusMigrating ServerStatus = "migrating"
+
+	// ServerStatusRebuilding is the status when a server is being rebuilt.
+	ServerStatusRebuilding ServerStatus = "rebuilding"
+
+	// ServerStatusDeleting is the status when a server is being deleted.
+	ServerStatusDeleting ServerStatus = "deleting"
+
+	// ServerStatusUnknown is the status when a server's state is unknown.
+	ServerStatusUnknown ServerStatus = "unknown"
 )
 
 // ServerPublicNet represents a server's public network.
@@ -115,24 +133,13 @@ func (c *ServerClient) GetByID(ctx context.Context, id int) (*Server, *Response,
 	return ServerFromSchema(body.Server), resp, nil
 }
 
-// GetByName retreives a server by its name. If the server does not exist, nil is returned.
+// GetByName retrieves a server by its name. If the server does not exist, nil is returned.
 func (c *ServerClient) GetByName(ctx context.Context, name string) (*Server, *Response, error) {
-	path := "/servers?name=" + url.QueryEscape(name)
-	req, err := c.client.NewRequest(ctx, "GET", path, nil)
-	if err != nil {
-		return nil, nil, err
+	servers, response, err := c.List(ctx, ServerListOpts{Name: name})
+	if len(servers) == 0 {
+		return nil, response, err
 	}
-
-	var body schema.ServerListResponse
-	resp, err := c.client.Do(req, &body)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	if len(body.Servers) == 0 {
-		return nil, resp, nil
-	}
-	return ServerFromSchema(body.Servers[0]), resp, nil
+	return servers[0], response, err
 }
 
 // Get retrieves a server by its ID if the input can be parsed as an integer, otherwise it
@@ -147,11 +154,24 @@ func (c *ServerClient) Get(ctx context.Context, idOrName string) (*Server, *Resp
 // ServerListOpts specifies options for listing servers.
 type ServerListOpts struct {
 	ListOpts
+	Name   string
+	Status []ServerStatus
+}
+
+func (l ServerListOpts) values() url.Values {
+	vals := l.ListOpts.values()
+	if l.Name != "" {
+		vals.Add("name", l.Name)
+	}
+	for _, status := range l.Status {
+		vals.Add("status", string(status))
+	}
+	return vals
 }
 
 // List returns a list of servers for a specific page.
 func (c *ServerClient) List(ctx context.Context, opts ServerListOpts) ([]*Server, *Response, error) {
-	path := "/servers?" + valuesForListOpts(opts.ListOpts).Encode()
+	path := "/servers?" + opts.values().Encode()
 	req, err := c.client.NewRequest(ctx, "GET", path, nil)
 	if err != nil {
 		return nil, nil, err
@@ -171,7 +191,7 @@ func (c *ServerClient) List(ctx context.Context, opts ServerListOpts) ([]*Server
 
 // All returns all servers.
 func (c *ServerClient) All(ctx context.Context) ([]*Server, error) {
-	return c.AllWithOpts(ctx, ServerListOpts{ListOpts{PerPage: 50}})
+	return c.AllWithOpts(ctx, ServerListOpts{ListOpts: ListOpts{PerPage: 50}})
 }
 
 // AllWithOpts returns all servers for the given options.

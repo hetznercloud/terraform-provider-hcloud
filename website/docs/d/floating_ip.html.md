@@ -24,7 +24,7 @@ data "hcloud_floating_ip" "ip_1" {
   ip_address = "1.2.3.4"
 }
 data "hcloud_floating_ip" "image_2" {
-  selector = "key=value"
+  with_selector = "key=value"
 }
 resource "hcloud_floating_ip_assignment" "main" {
   count          = "${var.counter}"
@@ -34,7 +34,7 @@ resource "hcloud_floating_ip_assignment" "main" {
 ```
 ## Argument Reference
 - `ip_address` - (Optional, string) IP address of the Floating IP.
-- `selector` - (Optional, string) [Label selector](https://docs.hetzner.cloud/#overview-label-selector)
+- `with_selector` - (Optional, string) [Label selector](https://docs.hetzner.cloud/#overview-label-selector)
 
 ## Attributes Reference
 - `id` - (int) Unique ID of the Floating IP.

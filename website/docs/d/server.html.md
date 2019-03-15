@@ -18,14 +18,15 @@ data "hcloud_server" "s_2" {
   id = "123"
 }
 data "hcloud_server" "s_3" {
-  selector =  "key=value"
+  with_selector =  "key=value"
 }
 ```
 
 ## Argument Reference
 - `id` - ID of the server.
 - `name` - Name of the server.
-- `selector` - Label Selector. For more information about possible values, visit the [Hetzner Cloud Documentation](https://docs.hetzner.cloud/#overview-label-selector).
+- `with_selector` - Label Selector. For more information about possible values, visit the [Hetzner Cloud Documentation](https://docs.hetzner.cloud/#overview-label-selector).
+- `with_status` - (Optional, list) List only servers with the specified status, could contain `initializing`, `starting`, `running`, `stopping`, `off`, `deleting`, `rebuilding`, `migrating`, `unknown`.
 
 ## Attributes Reference
 - `id` - (int) Unique ID of the server.

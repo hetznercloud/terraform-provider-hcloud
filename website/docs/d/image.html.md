@@ -17,7 +17,7 @@ data "hcloud_image" "image_2" {
   name = "ubuntu-18.04"
 }
 data "hcloud_image" "image_3" {
-  selector = "key=value"
+  with_selector = "key=value"
 }
 
 resource "hcloud_server" "main" {
@@ -27,8 +27,9 @@ resource "hcloud_server" "main" {
 ## Argument Reference
 - `id` - (Optional, string) ID of the Image.
 - `name` - (Optional, string) Name of the Image.
-- `selector` - (Optional, string) [Label selector](https://docs.hetzner.cloud/#overview-label-selector)
+- `with_selector` - (Optional, string) [Label selector](https://docs.hetzner.cloud/#overview-label-selector)
 - `most_recent` - (Optional, bool) If more than one result is returned, use the most recent Image.
+- `with_status` - (Optional, list) List only images with the specified status, could contain `creating` or `available`.
 
 ## Attributes Reference
 - `id` - (int) Unique ID of the Image.

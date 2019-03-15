@@ -35,8 +35,15 @@ func dataSourceHcloudSSHKey() *schema.Resource {
 				Computed: true,
 			},
 			"selector": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:          schema.TypeString,
+				Optional:      true,
+				Deprecated:    "Please use the with_selector property instead.",
+				ConflictsWith: []string{"with_selector"},
+			},
+			"with_selector": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: []string{"selector"},
 			},
 		},
 	}
@@ -78,11 +85,18 @@ func dataSourceHcloudSSHKeyRead(d *schema.ResourceData, m interface{}) (err erro
 		setSSHKeySchema(d, s)
 		return
 	}
-	if selector, ok := d.GetOk("selector"); ok {
+
+	var selector string
+	if v := d.Get("with_selector").(string); v != "" {
+		selector = v
+	} else if v := d.Get("selector").(string); v != "" {
+		selector = v
+	}
+	if selector != "" {
 		var allKeys []*hcloud.SSHKey
 		opts := hcloud.SSHKeyListOpts{
 			ListOpts: hcloud.ListOpts{
-				LabelSelector: selector.(string),
+				LabelSelector: selector,
 			},
 		}
 		allKeys, err = client.SSHKey.AllWithOpts(ctx, opts)
