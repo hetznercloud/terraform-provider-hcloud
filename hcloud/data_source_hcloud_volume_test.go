@@ -68,7 +68,7 @@ data "hcloud_volume" "volume_2" {
   id =  "${hcloud_volume.volume_ds.id}"
 }
 data "hcloud_volume" "volume_3" {
-  selector =  "key=${hcloud_volume.volume_ds.labels["key"]}"
+  with_selector =  "key=${hcloud_volume.volume_ds.labels["key"]}"
 }
 `, rInt)
 }

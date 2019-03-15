@@ -74,7 +74,7 @@ data "hcloud_floating_ip" "ip_2" {
   id = "${hcloud_floating_ip.floating_ip.id}"
 }
 data "hcloud_floating_ip" "ip_3" {
-  selector =  "key=${hcloud_floating_ip.floating_ip.labels["key"]}"
+  with_selector =  "key=${hcloud_floating_ip.floating_ip.labels["key"]}"
 }
 `)
 }

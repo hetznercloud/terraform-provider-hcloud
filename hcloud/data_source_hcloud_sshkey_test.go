@@ -68,7 +68,7 @@ data "hcloud_ssh_key" "ssh_3" {
   fingerprint =  "${hcloud_ssh_key.sshkey_ds.fingerprint}"
 }
 data "hcloud_ssh_key" "ssh_4" {
-  selector =  "key=${hcloud_ssh_key.sshkey_ds.labels["key"]}"
+  with_selector =  "key=${hcloud_ssh_key.sshkey_ds.labels["key"]}"
 }
 `, rInt, key)
 }

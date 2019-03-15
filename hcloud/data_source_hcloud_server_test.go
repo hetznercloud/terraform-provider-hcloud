@@ -68,7 +68,7 @@ data "hcloud_server" "s_2" {
   id = "${hcloud_server.server.id}"
 }
 data "hcloud_server" "s_3" {
-  selector =  "key=${hcloud_server.server.labels["key"]}"
+  with_selector =  "key=${hcloud_server.server.labels["key"]}"
   with_status = ["running","starting"]
 }
 `)

@@ -29,10 +29,6 @@ func dataSourceHcloudVolume() *schema.Resource {
 				Type:     schema.TypeMap,
 				Computed: true,
 			},
-			"selector": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
 			"location": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -45,6 +41,17 @@ func dataSourceHcloudVolume() *schema.Resource {
 			"linux_device": {
 				Type:     schema.TypeString,
 				Computed: true,
+			},
+			"selector": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				Deprecated:    "Please use the with_selector property instead.",
+				ConflictsWith: []string{"with_selector"},
+			},
+			"with_selector": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: []string{"selector"},
 			},
 			"with_status": {
 				Type: schema.TypeList,
@@ -82,7 +89,14 @@ func dataSourceHcloudVolumeRead(d *schema.ResourceData, m interface{}) (err erro
 		setVolumeSchema(d, v)
 		return
 	}
-	if selector, ok := d.GetOk("selector"); ok {
+
+	var selector string
+	if v := d.Get("with_selector").(string); v != "" {
+		selector = v
+	} else if v := d.Get("selector").(string); v != "" {
+		selector = v
+	}
+	if selector != "" {
 		var allVolumes []*hcloud.Volume
 
 		var statuses []hcloud.VolumeStatus
@@ -92,7 +106,7 @@ func dataSourceHcloudVolumeRead(d *schema.ResourceData, m interface{}) (err erro
 
 		opts := hcloud.VolumeListOpts{
 			ListOpts: hcloud.ListOpts{
-				LabelSelector: selector.(string),
+				LabelSelector: selector,
 			},
 			Status: statuses,
 		}

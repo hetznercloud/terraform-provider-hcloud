@@ -75,8 +75,15 @@ func dataSourceHcloudServer() *schema.Resource {
 				Computed: true,
 			},
 			"selector": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:          schema.TypeString,
+				Optional:      true,
+				Deprecated:    "Please use the with_selector property instead.",
+				ConflictsWith: []string{"with_selector"},
+			},
+			"with_selector": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: []string{"selector"},
 			},
 			"with_status": {
 				Type: schema.TypeList,
@@ -118,7 +125,13 @@ func dataSourceHcloudServerRead(d *schema.ResourceData, m interface{}) (err erro
 		return
 	}
 
-	if selector, ok := d.GetOk("selector"); ok {
+	var selector string
+	if v := d.Get("with_selector").(string); v != "" {
+		selector = v
+	} else if v := d.Get("selector").(string); v != "" {
+		selector = v
+	}
+	if selector != "" {
 		var allServers []*hcloud.Server
 		var statuses []hcloud.ServerStatus
 		for _, status := range d.Get("with_status").([]interface{}) {
@@ -127,7 +140,7 @@ func dataSourceHcloudServerRead(d *schema.ResourceData, m interface{}) (err erro
 
 		opts := hcloud.ServerListOpts{
 			ListOpts: hcloud.ListOpts{
-				LabelSelector: selector.(string),
+				LabelSelector: selector,
 			},
 			Status: statuses,
 		}

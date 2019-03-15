@@ -57,12 +57,19 @@ func dataSourceHcloudImage() *schema.Resource {
 				Computed: true,
 			},
 			"selector": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:          schema.TypeString,
+				Optional:      true,
+				Deprecated:    "Please use the with_selector property instead.",
+				ConflictsWith: []string{"with_selector"},
 			},
 			"most_recent": {
 				Type:     schema.TypeBool,
 				Optional: true,
+			},
+			"with_selector": {
+				Type:          schema.TypeString,
+				Optional:      true,
+				ConflictsWith: []string{"selector"},
 			},
 			"with_status": {
 				Type: schema.TypeList,
@@ -101,7 +108,13 @@ func dataSourceHcloudImageRead(d *schema.ResourceData, m interface{}) (err error
 		setImageSchema(d, i)
 		return
 	}
-	if selector, ok := d.GetOk("selector"); ok {
+	var selector string
+	if v := d.Get("with_selector").(string); v != "" {
+		selector = v
+	} else if v := d.Get("selector").(string); v != "" {
+		selector = v
+	}
+	if selector != "" {
 		var allImages []*hcloud.Image
 
 		var statuses []hcloud.ImageStatus
@@ -109,7 +122,7 @@ func dataSourceHcloudImageRead(d *schema.ResourceData, m interface{}) (err error
 			statuses = append(statuses, hcloud.ImageStatus(status.(string)))
 		}
 
-		opts := hcloud.ImageListOpts{ListOpts: hcloud.ListOpts{LabelSelector: selector.(string)}, Status: statuses}
+		opts := hcloud.ImageListOpts{ListOpts: hcloud.ListOpts{LabelSelector: selector}, Status: statuses}
 
 		allImages, err = client.Image.AllWithOpts(ctx, opts)
 		if err != nil {
