@@ -78,6 +78,13 @@ func dataSourceHcloudServer() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"with_status": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional: true,
+			},
 		},
 	}
 }
@@ -113,10 +120,16 @@ func dataSourceHcloudServerRead(d *schema.ResourceData, m interface{}) (err erro
 
 	if selector, ok := d.GetOk("selector"); ok {
 		var allServers []*hcloud.Server
+		var statuses []hcloud.ServerStatus
+		for _, status := range d.Get("with_status").([]interface{}) {
+			statuses = append(statuses, hcloud.ServerStatus(status.(string)))
+		}
+
 		opts := hcloud.ServerListOpts{
 			ListOpts: hcloud.ListOpts{
 				LabelSelector: selector.(string),
 			},
+			Status: statuses,
 		}
 		allServers, err = client.Server.AllWithOpts(ctx, opts)
 		if err != nil {

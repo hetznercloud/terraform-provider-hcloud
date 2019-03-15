@@ -46,6 +46,13 @@ func dataSourceHcloudVolume() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"with_status": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional: true,
+			},
 		},
 	}
 }
@@ -77,10 +84,17 @@ func dataSourceHcloudVolumeRead(d *schema.ResourceData, m interface{}) (err erro
 	}
 	if selector, ok := d.GetOk("selector"); ok {
 		var allVolumes []*hcloud.Volume
+
+		var statuses []hcloud.VolumeStatus
+		for _, status := range d.Get("with_status").([]interface{}) {
+			statuses = append(statuses, hcloud.VolumeStatus(status.(string)))
+		}
+
 		opts := hcloud.VolumeListOpts{
 			ListOpts: hcloud.ListOpts{
 				LabelSelector: selector.(string),
 			},
+			Status: statuses,
 		}
 		allVolumes, err = client.Volume.AllWithOpts(ctx, opts)
 		if err != nil {

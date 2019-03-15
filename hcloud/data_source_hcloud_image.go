@@ -64,6 +64,13 @@ func dataSourceHcloudImage() *schema.Resource {
 				Type:     schema.TypeBool,
 				Optional: true,
 			},
+			"with_status": {
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional: true,
+			},
 		},
 	}
 }
@@ -96,7 +103,14 @@ func dataSourceHcloudImageRead(d *schema.ResourceData, m interface{}) (err error
 	}
 	if selector, ok := d.GetOk("selector"); ok {
 		var allImages []*hcloud.Image
-		opts := hcloud.ImageListOpts{hcloud.ListOpts{LabelSelector: selector.(string)}}
+
+		var statuses []hcloud.ImageStatus
+		for _, status := range d.Get("with_status").([]interface{}) {
+			statuses = append(statuses, hcloud.ImageStatus(status.(string)))
+		}
+
+		opts := hcloud.ImageListOpts{ListOpts: hcloud.ListOpts{LabelSelector: selector.(string)}, Status: statuses}
+
 		allImages, err = client.Image.AllWithOpts(ctx, opts)
 		if err != nil {
 			return err

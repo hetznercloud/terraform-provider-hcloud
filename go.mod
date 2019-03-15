@@ -14,7 +14,7 @@ require (
 	github.com/hashicorp/hcl2 v0.0.0-20180801154631-77c0b55a597c // indirect
 	github.com/hashicorp/terraform v0.11.14-0.20190313165547-28810e6c0c0a
 	github.com/hashicorp/yamux v0.0.0-20180604194846-3520598351bb // indirect
-	github.com/hetznercloud/hcloud-go v1.12.0
+	github.com/hetznercloud/hcloud-go v1.13.0
 	github.com/mattn/go-colorable v0.0.9 // indirect
 	github.com/mattn/go-isatty v0.0.3 // indirect
 	github.com/mitchellh/cli v0.0.0-20180414170447-c48282d14eba // indirect

@@ -130,8 +130,8 @@ resource "hcloud_volume" "foobar" {
 
 func testAccHcloudCheckVolumeConfig_WithAnotherServer(rInt int) string {
 	return fmt.Sprintf(`
-resource "hcloud_server" "server_another_volume_foobar" {
-  name        = "foo-volume-server-%d"
+resource "hcloud_server" "server_another_volume_foobar2" {
+  name        = "foo-volume-server2-%d"
   server_type = "cx11"
   image       = "debian-9"
   datacenter  = "nbg1-dc3"
@@ -139,15 +139,15 @@ resource "hcloud_server" "server_another_volume_foobar" {
 resource "hcloud_volume" "foobar" {
   name       = "foo-volume-%d"
   size       = 15
-  server_id  = "${hcloud_server.server_another_volume_foobar.id}"
+  server_id  = "${hcloud_server.server_another_volume_foobar2.id}"
 }
 `, rInt, rInt)
 }
 
 func testAccHcloudCheckVolumeConfig_WithAutomount(rInt int) string {
 	return fmt.Sprintf(`
-resource "hcloud_server" "server_volume_foobar2" {
-  name        = "foo-volume-server2-%d"
+resource "hcloud_server" "server_volume_foobar3" {
+  name        = "foo-volume-server3-%d"
   server_type = "cx11"
   image       = "debian-9"
   datacenter  = "nbg1-dc3"
@@ -155,7 +155,7 @@ resource "hcloud_server" "server_volume_foobar2" {
 resource "hcloud_volume" "foobar2" {
   name       = "foo-volume-%d"
   size       = 10
-  server_id  = "${hcloud_server.server_volume_foobar2.id}"
+  server_id  = "${hcloud_server.server_volume_foobar3.id}"
   automount  = true
   format     = "ext4"
 }

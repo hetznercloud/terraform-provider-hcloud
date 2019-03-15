@@ -314,16 +314,16 @@ type ListOpts struct {
 	LabelSelector string // Label selector for filtering by labels
 }
 
-func valuesForListOpts(opts ListOpts) url.Values {
+func (l ListOpts) values() url.Values {
 	vals := url.Values{}
-	if opts.Page > 0 {
-		vals.Add("page", strconv.Itoa(opts.Page))
+	if l.Page > 0 {
+		vals.Add("page", strconv.Itoa(l.Page))
 	}
-	if opts.PerPage > 0 {
-		vals.Add("per_page", strconv.Itoa(opts.PerPage))
+	if l.PerPage > 0 {
+		vals.Add("per_page", strconv.Itoa(l.PerPage))
 	}
-	if len(opts.LabelSelector) > 0 {
-		vals.Add("label_selector", opts.LabelSelector)
+	if len(l.LabelSelector) > 0 {
+		vals.Add("label_selector", l.LabelSelector)
 	}
 	return vals
 }
