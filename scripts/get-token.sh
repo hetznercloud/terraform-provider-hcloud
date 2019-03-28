@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -e
-resp=$(cur# -A 'travis-terraform-provider' --header 'Authorization: Bearer '"$TTS_TOKEN"'' -X POST https://tt-service.hetzner.cloud/token -o resp.json)
+resp=$(curl -A 'travis-terraform-provider' --header 'Authorization: Bearer '"$TTS_TOKEN"'' -X POST https://tt-service.hetzner.cloud/token -o resp.json)
 if grep -q Unauthorized "resp.json"
 then
     cat resp.json
