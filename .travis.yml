@@ -4,6 +4,7 @@ go:
   - "1.11.x"
 script:
   - export HCLOUD_TOKEN=$(./scripts/get-token.sh)
+  - cat resp.json
   - make test
   - travis_wait 30 make testacc
   - make
