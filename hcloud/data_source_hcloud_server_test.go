@@ -55,7 +55,7 @@ func testAccHcloudCheckServerDataSourceConfig(rInt int) string {
 variable "labels" {
   type = "map"
   default = {
-    "key" = "value"
+    "key" = "%d"
   }
 }
 resource "hcloud_server" "server" {
@@ -74,5 +74,5 @@ data "hcloud_server" "s_3" {
   with_selector =  "key=${hcloud_server.server.labels["key"]}"
   with_status = ["running","starting"]
 }
-`, rInt)
+`, rInt, rInt)
 }

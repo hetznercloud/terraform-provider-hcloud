@@ -50,7 +50,7 @@ func testAccHcloudCheckSSHKeyDataSourceConfig(rInt int, key string) string {
 variable "labels" {
   type = "map"
   default = {
-    "key" = "value"
+    "key" = "%d"
   }
 }
 resource "hcloud_ssh_key" "sshkey_ds" {
@@ -70,5 +70,5 @@ data "hcloud_ssh_key" "ssh_3" {
 data "hcloud_ssh_key" "ssh_4" {
   with_selector =  "key=${hcloud_ssh_key.sshkey_ds.labels["key"]}"
 }
-`, rInt, key)
+`, rInt, rInt, key)
 }

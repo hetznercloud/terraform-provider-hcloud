@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform/helper/acctest"
+
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 )
@@ -17,12 +19,13 @@ func init() {
 
 func TestAccHcloudDataSourceFloatingIP(t *testing.T) {
 	var floatingIP hcloud.FloatingIP
+	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccHcloudPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccHcloudCheckFloatingIPDataSourceConfig(),
+				Config: testAccHcloudCheckFloatingIPDataSourceConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccHcloudCheckFloatingIPExists("data.hcloud_floating_ip.ip_1", &floatingIP),
 					resource.TestCheckResourceAttr(
@@ -30,21 +33,21 @@ func TestAccHcloudDataSourceFloatingIP(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.hcloud_floating_ip.ip_1", "home_location", "fsn1"),
 					resource.TestCheckResourceAttr(
-						"data.hcloud_floating_ip.ip_1", "description", "Hashi Test"),
+						"data.hcloud_floating_ip.ip_1", "description", fmt.Sprintf("Hashi-Test-%d", rInt)),
 
 					resource.TestCheckResourceAttr(
 						"data.hcloud_floating_ip.ip_2", "type", "ipv4"),
 					resource.TestCheckResourceAttr(
 						"data.hcloud_floating_ip.ip_2", "home_location", "fsn1"),
 					resource.TestCheckResourceAttr(
-						"data.hcloud_floating_ip.ip_2", "description", "Hashi Test"),
+						"data.hcloud_floating_ip.ip_2", "description", fmt.Sprintf("Hashi-Test-%d", rInt)),
 
 					resource.TestCheckResourceAttr(
 						"data.hcloud_floating_ip.ip_3", "type", "ipv4"),
 					resource.TestCheckResourceAttr(
 						"data.hcloud_floating_ip.ip_3", "home_location", "fsn1"),
 					resource.TestCheckResourceAttr(
-						"data.hcloud_floating_ip.ip_3", "description", "Hashi Test"),
+						"data.hcloud_floating_ip.ip_3", "description", fmt.Sprintf("Hashi-Test-%d", rInt)),
 				),
 			},
 		},
@@ -53,18 +56,18 @@ func TestAccHcloudDataSourceFloatingIP(t *testing.T) {
 	testDataSourceCleanup()
 }
 
-func testAccHcloudCheckFloatingIPDataSourceConfig() string {
+func testAccHcloudCheckFloatingIPDataSourceConfig(rInt int) string {
 	return fmt.Sprintf(`
 variable "labels" {
   type = "map"
   default = {
-    "key" = "value"
+    "key" = "%d"
   }
 }
 resource "hcloud_floating_ip" "floating_ip" {
   type      = "ipv4"
   home_location = "fsn1"
-  description = "Hashi Test"
+  description = "Hashi-Test-%d"
   labels  = "${var.labels}"
 }
 data "hcloud_floating_ip" "ip_1" {
@@ -76,7 +79,7 @@ data "hcloud_floating_ip" "ip_2" {
 data "hcloud_floating_ip" "ip_3" {
   with_selector =  "key=${hcloud_floating_ip.floating_ip.labels["key"]}"
 }
-`)
+`, rInt, rInt)
 }
 
 func testDataSourceCleanup() {
