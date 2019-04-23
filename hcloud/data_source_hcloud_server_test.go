@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform/helper/acctest"
+
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 )
@@ -17,47 +19,48 @@ func init() {
 
 func TestAccHcloudDataSourceServer(t *testing.T) {
 	var server hcloud.Server
+	rInt := acctest.RandInt()
 	resource.Test(t, resource.TestCase{
 		PreCheck:  func() { testAccHcloudPreCheck(t) },
 		Providers: testAccProviders,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccHcloudCheckServerDataSourceConfig(),
+				Config: testAccHcloudCheckServerDataSourceConfig(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccHcloudCheckServerExists("hcloud_server.server", &server),
 					resource.TestCheckResourceAttr(
 						"data.hcloud_server.s_1", "server_type", "cx11"),
 					resource.TestCheckResourceAttr(
-						"data.hcloud_server.s_1", "name", "Hashi-Test"),
+						"data.hcloud_server.s_1", "name", fmt.Sprintf("Hashi-Test-%d", rInt)),
 					resource.TestCheckResourceAttr(
 						"data.hcloud_server.s_1", "backups", "false"),
 
 					resource.TestCheckResourceAttr(
 						"data.hcloud_server.s_2", "server_type", "cx11"),
 					resource.TestCheckResourceAttr(
-						"data.hcloud_server.s_2", "name", "Hashi-Test"),
+						"data.hcloud_server.s_2", "name", fmt.Sprintf("Hashi-Test-%d", rInt)),
 
 					resource.TestCheckResourceAttr(
 						"data.hcloud_server.s_3", "server_type", "cx11"),
 					resource.TestCheckResourceAttr(
-						"data.hcloud_server.s_3", "name", "Hashi-Test"),
+						"data.hcloud_server.s_3", "name", fmt.Sprintf("Hashi-Test-%d", rInt)),
 				),
 			},
 		},
 	})
 }
 
-func testAccHcloudCheckServerDataSourceConfig() string {
+func testAccHcloudCheckServerDataSourceConfig(rInt int) string {
 	return fmt.Sprintf(`
 variable "labels" {
   type = "map"
   default = {
-    "key" = "value"
+    "key" = "%d"
   }
 }
 resource "hcloud_server" "server" {
   server_type      = "cx11"
-  name    = "Hashi-Test"
+  name    = "Hashi-Test-%d"
   labels  = "${var.labels}"
   image   = "ubuntu-18.04"
 }
@@ -71,5 +74,5 @@ data "hcloud_server" "s_3" {
   with_selector =  "key=${hcloud_server.server.labels["key"]}"
   with_status = ["running","starting"]
 }
-`)
+`, rInt, rInt)
 }

@@ -52,7 +52,7 @@ func testAccHcloudCheckVolumeDataSourceConfig(rInt int) string {
 variable "labels" {
   type = "map"
   default = {
-    "key" = "value"
+    "key" = "%d"
   }
 }
 resource "hcloud_volume" "volume_ds" {
@@ -70,7 +70,7 @@ data "hcloud_volume" "volume_2" {
 data "hcloud_volume" "volume_3" {
   with_selector =  "key=${hcloud_volume.volume_ds.labels["key"]}"
 }
-`, rInt)
+`, rInt, rInt)
 }
 
 func testAccHcloudCheckVolumeDataSourceLinuxDevice(n string, volume *hcloud.Volume) resource.TestCheckFunc {

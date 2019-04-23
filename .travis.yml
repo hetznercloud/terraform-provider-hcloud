@@ -8,5 +8,6 @@ script:
   - make test
   - travis_wait 30 make testacc
   - make
+  - ./scripts/delete-token.sh $HCLOUD_TOKEN
 env:
   - GOFLAGS=-mod=vendor GO111MODULE=on
