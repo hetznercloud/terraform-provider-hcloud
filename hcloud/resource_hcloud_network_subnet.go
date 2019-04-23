@@ -148,6 +148,7 @@ func generateNetworkSubnetID(network *hcloud.Network, ipRange string) string {
 }
 
 var errInvalidNetworkSubnetID = errors.New("invalid network subnet id")
+
 // lookupNetworkSubnetID parses the terraform network subnet record id and return the network and subnet
 //
 // id format: <network id>-<ip range>

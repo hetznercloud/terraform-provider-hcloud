@@ -42,7 +42,7 @@ func Provider() terraform.ResourceProvider {
 			"hcloud_volume_attachment":      resourceVolumeAttachment(),
 			"hcloud_network":                resourceNetwork(),
 			"hcloud_network_subnet":         resourceNetworkSubnet(),
-			//"hcloud_network_route":          resourceNetworkRoute, TODO
+			"hcloud_network_route":          resourceNetworkRoute(),
 			//"hcloud_server_network":       resourceServerNetwork(), // TODO
 		},
 		DataSourcesMap: map[string]*schema.Resource{

@@ -175,7 +175,6 @@ func setNetworkSchema(d *schema.ResourceData, n *hcloud.Network) {
 	d.Set("labels", n.Labels)
 }
 
-
 func waitForNetworkAction(ctx context.Context, client *hcloud.Client, action *hcloud.Action, network *hcloud.Network) error {
 	log.Printf("[INFO] Network (%d) waiting for %q action to complete...", network.ID, action.Command)
 	_, errCh := client.Action.WatchProgress(ctx, action)
