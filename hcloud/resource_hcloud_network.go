@@ -170,7 +170,18 @@ func resourceNetworkIsNotFound(err error, d *schema.ResourceData) bool {
 
 func setNetworkSchema(d *schema.ResourceData, n *hcloud.Network) {
 	d.SetId(strconv.Itoa(n.ID))
-	d.Set("ip_rane", n.IPRange.String())
+	d.Set("ip_range", n.IPRange.String())
 	d.Set("name", n.Name)
 	d.Set("labels", n.Labels)
+}
+
+
+func waitForNetworkAction(ctx context.Context, client *hcloud.Client, action *hcloud.Action, network *hcloud.Network) error {
+	log.Printf("[INFO] Network (%d) waiting for %q action to complete...", network.ID, action.Command)
+	_, errCh := client.Action.WatchProgress(ctx, action)
+	if err := <-errCh; err != nil {
+		return err
+	}
+	log.Printf("[INFO] Network (%d) %q action succeeded", network.ID, action.Command)
+	return nil
 }

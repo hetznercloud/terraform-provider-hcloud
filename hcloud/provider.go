@@ -41,7 +41,7 @@ func Provider() terraform.ResourceProvider {
 			"hcloud_volume":                 resourceVolume(),
 			"hcloud_volume_attachment":      resourceVolumeAttachment(),
 			"hcloud_network":                resourceNetwork(),
-			//"hcloud_network_subnet":         resourceNetworkSubnet(), TODO
+			"hcloud_network_subnet":         resourceNetworkSubnet(),
 			//"hcloud_network_route":          resourceNetworkRoute, TODO
 			//"hcloud_server_network":       resourceServerNetwork(), // TODO
 		},
