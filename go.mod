@@ -6,3 +6,5 @@ require (
 	github.com/hetznercloud/hcloud-go v1.13.0
 	golang.org/x/crypto v0.0.0-20190426145343-a29dc8fdc734
 )
+
+replace github.com/hetznercloud/hcloud-go => ../../hetznercloud/hcloud-go

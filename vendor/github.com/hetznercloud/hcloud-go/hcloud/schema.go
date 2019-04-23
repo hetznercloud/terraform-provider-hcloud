@@ -98,6 +98,7 @@ func LocationFromSchema(s schema.Location) *Location {
 		City:        s.City,
 		Latitude:    s.Latitude,
 		Longitude:   s.Longitude,
+		NetworkZone: NetworkZone(s.NetworkZone),
 	}
 }
 
@@ -162,6 +163,9 @@ func ServerFromSchema(s schema.Server) *Server {
 	for _, id := range s.Volumes {
 		server.Volumes = append(server.Volumes, &Volume{ID: id})
 	}
+	for _, net := range s.PrivateNet {
+		server.PrivateNet = append(server.PrivateNet, ServerPrivateNetFromSchema(net))
+	}
 	return server
 }
 
@@ -200,6 +204,18 @@ func ServerPublicNetIPv6FromSchema(s schema.ServerPublicNetIPv6) ServerPublicNet
 		ipv6.DNSPtr[dnsPtr.IP] = dnsPtr.DNSPtr
 	}
 	return ipv6
+}
+
+// ServerPrivateNetFromSchema converts a schema.ServerNet to a ServerNet.
+func ServerPrivateNetFromSchema(s schema.ServerPrivateNet) ServerPrivateNet {
+	n := ServerPrivateNet{
+		Network: &Network{ID: s.Network},
+		IPv4:    net.ParseIP(s.IPv4),
+	}
+	for _, ip := range s.AliasIPs {
+		n.Aliases = append(n.Aliases, net.ParseIP(ip))
+	}
+	return n
 }
 
 // ServerTypeFromSchema converts a schema.ServerType to a ServerType.
@@ -309,6 +325,58 @@ func VolumeFromSchema(s schema.Volume) *Volume {
 		v.Labels[key] = value
 	}
 	return v
+}
+
+// NetworkFromSchema converts a schema.Network to a Network.
+func NetworkFromSchema(s schema.Network) *Network {
+	p := &Network{
+		ID:   s.ID,
+		Name: s.Name,
+		Protection: NetworkProtection{
+			Delete: s.Protection.Delete,
+		},
+		Labels: map[string]string{},
+	}
+
+	_, p.IPRange, _ = net.ParseCIDR(s.IPRange)
+
+	for _, serverRange := range s.Subnets {
+		p.Subnets = append(p.Subnets, NetworkSubnetFromSchema(serverRange))
+	}
+	for _, route := range s.Routes {
+		p.Routes = append(p.Routes, NetworkRouteFromSchema(route))
+	}
+	for _, serverID := range s.Servers {
+		p.Servers = append(p.Servers, &Server{ID: serverID})
+	}
+	for key, value := range p.Labels {
+		p.Labels[key] = value
+	}
+
+	return p
+}
+
+// NetworkSubnetFromSchema converts a schema.NetworkSubnet
+// to a NetworkSubnet.
+func NetworkSubnetFromSchema(s schema.NetworkSubnet) NetworkSubnet {
+	sn := NetworkSubnet{
+		Type:        NetworkSubnetType(s.Type),
+		NetworkZone: NetworkZone(s.NetworkZone),
+		VSwitchID:   s.VSwitchID,
+		Gateway:     net.ParseIP(s.Gateway),
+	}
+	_, sn.IPRange, _ = net.ParseCIDR(s.IPRange)
+	return sn
+}
+
+// NetworkRouteFromSchema converts a schema.NetworkRoute
+// to a NetworkRoute.
+func NetworkRouteFromSchema(s schema.NetworkRoute) NetworkRoute {
+	r := NetworkRoute{
+		Gateway: net.ParseIP(s.Gateway),
+	}
+	_, r.Destination, _ = net.ParseCIDR(s.Destination)
+	return r
 }
 
 // PaginationFromSchema converts a schema.MetaPagination to a Pagination.

@@ -4,24 +4,25 @@ import "time"
 
 // Server defines the schema of a server.
 type Server struct {
-	ID              int               `json:"id"`
-	Name            string            `json:"name"`
-	Status          string            `json:"status"`
-	Created         time.Time         `json:"created"`
-	PublicNet       ServerPublicNet   `json:"public_net"`
-	ServerType      ServerType        `json:"server_type"`
-	IncludedTraffic uint64            `json:"included_traffic"`
-	OutgoingTraffic *uint64           `json:"outgoing_traffic"`
-	IngoingTraffic  *uint64           `json:"ingoing_traffic"`
-	BackupWindow    *string           `json:"backup_window"`
-	RescueEnabled   bool              `json:"rescue_enabled"`
-	ISO             *ISO              `json:"iso"`
-	Locked          bool              `json:"locked"`
-	Datacenter      Datacenter        `json:"datacenter"`
-	Image           *Image            `json:"image"`
-	Protection      ServerProtection  `json:"protection"`
-	Labels          map[string]string `json:"labels"`
-	Volumes         []int             `json:"volumes"`
+	ID              int                `json:"id"`
+	Name            string             `json:"name"`
+	Status          string             `json:"status"`
+	Created         time.Time          `json:"created"`
+	PublicNet       ServerPublicNet    `json:"public_net"`
+	PrivateNet      []ServerPrivateNet `json:"private_net"`
+	ServerType      ServerType         `json:"server_type"`
+	IncludedTraffic uint64             `json:"included_traffic"`
+	OutgoingTraffic *uint64            `json:"outgoing_traffic"`
+	IngoingTraffic  *uint64            `json:"ingoing_traffic"`
+	BackupWindow    *string            `json:"backup_window"`
+	RescueEnabled   bool               `json:"rescue_enabled"`
+	ISO             *ISO               `json:"iso"`
+	Locked          bool               `json:"locked"`
+	Datacenter      Datacenter         `json:"datacenter"`
+	Image           *Image             `json:"image"`
+	Protection      ServerProtection   `json:"protection"`
+	Labels          map[string]string  `json:"labels"`
+	Volumes         []int              `json:"volumes"`
 }
 
 // ServerProtection defines the schema of a server's resource protection.
@@ -61,6 +62,14 @@ type ServerPublicNetIPv6DNSPtr struct {
 	DNSPtr string `json:"dns_ptr"`
 }
 
+// ServerPrivateNet defines the schema of a server's
+// private network information.
+type ServerPrivateNet struct {
+	Network  int      `json:"network"`
+	IPv4     string   `json:"ipv4"`
+	AliasIPs []string `json:"alias_ips"`
+}
+
 // ServerGetResponse defines the schema of the response when
 // retrieving a single server.
 type ServerGetResponse struct {
@@ -87,6 +96,7 @@ type ServerCreateRequest struct {
 	Labels           *map[string]string `json:"labels,omitempty"`
 	Automount        *bool              `json:"automount,omitempty"`
 	Volumes          []int              `json:"volumes,omitempty"`
+	Networks         []int              `json:"networks,omitempty"`
 }
 
 // ServerCreateResponse defines the schema of the response when
@@ -291,13 +301,54 @@ type ServerActionChangeDNSPtrResponse struct {
 	Action Action `json:"action"`
 }
 
-// ServerActionChangeProtectionRequest defines the schema of the request to change the resource protection of a server.
+// ServerActionChangeProtectionRequest defines the schema of the request to
+// change the resource protection of a server.
 type ServerActionChangeProtectionRequest struct {
 	Rebuild *bool `json:"rebuild,omitempty"`
 	Delete  *bool `json:"delete,omitempty"`
 }
 
-// ServerActionChangeProtectionResponse defines the schema of the response when changing the resource protection of a server.
+// ServerActionChangeProtectionResponse defines the schema of the response when
+// changing the resource protection of a server.
 type ServerActionChangeProtectionResponse struct {
+	Action Action `json:"action"`
+}
+
+// ServerActionAttachNetworkRequest defines the schema for the request to
+// attach a Network to a server.
+type ServerActionAttachNetworkRequest struct {
+	Network  int       `json:"network"`
+	IP       *string   `json:"ip,omitempty"`
+	AliasIPs []*string `json:"alias_ips,omitempty"`
+}
+
+// ServerActionAttachNetworkResponse defines the schema of the response when
+// creating a attach_network server action.
+type ServerActionAttachNetworkResponse struct {
+	Action Action `json:"action"`
+}
+
+// ServerActionDetachNetworkRequest defines the schema for the request to
+// detach a Network to a server.
+type ServerActionDetachNetworkRequest struct {
+	Network int `json:"network"`
+}
+
+// ServerActionDetachNetworkResponse defines the schema of the response when
+// creating a detach_network server action.
+type ServerActionDetachNetworkResponse struct {
+	Action Action `json:"action"`
+}
+
+// ServerActionChangeAliasIPsRequest defines the schema for the request to
+// change the alias ips of an already attached private network
+type ServerActionChangeAliasIPsRequest struct {
+	Network  int      `json:"network"`
+	AliasIPs []string `json:"alias_ips"`
+}
+
+// ServerActionChangeAliasIPsResponse defines the schema of the response when
+// creating a change_alias_ips server action.
+type ServerActionChangeAliasIPsResponse struct {
 	Action Action `json:"action"`
 }

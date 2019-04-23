@@ -67,6 +67,7 @@ type Client struct {
 	ServerType ServerTypeClient
 	SSHKey     SSHKeyClient
 	Volume     VolumeClient
+	Network    NetworkClient
 }
 
 // A ClientOption is used to configure a Client.
@@ -137,6 +138,7 @@ func NewClient(options ...ClientOption) *Client {
 	client.ServerType = ServerTypeClient{client: client}
 	client.SSHKey = SSHKeyClient{client: client}
 	client.Volume = VolumeClient{client: client}
+	client.Network = NetworkClient{client: client}
 
 	return client
 }
