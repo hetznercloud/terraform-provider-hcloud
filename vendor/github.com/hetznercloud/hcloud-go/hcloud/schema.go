@@ -349,7 +349,7 @@ func NetworkFromSchema(s schema.Network) *Network {
 	for _, serverID := range s.Servers {
 		p.Servers = append(p.Servers, &Server{ID: serverID})
 	}
-	for key, value := range p.Labels {
+	for key, value := range s.Labels {
 		p.Labels[key] = value
 	}
 

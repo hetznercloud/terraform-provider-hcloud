@@ -18,11 +18,11 @@ func dataSourceHcloudNetwork() *schema.Resource {
 			},
 			"name": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 			},
 			"ip_range": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 			},
 			"labels": {
 				Type:     schema.TypeMap,
@@ -31,7 +31,6 @@ func dataSourceHcloudNetwork() *schema.Resource {
 			"with_selector": {
 				Type:          schema.TypeString,
 				Optional:      true,
-				ConflictsWith: []string{"selector"},
 			},
 		},
 	}
@@ -57,7 +56,7 @@ func dataSourceHcloudNetworkRead(d *schema.ResourceData, m interface{}) (err err
 			return err
 		}
 		if n == nil {
-			return fmt.Errorf("no network found with name %n", name)
+			return fmt.Errorf("no network found with name %s", name)
 		}
 		setNetworkSchema(d, n)
 		return

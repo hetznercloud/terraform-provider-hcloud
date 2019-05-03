@@ -36,8 +36,8 @@ func resourceNetworkSubnet() *schema.Resource {
 			},
 			"ip_range": {
 				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Required: true,
+				ForceNew: true,
 			},
 			"gateway": {
 				Type:     schema.TypeString,
@@ -46,6 +46,7 @@ func resourceNetworkSubnet() *schema.Resource {
 			"vswitch_id": {
 				Type:     schema.TypeInt,
 				Optional: true,
+				ForceNew: true,
 			},
 		},
 	}
@@ -74,12 +75,13 @@ func resourceNetworkSubnetCreate(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return err
 	}
+
 	if err := waitForNetworkAction(ctx, client, action, network); err != nil {
 		return err
 	}
 	d.SetId(generateNetworkSubnetID(network, ipRange.String()))
 
-	return resourceNetworkRead(d, m)
+	return resourceNetworkSubnetRead(d, m)
 }
 
 func resourceNetworkSubnetRead(d *schema.ResourceData, m interface{}) error {
@@ -165,13 +167,13 @@ func lookupNetworkSubnetID(ctx context.Context, terraformID string, client *hclo
 		return
 	}
 
-	networkID, err := strconv.Atoi(parts[1])
+	networkID, err := strconv.Atoi(parts[0])
 	if err != nil {
 		err = errInvalidNetworkSubnetID
 		return
 	}
 
-	_, ipRange, err := net.ParseCIDR(parts[2])
+	_, ipRange, err := net.ParseCIDR(parts[1])
 	if ipRange == nil || err != nil {
 		err = errInvalidNetworkSubnetID
 		return
@@ -182,7 +184,6 @@ func lookupNetworkSubnetID(ctx context.Context, terraformID string, client *hclo
 		err = errInvalidNetworkSubnetID
 		return
 	}
-
 	for _, sn := range network.Subnets {
 		if sn.IPRange.String() == ipRange.String() {
 			subnet = &sn

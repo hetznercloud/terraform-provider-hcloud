@@ -189,7 +189,7 @@ func (c *NetworkClient) Update(ctx context.Context, network *Network, opts Netwo
 	if err != nil {
 		return nil, nil, err
 	}
-
+	fmt.Printf("%s", reqBodyData)
 	path := fmt.Sprintf("/networks/%d", network.ID)
 	req, err := c.client.NewRequest(ctx, "PUT", path, bytes.NewReader(reqBodyData))
 	if err != nil {
@@ -201,6 +201,7 @@ func (c *NetworkClient) Update(ctx context.Context, network *Network, opts Netwo
 	if err != nil {
 		return nil, resp, err
 	}
+	fmt.Printf("%+v",respBody.Network)
 	return NetworkFromSchema(respBody.Network), resp, nil
 }
 
