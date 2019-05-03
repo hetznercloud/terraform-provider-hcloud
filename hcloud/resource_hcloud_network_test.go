@@ -51,7 +51,6 @@ resource "hcloud_network" "foobar" {
 `, rInt)
 }
 
-
 func testAccHcloudCheckNetworkDestroy(s *terraform.State) error {
 	client := testAccProvider.Meta().(*hcloud.Client)
 

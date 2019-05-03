@@ -3,8 +3,9 @@ package hcloud
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform/terraform"
 	"testing"
+
+	"github.com/hashicorp/terraform/terraform"
 
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
@@ -99,7 +100,6 @@ resource "hcloud_network_subnet" "foonet_vswitch" {
 }
 `, rInt)
 }
-
 
 func testAccHcloudCheckNetworkSubnetExists(n string, subnet *hcloud.NetworkSubnet) resource.TestCheckFunc {
 	return func(s *terraform.State) error {

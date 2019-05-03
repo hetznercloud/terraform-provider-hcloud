@@ -29,8 +29,8 @@ func dataSourceHcloudNetwork() *schema.Resource {
 				Optional: true,
 			},
 			"with_selector": {
-				Type:          schema.TypeString,
-				Optional:      true,
+				Type:     schema.TypeString,
+				Optional: true,
 			},
 		},
 	}
