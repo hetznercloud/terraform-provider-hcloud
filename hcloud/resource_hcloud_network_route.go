@@ -8,6 +8,7 @@ import (
 	"net"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
@@ -42,7 +43,7 @@ func resourceNetworkRouteCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*hcloud.Client)
 	ctx := context.Background()
 
-	_, destination, err := net.ParseCIDR(d.Get("ip_range").(string))
+	_, destination, err := net.ParseCIDR(d.Get("destination").(string))
 	if err != nil {
 		return err
 	}
@@ -64,6 +65,11 @@ func resourceNetworkRouteCreate(d *schema.ResourceData, m interface{}) error {
 
 	action, _, err := client.Network.AddRoute(ctx, network, opts)
 	if err != nil {
+		if hcloud.IsError(err, hcloud.ErrorCodeConflict) {
+			log.Printf("[INFO] Network (%v) conflict, retrying in one second", network.ID)
+			time.Sleep(time.Second)
+			return resourceNetworkRouteCreate(d, m)
+		}
 		return err
 	}
 	if err := waitForNetworkAction(ctx, client, action, network); err != nil {
@@ -71,13 +77,13 @@ func resourceNetworkRouteCreate(d *schema.ResourceData, m interface{}) error {
 	}
 	d.SetId(generateNetworkRouteID(network, destination.String()))
 
-	return resourceNetworkRead(d, m)
+	return resourceNetworkRouteRead(d, m)
 }
 
 func resourceNetworkRouteRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*hcloud.Client)
 	ctx := context.Background()
-
+	log.Printf("[TRACE] GGGG: %s", d.Id())
 	network, route, err := lookupNetworkRouteID(ctx, d.Id(), client)
 	if err == errInvalidNetworkRouteID {
 		log.Printf("[WARN] Invalid id (%s), removing from state: %s", d.Id(), err)
@@ -113,9 +119,13 @@ func resourceNetworkRouteDelete(d *schema.ResourceData, m interface{}) error {
 		Route: route,
 	})
 	if err != nil {
-		if hcerr, ok := err.(hcloud.Error); ok && hcerr.Code == hcloud.ErrorCodeNotFound {
+		if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
 			// network route has already been deleted
 			return nil
+		} else if hcloud.IsError(err, hcloud.ErrorCodeConflict) {
+			log.Printf("[INFO] Network (%v) conflict, retrying in one second", network.ID)
+			time.Sleep(time.Second)
+			return resourceNetworkRouteDelete(d, m)
 		}
 		return err
 	}
@@ -154,13 +164,13 @@ func lookupNetworkRouteID(ctx context.Context, terraformID string, client *hclou
 		return
 	}
 
-	networkID, err := strconv.Atoi(parts[1])
+	networkID, err := strconv.Atoi(parts[0])
 	if err != nil {
 		err = errInvalidNetworkRouteID
 		return
 	}
 
-	_, destination, err := net.ParseCIDR(parts[2])
+	_, destination, err := net.ParseCIDR(parts[1])
 	if destination == nil || err != nil {
 		err = errInvalidNetworkRouteID
 		return
@@ -171,7 +181,7 @@ func lookupNetworkRouteID(ctx context.Context, terraformID string, client *hclou
 		err = errInvalidNetworkRouteID
 		return
 	}
-
+	log.Printf("[TRACE] NETWORK %+v", network)
 	for _, r := range network.Routes {
 		if r.Destination.String() == destination.String() {
 			route = r

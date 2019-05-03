@@ -8,6 +8,7 @@ import (
 	"net"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
@@ -73,6 +74,11 @@ func resourceNetworkSubnetCreate(d *schema.ResourceData, m interface{}) error {
 
 	action, _, err := client.Network.AddSubnet(ctx, network, opts)
 	if err != nil {
+		if hcloud.IsError(err, hcloud.ErrorCodeConflict) {
+			log.Printf("[INFO] Network (%v) conflict, retrying in one second", network.ID)
+			time.Sleep(time.Second)
+			return resourceNetworkSubnetCreate(d, m)
+		}
 		return err
 	}
 
@@ -123,9 +129,13 @@ func resourceNetworkSubnetDelete(d *schema.ResourceData, m interface{}) error {
 		Subnet: subnet,
 	})
 	if err != nil {
-		if hcerr, ok := err.(hcloud.Error); ok && hcerr.Code == hcloud.ErrorCodeNotFound {
+		if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
 			// network subnet has already been deleted
 			return nil
+		} else if hcloud.IsError(err, hcloud.ErrorCodeConflict) {
+			log.Printf("[INFO] Network (%v) conflict, retrying in one second", network.ID)
+			time.Sleep(time.Second)
+			return resourceNetworkSubnetDelete(d, m)
 		}
 		return err
 	}
