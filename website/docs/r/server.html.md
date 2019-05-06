@@ -1,7 +1,7 @@
 ---
 layout: "hcloud"
 page_title: "Hetzner Cloud: hcloud_server"
-sidebar_current: "docs-hcloud-resource-server"
+sidebar_current: "docs-hcloud-resource-server-x"
 description: |-
   Provides an Hetzner Cloud server resource. This can be used to create, modify, and delete servers. Servers also support provisioning.
 ---
