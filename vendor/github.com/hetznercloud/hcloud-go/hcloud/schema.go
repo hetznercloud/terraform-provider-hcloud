@@ -163,8 +163,8 @@ func ServerFromSchema(s schema.Server) *Server {
 	for _, id := range s.Volumes {
 		server.Volumes = append(server.Volumes, &Volume{ID: id})
 	}
-	for _, net := range s.PrivateNet {
-		server.PrivateNet = append(server.PrivateNet, ServerPrivateNetFromSchema(net))
+	for _, privNet := range s.PrivateNet {
+		server.PrivateNet = append(server.PrivateNet, ServerPrivateNetFromSchema(privNet))
 	}
 	return server
 }
@@ -210,7 +210,7 @@ func ServerPublicNetIPv6FromSchema(s schema.ServerPublicNetIPv6) ServerPublicNet
 func ServerPrivateNetFromSchema(s schema.ServerPrivateNet) ServerPrivateNet {
 	n := ServerPrivateNet{
 		Network: &Network{ID: s.Network},
-		IPv4:    net.ParseIP(s.IPv4),
+		IP:    net.ParseIP(s.IP),
 	}
 	for _, ip := range s.AliasIPs {
 		n.Aliases = append(n.Aliases, net.ParseIP(ip))

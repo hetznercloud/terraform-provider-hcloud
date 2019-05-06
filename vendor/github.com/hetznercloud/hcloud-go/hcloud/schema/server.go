@@ -66,7 +66,7 @@ type ServerPublicNetIPv6DNSPtr struct {
 // private network information.
 type ServerPrivateNet struct {
 	Network  int      `json:"network"`
-	IPv4     string   `json:"ipv4"`
+	IP       string   `json:"ip"`
 	AliasIPs []string `json:"alias_ips"`
 }
 

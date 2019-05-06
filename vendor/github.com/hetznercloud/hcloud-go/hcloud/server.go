@@ -100,7 +100,7 @@ type ServerPublicNetIPv6 struct {
 // private network information.
 type ServerPrivateNet struct {
 	Network *Network
-	IPv4    net.IP
+	IP    net.IP
 	Aliases []net.IP
 }
 

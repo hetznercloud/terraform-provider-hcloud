@@ -43,7 +43,7 @@ func Provider() terraform.ResourceProvider {
 			"hcloud_network":                resourceNetwork(),
 			"hcloud_network_subnet":         resourceNetworkSubnet(),
 			"hcloud_network_route":          resourceNetworkRoute(),
-			//"hcloud_server_network":       resourceServerNetwork(), // TODO
+			"hcloud_server_network":         resourceServerNetwork(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"hcloud_datacenter":  dataSourceHcloudDatacenter(),
@@ -56,8 +56,6 @@ func Provider() terraform.ResourceProvider {
 			"hcloud_ssh_key":     dataSourceHcloudSSHKey(),
 			"hcloud_volume":      dataSourceHcloudVolume(),
 			"hcloud_network":     dataSourceHcloudNetwork(),
-			//"hcloud_network_subnet":       dataSourceHcloudNetworkSubnet(), TODO
-			//"hcloud_network_route":        dataSourceHcloudNetworkRoute(), TODO
 		},
 		ConfigureFunc: providerConfigure,
 	}

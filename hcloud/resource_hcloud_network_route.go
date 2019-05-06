@@ -83,7 +83,7 @@ func resourceNetworkRouteCreate(d *schema.ResourceData, m interface{}) error {
 func resourceNetworkRouteRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*hcloud.Client)
 	ctx := context.Background()
-	log.Printf("[TRACE] GGGG: %s", d.Id())
+
 	network, route, err := lookupNetworkRouteID(ctx, d.Id(), client)
 	if err == errInvalidNetworkRouteID {
 		log.Printf("[WARN] Invalid id (%s), removing from state: %s", d.Id(), err)
@@ -181,7 +181,7 @@ func lookupNetworkRouteID(ctx context.Context, terraformID string, client *hclou
 		err = errInvalidNetworkRouteID
 		return
 	}
-	log.Printf("[TRACE] NETWORK %+v", network)
+
 	for _, r := range network.Routes {
 		if r.Destination.String() == destination.String() {
 			route = r
