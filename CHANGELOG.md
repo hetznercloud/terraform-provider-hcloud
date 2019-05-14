@@ -1,4 +1,8 @@
 ## 1.10.0 (Unreleased)
+
+NOTES:
+* This release is Terraform 0.12-RC1+ compatible. 
+
 ## 1.9.0 (March 15, 2019)
 
 IMPROVEMENTS:
