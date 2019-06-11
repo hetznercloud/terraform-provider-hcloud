@@ -81,7 +81,7 @@ type ServerPublicNet struct {
 	FloatingIPs []*FloatingIP
 }
 
-// ServerPublicNetIPv4 represents a server's public IPv4 address.
+// ServerPublicNetIPv4 represents a server's public IP address.
 type ServerPublicNetIPv4 struct {
 	IP      net.IP
 	Blocked bool
@@ -100,7 +100,7 @@ type ServerPublicNetIPv6 struct {
 // private network information.
 type ServerPrivateNet struct {
 	Network *Network
-	IP    net.IP
+	IP      net.IP
 	Aliases []net.IP
 }
 
@@ -889,13 +889,14 @@ func (c *ServerClient) DetachNetwork(ctx context.Context, server *Server, opts S
 // ServerChangeAliasIPsOpts specifies options for changing the alias ips of an already attached network.
 type ServerChangeAliasIPsOpts struct {
 	Network  *Network
-	AliasIPs []*net.IP
+	AliasIPs []net.IP
 }
 
 // ChangeAliasIPs changes the alias ips of an already attached network.
 func (c *ServerClient) ChangeAliasIPs(ctx context.Context, server *Server, opts ServerChangeAliasIPsOpts) (*Action, *Response, error) {
 	reqBody := schema.ServerActionChangeAliasIPsRequest{
-		Network: opts.Network.ID,
+		Network:  opts.Network.ID,
+		AliasIPs: []string{},
 	}
 	for _, aliasIP := range opts.AliasIPs {
 		reqBody.AliasIPs = append(reqBody.AliasIPs, aliasIP.String())
@@ -904,8 +905,8 @@ func (c *ServerClient) ChangeAliasIPs(ctx context.Context, server *Server, opts 
 	if err != nil {
 		return nil, nil, err
 	}
-
-	path := fmt.Sprintf("/servers/%d/actions/change_alias_ip", server.ID)
+	print(string(reqBodyData))
+	path := fmt.Sprintf("/servers/%d/actions/change_alias_ips", server.ID)
 	req, err := c.client.NewRequest(ctx, "POST", path, bytes.NewReader(reqBodyData))
 	if err != nil {
 		return nil, nil, err

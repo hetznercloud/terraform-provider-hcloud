@@ -50,6 +50,7 @@ func FloatingIPFromSchema(s schema.FloatingIP) *FloatingIP {
 		ID:           s.ID,
 		Type:         FloatingIPType(s.Type),
 		HomeLocation: LocationFromSchema(s.HomeLocation),
+		Created:      s.Created,
 		Blocked:      s.Blocked,
 		Protection: FloatingIPProtection{
 			Delete: s.Protection.Delete,
@@ -210,7 +211,7 @@ func ServerPublicNetIPv6FromSchema(s schema.ServerPublicNetIPv6) ServerPublicNet
 func ServerPrivateNetFromSchema(s schema.ServerPrivateNet) ServerPrivateNet {
 	n := ServerPrivateNet{
 		Network: &Network{ID: s.Network},
-		IP:    net.ParseIP(s.IP),
+		IP:      net.ParseIP(s.IP),
 	}
 	for _, ip := range s.AliasIPs {
 		n.Aliases = append(n.Aliases, net.ParseIP(ip))
@@ -330,8 +331,9 @@ func VolumeFromSchema(s schema.Volume) *Volume {
 // NetworkFromSchema converts a schema.Network to a Network.
 func NetworkFromSchema(s schema.Network) *Network {
 	p := &Network{
-		ID:   s.ID,
-		Name: s.Name,
+		ID:      s.ID,
+		Name:    s.Name,
+		Created: s.Created,
 		Protection: NetworkProtection{
 			Delete: s.Protection.Delete,
 		},

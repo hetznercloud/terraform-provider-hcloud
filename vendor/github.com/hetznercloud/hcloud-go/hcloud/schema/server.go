@@ -40,7 +40,7 @@ type ServerPublicNet struct {
 }
 
 // ServerPublicNetIPv4 defines the schema of a server's public
-// network information for an IPv4.
+// network information for an IP.
 type ServerPublicNetIPv4 struct {
 	IP      string `json:"ip"`
 	Blocked bool   `json:"blocked"`

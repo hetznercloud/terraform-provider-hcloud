@@ -6,11 +6,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/hetznercloud/hcloud-go/hcloud/schema"
 	"net"
 	"net/url"
 	"strconv"
-
-	"github.com/hetznercloud/hcloud-go/hcloud/schema"
+	"time"
 )
 
 // NetworkZone specifies a network zone.
@@ -34,6 +34,7 @@ const (
 type Network struct {
 	ID         int
 	Name       string
+	Created    time.Time
 	IPRange    *net.IPNet
 	Subnets    []NetworkSubnet
 	Routes     []NetworkRoute

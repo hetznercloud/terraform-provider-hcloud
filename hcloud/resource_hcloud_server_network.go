@@ -145,7 +145,6 @@ func resourceServerNetworkRead(d *schema.ResourceData, m interface{}) error {
 		d.SetId("")
 		return nil
 	}
-	fmt.Printf("DDDD:  %+v", privateNet)
 	d.SetId(generateServerNetworkID(server, network))
 	setServerNetworkSchema(d, server, network, privateNet)
 	return nil
@@ -240,7 +239,6 @@ func lookupServerNetworkID(ctx context.Context, terraformID string, client *hclo
 	}
 
 	for _, pn := range server.PrivateNet {
-		fmt.Printf("DDDD:  %+v", pn)
 		if pn.Network.ID == network.ID {
 			serverPrivateNet = &pn
 			return

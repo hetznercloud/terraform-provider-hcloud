@@ -1,9 +1,12 @@
 package schema
 
+import "time"
+
 // Network defines the schema of a network.
 type Network struct {
 	ID         int               `json:"id"`
 	Name       string            `json:"name"`
+	Created    time.Time         `json:"created"`
 	IPRange    string            `json:"ip_range"`
 	Subnets    []NetworkSubnet   `json:"subnets"`
 	Routes     []NetworkRoute    `json:"routes"`
