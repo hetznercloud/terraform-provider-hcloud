@@ -33,7 +33,7 @@ func TestAccHcloudNetwork_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccHcloudCheckNetworkExists("hcloud_network.foobar", &network),
 					resource.TestCheckResourceAttr(
-						"hcloud_network.foobar", "name", fmt.Sprintf("foo-volume-%d", rInt)),
+						"hcloud_network.foobar", "name", fmt.Sprintf("foo-network-%d", rInt)),
 					resource.TestCheckResourceAttr(
 						"hcloud_network.foobar", "ip_range", "10.0.0.0/16"),
 				),
@@ -43,7 +43,7 @@ func TestAccHcloudNetwork_Basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccHcloudCheckNetworkExists("hcloud_network.foobar", &network),
 					resource.TestCheckResourceAttr(
-						"hcloud_network.foobar", "name", fmt.Sprintf("foo-volume-renamed-%d", rInt)),
+						"hcloud_network.foobar", "name", fmt.Sprintf("foo-network-renamed-%d", rInt)),
 					resource.TestCheckResourceAttr(
 						"hcloud_network.foobar", "ip_range", "10.0.0.0/16"),
 				),
@@ -55,7 +55,7 @@ func TestAccHcloudNetwork_Basic(t *testing.T) {
 func testAccHcloudCheckNetworkConfig_basic(rInt int) string {
 	return fmt.Sprintf(`
 resource "hcloud_network" "foobar" {
-  name       = "foo-volume-%d"
+  name       = "foo-network-%d"
   ip_range   = "10.0.0.0/16"
 }
 `, rInt)
@@ -63,7 +63,7 @@ resource "hcloud_network" "foobar" {
 func testAccHcloudCheckNetworkConfig_Renamed(rInt int) string {
 	return fmt.Sprintf(`
 resource "hcloud_network" "foobar" {
-  name       = "foo-volume-renamed-%d"
+  name       = "foo-network-renamed-%d"
   ip_range   = "10.0.0.0/16"
 }
 `, rInt)

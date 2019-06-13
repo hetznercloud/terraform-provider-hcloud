@@ -68,7 +68,7 @@ func resourceServerNetworkCreate(d *schema.ResourceData, m interface{}) error {
 		if hcloud.IsError(err, hcloud.ErrorCodeConflict) {
 			log.Printf("[INFO] Network (%v) conflict, retrying in one second", network.ID)
 			time.Sleep(time.Second)
-			return resourceNetworkCreate(d, m)
+			return resourceServerNetworkCreate(d, m)
 		}
 		return err
 	}
@@ -109,7 +109,7 @@ func resourceServerNetworkUpdate(d *schema.ResourceData, m interface{}) error {
 		}
 		for _, aliasIP := range d.Get("alias_ips").([]interface{}) {
 			ip := net.ParseIP(aliasIP.(string))
-			opts.AliasIPs = append(opts.AliasIPs, &ip)
+			opts.AliasIPs = append(opts.AliasIPs, ip)
 		}
 		action, _, err := client.Server.ChangeAliasIPs(ctx, server, opts)
 		if err != nil {
