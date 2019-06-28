@@ -136,6 +136,16 @@ func resourceNetworkSubnetDelete(d *schema.ResourceData, m interface{}) error {
 			log.Printf("[INFO] Network (%v) conflict, retrying in one second", network.ID)
 			time.Sleep(time.Second)
 			return resourceNetworkSubnetDelete(d, m)
+		} else if hcloud.IsError(err, hcloud.ErrorCodeLocked) {
+			log.Printf("[INFO] Network (%v) locked, retrying in one second", network.ID)
+			time.Sleep(time.Second)
+			return resourceNetworkSubnetDelete(d, m)
+		} else if hcloud.IsError(err, hcloud.ErrorCodeServiceError) {
+			if err.Error() == "cannot remove subnet because servers are attached to it (service_error)" {
+				log.Printf("[INFO] Network (%v) has servers attached to it, retrying in one second", network.ID)
+				time.Sleep(time.Second)
+				return resourceNetworkSubnetDelete(d, m)
+			}
 		}
 		return err
 	}

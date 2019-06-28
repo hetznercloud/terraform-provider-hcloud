@@ -69,6 +69,10 @@ func resourceServerNetworkCreate(d *schema.ResourceData, m interface{}) error {
 			log.Printf("[INFO] Network (%v) conflict, retrying in one second", network.ID)
 			time.Sleep(time.Second)
 			return resourceServerNetworkCreate(d, m)
+		} else if hcloud.IsError(err, hcloud.ErrorCodeLocked) {
+			log.Printf("[INFO] Network (%v) locked, retrying in one second", network.ID)
+			time.Sleep(time.Second)
+			return resourceServerNetworkCreate(d, m)
 		}
 		return err
 	}
@@ -172,7 +176,11 @@ func resourceServerNetworkDelete(d *schema.ResourceData, m interface{}) error {
 		} else if hcloud.IsError(err, hcloud.ErrorCodeConflict) {
 			log.Printf("[INFO] Network (%v) conflict, retrying in one second", network.ID)
 			time.Sleep(time.Second)
-			return resourceNetworkDelete(d, m)
+			return resourceServerNetworkDelete(d, m)
+		} else if hcloud.IsError(err, hcloud.ErrorCodeLocked) {
+			log.Printf("[INFO] Network (%v) locked, retrying in one second", network.ID)
+			time.Sleep(time.Second)
+			return resourceServerNetworkDelete(d, m)
 		}
 		return err
 	}
