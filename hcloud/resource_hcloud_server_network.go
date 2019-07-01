@@ -73,6 +73,11 @@ func resourceServerNetworkCreate(d *schema.ResourceData, m interface{}) error {
 			log.Printf("[INFO] Network (%v) locked, retrying in one second", network.ID)
 			time.Sleep(time.Second)
 			return resourceServerNetworkCreate(d, m)
+		} else if hcloud.IsError(err, hcloud.ErrorCodeServerAlreadyAttached) {
+			log.Printf("[INFO] Server (%v) already attachted to network %v", server.ID, network.ID)
+			d.SetId(generateServerNetworkID(server, network))
+
+			return resourceServerNetworkRead(d, m)
 		}
 		return err
 	}
@@ -149,6 +154,11 @@ func resourceServerNetworkRead(d *schema.ResourceData, m interface{}) error {
 		d.SetId("")
 		return nil
 	}
+	if privateNet == nil {
+		log.Printf("[WARN] Server Attachment (%s) not found, removing from state", d.Id())
+		d.SetId("")
+		return nil
+	}
 	d.SetId(generateServerNetworkID(server, network))
 	setServerNetworkSchema(d, server, network, privateNet)
 	return nil
@@ -182,6 +192,7 @@ func resourceServerNetworkDelete(d *schema.ResourceData, m interface{}) error {
 			time.Sleep(time.Second)
 			return resourceServerNetworkDelete(d, m)
 		}
+
 		return err
 	}
 	if err := waitForNetworkAction(ctx, client, action, network); err != nil {
@@ -230,6 +241,10 @@ func lookupServerNetworkID(ctx context.Context, terraformID string, client *hclo
 
 	server, _, err = client.Server.GetByID(ctx, serverID)
 	if err != nil {
+		err = errInvalidServerNetworkID
+		return
+	}
+	if server == nil {
 		err = errInvalidServerNetworkID
 		return
 	}
