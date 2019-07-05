@@ -342,8 +342,8 @@ func NetworkFromSchema(s schema.Network) *Network {
 
 	_, p.IPRange, _ = net.ParseCIDR(s.IPRange)
 
-	for _, serverRange := range s.Subnets {
-		p.Subnets = append(p.Subnets, NetworkSubnetFromSchema(serverRange))
+	for _, subnet := range s.Subnets {
+		p.Subnets = append(p.Subnets, NetworkSubnetFromSchema(subnet))
 	}
 	for _, route := range s.Routes {
 		p.Routes = append(p.Routes, NetworkRouteFromSchema(route))
@@ -364,7 +364,6 @@ func NetworkSubnetFromSchema(s schema.NetworkSubnet) NetworkSubnet {
 	sn := NetworkSubnet{
 		Type:        NetworkSubnetType(s.Type),
 		NetworkZone: NetworkZone(s.NetworkZone),
-		VSwitchID:   s.VSwitchID,
 		Gateway:     net.ParseIP(s.Gateway),
 	}
 	_, sn.IPRange, _ = net.ParseCIDR(s.IPRange)

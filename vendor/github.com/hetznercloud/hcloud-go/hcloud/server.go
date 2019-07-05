@@ -81,7 +81,7 @@ type ServerPublicNet struct {
 	FloatingIPs []*FloatingIP
 }
 
-// ServerPublicNetIPv4 represents a server's public IP address.
+// ServerPublicNetIPv4 represents a server's public IPv4 address.
 type ServerPublicNetIPv4 struct {
 	IP      net.IP
 	Blocked bool
@@ -820,16 +820,16 @@ func (c *ServerClient) ChangeProtection(ctx context.Context, server *Server, opt
 	return ActionFromSchema(respBody.Action), resp, err
 }
 
-// ServerAttachNetworkOpts specifies options for attaching a network to a server.
-type ServerAttachNetworkOpts struct {
+// ServerAttachToNetworkOpts specifies options for attaching a server to a network.
+type ServerAttachToNetworkOpts struct {
 	Network  *Network
 	IP       net.IP
 	AliasIPs []net.IP
 }
 
-// AttachNetwork attaches a network to a server.
-func (c *ServerClient) AttachNetwork(ctx context.Context, server *Server, opts ServerAttachNetworkOpts) (*Action, *Response, error) {
-	reqBody := schema.ServerActionAttachNetworkRequest{
+// AttachToNetwork attaches a server to a network.
+func (c *ServerClient) AttachToNetwork(ctx context.Context, server *Server, opts ServerAttachToNetworkOpts) (*Action, *Response, error) {
+	reqBody := schema.ServerActionAttachToNetworkRequest{
 		Network: opts.Network.ID,
 	}
 	if opts.IP != nil {
@@ -849,7 +849,7 @@ func (c *ServerClient) AttachNetwork(ctx context.Context, server *Server, opts S
 		return nil, nil, err
 	}
 
-	respBody := schema.ServerActionAttachNetworkResponse{}
+	respBody := schema.ServerActionAttachToNetworkResponse{}
 	resp, err := c.client.Do(req, &respBody)
 	if err != nil {
 		return nil, resp, err
@@ -857,14 +857,14 @@ func (c *ServerClient) AttachNetwork(ctx context.Context, server *Server, opts S
 	return ActionFromSchema(respBody.Action), resp, err
 }
 
-// ServerDetachNetworkOpts specifies options for detaching a network from a server.
-type ServerDetachNetworkOpts struct {
+// ServerDetachFromNetworkOpts specifies options for detaching a server from a network.
+type ServerDetachFromNetworkOpts struct {
 	Network *Network
 }
 
-// DetachNetwork detaches a network from a server.
-func (c *ServerClient) DetachNetwork(ctx context.Context, server *Server, opts ServerDetachNetworkOpts) (*Action, *Response, error) {
-	reqBody := schema.ServerActionDetachNetworkRequest{
+// DetachFromNetwork detaches a server from a network.
+func (c *ServerClient) DetachFromNetwork(ctx context.Context, server *Server, opts ServerDetachFromNetworkOpts) (*Action, *Response, error) {
+	reqBody := schema.ServerActionDetachFromNetworkRequest{
 		Network: opts.Network.ID,
 	}
 	reqBodyData, err := json.Marshal(reqBody)
@@ -878,7 +878,7 @@ func (c *ServerClient) DetachNetwork(ctx context.Context, server *Server, opts S
 		return nil, nil, err
 	}
 
-	respBody := schema.ServerActionDetachNetworkResponse{}
+	respBody := schema.ServerActionDetachFromNetworkResponse{}
 	resp, err := c.client.Do(req, &respBody)
 	if err != nil {
 		return nil, resp, err
@@ -905,14 +905,13 @@ func (c *ServerClient) ChangeAliasIPs(ctx context.Context, server *Server, opts 
 	if err != nil {
 		return nil, nil, err
 	}
-	print(string(reqBodyData))
 	path := fmt.Sprintf("/servers/%d/actions/change_alias_ips", server.ID)
 	req, err := c.client.NewRequest(ctx, "POST", path, bytes.NewReader(reqBodyData))
 	if err != nil {
 		return nil, nil, err
 	}
 
-	respBody := schema.ServerActionDetachNetworkResponse{}
+	respBody := schema.ServerActionDetachFromNetworkResponse{}
 	resp, err := c.client.Do(req, &respBody)
 	if err != nil {
 		return nil, resp, err

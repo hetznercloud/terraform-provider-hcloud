@@ -44,11 +44,6 @@ func resourceNetworkSubnet() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"vswitch_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				ForceNew: true,
-			},
 		},
 	}
 }
@@ -68,7 +63,6 @@ func resourceNetworkSubnetCreate(d *schema.ResourceData, m interface{}) error {
 			IPRange:     ipRange,
 			NetworkZone: hcloud.NetworkZone(d.Get("network_zone").(string)),
 			Type:        hcloud.NetworkSubnetType(d.Get("type").(string)),
-			VSwitchID:   d.Get("vswitch_id").(int),
 		},
 	}
 
@@ -125,7 +119,7 @@ func resourceNetworkSubnetDelete(d *schema.ResourceData, m interface{}) error {
 		d.SetId("")
 		return nil
 	}
-	action, _, err := client.Network.RemoveSubnet(ctx, network, hcloud.NetworkRemoveSubnetOpts{
+	action, _, err := client.Network.DeleteSubnet(ctx, network, hcloud.NetworkDeleteSubnetOpts{
 		Subnet: subnet,
 	})
 	if err != nil {
@@ -160,7 +154,6 @@ func setNetworkSubnetSchema(d *schema.ResourceData, n *hcloud.Network, s *hcloud
 	d.Set("network_id", n.ID)
 	d.Set("network_zone", s.NetworkZone)
 	d.Set("ip_range", s.IPRange.String())
-	d.Set("vswitch_id", s.VSwitchID)
 	d.Set("type", s.Type)
 	d.Set("gateway", s.Gateway.String())
 }

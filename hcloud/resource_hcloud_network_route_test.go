@@ -3,7 +3,6 @@ package hcloud
 import (
 	"context"
 	"fmt"
-	"log"
 	"testing"
 
 	"github.com/hashicorp/terraform/terraform"
@@ -84,10 +83,8 @@ func testAccHcloudCheckNetworkRouteExists(n string, route *hcloud.NetworkRoute) 
 		client := testAccProvider.Meta().(*hcloud.Client)
 		_, foundRoute, err := lookupNetworkRouteID(context.Background(), rs.Primary.ID, client)
 		if err != nil {
-			log.Printf("[TRACE] ERRDDSD: %+v", err)
 			return err
 		}
-		log.Printf("[TRACE] ERRDDSD: %+v", foundRoute)
 		route = &foundRoute
 		return nil
 	}

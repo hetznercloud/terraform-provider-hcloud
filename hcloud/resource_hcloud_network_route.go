@@ -115,7 +115,7 @@ func resourceNetworkRouteDelete(d *schema.ResourceData, m interface{}) error {
 		d.SetId("")
 		return nil
 	}
-	action, _, err := client.Network.RemoveRoute(ctx, network, hcloud.NetworkRemoveRouteOpts{
+	action, _, err := client.Network.DeleteRoute(ctx, network, hcloud.NetworkDeleteRouteOpts{
 		Route: route,
 	})
 	if err != nil {

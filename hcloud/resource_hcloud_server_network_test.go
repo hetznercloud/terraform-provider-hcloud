@@ -41,7 +41,7 @@ func TestAccHcloudServerNetwork(t *testing.T) {
 					testAccHcloudCheckNetworkSubnetExists("hcloud_network_subnet.foonet", &subnet),
 					testAccHcloudCheckServerNetworkExists("hcloud_server_network.srvnetwork", &srvNet),
 					resource.TestCheckResourceAttr(
-						"hcloud_server_network.srvnetwork", "io", "10.0.1.5"),
+						"hcloud_server_network.srvnetwork", "ip", "10.0.1.5"),
 				),
 			},
 		},

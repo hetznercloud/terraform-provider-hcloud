@@ -20,7 +20,6 @@ type NetworkSubnet struct {
 	Type        string `json:"type"`
 	IPRange     string `json:"ip_range"`
 	NetworkZone string `json:"network_zone"`
-	VSwitchID   int    `json:"vswitch_id"`
 	Gateway     string `json:"gateway"`
 }
 
@@ -91,7 +90,6 @@ type NetworkActionAddSubnetRequest struct {
 	Type        string `json:"type"`
 	IPRange     string `json:"ip_range,omitempty"`
 	NetworkZone string `json:"network_zone"`
-	VSwitchID   *int   `json:"vswitch_id,omitempty"`
 	Gateway     string `json:"gateway"`
 }
 

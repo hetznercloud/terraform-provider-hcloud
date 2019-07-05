@@ -40,7 +40,7 @@ type ServerPublicNet struct {
 }
 
 // ServerPublicNetIPv4 defines the schema of a server's public
-// network information for an IP.
+// network information for an IPv4.
 type ServerPublicNetIPv4 struct {
 	IP      string `json:"ip"`
 	Blocked bool   `json:"blocked"`
@@ -314,29 +314,29 @@ type ServerActionChangeProtectionResponse struct {
 	Action Action `json:"action"`
 }
 
-// ServerActionAttachNetworkRequest defines the schema for the request to
+// ServerActionAttachToNetworkRequest defines the schema for the request to
 // attach a Network to a server.
-type ServerActionAttachNetworkRequest struct {
+type ServerActionAttachToNetworkRequest struct {
 	Network  int       `json:"network"`
 	IP       *string   `json:"ip,omitempty"`
 	AliasIPs []*string `json:"alias_ips,omitempty"`
 }
 
-// ServerActionAttachNetworkResponse defines the schema of the response when
+// ServerActionAttachToNetworkResponse defines the schema of the response when
 // creating a attach_network server action.
-type ServerActionAttachNetworkResponse struct {
+type ServerActionAttachToNetworkResponse struct {
 	Action Action `json:"action"`
 }
 
-// ServerActionDetachNetworkRequest defines the schema for the request to
+// ServerActionDetachFromNetworkRequest defines the schema for the request to
 // detach a Network to a server.
-type ServerActionDetachNetworkRequest struct {
+type ServerActionDetachFromNetworkRequest struct {
 	Network int `json:"network"`
 }
 
-// ServerActionDetachNetworkResponse defines the schema of the response when
+// ServerActionDetachFromNetworkResponse defines the schema of the response when
 // creating a detach_network server action.
-type ServerActionDetachNetworkResponse struct {
+type ServerActionDetachFromNetworkResponse struct {
 	Action Action `json:"action"`
 }
 

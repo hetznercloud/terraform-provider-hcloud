@@ -58,12 +58,12 @@ func resourceServerNetworkCreate(d *schema.ResourceData, m interface{}) error {
 	server := &hcloud.Server{ID: serverID.(int)}
 
 	network := &hcloud.Network{ID: networkID.(int)}
-	opts := hcloud.ServerAttachNetworkOpts{
+	opts := hcloud.ServerAttachToNetworkOpts{
 		Network: network,
 		IP:      ip,
 	}
 
-	action, _, err := client.Server.AttachNetwork(ctx, server, opts)
+	action, _, err := client.Server.AttachToNetwork(ctx, server, opts)
 	if err != nil {
 		if hcloud.IsError(err, hcloud.ErrorCodeConflict) {
 			log.Printf("[INFO] Network (%v) conflict, retrying in one second", network.ID)
@@ -176,7 +176,7 @@ func resourceServerNetworkDelete(d *schema.ResourceData, m interface{}) error {
 		d.SetId("")
 		return nil
 	}
-	action, _, err := client.Server.DetachNetwork(ctx, server, hcloud.ServerDetachNetworkOpts{
+	action, _, err := client.Server.DetachFromNetwork(ctx, server, hcloud.ServerDetachFromNetworkOpts{
 		Network: network,
 	})
 	if err != nil {

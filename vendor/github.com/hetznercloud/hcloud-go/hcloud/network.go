@@ -6,11 +6,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/hetznercloud/hcloud-go/hcloud/schema"
 	"net"
 	"net/url"
 	"strconv"
 	"time"
+
+	"github.com/hetznercloud/hcloud-go/hcloud/schema"
 )
 
 // NetworkZone specifies a network zone.
@@ -18,7 +19,7 @@ type NetworkZone string
 
 // List of available Network Zones.
 const (
-	NetworkZoneEuCentral NetworkZone = "eu-central"
+	NetworkZoneEUCentral NetworkZone = "eu-central"
 )
 
 // NetworkSubnetType specifies a type of a subnet.
@@ -26,8 +27,7 @@ type NetworkSubnetType string
 
 // List of available network subnet types.
 const (
-	NetworkSubnetTypeServer  NetworkSubnetType = "server"
-	NetworkSubnetTypeVSwitch NetworkSubnetType = "vswitch"
+	NetworkSubnetTypeServer NetworkSubnetType = "server"
 )
 
 // Network represents a network in the Hetzner Cloud.
@@ -48,7 +48,6 @@ type NetworkSubnet struct {
 	Type        NetworkSubnetType
 	IPRange     *net.IPNet
 	NetworkZone NetworkZone
-	VSwitchID   int
 	Gateway     net.IP
 }
 
@@ -239,7 +238,6 @@ func (c *NetworkClient) Create(ctx context.Context, opts NetworkCreateOpts) (*Ne
 			Type:        string(subnet.Type),
 			IPRange:     subnet.IPRange.String(),
 			NetworkZone: string(subnet.NetworkZone),
-			VSwitchID:   subnet.VSwitchID,
 		})
 	}
 	for _, route := range opts.Routes {
@@ -309,9 +307,6 @@ func (c *NetworkClient) AddSubnet(ctx context.Context, network *Network, opts Ne
 		IPRange:     opts.Subnet.IPRange.String(),
 		NetworkZone: string(opts.Subnet.NetworkZone),
 	}
-	if opts.Subnet.VSwitchID > 0 {
-		reqBody.VSwitchID = Int(opts.Subnet.VSwitchID)
-	}
 	reqBodyData, err := json.Marshal(reqBody)
 	if err != nil {
 		return nil, nil, err
@@ -331,13 +326,13 @@ func (c *NetworkClient) AddSubnet(ctx context.Context, network *Network, opts Ne
 	return ActionFromSchema(respBody.Action), resp, nil
 }
 
-// NetworkRemoveSubnetOpts specifies options for deleting a subnet from a network.
-type NetworkRemoveSubnetOpts struct {
+// NetworkDeleteSubnetOpts specifies options for deleting a subnet from a network.
+type NetworkDeleteSubnetOpts struct {
 	Subnet *NetworkSubnet
 }
 
-// RemoveSubnet deletes a subnet from a network.
-func (c *NetworkClient) RemoveSubnet(ctx context.Context, network *Network, opts NetworkRemoveSubnetOpts) (*Action, *Response, error) {
+// DeleteSubnet deletes a subnet from a network.
+func (c *NetworkClient) DeleteSubnet(ctx context.Context, network *Network, opts NetworkDeleteSubnetOpts) (*Action, *Response, error) {
 	reqBody := schema.NetworkActionDeleteSubnetRequest{
 		IPRange: opts.Subnet.IPRange.String(),
 	}
@@ -360,7 +355,7 @@ func (c *NetworkClient) RemoveSubnet(ctx context.Context, network *Network, opts
 	return ActionFromSchema(respBody.Action), resp, nil
 }
 
-// NetworkAddRouteOpts specifies options for adding a route from a network.
+// NetworkAddRouteOpts specifies options for adding a route to a network.
 type NetworkAddRouteOpts struct {
 	Route NetworkRoute
 }
@@ -390,13 +385,13 @@ func (c *NetworkClient) AddRoute(ctx context.Context, network *Network, opts Net
 	return ActionFromSchema(respBody.Action), resp, nil
 }
 
-// NetworkRemoveRouteOpts specifies options for deleting a route from a network.
-type NetworkRemoveRouteOpts struct {
+// NetworkDeleteRouteOpts specifies options for deleting a route from a network.
+type NetworkDeleteRouteOpts struct {
 	Route NetworkRoute
 }
 
-// RemoveRoute deletes a route from a network.
-func (c *NetworkClient) RemoveRoute(ctx context.Context, network *Network, opts NetworkRemoveRouteOpts) (*Action, *Response, error) {
+// DeleteRoute deletes a route from a network.
+func (c *NetworkClient) DeleteRoute(ctx context.Context, network *Network, opts NetworkDeleteRouteOpts) (*Action, *Response, error) {
 	reqBody := schema.NetworkActionDeleteRouteRequest{
 		Destination: opts.Route.Destination.String(),
 		Gateway:     opts.Route.Gateway.String(),

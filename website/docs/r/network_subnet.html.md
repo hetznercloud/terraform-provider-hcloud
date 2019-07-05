@@ -29,10 +29,9 @@ resource "hcloud_network_subnet" "foonet" {
 ## Argument Reference
 
 - `network_id` - (Required, int) ID of the network the subnet should be added to.
-- `type` - (Required, string) Type of subnet. `server` or `vswitch`
+- `type` - (Required, string) Type of subnet. `server`
 - `ip_range` - (Required, string) Range to allocate IPs from. Must be a subnet of the ip_range of the network object and must not overlap with any other subnets or with any destinations in routes.
 - `network_zone` - (Required, string) Name of network zone.
-- `vswitch` - (Optional, int) ID of the VSwitch as shown in Hetzner Robot. Only set this if you create a subnet of type vswitch.
 
 ## Attributes Reference
 
@@ -41,4 +40,3 @@ resource "hcloud_network_subnet" "foonet" {
 - `type` - (string) Type of subnet.
 - `ip_range` - (string) Range to allocate IPs from.
 - `network_zone` - (string) Name of network zone.
-- `vswitch` - (int) ID of the VSwitch as shown in Hetzner Robot. Only set if subnet is of type vswitch.

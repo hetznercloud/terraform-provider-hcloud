@@ -62,12 +62,7 @@ func dataSourceHcloudNetworkRead(d *schema.ResourceData, m interface{}) (err err
 		return
 	}
 
-	var selector string
-	if v := d.Get("with_selector").(string); v != "" {
-		selector = v
-	} else if v := d.Get("selector").(string); v != "" {
-		selector = v
-	}
+	selector := d.Get("with_selector").(string)
 	if selector != "" {
 		var allNetworks []*hcloud.Network
 

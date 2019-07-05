@@ -48,25 +48,6 @@ func TestAccHcloudNetworkSubnet_Basic(t *testing.T) {
 						"hcloud_network_subnet.foonet", "gateway", "10.0.0.1"),
 				),
 			},
-			{
-				Config: testAccHcloudCheckNetworkSubnetConfigVSwitch(rInt),
-				Check: resource.ComposeTestCheckFunc(
-					testAccHcloudCheckNetworkExists("hcloud_network.foobar_network", &network),
-					resource.TestCheckResourceAttr(
-						"hcloud_network.foobar_network", "name", fmt.Sprintf("foo-network-%d", rInt)),
-					resource.TestCheckResourceAttr(
-						"hcloud_network.foobar_network", "ip_range", "10.0.0.0/16"),
-					testAccHcloudCheckNetworkSubnetExists("hcloud_network_subnet.foonet_vswitch", &subnet),
-					resource.TestCheckResourceAttr(
-						"hcloud_network_subnet.foonet_vswitch", "type", "vswitch"),
-					resource.TestCheckResourceAttr(
-						"hcloud_network_subnet.foonet_vswitch", "network_zone", "eu-central"),
-					resource.TestCheckResourceAttr(
-						"hcloud_network_subnet.foonet_vswitch", "ip_range", "10.0.100.0/24"),
-					resource.TestCheckResourceAttr(
-						"hcloud_network_subnet.foonet_vswitch", "gateway", "10.0.100.1"),
-				),
-			},
 		},
 	})
 }
@@ -82,21 +63,6 @@ resource "hcloud_network_subnet" "foonet" {
   type = "server"
   network_zone = "eu-central"
   ip_range   = "10.0.1.0/24"
-}
-`, rInt)
-}
-func testAccHcloudCheckNetworkSubnetConfigVSwitch(rInt int) string {
-	return fmt.Sprintf(`
-resource "hcloud_network" "foobar_network" {
-  name       = "foo-network-%d"
-  ip_range   = "10.0.0.0/16"
-}
-resource "hcloud_network_subnet" "foonet_vswitch" {
-  network_id = "${hcloud_network.foobar_network.id}"
-  type = "vswitch"
-  network_zone = "eu-central"
-  ip_range   = "10.0.100.0/24"
-  vswitch_id = 333
 }
 `, rInt)
 }
