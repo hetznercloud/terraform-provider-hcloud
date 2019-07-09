@@ -59,7 +59,7 @@ func resourceNetworkSubnetCreate(d *schema.ResourceData, m interface{}) error {
 	networkID := d.Get("network_id")
 	network := &hcloud.Network{ID: networkID.(int)}
 	opts := hcloud.NetworkAddSubnetOpts{
-		Subnet: &hcloud.NetworkSubnet{
+		Subnet: hcloud.NetworkSubnet{
 			IPRange:     ipRange,
 			NetworkZone: hcloud.NetworkZone(d.Get("network_zone").(string)),
 			Type:        hcloud.NetworkSubnetType(d.Get("type").(string)),
@@ -149,7 +149,7 @@ func resourceNetworkSubnetDelete(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func setNetworkSubnetSchema(d *schema.ResourceData, n *hcloud.Network, s *hcloud.NetworkSubnet) {
+func setNetworkSubnetSchema(d *schema.ResourceData, n *hcloud.Network, s hcloud.NetworkSubnet) {
 	d.SetId(generateNetworkSubnetID(n, s.IPRange.String()))
 	d.Set("network_id", n.ID)
 	d.Set("network_zone", s.NetworkZone)
@@ -169,7 +169,7 @@ var errInvalidNetworkSubnetID = errors.New("invalid network subnet id")
 // id format: <network id>-<ip range>
 // Examples:
 // 123-192.168.100.1/32 (network subnet of network 123 with the ip range 192.168.100.1/32)
-func lookupNetworkSubnetID(ctx context.Context, terraformID string, client *hcloud.Client) (network *hcloud.Network, subnet *hcloud.NetworkSubnet, err error) {
+func lookupNetworkSubnetID(ctx context.Context, terraformID string, client *hcloud.Client) (network *hcloud.Network, subnet hcloud.NetworkSubnet, err error) {
 	if terraformID == "" {
 		err = errInvalidNetworkSubnetID
 		return
@@ -199,7 +199,7 @@ func lookupNetworkSubnetID(ctx context.Context, terraformID string, client *hclo
 	}
 	for _, sn := range network.Subnets {
 		if sn.IPRange.String() == ipRange.String() {
-			subnet = &sn
+			subnet = sn
 			return
 		}
 	}

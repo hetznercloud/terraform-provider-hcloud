@@ -96,8 +96,7 @@ type ServerPublicNetIPv6 struct {
 	DNSPtr  map[string]string
 }
 
-// ServerPrivateNet defines the schema of a server's
-// private network information.
+// ServerPrivateNet defines the schema of a server's private network information.
 type ServerPrivateNet struct {
 	Network *Network
 	IP      net.IP
@@ -892,7 +891,7 @@ type ServerChangeAliasIPsOpts struct {
 	AliasIPs []net.IP
 }
 
-// ChangeAliasIPs changes the alias ips of an already attached network.
+// ChangeAliasIPs changes a server's alias IPs in a network.
 func (c *ServerClient) ChangeAliasIPs(ctx context.Context, server *Server, opts ServerChangeAliasIPsOpts) (*Action, *Response, error) {
 	reqBody := schema.ServerActionChangeAliasIPsRequest{
 		Network:  opts.Network.ID,

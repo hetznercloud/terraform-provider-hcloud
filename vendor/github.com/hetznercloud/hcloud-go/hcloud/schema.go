@@ -207,7 +207,7 @@ func ServerPublicNetIPv6FromSchema(s schema.ServerPublicNetIPv6) ServerPublicNet
 	return ipv6
 }
 
-// ServerPrivateNetFromSchema converts a schema.ServerNet to a ServerNet.
+// ServerPrivateNetFromSchema converts a schema.ServerPrivateNet to a ServerPrivateNet.
 func ServerPrivateNetFromSchema(s schema.ServerPrivateNet) ServerPrivateNet {
 	n := ServerPrivateNet{
 		Network: &Network{ID: s.Network},
@@ -330,7 +330,7 @@ func VolumeFromSchema(s schema.Volume) *Volume {
 
 // NetworkFromSchema converts a schema.Network to a Network.
 func NetworkFromSchema(s schema.Network) *Network {
-	p := &Network{
+	n := &Network{
 		ID:      s.ID,
 		Name:    s.Name,
 		Created: s.Created,
@@ -340,26 +340,25 @@ func NetworkFromSchema(s schema.Network) *Network {
 		Labels: map[string]string{},
 	}
 
-	_, p.IPRange, _ = net.ParseCIDR(s.IPRange)
+	_, n.IPRange, _ = net.ParseCIDR(s.IPRange)
 
 	for _, subnet := range s.Subnets {
-		p.Subnets = append(p.Subnets, NetworkSubnetFromSchema(subnet))
+		n.Subnets = append(n.Subnets, NetworkSubnetFromSchema(subnet))
 	}
 	for _, route := range s.Routes {
-		p.Routes = append(p.Routes, NetworkRouteFromSchema(route))
+		n.Routes = append(n.Routes, NetworkRouteFromSchema(route))
 	}
 	for _, serverID := range s.Servers {
-		p.Servers = append(p.Servers, &Server{ID: serverID})
+		n.Servers = append(n.Servers, &Server{ID: serverID})
 	}
 	for key, value := range s.Labels {
-		p.Labels[key] = value
+		n.Labels[key] = value
 	}
 
-	return p
+	return n
 }
 
-// NetworkSubnetFromSchema converts a schema.NetworkSubnet
-// to a NetworkSubnet.
+// NetworkSubnetFromSchema converts a schema.NetworkSubnet to a NetworkSubnet.
 func NetworkSubnetFromSchema(s schema.NetworkSubnet) NetworkSubnet {
 	sn := NetworkSubnet{
 		Type:        NetworkSubnetType(s.Type),
@@ -370,8 +369,7 @@ func NetworkSubnetFromSchema(s schema.NetworkSubnet) NetworkSubnet {
 	return sn
 }
 
-// NetworkRouteFromSchema converts a schema.NetworkRoute
-// to a NetworkRoute.
+// NetworkRouteFromSchema converts a schema.NetworkRoute to a NetworkRoute.
 func NetworkRouteFromSchema(s schema.NetworkRoute) NetworkRoute {
 	r := NetworkRoute{
 		Gateway: net.ParseIP(s.Gateway),

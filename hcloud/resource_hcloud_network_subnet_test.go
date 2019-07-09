@@ -37,7 +37,7 @@ func TestAccHcloudNetworkSubnet_Basic(t *testing.T) {
 						"hcloud_network.foobar_network", "name", fmt.Sprintf("foo-network-%d", rInt)),
 					resource.TestCheckResourceAttr(
 						"hcloud_network.foobar_network", "ip_range", "10.0.0.0/16"),
-					testAccHcloudCheckNetworkSubnetExists("hcloud_network_subnet.foonet", &subnet),
+					testAccHcloudCheckNetworkSubnetExists("hcloud_network_subnet.foonet", subnet),
 					resource.TestCheckResourceAttr(
 						"hcloud_network_subnet.foonet", "type", "server"),
 					resource.TestCheckResourceAttr(
@@ -67,7 +67,7 @@ resource "hcloud_network_subnet" "foonet" {
 `, rInt)
 }
 
-func testAccHcloudCheckNetworkSubnetExists(n string, subnet *hcloud.NetworkSubnet) resource.TestCheckFunc {
+func testAccHcloudCheckNetworkSubnetExists(n string, subnet hcloud.NetworkSubnet) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 
@@ -85,7 +85,7 @@ func testAccHcloudCheckNetworkSubnetExists(n string, subnet *hcloud.NetworkSubne
 			return err
 		}
 
-		*subnet = *foundSubnet
+		subnet = foundSubnet
 		return nil
 	}
 }

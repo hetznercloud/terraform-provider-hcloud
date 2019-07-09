@@ -62,12 +62,12 @@ type Client struct {
 	Image      ImageClient
 	ISO        ISOClient
 	Location   LocationClient
+	Network    NetworkClient
 	Pricing    PricingClient
 	Server     ServerClient
 	ServerType ServerTypeClient
 	SSHKey     SSHKeyClient
 	Volume     VolumeClient
-	Network    NetworkClient
 }
 
 // A ClientOption is used to configure a Client.
@@ -133,12 +133,12 @@ func NewClient(options ...ClientOption) *Client {
 	client.Image = ImageClient{client: client}
 	client.ISO = ISOClient{client: client}
 	client.Location = LocationClient{client: client}
+	client.Network = NetworkClient{client: client}
 	client.Pricing = PricingClient{client: client}
 	client.Server = ServerClient{client: client}
 	client.ServerType = ServerTypeClient{client: client}
 	client.SSHKey = SSHKeyClient{client: client}
 	client.Volume = VolumeClient{client: client}
-	client.Network = NetworkClient{client: client}
 
 	return client
 }

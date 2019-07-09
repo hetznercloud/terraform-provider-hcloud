@@ -3,12 +3,12 @@ layout: "hcloud"
 page_title: "Hetzner Cloud: hcloud_network"
 sidebar_current: "docs-hcloud-resource-network-x"
 description: |-
-  Provides a Hetzner Cloud Network to represent a private network in the Hetzner Cloud.
+  Provides a Hetzner Cloud Network to represent a Network in the Hetzner Cloud.
 ---
 
 # hcloud_network
 
- Provides a Hetzner Cloud Network to represent a private network in the Hetzner Cloud.
+ Provides a Hetzner Cloud Network to represent a Network in the Hetzner Cloud.
 
 ## Example Usage
 
@@ -21,7 +21,7 @@ resource "hcloud_network" "privNet" {
 
 ## Argument Reference
 
-- `name` - (Required, string) Name of the network to create (must be unique per project).
+- `name` - (Required, string) Name of the Network to create (must be unique per project).
 - `ip_range` - (Required, string) IP Range of the whole Network which must span all included subnets and route destinations. Must be one of the private ipv4 ranges of RFC1918.
 - `labels` - (Optional, map) User-defined labels (key-value pairs) should be created with.
 

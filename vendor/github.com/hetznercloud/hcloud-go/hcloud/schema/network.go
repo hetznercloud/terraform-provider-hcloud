@@ -73,13 +73,13 @@ type NetworkCreateResponse struct {
 }
 
 // NetworkActionChangeIPRangeRequest defines the schema of the request to
-// change the ip range of a network.
+// change the IP range of a network.
 type NetworkActionChangeIPRangeRequest struct {
 	IPRange string `json:"ip_range"`
 }
 
 // NetworkActionChangeIPRangeResponse defines the schema of the response when
-// changing the ip range of a network.
+// changing the IP range of a network.
 type NetworkActionChangeIPRangeResponse struct {
 	Action Action `json:"action"`
 }
@@ -125,7 +125,7 @@ type NetworkActionAddRouteResponse struct {
 }
 
 // NetworkActionDeleteRouteRequest defines the schema of the request to
-// deleting a route from a network.
+// delete a route from a network.
 type NetworkActionDeleteRouteRequest struct {
 	Destination string `json:"destination"`
 	Gateway     string `json:"gateway"`
@@ -137,12 +137,14 @@ type NetworkActionDeleteRouteResponse struct {
 	Action Action `json:"action"`
 }
 
-// NetworkActionChangeProtectionRequest defines the schema of the request to change the resource protection of a network.
+// NetworkActionChangeProtectionRequest defines the schema of the request to
+// change the resource protection of a network.
 type NetworkActionChangeProtectionRequest struct {
 	Delete *bool `json:"delete,omitempty"`
 }
 
-// NetworkActionChangeProtectionResponse defines the schema of the response when changing the resource protection of a network.
+// NetworkActionChangeProtectionResponse defines the schema of the response when
+// changing the resource protection of a network.
 type NetworkActionChangeProtectionResponse struct {
 	Action Action `json:"action"`
 }

@@ -297,7 +297,7 @@ func (c *NetworkClient) ChangeIPRange(ctx context.Context, network *Network, opt
 
 // NetworkAddSubnetOpts specifies options for adding a subnet to a network.
 type NetworkAddSubnetOpts struct {
-	Subnet *NetworkSubnet
+	Subnet NetworkSubnet
 }
 
 // AddSubnet adds a subnet to a network.
@@ -328,7 +328,7 @@ func (c *NetworkClient) AddSubnet(ctx context.Context, network *Network, opts Ne
 
 // NetworkDeleteSubnetOpts specifies options for deleting a subnet from a network.
 type NetworkDeleteSubnetOpts struct {
-	Subnet *NetworkSubnet
+	Subnet NetworkSubnet
 }
 
 // DeleteSubnet deletes a subnet from a network.

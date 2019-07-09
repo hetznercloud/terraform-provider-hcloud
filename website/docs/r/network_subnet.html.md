@@ -3,12 +3,12 @@ layout: "hcloud"
 page_title: "Hetzner Cloud: hcloud_network_subnet"
 sidebar_current: "docs-hcloud-resource-network-subnet"
 description: |-
-  Provides a Hetzner Cloud Network Subnet to represent a private network subnet in the Hetzner Cloud.
+  Provides a Hetzner Cloud Network Subnet to represent a Subnet in the Hetzner Cloud.
 ---
 
 # hcloud_network_subnet
 
- Provides a Hetzner Cloud Network Subnet to represent a private network subnet in the Hetzner Cloud.
+ Provides a Hetzner Cloud Network Subnet to represent a Subnet in the Hetzner Cloud.
 
 ## Example Usage
 
@@ -28,15 +28,15 @@ resource "hcloud_network_subnet" "foonet" {
 
 ## Argument Reference
 
-- `network_id` - (Required, int) ID of the network the subnet should be added to.
+- `network_id` - (Required, int) ID of the Network the subnet should be added to.
 - `type` - (Required, string) Type of subnet. `server`
-- `ip_range` - (Required, string) Range to allocate IPs from. Must be a subnet of the ip_range of the network object and must not overlap with any other subnets or with any destinations in routes.
+- `ip_range` - (Required, string) Range to allocate IPs from. Must be a subnet of the ip_range of the Network and must not overlap with any other subnets or with any destinations in routes.
 - `network_zone` - (Required, string) Name of network zone.
 
 ## Attributes Reference
 
-- `id` - (string) ID of the network subnet.
-- `network_id` - (int) ID of the network.
+- `id` - (string) ID of the Network subnet.
+- `network_id` - (int) ID of the Network.
 - `type` - (string) Type of subnet.
 - `ip_range` - (string) Range to allocate IPs from.
 - `network_zone` - (string) Name of network zone.

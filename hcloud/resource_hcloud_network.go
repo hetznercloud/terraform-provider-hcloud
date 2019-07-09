@@ -149,7 +149,7 @@ func resourceNetworkDelete(d *schema.ResourceData, m interface{}) error {
 		return nil
 	}
 	if _, err := client.Network.Delete(ctx, &hcloud.Network{ID: networkID}); err != nil {
-		if hcloud.IsError(err,hcloud.ErrorCodeNotFound) {
+		if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
 			// network has already been deleted
 			return nil
 		}

@@ -62,8 +62,7 @@ type ServerPublicNetIPv6DNSPtr struct {
 	DNSPtr string `json:"dns_ptr"`
 }
 
-// ServerPrivateNet defines the schema of a server's
-// private network information.
+// ServerPrivateNet defines the schema of a server's private network information.
 type ServerPrivateNet struct {
 	Network  int      `json:"network"`
 	IP       string   `json:"ip"`
@@ -315,7 +314,7 @@ type ServerActionChangeProtectionResponse struct {
 }
 
 // ServerActionAttachToNetworkRequest defines the schema for the request to
-// attach a Network to a server.
+// attach a network to a server.
 type ServerActionAttachToNetworkRequest struct {
 	Network  int       `json:"network"`
 	IP       *string   `json:"ip,omitempty"`
@@ -323,32 +322,32 @@ type ServerActionAttachToNetworkRequest struct {
 }
 
 // ServerActionAttachToNetworkResponse defines the schema of the response when
-// creating a attach_network server action.
+// creating an attach_to_network server action.
 type ServerActionAttachToNetworkResponse struct {
 	Action Action `json:"action"`
 }
 
 // ServerActionDetachFromNetworkRequest defines the schema for the request to
-// detach a Network to a server.
+// detach a network from a server.
 type ServerActionDetachFromNetworkRequest struct {
 	Network int `json:"network"`
 }
 
 // ServerActionDetachFromNetworkResponse defines the schema of the response when
-// creating a detach_network server action.
+// creating a detach_from_network server action.
 type ServerActionDetachFromNetworkResponse struct {
 	Action Action `json:"action"`
 }
 
 // ServerActionChangeAliasIPsRequest defines the schema for the request to
-// change the alias ips of an already attached private network
+// change a server's alias IPs in a network.
 type ServerActionChangeAliasIPsRequest struct {
 	Network  int      `json:"network"`
 	AliasIPs []string `json:"alias_ips"`
 }
 
 // ServerActionChangeAliasIPsResponse defines the schema of the response when
-// creating a change_alias_ips server action.
+// creating an change_alias_ips server action.
 type ServerActionChangeAliasIPsResponse struct {
 	Action Action `json:"action"`
 }
