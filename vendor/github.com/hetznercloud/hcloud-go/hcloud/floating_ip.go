@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net"
 	"net/url"
+	"time"
 
 	"github.com/hetznercloud/hcloud-go/hcloud/schema"
 )
@@ -16,6 +17,7 @@ import (
 type FloatingIP struct {
 	ID           int
 	Description  string
+	Created      time.Time
 	IP           net.IP
 	Network      *net.IPNet
 	Type         FloatingIPType

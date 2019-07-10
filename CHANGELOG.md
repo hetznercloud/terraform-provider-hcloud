@@ -1,4 +1,13 @@
-## 1.10.1 (Unreleased)
+## 1.11.0 (Unreleased)
+
+FEATURES:
+
+* **New Resource**: `hcloud_network` Manage Networks.
+* **New Resource**: `hcloud_network_subnet` Manage Networks Subnets.
+* **New Resource**: `hcloud_network_route` Manage Networks Routes.
+* **New Resource**: `hcloud_server_network` Manage attachment between servers and Networks.
+* **New Datasource**: `hcloud_network` Lookup Networks.
+
 ## 1.10.0 (May 14, 2019)
 
 NOTES:

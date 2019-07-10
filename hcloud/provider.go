@@ -40,6 +40,10 @@ func Provider() terraform.ResourceProvider {
 			"hcloud_rdns":                   resourceReverseDNS(),
 			"hcloud_volume":                 resourceVolume(),
 			"hcloud_volume_attachment":      resourceVolumeAttachment(),
+			"hcloud_network":                resourceNetwork(),
+			"hcloud_network_subnet":         resourceNetworkSubnet(),
+			"hcloud_network_route":          resourceNetworkRoute(),
+			"hcloud_server_network":         resourceServerNetwork(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"hcloud_datacenter":  dataSourceHcloudDatacenter(),
@@ -51,6 +55,7 @@ func Provider() terraform.ResourceProvider {
 			"hcloud_server":      dataSourceHcloudServer(),
 			"hcloud_ssh_key":     dataSourceHcloudSSHKey(),
 			"hcloud_volume":      dataSourceHcloudVolume(),
+			"hcloud_network":     dataSourceHcloudNetwork(),
 		},
 		ConfigureFunc: providerConfigure,
 	}
@@ -59,7 +64,7 @@ func Provider() terraform.ResourceProvider {
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	opts := []hcloud.ClientOption{
 		hcloud.WithToken(d.Get("token").(string)),
-		hcloud.WithApplication("hcloud-terraform", "1.8.1"),
+		hcloud.WithApplication("hcloud-terraform", "internal-networks-version"), // TODO Change version
 	}
 	if endpoint, ok := d.GetOk("endpoint"); ok {
 		opts = append(opts, hcloud.WithEndpoint(endpoint.(string)))

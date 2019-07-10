@@ -18,6 +18,7 @@ type Location struct {
 	City        string
 	Latitude    float64
 	Longitude   float64
+	NetworkZone NetworkZone
 }
 
 // LocationClient is a client for the location API.

@@ -21,6 +21,7 @@ type Server struct {
 	Status          ServerStatus
 	Created         time.Time
 	PublicNet       ServerPublicNet
+	PrivateNet      []ServerPrivateNet
 	ServerType      *ServerType
 	Datacenter      *Datacenter
 	IncludedTraffic uint64
@@ -93,6 +94,13 @@ type ServerPublicNetIPv6 struct {
 	Network *net.IPNet
 	Blocked bool
 	DNSPtr  map[string]string
+}
+
+// ServerPrivateNet defines the schema of a server's private network information.
+type ServerPrivateNet struct {
+	Network *Network
+	IP      net.IP
+	Aliases []net.IP
 }
 
 // DNSPtrForIP returns the reverse dns pointer of the ip address.
@@ -227,6 +235,7 @@ type ServerCreateOpts struct {
 	Labels           map[string]string
 	Automount        *bool
 	Volumes          []*Volume
+	Networks         []*Network
 }
 
 // Validate checks if options are valid.
@@ -283,6 +292,9 @@ func (c *ServerClient) Create(ctx context.Context, opts ServerCreateOpts) (Serve
 	}
 	for _, volume := range opts.Volumes {
 		reqBody.Volumes = append(reqBody.Volumes, volume.ID)
+	}
+	for _, network := range opts.Networks {
+		reqBody.Networks = append(reqBody.Networks, network.ID)
 	}
 
 	if opts.Location != nil {
@@ -783,7 +795,7 @@ type ServerChangeProtectionOpts struct {
 }
 
 // ChangeProtection changes the resource protection level of a server.
-func (c *ServerClient) ChangeProtection(ctx context.Context, image *Server, opts ServerChangeProtectionOpts) (*Action, *Response, error) {
+func (c *ServerClient) ChangeProtection(ctx context.Context, server *Server, opts ServerChangeProtectionOpts) (*Action, *Response, error) {
 	reqBody := schema.ServerActionChangeProtectionRequest{
 		Rebuild: opts.Rebuild,
 		Delete:  opts.Delete,
@@ -793,13 +805,112 @@ func (c *ServerClient) ChangeProtection(ctx context.Context, image *Server, opts
 		return nil, nil, err
 	}
 
-	path := fmt.Sprintf("/servers/%d/actions/change_protection", image.ID)
+	path := fmt.Sprintf("/servers/%d/actions/change_protection", server.ID)
 	req, err := c.client.NewRequest(ctx, "POST", path, bytes.NewReader(reqBodyData))
 	if err != nil {
 		return nil, nil, err
 	}
 
 	respBody := schema.ServerActionChangeProtectionResponse{}
+	resp, err := c.client.Do(req, &respBody)
+	if err != nil {
+		return nil, resp, err
+	}
+	return ActionFromSchema(respBody.Action), resp, err
+}
+
+// ServerAttachToNetworkOpts specifies options for attaching a server to a network.
+type ServerAttachToNetworkOpts struct {
+	Network  *Network
+	IP       net.IP
+	AliasIPs []net.IP
+}
+
+// AttachToNetwork attaches a server to a network.
+func (c *ServerClient) AttachToNetwork(ctx context.Context, server *Server, opts ServerAttachToNetworkOpts) (*Action, *Response, error) {
+	reqBody := schema.ServerActionAttachToNetworkRequest{
+		Network: opts.Network.ID,
+	}
+	if opts.IP != nil {
+		reqBody.IP = String(opts.IP.String())
+	}
+	for _, aliasIP := range opts.AliasIPs {
+		reqBody.AliasIPs = append(reqBody.AliasIPs, String(aliasIP.String()))
+	}
+	reqBodyData, err := json.Marshal(reqBody)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	path := fmt.Sprintf("/servers/%d/actions/attach_to_network", server.ID)
+	req, err := c.client.NewRequest(ctx, "POST", path, bytes.NewReader(reqBodyData))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	respBody := schema.ServerActionAttachToNetworkResponse{}
+	resp, err := c.client.Do(req, &respBody)
+	if err != nil {
+		return nil, resp, err
+	}
+	return ActionFromSchema(respBody.Action), resp, err
+}
+
+// ServerDetachFromNetworkOpts specifies options for detaching a server from a network.
+type ServerDetachFromNetworkOpts struct {
+	Network *Network
+}
+
+// DetachFromNetwork detaches a server from a network.
+func (c *ServerClient) DetachFromNetwork(ctx context.Context, server *Server, opts ServerDetachFromNetworkOpts) (*Action, *Response, error) {
+	reqBody := schema.ServerActionDetachFromNetworkRequest{
+		Network: opts.Network.ID,
+	}
+	reqBodyData, err := json.Marshal(reqBody)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	path := fmt.Sprintf("/servers/%d/actions/detach_from_network", server.ID)
+	req, err := c.client.NewRequest(ctx, "POST", path, bytes.NewReader(reqBodyData))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	respBody := schema.ServerActionDetachFromNetworkResponse{}
+	resp, err := c.client.Do(req, &respBody)
+	if err != nil {
+		return nil, resp, err
+	}
+	return ActionFromSchema(respBody.Action), resp, err
+}
+
+// ServerChangeAliasIPsOpts specifies options for changing the alias ips of an already attached network.
+type ServerChangeAliasIPsOpts struct {
+	Network  *Network
+	AliasIPs []net.IP
+}
+
+// ChangeAliasIPs changes a server's alias IPs in a network.
+func (c *ServerClient) ChangeAliasIPs(ctx context.Context, server *Server, opts ServerChangeAliasIPsOpts) (*Action, *Response, error) {
+	reqBody := schema.ServerActionChangeAliasIPsRequest{
+		Network:  opts.Network.ID,
+		AliasIPs: []string{},
+	}
+	for _, aliasIP := range opts.AliasIPs {
+		reqBody.AliasIPs = append(reqBody.AliasIPs, aliasIP.String())
+	}
+	reqBodyData, err := json.Marshal(reqBody)
+	if err != nil {
+		return nil, nil, err
+	}
+	path := fmt.Sprintf("/servers/%d/actions/change_alias_ips", server.ID)
+	req, err := c.client.NewRequest(ctx, "POST", path, bytes.NewReader(reqBodyData))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	respBody := schema.ServerActionDetachFromNetworkResponse{}
 	resp, err := c.client.Do(req, &respBody)
 	if err != nil {
 		return nil, resp, err
