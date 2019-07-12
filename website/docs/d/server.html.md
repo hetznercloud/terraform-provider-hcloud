@@ -1,7 +1,7 @@
 ---
 layout: "hcloud"
 page_title: "Hetzner Cloud: hcloud_server"
-sidebar_current: "docs-hcloud-datasource-server"
+sidebar_current: "docs-hcloud-datasource-server-x"
 description: |-
   Provides details about a specific Hetzner Cloud Server.
 ---
