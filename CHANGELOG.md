@@ -1,3 +1,8 @@
+## 1.12.0 (Unreleased)
+
+NOTES:
+* This release is Terraform 0.12.4+ compatible. 
+
 ## 1.11.0 (July 10, 2019)
 
 FEATURES:
