@@ -98,9 +98,10 @@ type ServerPublicNetIPv6 struct {
 
 // ServerPrivateNet defines the schema of a server's private network information.
 type ServerPrivateNet struct {
-	Network *Network
-	IP      net.IP
-	Aliases []net.IP
+	Network    *Network
+	IP         net.IP
+	Aliases    []net.IP
+	MACAddress string
 }
 
 // DNSPtrForIP returns the reverse dns pointer of the ip address.

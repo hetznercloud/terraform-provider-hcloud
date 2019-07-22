@@ -64,9 +64,10 @@ type ServerPublicNetIPv6DNSPtr struct {
 
 // ServerPrivateNet defines the schema of a server's private network information.
 type ServerPrivateNet struct {
-	Network  int      `json:"network"`
-	IP       string   `json:"ip"`
-	AliasIPs []string `json:"alias_ips"`
+	Network    int      `json:"network"`
+	IP         string   `json:"ip"`
+	AliasIPs   []string `json:"alias_ips"`
+	MACAddress string   `json:"mac_address"`
 }
 
 // ServerGetResponse defines the schema of the response when
