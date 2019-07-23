@@ -210,8 +210,9 @@ func ServerPublicNetIPv6FromSchema(s schema.ServerPublicNetIPv6) ServerPublicNet
 // ServerPrivateNetFromSchema converts a schema.ServerPrivateNet to a ServerPrivateNet.
 func ServerPrivateNetFromSchema(s schema.ServerPrivateNet) ServerPrivateNet {
 	n := ServerPrivateNet{
-		Network: &Network{ID: s.Network},
-		IP:      net.ParseIP(s.IP),
+		Network:    &Network{ID: s.Network},
+		IP:         net.ParseIP(s.IP),
+		MACAddress: s.MACAddress,
 	}
 	for _, ip := range s.AliasIPs {
 		n.Aliases = append(n.Aliases, net.ParseIP(ip))

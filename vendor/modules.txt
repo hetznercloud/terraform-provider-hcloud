@@ -174,7 +174,7 @@ github.com/hashicorp/terraform/internal/earlyconfig
 github.com/hashicorp/terraform-config-inspect/tfconfig
 # github.com/hashicorp/yamux v0.0.0-20180604194846-3520598351bb
 github.com/hashicorp/yamux
-# github.com/hetznercloud/hcloud-go v1.14.0
+# github.com/hetznercloud/hcloud-go v1.15.1
 github.com/hetznercloud/hcloud-go/hcloud
 github.com/hetznercloud/hcloud-go/hcloud/schema
 # github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
