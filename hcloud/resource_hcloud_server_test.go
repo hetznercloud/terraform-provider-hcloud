@@ -17,6 +17,7 @@ import (
 
 var (
 	testAccSSHPublicKey string
+	testHcloudISOID     = "2045"
 	testHcloudISOName   = "coreos_production_iso_image.iso"
 )
 
@@ -140,7 +141,7 @@ func TestAccHcloudServer_UpdateUserData(t *testing.T) {
 	})
 }
 
-func TestAccHcloudServer_ISO(t *testing.T) {
+func TestAccHcloudServer_ISOID(t *testing.T) {
 	var server hcloud.Server
 	rInt := acctest.RandInt()
 
@@ -152,7 +153,33 @@ func TestAccHcloudServer_ISO(t *testing.T) {
 		CheckDestroy: testAccHcloudCheckServerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccHcloudCheckServerConfig_ISO(rInt),
+				Config: testAccHcloudCheckServerConfig_ISOID(rInt),
+				Check: resource.ComposeTestCheckFunc(
+					testAccHcloudCheckServerExists("hcloud_server.foobar", &server),
+					testAccHcloudCheckServerAttributes(&server),
+					resource.TestCheckResourceAttr(
+						"hcloud_server.foobar", "name", fmt.Sprintf("foo-%d", rInt)),
+					resource.TestCheckResourceAttr(
+						"hcloud_server.foobar", "iso", testHcloudISOID),
+				),
+			},
+		},
+	})
+}
+
+func TestAccHcloudServer_ISOName(t *testing.T) {
+	var server hcloud.Server
+	rInt := acctest.RandInt()
+
+	// testAccProvider.
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccHcloudPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccHcloudCheckServerDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccHcloudCheckServerConfig_ISOName(rInt),
 				Check: resource.ComposeTestCheckFunc(
 					testAccHcloudCheckServerExists("hcloud_server.foobar", &server),
 					testAccHcloudCheckServerAttributes(&server),
@@ -284,7 +311,24 @@ resource "hcloud_server" "foobar" {
 }`, rInt, testAccSSHPublicKey, rInt)
 }
 
-func testAccHcloudCheckServerConfig_ISO(rInt int) string {
+func testAccHcloudCheckServerConfig_ISOID(rInt int) string {
+	return fmt.Sprintf(`
+resource "hcloud_ssh_key" "foobar" {
+  name       = "foobar-%d"
+  public_key = "%s"
+}
+resource "hcloud_server" "foobar" {
+  name        = "foo-%d"
+  server_type = "cx11"
+  image       = "debian-9"
+  datacenter  = "fsn1-dc14"
+  backups     = true
+  iso         = "%s"
+  ssh_keys    = ["${hcloud_ssh_key.foobar.id}"]
+}`, rInt, testAccSSHPublicKey, rInt, testHcloudISOID)
+}
+
+func testAccHcloudCheckServerConfig_ISOName(rInt int) string {
 	return fmt.Sprintf(`
 resource "hcloud_ssh_key" "foobar" {
   name       = "foobar-%d"
