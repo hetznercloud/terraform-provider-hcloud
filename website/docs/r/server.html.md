@@ -33,7 +33,7 @@ The following arguments are supported:
 - `user_data` - (Optional, string) Cloud-Init user data to use during server creation
 - `ssh_keys` - (Optional, list) SSH key IDs or names which should be injected into the server at creation time
 - `keep_disk` - (Optional, bool) If true, do not upgrade the disk. This allows downgrading the server type later.
-- `iso` - (Optional, string) Name of an ISO image to mount.
+- `iso` - (Optional, string) ID or Name of an ISO image to mount.
 - `rescue` - (Optional, string) Enable and boot in to the specified rescue system. This enables simple installation of custom operating systems. `linux64` `linux32` or `freebsd64`
 - `labels` - (Optional, map) User-defined labels (key-value pairs) should be created with.
 - `backups` - (Optional, boolean) Enable or disable backups.
@@ -50,7 +50,7 @@ The following attributes are exported:
 - `datacenter` - (string) The datacenter name.
 - `backup_window` - (string) The backup window of the server, if enabled.
 - `backups` - (boolean) Whether backups are enabled.
-- `iso` - (string) Name of the mounted ISO image.
+- `iso` - (string) ID or Name of the mounted ISO image.
 - `ipv4_address` - (string) The IPv4 address.
 - `ipv6_address` - (string) The first IPv6 address of the assigned network.
 - `ipv6_network` - (string) The IPv6 network.
