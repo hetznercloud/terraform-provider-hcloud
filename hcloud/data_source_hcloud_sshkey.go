@@ -80,7 +80,7 @@ func dataSourceHcloudSSHKeyRead(d *schema.ResourceData, m interface{}) (err erro
 			return err
 		}
 		if s == nil {
-			return fmt.Errorf("no sshkey found with name %v", fingerprint)
+			return fmt.Errorf("no sshkey found with fingerprint %v", fingerprint)
 		}
 		setSSHKeySchema(d, s)
 		return
