@@ -4,6 +4,9 @@ import (
 	"errors"
 	"time"
 
+	"github.com/hashicorp/logutils"
+	"github.com/hashicorp/terraform/helper/logging"
+
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/hetznercloud/hcloud-go/hcloud"
@@ -75,6 +78,13 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 			return nil, err
 		}
 		opts = append(opts, hcloud.WithPollInterval(pollInterval))
+	}
+	if logging.LogLevel() != "" {
+		writer, err := logging.LogOutput()
+		if err != nil {
+			return nil, err
+		}
+		opts = append(opts, hcloud.WithDebugWriter(writer.(*logutils.LevelFilter).Writer))
 	}
 	return hcloud.NewClient(opts...), nil
 }
