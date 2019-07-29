@@ -1,9 +1,15 @@
 ## 1.12.0 (Unreleased)
 
+IMPROVEMENTS:
+
+* resources/hcloud_server_network: Add `mac_address` attribute to get the mac address of the Network interface.
+
 BUG FIXES:
+
 * Fix an error on server creation, when an iso id was given instead of an iso name.
 
 NOTES:
+
 * This release is Terraform 0.12.5+ compatible. 
 * Updated hcloud-go to `v1.15.1`
 
