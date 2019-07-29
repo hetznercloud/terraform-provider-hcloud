@@ -40,6 +40,7 @@ func TestAccHcloudServerNetwork(t *testing.T) {
 						"hcloud_network.foobar_network", "ip_range", "10.0.0.0/16"),
 					testAccHcloudCheckNetworkSubnetExists("hcloud_network_subnet.foonet", subnet),
 					testAccHcloudCheckServerNetworkExists("hcloud_server_network.srvnetwork", &srvNet),
+					testAccHcloudCheckServerNetworkAttributes(&srvNet),
 					resource.TestCheckResourceAttr(
 						"hcloud_server_network.srvnetwork", "ip", "10.0.1.5"),
 				),
@@ -72,7 +73,14 @@ resource "hcloud_server_network" "srvnetwork" {
 }
 `, rInt, rInt)
 }
-
+func testAccHcloudCheckServerNetworkAttributes(serverNetwork *hcloud.ServerPrivateNet) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if serverNetwork.MACAddress == "" {
+			return fmt.Errorf("Bad serverNetwork.MACAddress: %s", serverNetwork.MACAddress)
+		}
+		return nil
+	}
+}
 func testAccHcloudCheckServerNetworkExists(n string, srvNet *hcloud.ServerPrivateNet) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]

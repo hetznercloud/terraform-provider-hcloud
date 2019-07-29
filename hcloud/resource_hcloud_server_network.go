@@ -42,6 +42,10 @@ func resourceServerNetwork() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Optional: true,
 			},
+			"mac_address": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -209,6 +213,7 @@ func setServerNetworkSchema(d *schema.ResourceData, server *hcloud.Server, netwo
 		ips = append(ips, ip.String())
 	}
 	d.Set("alias_ips", ips)
+	d.Set("mac_address", serverPrivateNet.MACAddress)
 }
 
 func generateServerNetworkID(server *hcloud.Server, network *hcloud.Network) string {
