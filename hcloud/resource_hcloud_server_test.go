@@ -145,8 +145,6 @@ func TestAccHcloudServer_ISOID(t *testing.T) {
 	var server hcloud.Server
 	rInt := acctest.RandInt()
 
-	// testAccProvider.
-
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccHcloudPreCheck(t) },
 		Providers:    testAccProviders,
@@ -170,8 +168,6 @@ func TestAccHcloudServer_ISOID(t *testing.T) {
 func TestAccHcloudServer_ISOName(t *testing.T) {
 	var server hcloud.Server
 	rInt := acctest.RandInt()
-
-	// testAccProvider.
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccHcloudPreCheck(t) },

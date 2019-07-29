@@ -1,7 +1,11 @@
 ## 1.12.0 (Unreleased)
 
+BUG FIXES:
+* Fix an error on server creation, when an iso id was given instead of an iso name.
+
 NOTES:
-* This release is Terraform 0.12.4+ compatible. 
+* This release is Terraform 0.12.5+ compatible. 
+* Updated hcloud-go to `v1.15.1`
 
 ## 1.11.0 (July 10, 2019)
 
