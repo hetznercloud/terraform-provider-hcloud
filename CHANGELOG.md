@@ -1,5 +1,9 @@
 ## 1.12.0 (Unreleased)
 
+FEATURES:
+
+* **New Datasource**: `hcloud_ssh_keys` Lookup all SSH keys.
+
 IMPROVEMENTS:
 
 * resources/hcloud_server_network: Add `mac_address` attribute to get the mac address of the Network interface.
@@ -12,6 +16,7 @@ NOTES:
 
 * This release is Terraform 0.12.5+ compatible. 
 * Updated hcloud-go to `v1.15.1`
+* Added hcloud-go request debugging when using `TF_LOG`.
 
 ## 1.11.0 (July 10, 2019)
 
