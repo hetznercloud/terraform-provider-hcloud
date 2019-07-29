@@ -389,7 +389,7 @@ func setBackups(ctx context.Context, client *hcloud.Client, server *hcloud.Serve
 	return nil
 }
 
-func setISO(ctx context.Context, client *hcloud.Client, server *hcloud.Server, iso string) error {
+func setISO(ctx context.Context, client *hcloud.Client, server *hcloud.Server, isoIDOrName string) error {
 	isoChange := false
 	if server.ISO != nil {
 		isoChange = true
@@ -401,9 +401,19 @@ func setISO(ctx context.Context, client *hcloud.Client, server *hcloud.Server, i
 			return err
 		}
 	}
-	if iso != "" {
+	if isoIDOrName != "" {
 		isoChange = true
-		action, _, err := client.Server.AttachISO(ctx, server, &hcloud.ISO{Name: iso})
+
+		iso, _, err := client.ISO.Get(ctx, isoIDOrName)
+		if err != nil {
+			return err
+		}
+
+		if iso == nil {
+			return fmt.Errorf("ISO not found: %s", isoIDOrName)
+		}
+
+		action, _, err := client.Server.AttachISO(ctx, server, iso)
 		if err != nil {
 			return err
 		}
