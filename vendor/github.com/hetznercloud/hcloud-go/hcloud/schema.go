@@ -55,6 +55,7 @@ func FloatingIPFromSchema(s schema.FloatingIP) *FloatingIP {
 		Protection: FloatingIPProtection{
 			Delete: s.Protection.Delete,
 		},
+		Name: s.Name,
 	}
 	if s.Description != nil {
 		f.Description = *s.Description
