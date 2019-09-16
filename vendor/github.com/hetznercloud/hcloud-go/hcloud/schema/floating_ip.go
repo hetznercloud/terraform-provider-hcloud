@@ -15,6 +15,7 @@ type FloatingIP struct {
 	Blocked      bool                 `json:"blocked"`
 	Protection   FloatingIPProtection `json:"protection"`
 	Labels       map[string]string    `json:"labels"`
+	Name         string               `json:"name"`
 }
 
 // FloatingIPProtection represents the protection level of a Floating IP.
@@ -39,6 +40,7 @@ type FloatingIPGetResponse struct {
 type FloatingIPUpdateRequest struct {
 	Description string             `json:"description,omitempty"`
 	Labels      *map[string]string `json:"labels,omitempty"`
+	Name        string             `json:"name,omitempty"`
 }
 
 // FloatingIPUpdateResponse defines the schema of the response when updating a Floating IP.
@@ -60,6 +62,7 @@ type FloatingIPCreateRequest struct {
 	Server       *int               `json:"server,omitempty"`
 	Description  *string            `json:"description,omitempty"`
 	Labels       *map[string]string `json:"labels,omitempty"`
+	Name         *string            `json:"name,omitempty"`
 }
 
 // FloatingIPCreateResponse defines the schema of the response

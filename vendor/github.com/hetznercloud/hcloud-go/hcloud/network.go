@@ -304,8 +304,10 @@ type NetworkAddSubnetOpts struct {
 func (c *NetworkClient) AddSubnet(ctx context.Context, network *Network, opts NetworkAddSubnetOpts) (*Action, *Response, error) {
 	reqBody := schema.NetworkActionAddSubnetRequest{
 		Type:        string(opts.Subnet.Type),
-		IPRange:     opts.Subnet.IPRange.String(),
 		NetworkZone: string(opts.Subnet.NetworkZone),
+	}
+	if opts.Subnet.IPRange != nil {
+		reqBody.IPRange = opts.Subnet.IPRange.String()
 	}
 	reqBodyData, err := json.Marshal(reqBody)
 	if err != nil {

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net"
 	"net/url"
+	"strconv"
 	"time"
 
 	"github.com/hetznercloud/hcloud-go/hcloud/schema"
@@ -27,6 +28,7 @@ type FloatingIP struct {
 	Blocked      bool
 	Protection   FloatingIPProtection
 	Labels       map[string]string
+	Name         string
 }
 
 // DNSPtrForIP returns the reverse DNS pointer of the IP address.
@@ -72,13 +74,36 @@ func (c *FloatingIPClient) GetByID(ctx context.Context, id int) (*FloatingIP, *R
 	return FloatingIPFromSchema(body.FloatingIP), resp, nil
 }
 
+// GetByName retrieves a Floating IP by its name. If the Floating IP does not exist, nil is returned.
+func (c *FloatingIPClient) GetByName(ctx context.Context, name string) (*FloatingIP, *Response, error) {
+	floatingIPs, response, err := c.List(ctx, FloatingIPListOpts{Name: name})
+	if len(floatingIPs) == 0 {
+		return nil, response, err
+	}
+	return floatingIPs[0], response, err
+}
+
+// Get retrieves a Floating IP by its ID if the input can be parsed as an integer, otherwise it
+// retrieves a Floating IP by its name. If the Floating IP does not exist, nil is returned.
+func (c *FloatingIPClient) Get(ctx context.Context, idOrName string) (*FloatingIP, *Response, error) {
+	if id, err := strconv.Atoi(idOrName); err == nil {
+		return c.GetByID(ctx, int(id))
+	}
+	return c.GetByName(ctx, idOrName)
+}
+
 // FloatingIPListOpts specifies options for listing Floating IPs.
 type FloatingIPListOpts struct {
 	ListOpts
+	Name string
 }
 
 func (l FloatingIPListOpts) values() url.Values {
-	return l.ListOpts.values()
+	vals := l.ListOpts.values()
+	if l.Name != "" {
+		vals.Add("name", l.Name)
+	}
+	return vals
 }
 
 // List returns a list of Floating IPs for a specific page.
@@ -103,7 +128,7 @@ func (c *FloatingIPClient) List(ctx context.Context, opts FloatingIPListOpts) ([
 
 // All returns all Floating IPs.
 func (c *FloatingIPClient) All(ctx context.Context) ([]*FloatingIP, error) {
-	return c.AllWithOpts(ctx, FloatingIPListOpts{ListOpts{PerPage: 50}})
+	return c.AllWithOpts(ctx, FloatingIPListOpts{ListOpts: ListOpts{PerPage: 50}})
 }
 
 // AllWithOpts returns all Floating IPs for the given options.
@@ -132,6 +157,7 @@ type FloatingIPCreateOpts struct {
 	HomeLocation *Location
 	Server       *Server
 	Description  *string
+	Name         *string
 	Labels       map[string]string
 }
 
@@ -164,6 +190,7 @@ func (c *FloatingIPClient) Create(ctx context.Context, opts FloatingIPCreateOpts
 	reqBody := schema.FloatingIPCreateRequest{
 		Type:        string(opts.Type),
 		Description: opts.Description,
+		Name:        opts.Name,
 	}
 	if opts.HomeLocation != nil {
 		reqBody.HomeLocation = String(opts.HomeLocation.Name)
@@ -212,12 +239,14 @@ func (c *FloatingIPClient) Delete(ctx context.Context, floatingIP *FloatingIP) (
 type FloatingIPUpdateOpts struct {
 	Description string
 	Labels      map[string]string
+	Name        string
 }
 
 // Update updates a Floating IP.
 func (c *FloatingIPClient) Update(ctx context.Context, floatingIP *FloatingIP, opts FloatingIPUpdateOpts) (*FloatingIP, *Response, error) {
 	reqBody := schema.FloatingIPUpdateRequest{
 		Description: opts.Description,
+		Name:        opts.Name,
 	}
 	if opts.Labels != nil {
 		reqBody.Labels = &opts.Labels
