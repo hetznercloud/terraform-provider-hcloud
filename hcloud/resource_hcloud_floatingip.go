@@ -25,6 +25,11 @@ func resourceFloatingIP() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
+			"name": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Computed: true,
+			},
 			"description": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -64,7 +69,9 @@ func resourceFloatingIPCreate(d *schema.ResourceData, m interface{}) error {
 		Type:        hcloud.FloatingIPType(d.Get("type").(string)),
 		Description: hcloud.String(d.Get("description").(string)),
 	}
-
+	if name, ok := d.GetOk("name"); ok {
+		opts.Name = hcloud.String(name.(string))
+	}
 	if serverID, ok := d.GetOk("server_id"); ok {
 		opts.Server = &hcloud.Server{ID: serverID.(int)}
 	}
@@ -146,6 +153,20 @@ func resourceFloatingIPUpdate(d *schema.ResourceData, m interface{}) error {
 			return err
 		}
 		d.SetPartial("description")
+	}
+
+	if d.HasChange("name") {
+		name := d.Get("name").(string)
+		_, _, err := client.FloatingIP.Update(ctx, floatingIP, hcloud.FloatingIPUpdateOpts{
+			Name: name,
+		})
+		if err != nil {
+			if resourceFloatingIPIsNotFound(err, d) {
+				return nil
+			}
+			return err
+		}
+		d.SetPartial("name")
 	}
 
 	if d.HasChange("server_id") {
@@ -230,6 +251,7 @@ func resourceFloatingIPIsNotFound(err error, d *schema.ResourceData) bool {
 func setFloatingIPSchema(d *schema.ResourceData, f *hcloud.FloatingIP) {
 	d.SetId(strconv.Itoa(f.ID))
 	d.Set("ip_address", f.IP.String())
+	d.Set("name", f.Name)
 	if f.Type == hcloud.FloatingIPTypeIPv6 {
 		d.Set("ip_network", f.Network.String())
 	}

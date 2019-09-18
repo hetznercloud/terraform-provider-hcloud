@@ -34,6 +34,8 @@ func TestAccHcloudDataSourceFloatingIP(t *testing.T) {
 						"data.hcloud_floating_ip.ip_1", "home_location", "fsn1"),
 					resource.TestCheckResourceAttr(
 						"data.hcloud_floating_ip.ip_1", "description", fmt.Sprintf("Hashi-Test-%d", rInt)),
+					resource.TestCheckResourceAttr(
+						"data.hcloud_floating_ip.ip_1", "name", fmt.Sprintf("Hashi-Test-%d", rInt)),
 
 					resource.TestCheckResourceAttr(
 						"data.hcloud_floating_ip.ip_2", "type", "ipv4"),
@@ -41,6 +43,8 @@ func TestAccHcloudDataSourceFloatingIP(t *testing.T) {
 						"data.hcloud_floating_ip.ip_2", "home_location", "fsn1"),
 					resource.TestCheckResourceAttr(
 						"data.hcloud_floating_ip.ip_2", "description", fmt.Sprintf("Hashi-Test-%d", rInt)),
+					resource.TestCheckResourceAttr(
+						"data.hcloud_floating_ip.ip_2", "name", fmt.Sprintf("Hashi-Test-%d", rInt)),
 
 					resource.TestCheckResourceAttr(
 						"data.hcloud_floating_ip.ip_3", "type", "ipv4"),
@@ -48,6 +52,8 @@ func TestAccHcloudDataSourceFloatingIP(t *testing.T) {
 						"data.hcloud_floating_ip.ip_3", "home_location", "fsn1"),
 					resource.TestCheckResourceAttr(
 						"data.hcloud_floating_ip.ip_3", "description", fmt.Sprintf("Hashi-Test-%d", rInt)),
+					resource.TestCheckResourceAttr(
+						"data.hcloud_floating_ip.ip_3", "name", fmt.Sprintf("Hashi-Test-%d", rInt)),
 				),
 			},
 		},
@@ -66,6 +72,7 @@ variable "labels" {
 }
 resource "hcloud_floating_ip" "floating_ip" {
   type      = "ipv4"
+  name      = "Hashi-Test-%d"
   home_location = "fsn1"
   description = "Hashi-Test-%d"
   labels  = "${var.labels}"
@@ -79,7 +86,7 @@ data "hcloud_floating_ip" "ip_2" {
 data "hcloud_floating_ip" "ip_3" {
   with_selector =  "key=${hcloud_floating_ip.floating_ip.labels["key"]}"
 }
-`, rInt, rInt)
+`, rInt, rInt, rInt)
 }
 
 func testDataSourceCleanup() {
