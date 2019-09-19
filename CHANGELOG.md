@@ -9,6 +9,7 @@ NOTES:
 
 * This release is Terraform 0.12.9+ compatible. 
 * Updated hcloud-go to `v1.16.0`
+* The provider is now tested and build with  Go `1.13`
 
 ## 1.12.0 (July 29, 2019)
 
