@@ -36,6 +36,8 @@ func TestAccHcloudFloatingIP_AssignAndUpdateDescription(t *testing.T) {
 						"hcloud_floating_ip.floating_ip", "home_location", "fsn1"),
 					resource.TestCheckResourceAttr(
 						"hcloud_floating_ip.floating_ip", "description", "test"),
+					resource.TestCheckResourceAttr(
+						"hcloud_floating_ip.floating_ip", "name", fmt.Sprintf("floating-ip-%d", rInt)),
 				),
 			},
 			{
@@ -46,6 +48,20 @@ func TestAccHcloudFloatingIP_AssignAndUpdateDescription(t *testing.T) {
 						"hcloud_floating_ip.floating_ip", "home_location", "fsn1"),
 					resource.TestCheckResourceAttr(
 						"hcloud_floating_ip.floating_ip", "description", "updated test"),
+					resource.TestCheckResourceAttr(
+						"hcloud_floating_ip.floating_ip", "name", fmt.Sprintf("floating-ip-%d", rInt)),
+				),
+			},
+			{
+				Config: testAccHcloudCheckFloatingIPConfig_updateName(rInt),
+				Check: resource.ComposeTestCheckFunc(
+					testAccHcloudCheckFloatingIPExists("hcloud_floating_ip.floating_ip", &floatingIP),
+					resource.TestCheckResourceAttr(
+						"hcloud_floating_ip.floating_ip", "home_location", "fsn1"),
+					resource.TestCheckResourceAttr(
+						"hcloud_floating_ip.floating_ip", "description", "updated test"),
+					resource.TestCheckResourceAttr(
+						"hcloud_floating_ip.floating_ip", "name", fmt.Sprintf("floating-ip-updated-%d", rInt)),
 				),
 			},
 		},
@@ -61,7 +77,7 @@ resource "hcloud_ssh_key" "floating_ip" {
 resource "hcloud_server" "floating_ip1" {
   name        = "floating-ip-1-%d"
   server_type = "cx11"
-	image       = "debian-9"
+  image       = "debian-9"
   datacenter  = "fsn1-dc14"
   ssh_keys    = ["${hcloud_ssh_key.floating_ip.id}"]
 }
@@ -69,8 +85,9 @@ resource "hcloud_server" "floating_ip1" {
 resource "hcloud_floating_ip" "floating_ip" {
   server_id   = "${hcloud_server.floating_ip1.id}"
   type        = "ipv4"
-	description = "test"
-}`, rInt, testAccSSHPublicKey, rInt)
+  description = "test"
+  name        = "floating-ip-%d"
+}`, rInt, testAccSSHPublicKey, rInt, rInt)
 }
 
 func testAccHcloudCheckFloatingIPConfig_updateDescription(rInt int) string {
@@ -82,7 +99,7 @@ resource "hcloud_ssh_key" "floating_ip" {
 resource "hcloud_server" "floating_ip1" {
   name        = "floating-ip-1-%d"
   server_type = "cx11"
-	image       = "debian-9"
+  image       = "debian-9"
   datacenter  = "fsn1-dc14"
   ssh_keys    = ["${hcloud_ssh_key.floating_ip.id}"]
 }
@@ -90,8 +107,31 @@ resource "hcloud_server" "floating_ip1" {
 resource "hcloud_floating_ip" "floating_ip" {
   server_id   = "${hcloud_server.floating_ip1.id}"
   type        = "ipv4"
-	description = "updated test"
-}`, rInt, testAccSSHPublicKey, rInt)
+  description = "updated test"
+  name        = "floating-ip-%d"
+}`, rInt, testAccSSHPublicKey, rInt, rInt)
+}
+
+func testAccHcloudCheckFloatingIPConfig_updateName(rInt int) string {
+	return fmt.Sprintf(`
+resource "hcloud_ssh_key" "floating_ip" {
+  name       = "floating-ip-%d"
+  public_key = "%s"
+}
+resource "hcloud_server" "floating_ip1" {
+  name        = "floating-ip-1-%d"
+  server_type = "cx11"
+  image       = "debian-9"
+  datacenter  = "fsn1-dc14"
+  ssh_keys    = ["${hcloud_ssh_key.floating_ip.id}"]
+}
+
+resource "hcloud_floating_ip" "floating_ip" {
+  server_id   = "${hcloud_server.floating_ip1.id}"
+  type        = "ipv4"
+  description = "updated test"
+  name        = "floating-ip-updated-%d"
+}`, rInt, testAccSSHPublicKey, rInt, rInt)
 }
 
 func testAccHcloudCheckFloatingIPDestroy(s *terraform.State) error {

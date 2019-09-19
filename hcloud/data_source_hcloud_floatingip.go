@@ -16,6 +16,10 @@ func dataSourceHcloudFloatingIP() *schema.Resource {
 				Type:     schema.TypeInt,
 				Optional: true,
 			},
+			"name": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 			"type": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -76,7 +80,17 @@ func dataSourceHcloudFloatingIPRead(d *schema.ResourceData, m interface{}) (err 
 		setFloatingIPSchema(d, f)
 		return
 	}
-
+	if name, ok := d.GetOk("name"); ok {
+		f, _, err = client.FloatingIP.GetByName(ctx, name.(string))
+		if err != nil {
+			return err
+		}
+		if f == nil {
+			return fmt.Errorf("no Floating IP found with name %s", name)
+		}
+		setFloatingIPSchema(d, f)
+		return
+	}
 	if ip, ok := d.GetOk("ip_address"); ok {
 		var allIPs []*hcloud.FloatingIP
 		allIPs, err = client.FloatingIP.All(ctx)
