@@ -5,7 +5,7 @@ sidebar_current: "docs-hcloud-datasource-ssh-key"
 description: |-
   Provides details about a specific Hetzner Cloud SSH Key.
 ---
-# Data Source: hcloud_sshkey
+# Data Source: hcloud_ssh_key
 Provides details about a Hetzner Cloud SSH Key.
 This resource is useful if you want to use a non-terraform managed SSH Key.
 ## Example Usage
