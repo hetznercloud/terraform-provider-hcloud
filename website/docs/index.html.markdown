@@ -16,7 +16,7 @@ Use the navigation to the left to read about the available resources.
 
 ```hcl
 # Set the variable value in *.tfvars file
-# or using -var="hcloud_token=..." CLI option
+# or using the -var="hcloud_token=..." CLI option
 variable "hcloud_token" {}
 
 # Configure the Hetzner Cloud Provider
