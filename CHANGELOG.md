@@ -1,7 +1,7 @@
 ## 1.14.0 (Unreleased)
 
 NOTES:
-* This release uses the Terraform Plugin SDK 1.0.0.
+* This release uses the Terraform Plugin SDK v1.1.0.
 
 ## 1.13.0 (September 19, 2019)
 
