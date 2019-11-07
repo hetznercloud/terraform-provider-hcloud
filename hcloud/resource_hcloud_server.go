@@ -8,6 +8,7 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
@@ -205,6 +206,7 @@ func resourceServerCreate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	if rescue, ok := d.GetOk("rescue"); ok {
+		time.Sleep(1 * time.Second)
 		if err := setRescue(ctx, client, res.Server, rescue.(string), opts.SSHKeys); err != nil {
 			return err
 		}
