@@ -8,6 +8,7 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
@@ -205,7 +206,7 @@ func resourceServerCreate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	if rescue, ok := d.GetOk("rescue"); ok {
-		if err := setRescue(ctx, client, res.Server, rescue.(string), opts.SSHKeys); err != nil {
+		if err := setRescue(ctx, client, res.Server, rescue.(string), opts.SSHKeys, 0); err != nil {
 			return err
 		}
 	}
@@ -331,7 +332,7 @@ func resourceServerUpdate(d *schema.ResourceData, m interface{}) error {
 		if err != nil {
 			return err
 		}
-		if err := setRescue(ctx, client, server, rescue, sshKeys); err != nil {
+		if err := setRescue(ctx, client, server, rescue, sshKeys, 0); err != nil {
 			return err
 		}
 	}
@@ -434,7 +435,7 @@ func setISO(ctx context.Context, client *hcloud.Client, server *hcloud.Server, i
 	return nil
 }
 
-func setRescue(ctx context.Context, client *hcloud.Client, server *hcloud.Server, rescue string, sshKeys []*hcloud.SSHKey) error {
+func setRescue(ctx context.Context, client *hcloud.Client, server *hcloud.Server, rescue string, sshKeys []*hcloud.SSHKey, retry int) error {
 	rescueChanged := false
 	if server.RescueEnabled {
 		rescueChanged = true
@@ -456,6 +457,12 @@ func setRescue(ctx context.Context, client *hcloud.Client, server *hcloud.Server
 			return err
 		}
 		if err := waitForServerAction(ctx, client, res.Action, server); err != nil {
+			if retry < 5 {
+				log.Printf("[INFO] server (%d) action enable_rescue failed, retrying...", server.ID)
+				time.Sleep(time.Duration(1+retry) * time.Second)
+				retry = retry + 1
+				return setRescue(ctx, client, server, rescue, sshKeys, retry)
+			}
 			return err
 		}
 	}
