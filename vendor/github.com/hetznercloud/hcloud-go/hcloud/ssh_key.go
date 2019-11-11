@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/url"
 	"strconv"
+	"time"
 
 	"github.com/hetznercloud/hcloud-go/hcloud/schema"
 )
@@ -19,6 +20,7 @@ type SSHKey struct {
 	Fingerprint string
 	PublicKey   string
 	Labels      map[string]string
+	Created     time.Time
 }
 
 // SSHKeyClient is a client for the SSH keys API.

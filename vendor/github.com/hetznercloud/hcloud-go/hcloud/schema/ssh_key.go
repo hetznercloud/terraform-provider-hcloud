@@ -1,5 +1,7 @@
 package schema
 
+import "time"
+
 // SSHKey defines the schema of a SSH key.
 type SSHKey struct {
 	ID          int               `json:"id"`
@@ -7,6 +9,7 @@ type SSHKey struct {
 	Fingerprint string            `json:"fingerprint"`
 	PublicKey   string            `json:"public_key"`
 	Labels      map[string]string `json:"labels"`
+	Created     time.Time         `json:"created"`
 }
 
 // SSHKeyCreateRequest defines the schema of the request
