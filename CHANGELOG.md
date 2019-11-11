@@ -1,4 +1,12 @@
-## 1.14.1 (Unreleased)
+## 1.15.0 (Unreleased)
+
+IMPROVEMENTS:
+
+* resources/hcloud_server: Add retry mechanism for enabling the rescue mode.
+
+NOTES:
+* This release uses Terraform Plugin SDK v1.3.0.
+
 ## 1.14.0 (October 01, 2019)
 
 NOTES:
