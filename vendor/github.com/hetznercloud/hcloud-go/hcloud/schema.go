@@ -256,6 +256,7 @@ func SSHKeyFromSchema(s schema.SSHKey) *SSHKey {
 		Name:        s.Name,
 		Fingerprint: s.Fingerprint,
 		PublicKey:   s.PublicKey,
+		Created:     s.Created,
 	}
 	sshKey.Labels = map[string]string{}
 	for key, value := range s.Labels {
