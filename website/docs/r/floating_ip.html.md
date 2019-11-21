@@ -28,6 +28,7 @@ resource "hcloud_floating_ip" "master" {
 ## Argument Reference
 
 - `type` - (Required, string) Type of the Floating IP. `ipv4` `ipv6`
+- `name` - (Optional, string) Name of the Floating IP.
 - `server_id` - (Optional, int) Server to assign the Floating IP to.
 - `home_location` - (Optional, string) Home location (routing is optimized for that location). Optional if server_id argument is passed.
 - `description` - (Optional, string) Description of the Floating IP.
@@ -37,6 +38,7 @@ resource "hcloud_floating_ip" "master" {
 
 - `id` - (int) Unique ID of the Floating IP.
 - `type` - (string) Type of the Floating IP.
+- `name` - (string) Name of the Floating IP.
 - `server_id` - (int) Server to assign the Floating IP is assigned to.
 - `home_location` - (string) Home location.
 - `description` - (string) Description of the Floating IP.
