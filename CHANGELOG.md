@@ -2,6 +2,7 @@
 
 BUG FIXES:
 * resource/hcloud_ssh_key: Fix panic when we update labels in SSH keys
+* resource/hcloud_server: Use first assigned `ipv6_address` as value instead of the network address. **Attention: This can be a breaking change**
 
 NOTES:
 * This release uses Terraform Plugin SDK v1.6.0.
