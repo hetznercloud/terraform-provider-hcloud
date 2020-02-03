@@ -1,3 +1,11 @@
+## 1.16.0 (Unreleased)
+
+BUG FIXES:
+* resource/hcloud_ssh_key: Fix panic when we update labels in SSH keys
+
+NOTES:
+* This release uses Terraform Plugin SDK v1.6.0.
+
 ## 1.15.0 (November 11, 2019)
 
 IMPROVEMENTS:
