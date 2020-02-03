@@ -133,7 +133,10 @@ func resourceSSHKeyUpdate(d *schema.ResourceData, m interface{}) error {
 		d.SetPartial("name")
 	}
 	if d.HasChange("labels") {
-		labels := d.Get("labels").(map[string]string)
+		labels := make(map[string]string)
+		for k, v := range d.Get("labels").(map[string]interface{}) {
+			labels[k] = v.(string)
+		}
 		_, _, err := client.SSHKey.Update(ctx, &hcloud.SSHKey{ID: sshKeyID}, hcloud.SSHKeyUpdateOpts{
 			Labels: labels,
 		})
