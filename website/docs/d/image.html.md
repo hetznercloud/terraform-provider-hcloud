@@ -33,7 +33,7 @@ resource "hcloud_server" "main" {
 
 ## Attributes Reference
 - `id` - (int) Unique ID of the Image.
-- `name` - (string) Name of the Image.
+- `name` - (string) Name of the Image, only present when the Image is of type `system`.
 - `type` - (string) Type of the Image, could be `system`, `backup` or `snapshot`.
 - `status` - (string) Status of the Image.
 - `description` - (string) Description of the Image.
