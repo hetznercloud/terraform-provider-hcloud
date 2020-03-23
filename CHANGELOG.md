@@ -2,7 +2,7 @@
 
 BUG FIXES:
 * resource/hcloud_ssh_key: Fix panic when we update labels in SSH keys
-* resource/hcloud_server_network: Fix alias ips where ignored on creation of server network
+* resource/hcloud_server_network: Fix alias ips ignored on creation of server network
 
 NOTES:
 * This release uses Terraform Plugin SDK v1.7.0.
