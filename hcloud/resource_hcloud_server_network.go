@@ -66,7 +66,10 @@ func resourceServerNetworkCreate(d *schema.ResourceData, m interface{}) error {
 		Network: network,
 		IP:      ip,
 	}
-
+	for _, aliasIP := range d.Get("alias_ips").([]interface{}) {
+		ip := net.ParseIP(aliasIP.(string))
+		opts.AliasIPs = append(opts.AliasIPs, ip)
+	}
 	action, _, err := client.Server.AttachToNetwork(ctx, server, opts)
 	if err != nil {
 		if hcloud.IsError(err, hcloud.ErrorCodeConflict) {
@@ -185,7 +188,7 @@ func resourceServerNetworkDelete(d *schema.ResourceData, m interface{}) error {
 	})
 	if err != nil {
 		if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
-			// network route has already been deleted
+			// network has already been deleted
 			return nil
 		} else if hcloud.IsError(err, hcloud.ErrorCodeConflict) {
 			log.Printf("[INFO] Network (%v) conflict, retrying in one second", network.ID)
@@ -202,6 +205,7 @@ func resourceServerNetworkDelete(d *schema.ResourceData, m interface{}) error {
 	if err := waitForNetworkAction(ctx, client, action, network); err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -211,6 +215,12 @@ func setServerNetworkSchema(d *schema.ResourceData, server *hcloud.Server, netwo
 	var ips []string
 	for _, ip := range serverPrivateNet.Aliases {
 		ips = append(ips, ip.String())
+	}
+	// We need to invert the IPs slice because of a bug? within the API.
+	// The API responds with the alias IPs in the inverse order of creation.
+	for i := len(ips)/2 - 1; i >= 0; i-- {
+		opp := len(ips) - 1 - i
+		ips[i], ips[opp] = ips[opp], ips[i]
 	}
 	d.Set("alias_ips", ips)
 	d.Set("mac_address", serverPrivateNet.MACAddress)
