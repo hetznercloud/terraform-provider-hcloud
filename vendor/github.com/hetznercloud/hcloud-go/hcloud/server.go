@@ -820,6 +820,33 @@ func (c *ServerClient) ChangeProtection(ctx context.Context, server *Server, opt
 	return ActionFromSchema(respBody.Action), resp, err
 }
 
+// ServerRequestConsoleResult is the result of requesting a WebSocket VNC console.
+type ServerRequestConsoleResult struct {
+	Action   *Action
+	WSSURL   string
+	Password string
+}
+
+// RequestConsole requests a WebSocket VNC console.
+func (c *ServerClient) RequestConsole(ctx context.Context, server *Server) (ServerRequestConsoleResult, *Response, error) {
+	path := fmt.Sprintf("/servers/%d/actions/request_console", server.ID)
+	req, err := c.client.NewRequest(ctx, "POST", path, nil)
+	if err != nil {
+		return ServerRequestConsoleResult{}, nil, err
+	}
+
+	respBody := schema.ServerActionRequestConsoleResponse{}
+	resp, err := c.client.Do(req, &respBody)
+	if err != nil {
+		return ServerRequestConsoleResult{}, resp, err
+	}
+	return ServerRequestConsoleResult{
+		Action:   ActionFromSchema(respBody.Action),
+		WSSURL:   respBody.WSSURL,
+		Password: respBody.Password,
+	}, resp, nil
+}
+
 // ServerAttachToNetworkOpts specifies options for attaching a server to a network.
 type ServerAttachToNetworkOpts struct {
 	Network  *Network

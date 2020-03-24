@@ -27,6 +27,7 @@ type NetworkSubnetType string
 
 // List of available network subnet types.
 const (
+	NetworkSubnetTypeCloud  NetworkSubnetType = "cloud"
 	NetworkSubnetTypeServer NetworkSubnetType = "server"
 )
 

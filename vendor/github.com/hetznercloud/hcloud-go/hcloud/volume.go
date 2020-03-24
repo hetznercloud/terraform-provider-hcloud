@@ -17,6 +17,7 @@ import (
 type Volume struct {
 	ID          int
 	Name        string
+	Status      VolumeStatus
 	Server      *Server
 	Location    *Location
 	Size        int

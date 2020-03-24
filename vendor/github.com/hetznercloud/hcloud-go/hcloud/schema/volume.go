@@ -7,6 +7,7 @@ type Volume struct {
 	ID          int               `json:"id"`
 	Name        string            `json:"name"`
 	Server      *int              `json:"server"`
+	Status      string            `json:"status"`
 	Location    Location          `json:"location"`
 	Size        int               `json:"size"`
 	Protection  VolumeProtection  `json:"protection"`

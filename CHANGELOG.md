@@ -1,6 +1,14 @@
 ## 1.17.0 (Unreleased)
 
+FEATURES:
+
+* **New Datasource**: `hcloud_load_balancer`
+* **New Resource**: `hcloud_load_balancer`
+* **New Resource**: `hcloud_load_balancer_service`
+* **New Resource**: `hcloud_load_balancer_network`
+
 BUG FIXES:
+
 * resources/hcloud_network_route: Fix panic when trying to lookup an already deleted Network route
 
 ## 1.16.0 (March 24, 2020)
@@ -36,7 +44,7 @@ IMPROVEMENTS:
 
 NOTES:
 
-* This release is Terraform 0.12.9+ compatible. 
+* This release is Terraform 0.12.9+ compatible.
 * Updated hcloud-go to `v1.16.0`
 * The provider is now tested and build with  Go `1.13`
 
@@ -56,7 +64,7 @@ BUG FIXES:
 
 NOTES:
 
-* This release is Terraform 0.12.5+ compatible. 
+* This release is Terraform 0.12.5+ compatible.
 * Updated hcloud-go to `v1.15.1`
 * Added hcloud-go request debugging when using `TF_LOG`.
 
@@ -73,7 +81,7 @@ FEATURES:
 ## 1.10.0 (May 14, 2019)
 
 NOTES:
-* This release is Terraform 0.12-RC1+ compatible. 
+* This release is Terraform 0.12-RC1+ compatible.
 
 ## 1.9.0 (March 15, 2019)
 
@@ -97,7 +105,7 @@ NOTES:
 
 BUG FIXES:
 * Fix an error on server creation, when a image id was given instead of a image name.
-* Fix an missing error on `terraform plan`, when using an image name which does not exists. 
+* Fix an missing error on `terraform plan`, when using an image name which does not exists.
 
 ## 1.8.0 (February 06, 2019)
 
