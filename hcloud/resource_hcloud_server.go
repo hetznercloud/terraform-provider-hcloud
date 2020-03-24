@@ -513,7 +513,7 @@ func setServerSchema(d *schema.ResourceData, s *hcloud.Server) {
 	d.Set("status", s.Status)
 	d.Set("server_type", s.ServerType.Name)
 	d.Set("ipv4_address", s.PublicNet.IPv4.IP.String())
-	d.Set("ipv6_address", s.PublicNet.IPv6.IP.String())
+	d.Set("ipv6_address", s.PublicNet.IPv6.IP.String()+"1")
 	d.Set("ipv6_network", s.PublicNet.IPv6.Network.String())
 	d.Set("backup_window", s.BackupWindow)
 	d.Set("backups", s.BackupWindow != "")
