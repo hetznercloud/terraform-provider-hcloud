@@ -1,4 +1,4 @@
-## 1.16.0 (Unreleased)
+## 1.16.0 (March 24, 2020)
 
 BUG FIXES:
 * resource/hcloud_ssh_key: Fix panic when we update labels in SSH keys
