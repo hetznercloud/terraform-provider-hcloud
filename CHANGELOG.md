@@ -5,7 +5,7 @@ BUG FIXES:
 * resource/hcloud_server_network: Fix alias ips ignored on creation of server network
 
 NOTES:
-* This release uses Terraform Plugin SDK v1.7.0.
+* This release uses Terraform Plugin SDK v1.8.0.
 
 ## 1.15.0 (November 11, 2019)
 
