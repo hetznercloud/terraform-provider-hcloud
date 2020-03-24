@@ -43,6 +43,8 @@ func TestAccHcloudServerNetwork(t *testing.T) {
 					testAccHcloudCheckServerNetworkAttributes(&srvNet),
 					resource.TestCheckResourceAttr(
 						"hcloud_server_network.srvnetwork", "ip", "10.0.1.5"),
+					resource.TestCheckResourceAttr(
+						"hcloud_server_network.srvnetwork", "alias_ips.#", "2"),
 				),
 			},
 		},
@@ -70,6 +72,7 @@ resource "hcloud_server_network" "srvnetwork" {
   server_id = "${hcloud_server.foo.id}"
   network_id = "${hcloud_network.foobar_network.id}"
   ip = "10.0.1.5"
+  alias_ips = ["10.0.1.201","10.0.1.200"]
 }
 `, rInt, rInt)
 }
