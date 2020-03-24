@@ -216,6 +216,8 @@ func setServerNetworkSchema(d *schema.ResourceData, server *hcloud.Server, netwo
 	for _, ip := range serverPrivateNet.Aliases {
 		ips = append(ips, ip.String())
 	}
+	// We need to invert the IPs slice because of a bug? within the API.
+	// The API responds with the alias IPs in the inverse order of creation.
 	for i := len(ips)/2 - 1; i >= 0; i-- {
 		opp := len(ips) - 1 - i
 		ips[i], ips[opp] = ips[opp], ips[i]
