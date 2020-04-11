@@ -188,5 +188,6 @@ func lookupNetworkRouteID(ctx context.Context, terraformID string, client *hclou
 			return
 		}
 	}
+	err = errInvalidNetworkRouteID
 	return
 }
