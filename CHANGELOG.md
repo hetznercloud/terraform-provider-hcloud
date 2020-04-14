@@ -1,4 +1,8 @@
 ## 1.17.0 (Unreleased)
+
+BUG FIXES:
+* resources/hcloud_network_route: Fix panic when trying to lookup an already deleted Network route
+
 ## 1.16.0 (March 24, 2020)
 
 BUG FIXES:
