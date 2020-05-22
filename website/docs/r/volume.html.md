@@ -31,7 +31,7 @@ resource "hcloud_volume" "master" {
 
 - `name` - (Required, string) Name of the volume to create (must be unique per project).
 - `size` - (Required, int) Size of the volume (in GB).
-- `server` - (Optional, int) Server to attach the Volume to, optional if location argument is passed.
+- `server_id` - (Optional, int) Server to attach the Volume to, optional if location argument is passed.
 - `location` - (Optional, string) Location of the volume to create, optional if server_id argument is passed.
 - `automount` - (Optional, bool) Automount the volume upon attaching it (server_id must be provided).
 - `format` - (Optional, string) Format volume after creation. `xfs` or `ext4`
