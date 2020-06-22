@@ -8,11 +8,12 @@ import (
 
 // Pricing specifies pricing information for various resources.
 type Pricing struct {
-	Image        ImagePricing
-	FloatingIP   FloatingIPPricing
-	Traffic      TrafficPricing
-	ServerBackup ServerBackupPricing
-	ServerTypes  []ServerTypePricing
+	Image             ImagePricing
+	FloatingIP        FloatingIPPricing
+	Traffic           TrafficPricing
+	ServerBackup      ServerBackupPricing
+	ServerTypes       []ServerTypePricing
+	LoadBalancerTypes []LoadBalancerTypePricing
 }
 
 // Price represents a price. Net amount, gross amount, as well as VAT rate are
@@ -54,6 +55,20 @@ type ServerTypePricing struct {
 // ServerTypeLocationPricing provides pricing information for a server type
 // at a location.
 type ServerTypeLocationPricing struct {
+	Location *Location
+	Hourly   Price
+	Monthly  Price
+}
+
+// LoadBalancerTypePricing provides pricing information for a Load Balancer type.
+type LoadBalancerTypePricing struct {
+	LoadBalancerType *LoadBalancerType
+	Pricings         []LoadBalancerTypeLocationPricing
+}
+
+// LoadBalancerTypeLocationPricing provides pricing information for a Load Balancer type
+// at a location.
+type LoadBalancerTypeLocationPricing struct {
 	Location *Location
 	Hourly   Price
 	Monthly  Price

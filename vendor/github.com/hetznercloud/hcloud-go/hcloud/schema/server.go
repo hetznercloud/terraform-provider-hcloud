@@ -314,6 +314,18 @@ type ServerActionChangeProtectionResponse struct {
 	Action Action `json:"action"`
 }
 
+// ServerActionRequestConsoleRequest defines the schema of the request to
+// request a WebSocket VNC console.
+type ServerActionRequestConsoleRequest struct{}
+
+// ServerActionRequestConsoleResponse defines the schema of the response when
+// requesting a WebSocket VNC console.
+type ServerActionRequestConsoleResponse struct {
+	Action   Action `json:"action"`
+	WSSURL   string `json:"wss_url"`
+	Password string `json:"password"`
+}
+
 // ServerActionAttachToNetworkRequest defines the schema for the request to
 // attach a network to a server.
 type ServerActionAttachToNetworkRequest struct {

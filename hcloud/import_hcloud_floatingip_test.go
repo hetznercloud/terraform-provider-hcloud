@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 )
 
-func TestAccHcloudFloatingIP_importServer(t *testing.T) {
+func TestAccHcloudFloatingIP_importFloatingIP(t *testing.T) {
 	resourceName := "hcloud_floating_ip.floating_ip"
 	rInt := acctest.RandInt()
 

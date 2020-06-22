@@ -58,18 +58,21 @@ type Client struct {
 	userAgent          string
 	debugWriter        io.Writer
 
-	Action     ActionClient
-	Datacenter DatacenterClient
-	FloatingIP FloatingIPClient
-	Image      ImageClient
-	ISO        ISOClient
-	Location   LocationClient
-	Network    NetworkClient
-	Pricing    PricingClient
-	Server     ServerClient
-	ServerType ServerTypeClient
-	SSHKey     SSHKeyClient
-	Volume     VolumeClient
+	Action           ActionClient
+	Certificate      CertificateClient
+	Datacenter       DatacenterClient
+	FloatingIP       FloatingIPClient
+	Image            ImageClient
+	ISO              ISOClient
+	LoadBalancer     LoadBalancerClient
+	LoadBalancerType LoadBalancerTypeClient
+	Location         LocationClient
+	Network          NetworkClient
+	Pricing          PricingClient
+	Server           ServerClient
+	ServerType       ServerTypeClient
+	SSHKey           SSHKeyClient
+	Volume           VolumeClient
 }
 
 // A ClientOption is used to configure a Client.
@@ -122,6 +125,13 @@ func WithDebugWriter(debugWriter io.Writer) ClientOption {
 	}
 }
 
+// WithHTTPClient configures a Client to perform HTTP requests with httpClient.
+func WithHTTPClient(httpClient *http.Client) ClientOption {
+	return func(client *Client) {
+		client.httpClient = httpClient
+	}
+}
+
 // NewClient creates a new client.
 func NewClient(options ...ClientOption) *Client {
 	client := &Client{
@@ -149,6 +159,9 @@ func NewClient(options ...ClientOption) *Client {
 	client.ServerType = ServerTypeClient{client: client}
 	client.SSHKey = SSHKeyClient{client: client}
 	client.Volume = VolumeClient{client: client}
+	client.LoadBalancer = LoadBalancerClient{client: client}
+	client.LoadBalancerType = LoadBalancerTypeClient{client: client}
+	client.Certificate = CertificateClient{client: client}
 
 	return client
 }
@@ -174,6 +187,14 @@ func (c *Client) NewRequest(ctx context.Context, method, path string, body io.Re
 func (c *Client) Do(r *http.Request, v interface{}) (*Response, error) {
 	var retries int
 	for {
+		if c.debugWriter != nil {
+			// To get the response body we need to read it before the request was actually send. https://github.com/golang/go/issues/29792
+			dumpReq, err := httputil.DumpRequest(r, true)
+			if err != nil {
+				return nil, err
+			}
+			fmt.Fprintf(c.debugWriter, "--- Request:\n%s\n\n", dumpReq)
+		}
 		resp, err := c.httpClient.Do(r)
 		if err != nil {
 			return nil, err
@@ -188,12 +209,6 @@ func (c *Client) Do(r *http.Request, v interface{}) (*Response, error) {
 		resp.Body = ioutil.NopCloser(bytes.NewReader(body))
 
 		if c.debugWriter != nil {
-			dumpReq, err := httputil.DumpRequest(r, true)
-			if err != nil {
-				return nil, err
-			}
-			fmt.Fprintf(c.debugWriter, "--- Request:\n%s\n\n", dumpReq)
-
 			dumpResp, err := httputil.DumpResponse(resp, true)
 			if err != nil {
 				return nil, err
