@@ -50,6 +50,7 @@ func Provider() terraform.ResourceProvider {
 			"hcloud_load_balancer":          resourceLoadBalancer(),
 			"hcloud_load_balancer_service":  resourceLoadBalancerService(),
 			"hcloud_load_balancer_network":  resourceLoadBalancerNetwork(),
+			"hcloud_load_balancer_target":   resourceLoadBalancerTarget(),
 			"hcloud_certificate":            resourceCertificate(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{

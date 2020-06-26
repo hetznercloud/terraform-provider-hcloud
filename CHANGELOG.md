@@ -1,4 +1,13 @@
 ## 1.18.0 (Unreleased)
+
+FEATURES:
+
+* **New Resource**: `hcloud_load_balancer_target` which allows to add a
+  target to a load balancer. This resource extends the `target` property
+  of the `hcloud_load_balancer` resource.  `hcloud_load_balancer_target`
+  should be preferred over the `target` property of
+  `hcloud_load_balancer`.
+
 ## 1.17.0 (June 22, 2020)
 
 FEATURES:

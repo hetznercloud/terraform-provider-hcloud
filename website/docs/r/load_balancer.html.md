@@ -44,9 +44,8 @@ resource "hcloud_load_balancer" "load_balancer" {
 - `type` - (Required, string) Type of the Load Balancer Algorithm. `round_robin` or `least_connections`
 
 `target` support the following fields:
-- `type` - (Required, string) Type of the target. `server` or `label_selector`
+- `type` - (Required, string) Type of the target. `server`
 - `server_id` - (Optional, int) ID of the server which should be a target for this Load Balancer. Required if `type` is `server`
-- `label_selector` - (Optional, string) Label Selector to add a group of resources based on the label. Required if `type` is `label_selector`
 
 
 ## Attributes Reference
@@ -65,10 +64,10 @@ resource "hcloud_load_balancer" "load_balancer" {
 `algorithm` support the following fields:
 - `type` - (string) Type of the Load Balancer Algorithm. `round_robin` or `least_connection`
 
-`target` support the following fields:
-- `type` - (string) Type of the target. `server` or `label_selector`
+`target` supports the following fields, which are a restricted sub-set
+of the fields supported by `hcloud_load_balancer_target`:
+- `type` - (string) Type of the target. `server`
 - `server_id` - (int) ID of the server which should be a target for this Load Balancer.
-- `label_selector` - (string) Label Selector to add a group of resources based on the label.
 
 ## Import
 
