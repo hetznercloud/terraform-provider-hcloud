@@ -63,12 +63,11 @@ func resourceLoadBalancerNetworkCreate(d *schema.ResourceData, m interface{}) er
 	}
 	action, _, err := client.LoadBalancer.AttachToNetwork(ctx, loadBalancer, opts)
 	if err != nil {
-		if hcloud.IsError(err, hcloud.ErrorCodeConflict) {
-			log.Printf("[INFO] Network (%v) conflict, retrying in one second", network.ID)
-			time.Sleep(time.Second)
-			return resourceLoadBalancerNetworkCreate(d, m)
-		} else if hcloud.IsError(err, hcloud.ErrorCodeLocked) {
-			log.Printf("[INFO] Network (%v) locked, retrying in one second", network.ID)
+		if hcloud.IsError(err, hcloud.ErrorCodeConflict) ||
+			hcloud.IsError(err, hcloud.ErrorCodeLocked) ||
+			hcloud.IsError(err, hcloud.ErrorCodeServiceError) {
+			hcErr := err.(hcloud.Error)
+			log.Printf("[INFO] Network (%v) %s, retrying in one second", network.ID, hcErr.Code)
 			time.Sleep(time.Second)
 			return resourceLoadBalancerNetworkCreate(d, m)
 		} else if string(err.(hcloud.Error).Code) == "load_balancer_already_attached" { // TODO: Change to correct error code and hcloud.IsError with next hcloud-go release

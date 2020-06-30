@@ -99,9 +99,10 @@ func resourceLoadBalancer() *schema.Resource {
 							Optional: true,
 						},
 						"use_private_ip": {
-							Type:     schema.TypeBool,
-							Optional: true,
-							Default:  false,
+							Type:       schema.TypeBool,
+							Optional:   true,
+							Default:    false,
+							Deprecated: "Does not work. Use the hcloud_load_balancer_target resource instead.",
 						},
 					},
 				},
@@ -371,8 +372,7 @@ func parseTerraformTarget(tfTargets []interface{}) (opts []hcloud.LoadBalancerCr
 	for _, _tfTarget := range tfTargets {
 		tfTarget := _tfTarget.(map[string]interface{})
 		opt := hcloud.LoadBalancerCreateOptsTarget{
-			Type:         hcloud.LoadBalancerTargetType(tfTarget["type"].(string)),
-			UsePrivateIP: hcloud.Bool(tfTarget["use_private_ip"].(bool)),
+			Type: hcloud.LoadBalancerTargetType(tfTarget["type"].(string)),
 		}
 		if serverID, ok := tfTarget["server_id"]; ok {
 			opt.Server = hcloud.LoadBalancerCreateOptsTargetServer{Server: &hcloud.Server{ID: serverID.(int)}}
