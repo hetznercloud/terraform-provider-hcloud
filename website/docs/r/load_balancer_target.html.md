@@ -39,7 +39,7 @@ resource "hcloud_load_balancer_target" "load_balancer_target" {
   the target gets attached.
 - `server_id` - (Optional, int) ID of the server which should be a
   target for this Load Balancer. Required if `type` is `server`
-- `use_private_ip` - (Optional, string) use the private IP to connect to
+- `use_private_ip` - (Optional, bool) use the private IP to connect to
   Load Balancer targets.
 
 ## Attributes Reference
@@ -47,5 +47,5 @@ resource "hcloud_load_balancer_target" "load_balancer_target" {
 - `type` - (string) Type of the target. `server`
 - `server_id` - (int) ID of the server which should be a target for this
   Load Balancer.
-- `use_private_ip` - (string) use the private IP to connect to Load
+- `use_private_ip` - (bool) use the private IP to connect to Load
   Balancer targets.
