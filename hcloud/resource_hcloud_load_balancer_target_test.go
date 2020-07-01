@@ -117,6 +117,8 @@ resource "hcloud_load_balancer_target" "lb_test_target" {
 	load_balancer_id = "${hcloud_load_balancer.target_test_lb.id}"
 	server_id        = "${hcloud_server.lb_server_target.id}"
 	use_private_ip   = true
+
+	depends_on = [ hcloud_load_balancer_network.target_test_lb_network ]
 }
 	`, rInt, rInt, rInt)
 }
