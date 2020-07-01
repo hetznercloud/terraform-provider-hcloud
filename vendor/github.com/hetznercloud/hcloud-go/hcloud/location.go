@@ -46,6 +46,9 @@ func (c *LocationClient) GetByID(ctx context.Context, id int) (*Location, *Respo
 
 // GetByName retrieves an location by its name. If the location does not exist, nil is returned.
 func (c *LocationClient) GetByName(ctx context.Context, name string) (*Location, *Response, error) {
+	if name == "" {
+		return nil, nil, nil
+	}
 	locations, response, err := c.List(ctx, LocationListOpts{Name: name})
 	if len(locations) == 0 {
 		return nil, response, err
@@ -77,6 +80,9 @@ func (l LocationListOpts) values() url.Values {
 }
 
 // List returns a list of locations for a specific page.
+//
+// Please note that filters specified in opts are not taken into account
+// when their value corresponds to their zero value or when they are empty.
 func (c *LocationClient) List(ctx context.Context, opts LocationListOpts) ([]*Location, *Response, error) {
 	path := "/locations?" + opts.values().Encode()
 	req, err := c.client.NewRequest(ctx, "GET", path, nil)

@@ -51,6 +51,9 @@ func (c *CertificateClient) GetByID(ctx context.Context, id int) (*Certificate, 
 
 // GetByName retrieves a Certificate by its name. If the Certificate does not exist, nil is returned.
 func (c *CertificateClient) GetByName(ctx context.Context, name string) (*Certificate, *Response, error) {
+	if name == "" {
+		return nil, nil, nil
+	}
 	Certificate, response, err := c.List(ctx, CertificateListOpts{Name: name})
 	if len(Certificate) == 0 {
 		return nil, response, err
@@ -82,6 +85,9 @@ func (l CertificateListOpts) values() url.Values {
 }
 
 // List returns a list of Certificates for a specific page.
+//
+// Please note that filters specified in opts are not taken into account
+// when their value corresponds to their zero value or when they are empty.
 func (c *CertificateClient) List(ctx context.Context, opts CertificateListOpts) ([]*Certificate, *Response, error) {
 	path := "/certificates?" + opts.values().Encode()
 	req, err := c.client.NewRequest(ctx, "GET", path, nil)

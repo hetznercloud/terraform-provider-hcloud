@@ -60,6 +60,9 @@ func (c *ISOClient) GetByID(ctx context.Context, id int) (*ISO, *Response, error
 
 // GetByName retrieves an ISO by its name.
 func (c *ISOClient) GetByName(ctx context.Context, name string) (*ISO, *Response, error) {
+	if name == "" {
+		return nil, nil, nil
+	}
 	isos, response, err := c.List(ctx, ISOListOpts{Name: name})
 	if len(isos) == 0 {
 		return nil, response, err
@@ -90,6 +93,9 @@ func (l ISOListOpts) values() url.Values {
 }
 
 // List returns a list of ISOs for a specific page.
+//
+// Please note that filters specified in opts are not taken into account
+// when their value corresponds to their zero value or when they are empty.
 func (c *ISOClient) List(ctx context.Context, opts ISOListOpts) ([]*ISO, *Response, error) {
 	path := "/isos?" + opts.values().Encode()
 	req, err := c.client.NewRequest(ctx, "GET", path, nil)

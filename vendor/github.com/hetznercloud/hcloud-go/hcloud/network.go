@@ -88,6 +88,9 @@ func (c *NetworkClient) GetByID(ctx context.Context, id int) (*Network, *Respons
 
 // GetByName retrieves a network by its name. If the network does not exist, nil is returned.
 func (c *NetworkClient) GetByName(ctx context.Context, name string) (*Network, *Response, error) {
+	if name == "" {
+		return nil, nil, nil
+	}
 	Networks, response, err := c.List(ctx, NetworkListOpts{Name: name})
 	if len(Networks) == 0 {
 		return nil, response, err
@@ -119,6 +122,9 @@ func (l NetworkListOpts) values() url.Values {
 }
 
 // List returns a list of networks for a specific page.
+//
+// Please note that filters specified in opts are not taken into account
+// when their value corresponds to their zero value or when they are empty.
 func (c *NetworkClient) List(ctx context.Context, opts NetworkListOpts) ([]*Network, *Response, error) {
 	path := "/networks?" + opts.values().Encode()
 	req, err := c.client.NewRequest(ctx, "GET", path, nil)

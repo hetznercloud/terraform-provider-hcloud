@@ -68,6 +68,9 @@ func (c *VolumeClient) GetByID(ctx context.Context, id int) (*Volume, *Response,
 
 // GetByName retrieves a volume by its name. If the volume does not exist, nil is returned.
 func (c *VolumeClient) GetByName(ctx context.Context, name string) (*Volume, *Response, error) {
+	if name == "" {
+		return nil, nil, nil
+	}
 	volumes, response, err := c.List(ctx, VolumeListOpts{Name: name})
 	if len(volumes) == 0 {
 		return nil, response, err
@@ -103,6 +106,9 @@ func (l VolumeListOpts) values() url.Values {
 }
 
 // List returns a list of volumes for a specific page.
+//
+// Please note that filters specified in opts are not taken into account
+// when their value corresponds to their zero value or when they are empty.
 func (c *VolumeClient) List(ctx context.Context, opts VolumeListOpts) ([]*Volume, *Response, error) {
 	path := "/volumes?" + opts.values().Encode()
 	req, err := c.client.NewRequest(ctx, "GET", path, nil)
