@@ -5,6 +5,7 @@ BUG FIXES
 * Set correct defaults for `cookie_name` and `cookie_lifetime`
   properties of `hcloud_load_balancer_service`.
 * Remove unsupported `https` protocol from health check documentation.
+* Force recreate of `hcloud_network` if `ip_range` changes
 
 ## 1.18.0 (June 30, 2020)
 
