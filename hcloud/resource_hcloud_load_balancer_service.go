@@ -385,10 +385,10 @@ func parseTFHTTP(tfHTTP []interface{}) *hcloud.LoadBalancerAddServiceOptsHTTP {
 	if stickySessions, ok := httpMap["sticky_sessions"]; ok {
 		http.StickySessions = hcloud.Bool(stickySessions.(bool))
 	}
-	if cookieName, ok := httpMap["cookie_name"]; ok {
+	if cookieName, ok := httpMap["cookie_name"]; ok && cookieName != "" {
 		http.CookieName = hcloud.String(cookieName.(string))
 	}
-	if cookieLifetime, ok := httpMap["cookie_lifetime"]; ok {
+	if cookieLifetime, ok := httpMap["cookie_lifetime"]; ok && cookieLifetime != 0 {
 		http.CookieLifetime = hcloud.Duration(time.Duration(cookieLifetime.(int)) * time.Second)
 	}
 

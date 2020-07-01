@@ -1,4 +1,11 @@
 ## 1.19.0 (Unreleased)
+
+BUG FIXES
+
+* Set correct defaults for `cookie_name` and `cookie_lifetime`
+  properties of `hcloud_load_balancer_service`.
+* Remove unsupported `https` protocol from health check documentation.
+
 ## 1.18.0 (June 30, 2020)
 
 FEATURES:
