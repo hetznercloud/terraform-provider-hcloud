@@ -193,6 +193,9 @@ func (c *LoadBalancerClient) GetByID(ctx context.Context, id int) (*LoadBalancer
 
 // GetByName retrieves a Load Balancer by its name. If the Load Balancer does not exist, nil is returned.
 func (c *LoadBalancerClient) GetByName(ctx context.Context, name string) (*LoadBalancer, *Response, error) {
+	if name == "" {
+		return nil, nil, nil
+	}
 	LoadBalancer, response, err := c.List(ctx, LoadBalancerListOpts{Name: name})
 	if len(LoadBalancer) == 0 {
 		return nil, response, err
@@ -224,6 +227,9 @@ func (l LoadBalancerListOpts) values() url.Values {
 }
 
 // List returns a list of Load Balancers for a specific page.
+//
+// Please note that filters specified in opts are not taken into account
+// when their value corresponds to their zero value or when they are empty.
 func (c *LoadBalancerClient) List(ctx context.Context, opts LoadBalancerListOpts) ([]*LoadBalancer, *Response, error) {
 	path := "/load_balancers?" + opts.values().Encode()
 	req, err := c.client.NewRequest(ctx, "GET", path, nil)

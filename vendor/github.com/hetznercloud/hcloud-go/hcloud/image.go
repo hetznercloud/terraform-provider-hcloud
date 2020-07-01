@@ -91,6 +91,9 @@ func (c *ImageClient) GetByID(ctx context.Context, id int) (*Image, *Response, e
 
 // GetByName retrieves an image by its name. If the image does not exist, nil is returned.
 func (c *ImageClient) GetByName(ctx context.Context, name string) (*Image, *Response, error) {
+	if name == "" {
+		return nil, nil, nil
+	}
 	images, response, err := c.List(ctx, ImageListOpts{Name: name})
 	if len(images) == 0 {
 		return nil, response, err
@@ -138,6 +141,9 @@ func (l ImageListOpts) values() url.Values {
 }
 
 // List returns a list of images for a specific page.
+//
+// Please note that filters specified in opts are not taken into account
+// when their value corresponds to their zero value or when they are empty.
 func (c *ImageClient) List(ctx context.Context, opts ImageListOpts) ([]*Image, *Response, error) {
 	path := "/images?" + opts.values().Encode()
 	req, err := c.client.NewRequest(ctx, "GET", path, nil)

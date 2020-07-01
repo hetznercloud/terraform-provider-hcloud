@@ -49,6 +49,9 @@ func (c *DatacenterClient) GetByID(ctx context.Context, id int) (*Datacenter, *R
 
 // GetByName retrieves an datacenter by its name. If the datacenter does not exist, nil is returned.
 func (c *DatacenterClient) GetByName(ctx context.Context, name string) (*Datacenter, *Response, error) {
+	if name == "" {
+		return nil, nil, nil
+	}
 	datacenters, response, err := c.List(ctx, DatacenterListOpts{Name: name})
 	if len(datacenters) == 0 {
 		return nil, response, err
@@ -80,6 +83,9 @@ func (l DatacenterListOpts) values() url.Values {
 }
 
 // List returns a list of datacenters for a specific page.
+//
+// Please note that filters specified in opts are not taken into account
+// when their value corresponds to their zero value or when they are empty.
 func (c *DatacenterClient) List(ctx context.Context, opts DatacenterListOpts) ([]*Datacenter, *Response, error) {
 	path := "/datacenters?" + opts.values().Encode()
 	req, err := c.client.NewRequest(ctx, "GET", path, nil)
