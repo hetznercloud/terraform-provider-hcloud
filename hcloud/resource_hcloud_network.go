@@ -28,6 +28,7 @@ func resourceNetwork() *schema.Resource {
 			"ip_range": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"labels": {
 				Type:     schema.TypeMap,
