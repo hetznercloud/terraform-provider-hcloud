@@ -2,6 +2,7 @@ package network
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -65,6 +66,11 @@ type RData struct {
 	Labels  map[string]string
 }
 
+// TFID returns the resource identifier.
+func (d *RData) TFID() string {
+	return fmt.Sprintf("%s.%s", ResourceType, d.Name)
+}
+
 // RDataSubnet defines the fields for the "testdata/r/hcloud_network_subnet"
 // template.
 type RDataSubnet struct {
@@ -75,4 +81,9 @@ type RDataSubnet struct {
 	NetworkID   string
 	NetworkZone string
 	IPRange     string
+}
+
+// TFID returns the resource identifier.
+func (d *RDataSubnet) TFID() string {
+	return fmt.Sprintf("%s.%s", SubnetResourceType, d.Name)
 }

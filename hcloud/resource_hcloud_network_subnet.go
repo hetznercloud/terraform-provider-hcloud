@@ -162,6 +162,28 @@ func generateNetworkSubnetID(network *hcloud.Network, ipRange string) string {
 	return fmt.Sprintf("%d-%s", network.ID, ipRange)
 }
 
+func parseNetworkSubnetID(s string) (int, *net.IPNet, error) {
+	if s == "" {
+		return 0, nil, errInvalidNetworkSubnetID
+	}
+	parts := strings.SplitN(s, "-", 2)
+	if len(parts) != 2 {
+		return 0, nil, errInvalidNetworkSubnetID
+	}
+
+	networkID, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return 0, nil, errInvalidNetworkSubnetID
+	}
+
+	_, ipRange, err := net.ParseCIDR(parts[1])
+	if ipRange == nil || err != nil {
+		return 0, nil, errInvalidNetworkSubnetID
+	}
+
+	return networkID, ipRange, nil
+}
+
 var errInvalidNetworkSubnetID = errors.New("invalid network subnet id")
 
 // lookupNetworkSubnetID parses the terraform network subnet record id and return the network and subnet
@@ -169,39 +191,22 @@ var errInvalidNetworkSubnetID = errors.New("invalid network subnet id")
 // id format: <network id>-<ip range>
 // Examples:
 // 123-192.168.100.1/32 (network subnet of network 123 with the ip range 192.168.100.1/32)
-func lookupNetworkSubnetID(ctx context.Context, terraformID string, client *hcloud.Client) (network *hcloud.Network, subnet hcloud.NetworkSubnet, err error) {
-	if terraformID == "" {
-		err = errInvalidNetworkSubnetID
-		return
-	}
-	parts := strings.SplitN(terraformID, "-", 2)
-	if len(parts) != 2 {
-		err = errInvalidNetworkSubnetID
-		return
-	}
-
-	networkID, err := strconv.Atoi(parts[0])
+func lookupNetworkSubnetID(ctx context.Context, terraformID string, client *hcloud.Client) (*hcloud.Network, hcloud.NetworkSubnet, error) {
+	networkID, ipRange, err := parseNetworkSubnetID(terraformID)
 	if err != nil {
-		err = errInvalidNetworkSubnetID
-		return
+		return nil, hcloud.NetworkSubnet{}, err
 	}
-
-	_, ipRange, err := net.ParseCIDR(parts[1])
-	if ipRange == nil || err != nil {
-		err = errInvalidNetworkSubnetID
-		return
+	network, _, err := client.Network.GetByID(ctx, networkID)
+	if err != nil {
+		return nil, hcloud.NetworkSubnet{}, err
 	}
-
-	network, _, err = client.Network.GetByID(ctx, networkID)
 	if network == nil {
-		err = errInvalidNetworkSubnetID
-		return
+		return nil, hcloud.NetworkSubnet{}, errInvalidNetworkSubnetID
 	}
 	for _, sn := range network.Subnets {
 		if sn.IPRange.String() == ipRange.String() {
-			subnet = sn
-			return
+			return network, sn, nil
 		}
 	}
-	return
+	return nil, hcloud.NetworkSubnet{}, nil
 }

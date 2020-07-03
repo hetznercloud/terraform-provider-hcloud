@@ -38,10 +38,20 @@ resource "hcloud_server_network" "srvnetwork" {
 
 ## Argument Reference
 
-- `network_id` - (Required, int) ID of the network which should be added to the server.
+- `network_id` - (Optional, int) ID of the network which should be added
+  to the server. Required if `subnet_id` is not set. Successful creation
+  of the resource depends on the existence of a subnet in the Hetzner
+  Cloud Backend. Using `network_id` will not create an explicit
+  dependency between server and subnet. It is thus better to use the
+  `subnet_id` property. This property is deprecated.
+- `subnet_id` - (Optional, string) ID of the sub-network which should be
+  added to the Server. Required if `network_id` is not set.
 - `server_id` - (Required, int) ID of the server.
-- `ip` - (Optional, string) IP to request to be assigned to this server. If you do not provide this then you will be auto assigned an IP address.
-- `alias_ips` - (Required, list[string]) Additional IPs to be assigned to this server.
+- `ip` - (Optional, string) IP to request to be assigned to this server.
+  If you do not provide this then you will be auto assigned an IP
+  address.
+- `alias_ips` - (Required, list[string]) Additional IPs to be assigned
+  to this server.
 
 ## Attributes Reference
 

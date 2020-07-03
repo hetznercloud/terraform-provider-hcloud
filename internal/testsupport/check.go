@@ -31,7 +31,7 @@ func CheckResourceExists(name string, k KeyFunc) resource.TestCheckFunc {
 	}
 }
 
-// CheckResourcesDestroyed checks if resources of resType do not exsist in the
+// CheckResourcesDestroyed checks if resources of resType do not exist in the
 // Hetzner Cloud backend anymore.
 func CheckResourcesDestroyed(resType string, k KeyFunc) resource.TestCheckFunc {
 	const op = "testsupport/CheckResourceDestroyed"

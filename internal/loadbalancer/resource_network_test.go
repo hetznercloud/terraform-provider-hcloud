@@ -13,11 +13,28 @@ import (
 	"github.com/terraform-providers/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestAccHcloudLoadBalancerNetwork(t *testing.T) {
+func TestAccHcloudLoadBalancerNetwork_NetworkID(t *testing.T) {
 	var (
 		nw hcloud.Network
 		lb hcloud.LoadBalancer
 	)
+
+	netRes := &network.RData{
+		Name:    "test-network",
+		IPRange: "10.0.0.0/16",
+	}
+	subNetRes := &network.RDataSubnet{
+		Name:        "test-network-subnet",
+		Type:        "cloud",
+		NetworkID:   netRes.TFID() + ".id",
+		NetworkZone: "eu-central",
+		IPRange:     "10.0.1.0/24",
+	}
+	lbRes := &loadbalancer.RData{
+		Name:        "lb-network-test",
+		Type:        "lb11",
+		NetworkZone: "eu-central",
+	}
 
 	tmplMan := testtemplate.Manager{}
 	resource.Test(t, resource.TestCase{
@@ -27,48 +44,22 @@ func TestAccHcloudLoadBalancerNetwork(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_network", &network.RData{
-						Name:    "test-network",
-						IPRange: "10.0.0.0/16",
-					},
-					"testdata/r/hcloud_network_subnet", &network.RDataSubnet{
-						Name:        "test-network-subnet",
-						Type:        "cloud",
-						NetworkID:   "hcloud_network.test-network.id",
-						NetworkZone: "eu-central",
-						IPRange:     "10.0.1.0/24",
-					},
-					"testdata/r/hcloud_load_balancer", &loadbalancer.RData{
-						Name:        "lb-network-test",
-						Type:        "lb11",
-						NetworkZone: "eu-central",
-					},
+					"testdata/r/hcloud_network", netRes,
+					"testdata/r/hcloud_network_subnet", subNetRes,
+					"testdata/r/hcloud_load_balancer", lbRes,
 					"testdata/r/hcloud_load_balancer_network", &loadbalancer.RDataNetwork{
 						Name:                  "test-network",
-						LoadBalancerID:        "hcloud_load_balancer.lb-network-test.id",
-						NetworkID:             "hcloud_network.test-network.id",
+						LoadBalancerID:        lbRes.TFID() + ".id",
+						NetworkID:             netRes.TFID() + ".id",
 						IP:                    "10.0.1.5",
 						EnablePublicInterface: false,
+						DependsOn:             []string{subNetRes.TFID()},
 					},
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(network.ResourceType+".test-network", network.ByID(t, &nw)),
-					testsupport.CheckResourceExists(
-						loadbalancer.ResourceType+".lb-network-test", loadbalancer.ByID(t, &lb)),
-					testsupport.LiftTCF(func() error {
-						var privNet *hcloud.LoadBalancerPrivateNet
-						for _, n := range lb.PrivateNet {
-							if n.Network.ID == nw.ID {
-								privNet = &n
-								break
-							}
-						}
-						if privNet == nil {
-							return fmt.Errorf("load balancer has no private network")
-						}
-						assert.Equal(t, "10.0.1.5", privNet.IP.String())
-						return nil
-					}),
+					testsupport.CheckResourceExists(netRes.TFID(), network.ByID(t, &nw)),
+					testsupport.CheckResourceExists(lbRes.TFID(), loadbalancer.ByID(t, &lb)),
+					testsupport.LiftTCF(hasLoadBalancerNetwork(t, &lb, &nw)),
 					resource.TestCheckResourceAttr(
 						loadbalancer.NetworkResourceType+".test-network", "ip", "10.0.1.5"),
 					resource.TestCheckResourceAttr(
@@ -77,28 +68,16 @@ func TestAccHcloudLoadBalancerNetwork(t *testing.T) {
 			},
 			{
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_network", &network.RData{
-						Name:    "test-network",
-						IPRange: "10.0.0.0/16",
-					},
-					"testdata/r/hcloud_network_subnet", &network.RDataSubnet{
-						Name:        "test-network-subnet",
-						Type:        "cloud",
-						NetworkID:   "hcloud_network.test-network.id",
-						NetworkZone: "eu-central",
-						IPRange:     "10.0.1.0/24",
-					},
-					"testdata/r/hcloud_load_balancer", &loadbalancer.RData{
-						Name:        "lb-network-test",
-						Type:        "lb11",
-						NetworkZone: "eu-central",
-					},
+					"testdata/r/hcloud_network", netRes,
+					"testdata/r/hcloud_network_subnet", subNetRes,
+					"testdata/r/hcloud_load_balancer", lbRes,
 					"testdata/r/hcloud_load_balancer_network", &loadbalancer.RDataNetwork{
 						Name:                  "test-network",
 						LoadBalancerID:        "hcloud_load_balancer.lb-network-test.id",
 						NetworkID:             "hcloud_network.test-network.id",
 						IP:                    "10.0.1.5",
 						EnablePublicInterface: true,
+						DependsOn:             []string{subNetRes.TFID()},
 					},
 				),
 				Check: resource.TestCheckResourceAttr(
@@ -106,4 +85,72 @@ func TestAccHcloudLoadBalancerNetwork(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestAccHcloudLoadBalancerNetwork_SubNetID(t *testing.T) {
+	var (
+		nw hcloud.Network
+		lb hcloud.LoadBalancer
+	)
+
+	netRes := &network.RData{
+		Name:    "test-network",
+		IPRange: "10.0.0.0/16",
+	}
+	subNetRes := &network.RDataSubnet{
+		Name:        "test-network-subnet",
+		Type:        "cloud",
+		NetworkID:   netRes.TFID() + ".id",
+		NetworkZone: "eu-central",
+		IPRange:     "10.0.1.0/24",
+	}
+	lbRes := &loadbalancer.RData{
+		Name:        "lb-network-test",
+		Type:        "lb11",
+		NetworkZone: "eu-central",
+	}
+
+	tmplMan := testtemplate.Manager{}
+	resource.Test(t, resource.TestCase{
+		PreCheck:     testsupport.AccTestPreCheck(t),
+		Providers:    testsupport.AccTestProviders(),
+		CheckDestroy: testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
+		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_network", netRes,
+					"testdata/r/hcloud_network_subnet", subNetRes,
+					"testdata/r/hcloud_load_balancer", lbRes,
+					"testdata/r/hcloud_load_balancer_network", &loadbalancer.RDataNetwork{
+						Name:           "test-network",
+						LoadBalancerID: lbRes.TFID() + ".id",
+						SubNetID:       subNetRes.TFID() + ".id",
+						IP:             "10.0.1.5",
+					},
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(netRes.TFID(), network.ByID(t, &nw)),
+					testsupport.CheckResourceExists(lbRes.TFID(), loadbalancer.ByID(t, &lb)),
+					testsupport.LiftTCF(hasLoadBalancerNetwork(t, &lb, &nw)),
+				),
+			},
+		},
+	})
+}
+
+func hasLoadBalancerNetwork(t *testing.T, lb *hcloud.LoadBalancer, nw *hcloud.Network) func() error {
+	return func() error {
+		var privNet *hcloud.LoadBalancerPrivateNet
+		for _, n := range lb.PrivateNet {
+			if n.Network.ID == nw.ID {
+				privNet = &n
+				break
+			}
+		}
+		if privNet == nil {
+			return fmt.Errorf("load balancer has no private network")
+		}
+		assert.Equal(t, "10.0.1.5", privNet.IP.String())
+		return nil
+	}
 }

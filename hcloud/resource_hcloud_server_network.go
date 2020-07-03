@@ -23,8 +23,14 @@ func resourceServerNetwork() *schema.Resource {
 		Delete: resourceServerNetworkDelete,
 		Schema: map[string]*schema.Schema{
 			"network_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:       schema.TypeInt,
+				Optional:   true,
+				ForceNew:   true,
+				Deprecated: "use subnet_id instead",
+			},
+			"subnet_id": {
+				Type:     schema.TypeString,
+				Optional: true,
 				ForceNew: true,
 			},
 			"server_id": {
@@ -56,7 +62,20 @@ func resourceServerNetworkCreate(d *schema.ResourceData, m interface{}) error {
 	ctx := context.Background()
 
 	ip := net.ParseIP(d.Get("ip").(string))
-	networkID := d.Get("network_id")
+
+	networkID, nwIDSet := d.GetOk("network_id")
+	subNetID, snIDSet := d.GetOk("subnet_id")
+	if (nwIDSet && snIDSet) || (!nwIDSet && !snIDSet) {
+		return errors.New("either network_id or subnet_id must be set")
+	}
+
+	if snIDSet {
+		nwID, _, err := parseNetworkSubnetID(subNetID.(string))
+		if err != nil {
+			return err
+		}
+		networkID = nwID
+	}
 
 	serverID := d.Get("server_id")
 

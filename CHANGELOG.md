@@ -1,3 +1,18 @@
+## 1.20.0 (unreleased)
+
+CHANGED:
+
+* Deprecate `network_id` property of `hcloud_server_network` and
+  `hcloud_load_balancer_network` resources. Introduce a `subnet_ip`
+  property as replacement.
+
+  Both resources require a subnet to be created. Since `network_id`
+  references the network and not the subnet there is no explicit
+  dependency between those resources. This leads to Terraform creating
+  those resources in parallel, which creates a race condition. Users
+  stuck with the `network_id` property can create an explicit dependency
+  on the subnet using `depends_on` to work around this issue.
+
 ## 1.19.1 (July 16, 2020)
 
 NOTES:
