@@ -21,8 +21,14 @@ func resourceLoadBalancerNetwork() *schema.Resource {
 		Delete: resourceLoadBalancerNetworkDelete,
 		Schema: map[string]*schema.Schema{
 			"network_id": {
-				Type:     schema.TypeInt,
-				Required: true,
+				Type:       schema.TypeInt,
+				Optional:   true,
+				ForceNew:   true,
+				Deprecated: "use subnet_id instead",
+			},
+			"subnet_id": {
+				Type:     schema.TypeString,
+				Optional: true,
 				ForceNew: true,
 			},
 			"load_balancer_id": {
@@ -51,7 +57,21 @@ func resourceLoadBalancerNetworkCreate(d *schema.ResourceData, m interface{}) er
 	ctx := context.Background()
 
 	ip := net.ParseIP(d.Get("ip").(string))
-	networkID := d.Get("network_id")
+
+	networkID, nwIDSet := d.GetOk("network_id")
+	subNetID, snIDSet := d.GetOk("subnet_id")
+	if (nwIDSet && snIDSet) || (!nwIDSet && !snIDSet) {
+		return errors.New("either network_id or subnet_id must be set")
+	}
+
+	if snIDSet {
+		nwID, _, err := parseNetworkSubnetID(subNetID.(string))
+		if err != nil {
+			return err
+		}
+		networkID = nwID
+	}
+
 	loadBalancerID := d.Get("load_balancer_id")
 
 	loadBalancer := &hcloud.LoadBalancer{ID: loadBalancerID.(int)}

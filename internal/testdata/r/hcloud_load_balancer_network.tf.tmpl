@@ -3,11 +3,19 @@
 resource "hcloud_load_balancer_network" "{{ .Name }}" {
   {{/* Required properties */ -}}
   load_balancer_id         = {{ .LoadBalancerID }}
+  {{- if .NetworkID }}
   network_id               = {{ .NetworkID }}
+  {{ end }}
+  {{- if .SubNetID }}
+  subnet_id                = {{ .SubNetID }}
+  {{ end }}
 
   {{- /* Optional properties */}}
   enable_public_interface  = {{ .EnablePublicInterface }}
   {{- if .IP }}
   ip                       = "{{ .IP }}"
+  {{ end }}
+  {{- if .DependsOn }}
+  depends_on               = [{{ StringsJoin .DependsOn ", " }}]
   {{ end }}
 }

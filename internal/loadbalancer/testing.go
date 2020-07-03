@@ -183,6 +183,8 @@ type RDataNetwork struct {
 	Name                  string
 	LoadBalancerID        string
 	NetworkID             string
+	SubNetID              string
 	IP                    string
 	EnablePublicInterface bool
+	DependsOn             []string
 }
