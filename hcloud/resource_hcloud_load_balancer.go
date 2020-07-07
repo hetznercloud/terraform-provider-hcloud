@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"strconv"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
@@ -366,6 +367,18 @@ func waitForLoadBalancerAction(ctx context.Context, client *hcloud.Client, actio
 	}
 	log.Printf("[INFO] LoadBalancer (%d) %q action succeeded", loadBalancer.ID, action.Command)
 	return nil
+}
+
+func retryCodeConflict(f func() (*hcloud.Action, *hcloud.Response, error)) (*hcloud.Action, *hcloud.Response, error) {
+	action, response, err := f()
+	step := 1
+	for (hcloud.IsError(err, hcloud.ErrorCodeConflict) || hcloud.IsError(err, hcloud.ErrorCodeLocked) || hcloud.IsError(err, hcloud.ErrorCodeServiceError)) && step <= 3 {
+		log.Printf("[INFO] Code conflict, retrying in one second..,")
+		time.Sleep(time.Second)
+		action, response, err = f()
+		step++
+	}
+	return action, response, err
 }
 
 func parseTerraformTarget(tfTargets []interface{}) (opts []hcloud.LoadBalancerCreateOptsTarget) {

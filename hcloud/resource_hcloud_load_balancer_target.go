@@ -100,7 +100,9 @@ func resourceLoadBalancerTargetCreate(d *schema.ResourceData, m interface{}) err
 		}
 	}
 
-	action, _, err := client.LoadBalancer.AddServerTarget(ctx, lb, opts)
+	action, _, err := retryCodeConflict(func() (*hcloud.Action, *hcloud.Response, error) {
+		return client.LoadBalancer.AddServerTarget(ctx, lb, opts)
+	})
 	if err != nil {
 		return fmt.Errorf("add server target: %v", err)
 	}
@@ -142,12 +144,9 @@ func resourceLoadBalancerTargetUpdate(d *schema.ResourceData, m interface{}) err
 		return err
 	}
 
-	action, _, err := client.LoadBalancer.RemoveServerTarget(ctx, lb, tgt.Server.Server)
-	if hcloud.IsError(err, hcloud.ErrorCodeConflict) || hcloud.IsError(err, hcloud.ErrorCodeLocked) {
-		// Retry after a short delay
-		time.Sleep(time.Second)
-		action, _, err = client.LoadBalancer.RemoveServerTarget(ctx, lb, tgt.Server.Server)
-	}
+	action, _, err := retryCodeConflict(func() (*hcloud.Action, *hcloud.Response, error) {
+		return client.LoadBalancer.RemoveServerTarget(ctx, lb, tgt.Server.Server)
+	})
 	if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
 		return resourceLoadBalancerTargetCreate(d, m)
 	}
@@ -174,12 +173,9 @@ func resourceLoadBalancerTargetDelete(d *schema.ResourceData, m interface{}) err
 		return err
 	}
 
-	action, _, err := client.LoadBalancer.RemoveServerTarget(ctx, lb, tgt.Server.Server)
-	if hcloud.IsError(err, hcloud.ErrorCodeConflict) || hcloud.IsError(err, hcloud.ErrorCodeLocked) {
-		// Retry after a short delay
-		time.Sleep(time.Second)
-		action, _, err = client.LoadBalancer.RemoveServerTarget(ctx, lb, tgt.Server.Server)
-	}
+	action, _, err := retryCodeConflict(func() (*hcloud.Action, *hcloud.Response, error) {
+		return client.LoadBalancer.RemoveServerTarget(ctx, lb, tgt.Server.Server)
+	})
 	if err != nil {
 		if hcErr, ok := err.(hcloud.Error); ok {
 			if hcErr.Code == "load_balancer_target_not_found" || strings.Contains(hcErr.Message, "target not found") {

@@ -188,19 +188,11 @@ func resourceLoadBalancerServiceCreate(d *schema.ResourceData, m interface{}) er
 		opts.HealthCheck = parseTFHealthCheckAdd(tfHealthCheck.([]interface{}))
 	}
 
-	action, _, err := client.LoadBalancer.AddService(ctx, lb, opts)
+	action, _, err := retryCodeConflict(func() (*hcloud.Action, *hcloud.Response, error) {
+		return client.LoadBalancer.AddService(ctx, lb, opts)
+	})
 	if resourceLoadBalancerIsNotFound(err, d) {
 		return nil
-	}
-	if hcloud.IsError(err, hcloud.ErrorCodeServiceError) {
-		// Terraform performs CRUD operations for different resources of the
-		// same type in parallel. As such it can happen, that a service can't
-		// be added, because another service which has not been deleted yet
-		// prevents it. We therefore retry the action after a short delay. This
-		// should give Terraform enough time to remove the conflicting service
-		// (if there is one).
-		time.Sleep(time.Second)
-		action, _, err = client.LoadBalancer.AddService(ctx, lb, opts)
 	}
 	if err != nil {
 		return err
@@ -243,7 +235,9 @@ func resourceLoadBalancerServiceUpdate(d *schema.ResourceData, m interface{}) er
 		opts.HealthCheck = parseTFHealthCheckUpdate(tfHealthCheck.([]interface{}))
 	}
 
-	action, _, err := client.LoadBalancer.UpdateService(ctx, lb, listenPort, opts)
+	action, _, err := retryCodeConflict(func() (*hcloud.Action, *hcloud.Response, error) {
+		return client.LoadBalancer.UpdateService(ctx, lb, listenPort, opts)
+	})
 	if err != nil {
 		if resourceLoadBalancerIsNotFound(err, d) {
 			return nil
@@ -301,14 +295,36 @@ func resourceLoadBalancerServiceDelete(d *schema.ResourceData, m interface{}) er
 		return err
 	}
 
+	protocol := hcloud.LoadBalancerServiceProtocol(d.Get("protocol").(string))
+	listenPort := d.Get("listen_port").(int)
+	if listenPort == 0 {
+		switch protocol {
+		case hcloud.LoadBalancerServiceProtocolHTTP:
+			listenPort = 80
+		case hcloud.LoadBalancerServiceProtocolHTTPS:
+			listenPort = 443
+		}
+	}
+	var (
+		found bool
+	)
 	for _, svc := range lb.Services {
-		action, _, err := client.LoadBalancer.DeleteService(ctx, lb, svc.ListenPort)
-		if err != nil {
-			return err
+		if svc.ListenPort == listenPort {
+			action, _, err := retryCodeConflict(func() (*hcloud.Action, *hcloud.Response, error) {
+				return client.LoadBalancer.DeleteService(ctx, lb, svc.ListenPort)
+			})
+			if err != nil {
+				return err
+			}
+			if err := waitForLoadBalancerAction(ctx, client, action, lb); err != nil {
+				return err
+			}
+			found = true
+			break
 		}
-		if err := waitForLoadBalancerAction(ctx, client, action, lb); err != nil {
-			return err
-		}
+	}
+	if !found {
+		return fmt.Errorf("load balancer %d: no service for port %d", lb.ID, listenPort)
 	}
 
 	return nil

@@ -47,10 +47,29 @@ func TestAccHcloudLoadBalancerTarget(t *testing.T) {
 
 func testAccHcloudLoadBalancerTarget(rInt int) string {
 	return fmt.Sprintf(`
+resource "hcloud_network" "foobar_network" {
+  name       = "foo-network-%d"
+  ip_range   = "10.0.0.0/16"
+}
+
+resource "hcloud_network_subnet" "foonet" {
+  network_id   = "${hcloud_network.foobar_network.id}"
+  type         = "cloud"
+  network_zone = "eu-central"
+  ip_range     = "10.0.1.0/24"
+}
+
 resource "hcloud_server" "lb_server_target" {
 	name        = "lb-server-target-%d"
 	server_type = "cx11"
 	image       = "ubuntu-18.04"
+}
+
+resource "hcloud_server_network" "srvnetwork" {
+  server_id = "${hcloud_server.lb_server_target.id}"
+  network_id = "${hcloud_network.foobar_network.id}"
+  ip = "10.0.1.10"
+  alias_ips = ["10.0.1.201","10.0.1.200"]
 }
 
 resource "hcloud_load_balancer" "target_test_lb" {
@@ -63,12 +82,18 @@ resource "hcloud_load_balancer" "target_test_lb" {
 	}
 }
 
+resource "hcloud_load_balancer_network" "lbnetwork" {
+  load_balancer_id        = "${hcloud_load_balancer.target_test_lb.id}"
+  network_id              = "${hcloud_network.foobar_network.id}"
+  ip                      = "10.0.1.5"
+}
+
 resource "hcloud_load_balancer_target" "lb_test_target" {
 	type             = "server"
 	load_balancer_id = "${hcloud_load_balancer.target_test_lb.id}"
 	server_id        = "${hcloud_server.lb_server_target.id}"
 }
-	`, rInt, rInt)
+	`, rInt, rInt, rInt)
 }
 
 func testAccHcloudLoadBalancerTarget_UsePrivateIP(rInt int) string {
