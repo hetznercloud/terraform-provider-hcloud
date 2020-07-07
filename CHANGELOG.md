@@ -1,4 +1,9 @@
 ## 1.19.0 (Unreleased)
+
+BUG FIXES:
+
+* Update to hcloud-go v1.18.2 to fix a conflict issue
+
 ## 1.18.1 (July 02, 2020)
 
 BUG FIXES
