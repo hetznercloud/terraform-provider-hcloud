@@ -301,8 +301,22 @@ func resourceLoadBalancerServiceDelete(d *schema.ResourceData, m interface{}) er
 		return err
 	}
 
+	protocol := d.Get("protocol")
+	listenPort := d.Get("listen_port").(int)
+	if listenPort == 0 {
+		if protocol == hcloud.LoadBalancerServiceProtocolHTTP {
+			listenPort = 80
+		}
+		if protocol == hcloud.LoadBalancerServiceProtocolHTTPS {
+			listenPort = 443
+		}
+	}
+
 	for _, svc := range lb.Services {
-		action, _, err := client.LoadBalancer.DeleteService(ctx, lb, svc.ListenPort)
+		if svc.ListenPort != listenPort {
+			continue
+		}
+		action, _, err := client.LoadBalancer.DeleteService(ctx, lb, listenPort)
 		if err != nil {
 			return err
 		}
