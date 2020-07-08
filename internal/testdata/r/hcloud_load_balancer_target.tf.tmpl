@@ -1,0 +1,16 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+resource "hcloud_load_balancer_target" "{{ .Name }}" {
+  {{/* Required properties */ -}}
+  type             = "{{ .Type }}"
+  load_balancer_id = {{ .LoadBalancerID }}
+  server_id        = {{ .ServerID }}
+
+  {{- /* Optional properties */}}
+  {{- if .UsePrivateIP }}
+  use_private_ip   = {{ .UsePrivateIP }}
+  {{- end }}
+  {{- if .DependsOn }}
+  depends_on       = [{{ StringsJoin .DependsOn ", " }}]
+  {{- end }}
+}

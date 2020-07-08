@@ -357,6 +357,8 @@ func testSweepServers(region string) error {
 	return nil
 }
 
+// TODO remove me
+// Deprecated: use testsupport.CreateClient instead
 func createClient() (*hcloud.Client, error) {
 	if os.Getenv("HCLOUD_TOKEN") == "" {
 		return nil, fmt.Errorf("empty HCLOUD_TOKEN")

@@ -62,7 +62,7 @@ resource "hcloud_load_balancer" "load_balancer" {
 - `labels` - (map) User-defined labels (key-value pairs) .
 
 `algorithm` support the following fields:
-- `type` - (string) Type of the Load Balancer Algorithm. `round_robin` or `least_connection`
+- `type` - (string) Type of the Load Balancer Algorithm. `round_robin` or `least_connections`
 
 `target` supports the following fields, which are a restricted sub-set
 of the fields supported by `hcloud_load_balancer_target`:

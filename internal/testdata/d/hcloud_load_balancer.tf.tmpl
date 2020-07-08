@@ -1,0 +1,7 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+data "hcloud_load_balancer" "{{ .Name }}" {
+  {{ if .LoadBalancerID -}}   id            = {{ .LoadBalancerID }}{{ end -}}
+  {{ if .LoadBalancerName -}} name          = {{ .LoadBalancerName }}{{ end -}}
+  {{ if .LabelSelector -}}    with_selector = "{{ .LabelSelector }}"{{ end }}
+}

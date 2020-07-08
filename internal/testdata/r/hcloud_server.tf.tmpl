@@ -1,0 +1,45 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+resource "hcloud_server" "{{ .Name }}" {
+  {{/* Required properties */ -}}
+  name        = "{{ .Name }}--{{ .RInt }}"
+  server_type = "{{ .Type }}"
+  image       = "{{ .Image }}"
+
+  {{- /* Optional properties */}}
+  {{- if .LocationName }}
+  location    = "{{ .LocationName }}"
+  {{ end }}
+  {{- if .DataCenter }}
+  datacenter  = "{{ .DataCenter }}"
+  {{ end }}
+  {{- if .SSHKeys }}
+  ssh_keys    = [{{ StringsJoin .SSHKeys ", " }}]
+  {{ end }}
+  {{- if .KeepDisk }}
+  keep_disk   = {{ .KeepDisk }}
+  {{ end }}
+  {{- if .KeepDisk }}
+  iso         = {{ .ISO }}
+  {{ end }}
+  {{- if .Rescue }}
+  rescue      = {{ .Rescue }}
+  {{ end }}
+  {{- if .Backups }}
+  backups     = {{ .Backups }}
+  {{ end }}
+
+  {{- if .Labels }}
+  labels = {
+  {{- range $k,$v := .Labels }}
+    {{ $k }} = "{{ $v }}"
+  {{- end }}
+  }
+  {{ end }}
+
+  {{- if .UserData }}
+  user_data   =<<EOF
+{{ .UserData }}
+  EOF
+  {{ end }}
+}

@@ -1,0 +1,9 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+resource "hcloud_network_subnet" "{{ .Name }}" {
+  {{/* Required properties */ -}}
+  type         = "{{ .Type }}"
+  network_id   = {{ .NetworkID }}
+  network_zone = "{{ .NetworkZone }}"
+  ip_range     = "{{ .IPRange }}"
+}

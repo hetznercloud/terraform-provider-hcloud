@@ -1,0 +1,16 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+resource "hcloud_network" "{{ .Name }}" {
+  {{/* Required properties */ -}}
+  name     = "{{ .Name }}--{{ .RInt }}"
+  ip_range = "{{ .IPRange }}"
+
+  {{- /* Optional properties */}}
+  {{- if .Labels }}
+  labels = {
+  {{- range $k,$v := .Labels }}
+    {{ $k }} = "{{ $v }}"
+  {{- end }}
+  }
+  {{ end }}
+}

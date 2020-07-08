@@ -214,19 +214,19 @@ func setServerNetworkSchema(d *schema.ResourceData, server *hcloud.Server, netwo
 	d.SetId(generateServerNetworkID(server, network))
 	d.Set("ip", serverPrivateNet.IP.String())
 
-	// We need to ensure that order of the list of alias_ips is kept stable
-	// no matter what the backend returns. Therefore we merge the backendIPs
-	// with the currently known alias_ips.
+	// We need to ensure that order of the list of alias_ips is kept stable no
+	// matter what the Hetzner Cloud API returns. Therefore we merge the
+	// returned IPs with the currently known alias_ips.
 	tfAliasIPs := d.Get("alias_ips").([]interface{})
 	aliasIPs := make([]string, len(tfAliasIPs))
 	for i, v := range tfAliasIPs {
 		aliasIPs[i] = v.(string)
 	}
-	backendAliasIPs := make([]string, len(serverPrivateNet.Aliases))
+	hcAliasIPs := make([]string, len(serverPrivateNet.Aliases))
 	for i, ip := range serverPrivateNet.Aliases {
-		backendAliasIPs[i] = ip.String()
+		hcAliasIPs[i] = ip.String()
 	}
-	aliasIPs = merge.StringSlice(aliasIPs, backendAliasIPs)
+	aliasIPs = merge.StringSlice(aliasIPs, hcAliasIPs)
 	d.Set("alias_ips", aliasIPs)
 
 	d.Set("mac_address", serverPrivateNet.MACAddress)
