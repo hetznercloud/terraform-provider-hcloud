@@ -12,6 +12,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/terraform-providers/terraform-provider-hcloud/internal/merge"
 )
 
 func resourceServerNetwork() *schema.Resource {
@@ -212,17 +213,22 @@ func resourceServerNetworkDelete(d *schema.ResourceData, m interface{}) error {
 func setServerNetworkSchema(d *schema.ResourceData, server *hcloud.Server, network *hcloud.Network, serverPrivateNet *hcloud.ServerPrivateNet) {
 	d.SetId(generateServerNetworkID(server, network))
 	d.Set("ip", serverPrivateNet.IP.String())
-	var ips []string
-	for _, ip := range serverPrivateNet.Aliases {
-		ips = append(ips, ip.String())
+
+	// We need to ensure that order of the list of alias_ips is kept stable
+	// no matter what the backend returns. Therefore we merge the backendIPs
+	// with the currently known alias_ips.
+	tfAliasIPs := d.Get("alias_ips").([]interface{})
+	aliasIPs := make([]string, len(tfAliasIPs))
+	for i, v := range tfAliasIPs {
+		aliasIPs[i] = v.(string)
 	}
-	// We need to invert the IPs slice because of a bug? within the API.
-	// The API responds with the alias IPs in the inverse order of creation.
-	for i := len(ips)/2 - 1; i >= 0; i-- {
-		opp := len(ips) - 1 - i
-		ips[i], ips[opp] = ips[opp], ips[i]
+	backendAliasIPs := make([]string, len(serverPrivateNet.Aliases))
+	for i, ip := range serverPrivateNet.Aliases {
+		backendAliasIPs[i] = ip.String()
 	}
-	d.Set("alias_ips", ips)
+	aliasIPs = merge.StringSlice(aliasIPs, backendAliasIPs)
+	d.Set("alias_ips", aliasIPs)
+
 	d.Set("mac_address", serverPrivateNet.MACAddress)
 }
 
