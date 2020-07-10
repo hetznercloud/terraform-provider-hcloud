@@ -3,6 +3,7 @@
 BUG FIXES:
 
 * Update to hcloud-go v1.18.2 to fix a conflict issue
+* Ensure `alias_ip` retain the same order.
 
 ## 1.18.1 (July 02, 2020)
 
@@ -11,7 +12,7 @@ BUG FIXES
 * Set correct defaults for `cookie_name` and `cookie_lifetime`
   properties of `hcloud_load_balancer_service`.
 * Remove unsupported `https` protocol from health check documentation.
-* Force recreate of `hcloud_network` if `ip_range` changes
+* Force recreate of `hcloud_network` if `ip_range` changes.
 
 ## 1.18.0 (June 30, 2020)
 
