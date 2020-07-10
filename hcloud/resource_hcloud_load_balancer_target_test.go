@@ -94,6 +94,7 @@ resource "hcloud_server" "lb_server_target" {
 resource "hcloud_server_network" "lb_server_network" {
 	server_id  = "${hcloud_server.lb_server_target.id}"
 	network_id = "${hcloud_network.lb_target_test_network.id}"
+	depends_on = [hcloud_network_subnet.lb_target_test_subnet]
 }
 
 resource "hcloud_load_balancer" "target_test_lb" {
@@ -110,6 +111,7 @@ resource "hcloud_load_balancer_network" "target_test_lb_network" {
 	load_balancer_id        = "${hcloud_load_balancer.target_test_lb.id}"
 	network_id              = "${hcloud_network.lb_target_test_network.id}"
 	enable_public_interface = true
+	depends_on              = [hcloud_network_subnet.lb_target_test_subnet]
 }
 
 resource "hcloud_load_balancer_target" "lb_test_target" {
