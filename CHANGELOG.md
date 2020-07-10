@@ -5,6 +5,10 @@ BUG FIXES:
 * Update to hcloud-go v1.18.2 to fix a conflict issue
 * Ensure `alias_ip` retain the same order.
 
+NOTES:
+
+* This release uses Terraform Plugin SDK v1.15.0.
+
 ## 1.18.1 (July 02, 2020)
 
 BUG FIXES
