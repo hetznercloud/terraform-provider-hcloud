@@ -1,4 +1,10 @@
-## 1.20.0 (Unreleased)
+## 1.19.1 (July 16, 2020)
+
+NOTES:
+
+* First release under new terraform registry
+* Provider was moved to https://github.com/hetznercloud/terraform-provider-hcloud
+
 ## 1.19.0 (July 10, 2020)
 
 BUG FIXES:
