@@ -128,6 +128,7 @@ func testAccHcloudCheckNetworkExists(n string, network *hcloud.Network) resource
 	}
 }
 
+// Deprecated: use network.Sweep instead
 func testSweepNetworks(region string) error {
 	client, err := createClient()
 	if err != nil {

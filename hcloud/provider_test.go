@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
+// Deprecated: use testsupport.AccTestProviders instead
 var testAccProviders map[string]terraform.ResourceProvider
 var testAccProvider *schema.Provider
 
@@ -28,6 +29,7 @@ func TestProvider_impl(t *testing.T) {
 	var _ terraform.ResourceProvider = Provider()
 }
 
+// Deprecated: use testsupport.AcceptanceTestPreCheck instead
 func testAccHcloudPreCheck(t *testing.T) {
 	if v := os.Getenv("HCLOUD_TOKEN"); v == "" {
 		t.Fatal("HCLOUD_TOKEN must be set for acceptance tests")

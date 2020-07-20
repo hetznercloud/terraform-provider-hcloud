@@ -1,0 +1,11 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+resource "hcloud_certificate" "{{ .Name }}" {
+  name        = "{{ .Name }}--{{ .RInt }}"
+  private_key =<<EOT
+{{ StringsTrimSpace .PrivateKey }}
+  EOT
+  certificate =<<EOT
+{{ StringsTrimSpace .Certificate }}
+  EOT
+}

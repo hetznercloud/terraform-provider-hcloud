@@ -1,0 +1,54 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+resource "hcloud_load_balancer_service" "{{ .Name }}" {
+  {{/* Required properties */ -}}
+  load_balancer_id = {{ .LoadBalancerID }}
+  protocol         = "{{ .Protocol }}"
+
+  {{- /* Optional properties */}}
+  {{- if .ListenPort }}
+  listen_port      = {{ .ListenPort }}
+  {{ end }}
+  {{- if .DestinationPort }}
+  destination_port = {{ .DestinationPort }}
+  {{ end }}
+  proxyprotocol    = {{ .Proxyprotocol }}
+  {{- if .AddHTTP }}
+  http {
+    {{ if .HTTP.CookieName -}}    cookie_name     = "{{ .HTTP.CookieName }}"{{ end }}
+    {{ if .HTTP.CookieLifeTime -}}cookie_lifetime = "{{ .HTTP.CookieLifeTime }}"{{ end }}
+    {{ if .HTTP.RedirectHTTP -}}  redirect_http   = {{ .HTTP.RedirectHTTP }}{{ end }}
+    {{ if .HTTP.Certificates -}}  certificates    = [{{ StringsJoin .HTTP.Certificates ", " }}]{{ end }}
+  }
+  {{ end }}
+  {{- if .AddHealthCheck }}
+  health_check {
+    protocol = "{{ .HealthCheck.Protocol }}"
+    port     = "{{ .HealthCheck.Port }}"
+    interval = {{ .HealthCheck.Interval }}
+    timeout  = {{ .HealthCheck.Timeout }}
+    {{ if .HealthCheck.Retries -}}
+    retries  = {{ .HealthCheck.Retries }}
+    {{- end }}
+    {{ if .HealthCheck.HTTP }}
+    http {
+      {{ if .HealthCheck.HTTP.Domain -}}
+      domain       = "{{ .HealthCheck.HTTP.Domain }}"
+      {{- end }}
+      {{ if .HealthCheck.HTTP.Path -}}
+      path         = "{{ .HealthCheck.HTTP.Path }}"
+      {{- end }}
+      {{ if .HealthCheck.HTTP.Response -}}
+      response     = "{{ .HealthCheck.HTTP.Response }}"
+      {{- end }}
+      {{ if .HealthCheck.HTTP.TLS -}}
+      tls          = {{ .HealthCheck.HTTP.TLS }}
+      {{- end }}
+      {{ with DQuoteS .HealthCheck.HTTP.StatusCodes -}}
+      status_codes = [{{ StringsJoin . ", "}}]
+      {{- end }}
+    }
+    {{ end }}
+  }
+  {{ end }}
+}

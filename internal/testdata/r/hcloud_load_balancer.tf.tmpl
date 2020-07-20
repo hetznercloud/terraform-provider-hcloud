@@ -1,0 +1,33 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+resource "hcloud_load_balancer" "{{ .Name }}" {
+  {{/* Required properties */ -}}
+  name               = "{{ .Name }}--{{ .RInt }}"
+  load_balancer_type = "{{ if .Type }}{{ .Type }}{{ else }}lb11{{ end }}"
+  {{- if .LocationName }}
+  location           = "{{ .LocationName }}"
+  {{ end }}
+  {{- if .NetworkZone }}
+  network_zone       = "{{ .NetworkZone }}"
+  {{ end }}
+
+  {{- /* Optional properties */}}
+  {{- if .Algorithm }}
+  algorithm {
+    type = "{{ .Algorithm }}"
+  }
+  {{ end }}
+  {{- range .ServerTargets }}
+  target {
+    type      = "server"
+    server_id = {{ .ServerID }}
+  }
+  {{ end }}
+  {{- if .Labels }}
+  labels = {
+  {{- range $k,$v := .Labels }}
+    {{ $k }} = "{{ $v }}"
+  {{- end }}
+  }
+  {{- end }}
+}
