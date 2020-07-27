@@ -50,6 +50,31 @@ func TestAccHcloudLoadBalancerService_TCP(t *testing.T) {
 					resource.TestCheckResourceAttr(svcResName, "proxyprotocol", "true"),
 				),
 			},
+
+			{ // Test disable Proxyprotocol
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_load_balancer", loadbalancer.Basic,
+					"testdata/r/hcloud_load_balancer_service", &loadbalancer.RDataService{
+						Name:            svcName,
+						Protocol:        "tcp",
+						LoadBalancerID:  fmt.Sprintf("%s.%s.id", loadbalancer.ResourceType, loadbalancer.Basic.Name),
+						ListenPort:      70,
+						DestinationPort: 70,
+						Proxyprotocol:   false,
+					},
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(lbResName, loadbalancer.ByID(t, &lb)),
+					testsupport.LiftTCF(hasService(&lb, 70)),
+					testsupport.CheckResourceAttrFunc(svcResName, "load_balancer_id", func() string {
+						return strconv.Itoa(lb.ID)
+					}),
+					resource.TestCheckResourceAttr(svcResName, "protocol", "tcp"),
+					resource.TestCheckResourceAttr(svcResName, "listen_port", "70"),
+					resource.TestCheckResourceAttr(svcResName, "destination_port", "70"),
+					resource.TestCheckResourceAttr(svcResName, "proxyprotocol", "false"),
+				),
+			},
 		},
 	})
 }

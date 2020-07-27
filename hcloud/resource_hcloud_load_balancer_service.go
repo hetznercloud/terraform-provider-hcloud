@@ -231,6 +231,9 @@ func resourceLoadBalancerServiceUpdate(d *schema.ResourceData, m interface{}) er
 	}
 	listenPort := lp.(int)
 
+	pp := d.Get("proxyprotocol")
+	opts.Proxyprotocol = hcloud.Bool(pp.(bool))
+
 	if p, ok := d.GetOk("destination_port"); ok {
 		opts.DestinationPort = hcloud.Int(p.(int))
 	}

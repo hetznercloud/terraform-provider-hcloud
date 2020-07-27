@@ -13,6 +13,9 @@ CHANGED:
   stuck with the `network_id` property can create an explicit dependency
   on the subnet using `depends_on` to work around this issue.
 
+BUG FIXES:
+* Enable and Disable `proxyprotocol` on a Load Balancer didn't work after creation
+
 ## 1.19.1 (July 16, 2020)
 
 NOTES:
