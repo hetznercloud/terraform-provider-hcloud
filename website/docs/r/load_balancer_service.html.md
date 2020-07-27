@@ -46,10 +46,10 @@ resource "hcloud_load_balancer_service" "load_balancer_service" {
 `health_check` supports the following fields:
 
 - `protocol` - (Required, string) Protocol the health check uses. `http` or `tcp`
-- `port` - (Optional, int) Port the health check tries to connect to, required if protocol is `tcp`. Can be everything between `1` and `65535`. Must be unique per Load Balancer.
-- `interval` - (Optional, int) Interval how often the health check will be performed, in seconds. Default: `15`
-- `timeout` - (Optional, int) Timeout when a health check try will be canceled if there is no response, in seconds. Default: `10`
-- `retries` - (Optional, int) Number of tries a health check will be performed until a target will be listed as `unhealthy`. Default: `3`
+- `port` - (Required, int) Port the health check tries to connect to, required if protocol is `tcp`. Can be everything between `1` and `65535`. Must be unique per Load Balancer.
+- `interval` - (Required, int) Interval how often the health check will be performed, in seconds.
+- `timeout` - (Required, int) Timeout when a health check try will be canceled if there is no response, in seconds.
+- `retries` - (Optional, int) Number of tries a health check will be performed until a target will be listed as `unhealthy`.
 - `http` - (Optional, list) List of http configurations. Required if `protocol` is `http`.
 
 (health check) `http` supports the following fields:
@@ -58,7 +58,7 @@ resource "hcloud_load_balancer_service" "load_balancer_service" {
 - `path` - (Optional, string) Path we try to access when performing the Health Check.
 - `response` - (Optional, string) Response we expect to be included in the Target response when a Health Check was performed.
 - `tls` - (Optional, bool) Enable TLS certificate checking.
-- `status_codes` - (Required, list[string]) We expect that the target answers with these status codes. If not the target is marked as `unhealthy`.
+- `status_codes` - (Optional, list[string]) We expect that the target answers with these status codes. If not the target is marked as `unhealthy`.
 
 
 ## Attribute Reference

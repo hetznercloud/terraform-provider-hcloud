@@ -144,7 +144,7 @@ func resourceLoadBalancerService() *schema.Resource {
 									},
 									"status_codes": {
 										Type:     schema.TypeList,
-										Required: true,
+										Optional: true,
 										Elem: &schema.Schema{
 											Type: schema.TypeString,
 										},
