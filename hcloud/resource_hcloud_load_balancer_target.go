@@ -102,6 +102,14 @@ func resourceLoadBalancerTargetCreate(d *schema.ResourceData, m interface{}) err
 
 	action, _, err := client.LoadBalancer.AddServerTarget(ctx, lb, opts)
 	if err != nil {
+		if hcloud.IsError(err, "target_already_defined") { // TODO: use const when hcloud go is released
+			setLoadBalancerTarget(d, lb.ID, hcloud.LoadBalancerTarget{
+				Type:         hcloud.LoadBalancerTargetTypeServer,
+				Server:       &hcloud.LoadBalancerTargetServer{Server: server},
+				UsePrivateIP: usePrivateIP,
+			})
+			return nil
+		}
 		return fmt.Errorf("add server target: %v", err)
 	}
 	if err := waitForLoadBalancerAction(ctx, client, action, lb); err != nil {
