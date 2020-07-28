@@ -3,7 +3,7 @@
 CHANGED:
 
 * Deprecate `network_id` property of `hcloud_server_network` and
-  `hcloud_load_balancer_network` resources. Introduce a `subnet_ip`
+  `hcloud_load_balancer_network` resources. Introduce a `subnet_id`
   property as replacement.
 
   Both resources require a subnet to be created. Since `network_id`
