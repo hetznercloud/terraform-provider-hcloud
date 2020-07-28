@@ -301,6 +301,100 @@ func TestAccHcloudLoadBalancerService_CreateDelete_NoListenPort(t *testing.T) {
 	})
 }
 
+func TestAccHcloudLoadBalancerService_ChangeListenPort(t *testing.T) {
+	var lb hcloud.LoadBalancer
+
+	lbResName := fmt.Sprintf("%s.%s", loadbalancer.ResourceType, loadbalancer.Basic.Name)
+	svcName := "lb-change-listen-port-service-test"
+	svcName2 := "lb-change-lp-test"
+	svcResName := fmt.Sprintf("%s.%s", loadbalancer.ServiceResourceType, svcName)
+	svcResName2 := fmt.Sprintf("%s.%s", loadbalancer.ServiceResourceType, svcName2)
+
+	tmplMan := testtemplate.Manager{}
+	resource.Test(t, resource.TestCase{
+		PreCheck:     testsupport.AccTestPreCheck(t),
+		Providers:    testsupport.AccTestProviders(),
+		CheckDestroy: testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
+		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_load_balancer", loadbalancer.Basic,
+					"testdata/r/hcloud_load_balancer_service", &loadbalancer.RDataService{
+						Name:            svcName,
+						Protocol:        "tcp",
+						LoadBalancerID:  fmt.Sprintf("%s.%s.id", loadbalancer.ResourceType, loadbalancer.Basic.Name),
+						ListenPort:      70,
+						DestinationPort: 70,
+					},
+					"testdata/r/hcloud_load_balancer_service", &loadbalancer.RDataService{
+						Name:            svcName2,
+						Protocol:        "tcp",
+						LoadBalancerID:  fmt.Sprintf("%s.%s.id", loadbalancer.ResourceType, loadbalancer.Basic.Name),
+						ListenPort:      443,
+						DestinationPort: 443,
+					},
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(lbResName, loadbalancer.ByID(t, &lb)),
+					testsupport.LiftTCF(hasService(&lb, 70)),
+					testsupport.CheckResourceAttrFunc(svcResName, "load_balancer_id", func() string {
+						return strconv.Itoa(lb.ID)
+					}),
+					resource.TestCheckResourceAttr(svcResName, "protocol", "tcp"),
+					resource.TestCheckResourceAttr(svcResName, "listen_port", "70"),
+					resource.TestCheckResourceAttr(svcResName, "destination_port", "70"),
+
+					testsupport.LiftTCF(hasService(&lb, 443)),
+					testsupport.CheckResourceAttrFunc(svcResName2, "load_balancer_id", func() string {
+						return strconv.Itoa(lb.ID)
+					}),
+					resource.TestCheckResourceAttr(svcResName2, "protocol", "tcp"),
+					resource.TestCheckResourceAttr(svcResName2, "listen_port", "443"),
+					resource.TestCheckResourceAttr(svcResName2, "destination_port", "443"),
+				),
+			},
+
+			{ // Test Change Listenport
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_load_balancer", loadbalancer.Basic,
+					"testdata/r/hcloud_load_balancer_service", &loadbalancer.RDataService{
+						Name:            svcName,
+						Protocol:        "tcp",
+						LoadBalancerID:  fmt.Sprintf("%s.%s.id", loadbalancer.ResourceType, loadbalancer.Basic.Name),
+						ListenPort:      71,
+						DestinationPort: 70,
+					},
+					"testdata/r/hcloud_load_balancer_service", &loadbalancer.RDataService{
+						Name:            svcName2,
+						Protocol:        "tcp",
+						LoadBalancerID:  fmt.Sprintf("%s.%s.id", loadbalancer.ResourceType, loadbalancer.Basic.Name),
+						ListenPort:      443,
+						DestinationPort: 443,
+					},
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(lbResName, loadbalancer.ByID(t, &lb)),
+					testsupport.LiftTCF(hasService(&lb, 71)),
+					testsupport.CheckResourceAttrFunc(svcResName, "load_balancer_id", func() string {
+						return strconv.Itoa(lb.ID)
+					}),
+					resource.TestCheckResourceAttr(svcResName, "protocol", "tcp"),
+					resource.TestCheckResourceAttr(svcResName, "listen_port", "71"),
+					resource.TestCheckResourceAttr(svcResName, "destination_port", "70"),
+
+					testsupport.LiftTCF(hasService(&lb, 443)),
+					testsupport.CheckResourceAttrFunc(svcResName2, "load_balancer_id", func() string {
+						return strconv.Itoa(lb.ID)
+					}),
+					resource.TestCheckResourceAttr(svcResName2, "protocol", "tcp"),
+					resource.TestCheckResourceAttr(svcResName2, "listen_port", "443"),
+					resource.TestCheckResourceAttr(svcResName2, "destination_port", "443"),
+				),
+			},
+		},
+	})
+}
+
 func hasService(lb *hcloud.LoadBalancer, listenPort int) func() error {
 	return func() error {
 		for _, svc := range lb.Services {
