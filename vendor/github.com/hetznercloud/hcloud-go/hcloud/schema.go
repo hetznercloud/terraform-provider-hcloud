@@ -431,14 +431,21 @@ func LoadBalancerFromSchema(s schema.LoadBalancer) *LoadBalancer {
 		Protection: LoadBalancerProtection{
 			Delete: s.Protection.Delete,
 		},
-		Labels:  map[string]string{},
-		Created: s.Created,
+		Labels:          map[string]string{},
+		Created:         s.Created,
+		IncludedTraffic: s.IncludedTraffic,
 	}
 	for _, privateNet := range s.PrivateNet {
 		l.PrivateNet = append(l.PrivateNet, LoadBalancerPrivateNet{
 			Network: &Network{ID: privateNet.Network},
 			IP:      net.ParseIP(privateNet.IP),
 		})
+	}
+	if s.OutgoingTraffic != nil {
+		l.OutgoingTraffic = *s.OutgoingTraffic
+	}
+	if s.IngoingTraffic != nil {
+		l.IngoingTraffic = *s.IngoingTraffic
 	}
 	for _, service := range s.Services {
 		l.Services = append(l.Services, LoadBalancerServiceFromSchema(service))
@@ -712,8 +719,7 @@ func loadBalancerCreateOptsToSchema(opts LoadBalancerCreateOpts) schema.LoadBala
 			DestinationPort: service.DestinationPort,
 			Proxyprotocol:   service.Proxyprotocol,
 		}
-		switch service.Protocol {
-		case LoadBalancerServiceProtocolHTTP, LoadBalancerServiceProtocolHTTPS:
+		if service.HTTP != nil {
 			schemaService.HTTP = &schema.LoadBalancerCreateRequestServiceHTTP{
 				RedirectHTTP:   service.HTTP.RedirectHTTP,
 				StickySessions: service.HTTP.StickySessions,

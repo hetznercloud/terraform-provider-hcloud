@@ -186,15 +186,30 @@ func (c *Client) NewRequest(ctx context.Context, method, path string, body io.Re
 // Do performs an HTTP request against the API.
 func (c *Client) Do(r *http.Request, v interface{}) (*Response, error) {
 	var retries int
+	var body []byte
+	var err error
+	if r.ContentLength > 0 {
+		body, err = ioutil.ReadAll(r.Body)
+		if err != nil {
+			r.Body.Close()
+			return nil, err
+		}
+		r.Body.Close()
+	}
 	for {
+		if r.ContentLength > 0 {
+			r.Body = ioutil.NopCloser(bytes.NewReader(body))
+		}
+
 		if c.debugWriter != nil {
 			// To get the response body we need to read it before the request was actually send. https://github.com/golang/go/issues/29792
-			dumpReq, err := httputil.DumpRequest(r, true)
+			dumpReq, err := httputil.DumpRequestOut(r, true)
 			if err != nil {
 				return nil, err
 			}
 			fmt.Fprintf(c.debugWriter, "--- Request:\n%s\n\n", dumpReq)
 		}
+
 		resp, err := c.httpClient.Do(r)
 		if err != nil {
 			return nil, err
