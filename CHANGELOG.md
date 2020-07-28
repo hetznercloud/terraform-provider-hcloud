@@ -1,4 +1,4 @@
-## 1.20.0 (unreleased)
+## 1.19.2 (July 28, 2020)
 
 CHANGED:
 
