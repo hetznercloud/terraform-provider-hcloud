@@ -18,6 +18,9 @@ BUG FIXES:
 * Deleted all Load Balancer services when you changed the `listen_port` of one service 
 * `hcloud_load_balancer_target` was not idempotent when you add a target that was already defined
 
+NOTES:
+* Update to hcloud-go v1.19.0 to fix the bad request issue
+
 ## 1.19.1 (July 16, 2020)
 
 NOTES:
