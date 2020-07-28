@@ -290,7 +290,8 @@ func resourceLoadBalancerServiceRead(d *schema.ResourceData, m interface{}) erro
 		}
 	}
 	if !found {
-		return fmt.Errorf("load balancer %d: no service for port %d", lb.ID, listenPort)
+		d.SetId("")
+		return nil
 	}
 
 	return setLoadBalancerServiceSchema(d, lb, service)

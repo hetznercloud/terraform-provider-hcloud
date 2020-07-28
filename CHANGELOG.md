@@ -15,6 +15,8 @@ CHANGED:
 
 BUG FIXES:
 * Enable and Disable `proxyprotocol` on a Load Balancer didn't work after creation
+* Deleted all Load Balancer services when you changed the `listen_port` of one service 
+* `hcloud_load_balancer_target` was not idempotent when you add a target that was already defined
 
 ## 1.19.1 (July 16, 2020)
 
