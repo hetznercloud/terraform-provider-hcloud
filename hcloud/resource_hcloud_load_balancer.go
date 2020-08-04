@@ -199,6 +199,20 @@ func resourceLoadBalancerUpdate(d *schema.ResourceData, m interface{}) error {
 		d.SetPartial("name")
 	}
 
+	if d.HasChange("load_balancer_type") {
+		newType := d.Get("load_balancer_type")
+		_, _, err := client.LoadBalancer.ChangeType(ctx, loadBalancer, hcloud.LoadBalancerChangeTypeOpts{
+			LoadBalancerType: &hcloud.LoadBalancerType{Name: newType.(string)},
+		})
+		if err != nil {
+			if resourceLoadBalancerIsNotFound(err, d) {
+				return nil
+			}
+			return err
+		}
+		d.SetPartial("load_balancer_type")
+	}
+
 	if d.HasChange("algorithm") {
 		algorithm := d.Get("algorithm")
 		hcloudAlgorithm := parseTerraformAlgorithm(algorithm.([]interface{}))

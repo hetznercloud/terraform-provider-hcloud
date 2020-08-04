@@ -1,3 +1,9 @@
+## master (Unreleased)
+
+FEATURES:
+
+* Allow updating/resizing a Load Balancer through the `load_balancer_type` of `hcloud_load_balancer` resource
+
 ## 1.19.2 (July 28, 2020)
 
 CHANGED:
