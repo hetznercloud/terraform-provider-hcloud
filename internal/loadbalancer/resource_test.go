@@ -73,6 +73,51 @@ func TestLoadBalancerResource_Basic(t *testing.T) {
 	})
 }
 
+func TestLoadBalancerResource_Resize(t *testing.T) {
+	var lb hcloud.LoadBalancer
+
+	res := loadbalancer.Basic
+	resResized := &loadbalancer.RData{
+		Name:         res.Name,
+		LocationName: "nbg1",
+		Type:         "lb21",
+	}
+
+	tmplMan := testtemplate.Manager{}
+	resource.Test(t, resource.TestCase{
+		PreCheck:     testsupport.AccTestPreCheck(t),
+		Providers:    testsupport.AccTestProviders(),
+		CheckDestroy: testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, &lb)),
+		Steps: []resource.TestStep{
+			{
+				// Create a new Load Balancer using the required values
+				// only.
+				Config: tmplMan.Render(t, "testdata/r/hcloud_load_balancer", res),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(res.TFID(), loadbalancer.ByID(t, &lb)),
+					resource.TestCheckResourceAttr(res.TFID(), "name",
+						fmt.Sprintf("basic-load-balancer--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(res.TFID(), "load_balancer_type", "lb11"),
+					resource.TestCheckResourceAttr(res.TFID(), "location", "nbg1"),
+				),
+			},
+			{
+				// Update the Load Balancer created in the previous step by
+				// setting another load balancer type.
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_load_balancer", resResized,
+				),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resResized.TFID(), "name",
+						fmt.Sprintf("basic-load-balancer--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(resResized.TFID(), "load_balancer_type", "lb21"),
+					resource.TestCheckResourceAttr(resResized.TFID(), "location", "nbg1"),
+				),
+			},
+		},
+	})
+}
+
 func TestLoadBalancerResource_InlineTarget(t *testing.T) {
 	var srv0, srv1 hcloud.Server
 
