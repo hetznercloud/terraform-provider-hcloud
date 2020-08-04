@@ -1,6 +1,6 @@
 Terraform Provider for the Hetzner Cloud
 ==================
-[![GitHub release](https://img.shields.io/github/tag/hetznercloud/terraform-provider-hcloud.svg?label=release)](https://github.com/terraform-providers/terraform-provider-hcloud/releases/latest) [![Build Status](https://travis-ci.org/terraform-providers/terraform-provider-hcloud.svg?branch=master)](https://travis-ci.org/terraform-providers/terraform-provider-hcloud)
+[![GitHub release](https://img.shields.io/github/tag/hetznercloud/terraform-provider-hcloud.svg?label=release)](https://github.com/terraform-providers/terraform-provider-hcloud/releases/latest) [![Actions Status](https://github.com/hetznercloud/terraform-provider-hcloud/workflows/test/badge.svg)](https://github.com/hetznercloud/terraform-provider-hcloud/actions)[![Actions Status](https://github.com/hetznercloud/terraform-provider-hcloud/workflows/release/badge.svg)](https://github.com/hetznercloud/terraform-provider-hcloud/actions)
 
 - Website: https://www.terraform.io
 - Documentation: https://www.terraform.io/docs/providers/hcloud/index.html
@@ -16,17 +16,17 @@ Requirements
 Building the provider
 ---------------------
 
-Clone repository to: `$GOPATH/src/github.com/terraform-providers/terraform-provider-hcloud`
+Clone repository to: `$GOPATH/src/github.com/hetznercloud/terraform-provider-hcloud`
 
 ```sh
-$ mkdir -p $GOPATH/src/github.com/terraform-providers; cd $GOPATH/src/github.com/terraform-providers
-$ git clone https://github.com/terraform-providers/terraform-provider-hcloud.git
+$ mkdir -p $GOPATH/src/github.com/hetznercloud; cd $GOPATH/src/github.com/hetznercloud
+$ git clone https://github.com/hetznercloud/terraform-provider-hcloud.git
 ```
 
 Enter the provider directory and build the provider
 
 ```sh
-$ cd $GOPATH/src/github.com/terraform-providers/terraform-provider-hcloud
+$ cd $GOPATH/src/github.com/hetznercloud/terraform-provider-hcloud
 $ make build
 ```
 
