@@ -2,7 +2,9 @@
 
 FEATURES:
 
-* Allow updating/resizing a Load Balancer through the `load_balancer_type` of `hcloud_load_balancer` resource
+* Allow updating/resizing a Load Balancer through the
+  `load_balancer_type` of `hcloud_load_balancer` resource
+* Add support for Load Balancer Label Selector and IP targets.
 
 ## 1.19.2 (July 28, 2020)
 
@@ -21,7 +23,7 @@ CHANGED:
 
 BUG FIXES:
 * Enable and Disable `proxyprotocol` on a Load Balancer didn't work after creation
-* Deleted all Load Balancer services when you changed the `listen_port` of one service 
+* Deleted all Load Balancer services when you changed the `listen_port` of one service
 * `hcloud_load_balancer_target` was not idempotent when you add a target that was already defined
 
 NOTES:

@@ -171,6 +171,8 @@ type RDataTarget struct {
 	Type           string
 	LoadBalancerID string
 	ServerID       string
+	LabelSelector  string
+	IP             string
 	UsePrivateIP   bool
 	DependsOn      []string
 }

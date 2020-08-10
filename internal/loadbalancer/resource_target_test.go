@@ -14,7 +14,7 @@ import (
 	"github.com/terraform-providers/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestAccHcloudLoadBalancerTarget(t *testing.T) {
+func TestAccHcloudLoadBalancerTarget_ServerTarget(t *testing.T) {
 	var (
 		lb  hcloud.LoadBalancer
 		srv hcloud.Server
@@ -67,7 +67,7 @@ func TestAccHcloudLoadBalancerTarget(t *testing.T) {
 	})
 }
 
-func TestAccHcloudLoadBalancerTarget_UsePrivateIP(t *testing.T) {
+func TestAccHcloudLoadBalancerTarget_ServerTarget_UsePrivateIP(t *testing.T) {
 	var (
 		lb  hcloud.LoadBalancer
 		srv hcloud.Server
@@ -139,6 +139,177 @@ func TestAccHcloudLoadBalancerTarget_UsePrivateIP(t *testing.T) {
 	})
 }
 
+func TestAccHcloudLoadBalancerTarget_LabelSelectorTarget(t *testing.T) {
+	var (
+		lb  hcloud.LoadBalancer
+		srv hcloud.Server
+	)
+
+	tmplMan := testtemplate.Manager{}
+	selector := fmt.Sprintf("tf-test=tf-test-%d", tmplMan.RandInt)
+	resource.Test(t, resource.TestCase{
+		PreCheck:     testsupport.AccTestPreCheck(t),
+		Providers:    testsupport.AccTestProviders(),
+		CheckDestroy: testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
+		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_server", &server.RData{
+						Name:  "lb-server-target",
+						Type:  "cx11",
+						Image: "ubuntu-20.04",
+						Labels: map[string]string{
+							"tf-test": fmt.Sprintf("tf-test-%d", tmplMan.RandInt),
+						},
+					},
+					"testdata/r/hcloud_load_balancer", &loadbalancer.RData{
+						Name:        "target-test-lb",
+						Type:        "lb11",
+						NetworkZone: "eu-central",
+					},
+					"testdata/r/hcloud_load_balancer_target", &loadbalancer.RDataTarget{
+						Name:           "lb-test-target",
+						Type:           "label_selector",
+						LoadBalancerID: "hcloud_load_balancer.target-test-lb.id",
+						LabelSelector:  selector,
+					},
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(
+						loadbalancer.ResourceType+".target-test-lb", loadbalancer.ByID(t, &lb)),
+					testsupport.CheckResourceExists(
+						server.ResourceType+".lb-server-target", server.ByID(t, &srv)),
+					resource.TestCheckResourceAttr(
+						loadbalancer.TargetResourceType+".lb-test-target", "type", "label_selector"),
+					resource.TestCheckResourceAttr(
+						loadbalancer.TargetResourceType+".lb-test-target", "label_selector", selector),
+					testsupport.LiftTCF(hasLabelSelectorTarget(&lb, selector)),
+				),
+			},
+		},
+	})
+}
+
+func TestAccHcloudLoadBalancerTarget_LabelSelectorTarget_UsePrivateIP(t *testing.T) {
+	var (
+		lb  hcloud.LoadBalancer
+		srv hcloud.Server
+	)
+
+	tmplMan := testtemplate.Manager{}
+	selector := fmt.Sprintf("tf-test=tf-test-%d", tmplMan.RandInt)
+	resource.Test(t, resource.TestCase{
+		PreCheck:     testsupport.AccTestPreCheck(t),
+		Providers:    testsupport.AccTestProviders(),
+		CheckDestroy: testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
+		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_network", &network.RData{
+						Name:    "lb-target-test-network",
+						IPRange: "10.0.0.0/16",
+					},
+					"testdata/r/hcloud_network_subnet", &network.RDataSubnet{
+						Name:        "lb-target-test-subnet",
+						NetworkID:   "hcloud_network.lb-target-test-network.id",
+						Type:        "cloud",
+						NetworkZone: "eu-central",
+						IPRange:     "10.0.1.0/24",
+					},
+					"testdata/r/hcloud_server", &server.RData{
+						Name:  "lb-server-target",
+						Type:  "cx11",
+						Image: "ubuntu-20.04",
+						Labels: map[string]string{
+							"tf-test": fmt.Sprintf("tf-test-%d", tmplMan.RandInt),
+						},
+					},
+					"testdata/r/hcloud_server_network", &server.RDataNetwork{
+						Name:      "lb-server-network",
+						ServerID:  "hcloud_server.lb-server-target.id",
+						NetworkID: "hcloud_network.lb-target-test-network.id",
+					},
+					"testdata/r/hcloud_load_balancer", &loadbalancer.RData{
+						Name:        "target-test-lb",
+						Type:        "lb11",
+						NetworkZone: "eu-central",
+					},
+					"testdata/r/hcloud_load_balancer_network", &loadbalancer.RDataNetwork{
+						Name:                  "target-test-lb-network",
+						LoadBalancerID:        "hcloud_load_balancer.target-test-lb.id",
+						NetworkID:             "hcloud_network.lb-target-test-network.id",
+						EnablePublicInterface: true,
+					},
+					"testdata/r/hcloud_load_balancer_target", &loadbalancer.RDataTarget{
+						Name:           "lb-test-target",
+						Type:           "label_selector",
+						LoadBalancerID: "hcloud_load_balancer.target-test-lb.id",
+						LabelSelector:  selector,
+						UsePrivateIP:   true,
+						DependsOn: []string{
+							"hcloud_server_network.lb-server-network",
+							"hcloud_load_balancer_network.target-test-lb-network",
+						},
+					},
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(
+						loadbalancer.ResourceType+".target-test-lb", loadbalancer.ByID(t, &lb)),
+					testsupport.CheckResourceExists(
+						server.ResourceType+".lb-server-target", server.ByID(t, &srv)),
+					resource.TestCheckResourceAttr(
+						loadbalancer.TargetResourceType+".lb-test-target", "type", "label_selector"),
+					resource.TestCheckResourceAttr(
+						loadbalancer.TargetResourceType+".lb-test-target", "label_selector", selector),
+					resource.TestCheckResourceAttr(
+						loadbalancer.TargetResourceType+".lb-test-target", "use_private_ip", "true"),
+					testsupport.LiftTCF(hasLabelSelectorTarget(&lb, selector)),
+				),
+			},
+		},
+	})
+}
+
+func TestAccHcloudLoadBalancerTarget_IPTarget(t *testing.T) {
+	var (
+		lb hcloud.LoadBalancer
+	)
+
+	ip := "213.239.214.25"
+	tmplMan := testtemplate.Manager{}
+	resource.Test(t, resource.TestCase{
+		PreCheck:     testsupport.AccTestPreCheck(t),
+		Providers:    testsupport.AccTestProviders(),
+		CheckDestroy: testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
+		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_load_balancer", &loadbalancer.RData{
+						Name:        "target-test-lb",
+						Type:        "lb11",
+						NetworkZone: "eu-central",
+					},
+					"testdata/r/hcloud_load_balancer_target", &loadbalancer.RDataTarget{
+						Name:           "lb-test-target",
+						LoadBalancerID: "hcloud_load_balancer.target-test-lb.id",
+						Type:           "ip",
+						IP:             ip,
+					},
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(
+						loadbalancer.ResourceType+".target-test-lb", loadbalancer.ByID(t, &lb)),
+					resource.TestCheckResourceAttr(
+						loadbalancer.TargetResourceType+".lb-test-target", "type", "ip"),
+					resource.TestCheckResourceAttr(
+						loadbalancer.TargetResourceType+".lb-test-target", "ip", ip),
+					testsupport.LiftTCF(hasIPTarget(&lb, ip)),
+				),
+			},
+		},
+	})
+}
+
 func hasServerTarget(lb *hcloud.LoadBalancer, srv *hcloud.Server) func() error {
 	return func() error {
 		for _, tgt := range lb.Targets {
@@ -147,5 +318,27 @@ func hasServerTarget(lb *hcloud.LoadBalancer, srv *hcloud.Server) func() error {
 			}
 		}
 		return fmt.Errorf("load balancer %d: no target for server: %d", lb.ID, srv.ID)
+	}
+}
+
+func hasLabelSelectorTarget(lb *hcloud.LoadBalancer, selector string) func() error {
+	return func() error {
+		for _, tgt := range lb.Targets {
+			if tgt.Type == hcloud.LoadBalancerTargetTypeLabelSelector && tgt.LabelSelector.Selector == selector {
+				return nil
+			}
+		}
+		return fmt.Errorf("load balancer %d: no label selector: %s", lb.ID, selector)
+	}
+}
+
+func hasIPTarget(lb *hcloud.LoadBalancer, ip string) func() error {
+	return func() error {
+		for _, tgt := range lb.Targets {
+			if tgt.Type == hcloud.LoadBalancerTargetTypeIP && tgt.IP.IP == ip {
+				return nil
+			}
+		}
+		return fmt.Errorf("load balancer %d: no ip target: %s", lb.ID, ip)
 	}
 }

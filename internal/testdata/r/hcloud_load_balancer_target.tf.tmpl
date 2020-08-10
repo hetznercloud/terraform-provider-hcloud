@@ -4,7 +4,15 @@ resource "hcloud_load_balancer_target" "{{ .Name }}" {
   {{/* Required properties */ -}}
   type             = "{{ .Type }}"
   load_balancer_id = {{ .LoadBalancerID }}
+  {{- if .ServerID }}
   server_id        = {{ .ServerID }}
+  {{ end }}
+  {{- if .LabelSelector }}
+  label_selector   = "{{ .LabelSelector }}"
+  {{ end }}
+  {{- if .IP }}
+  ip               = "{{ .IP }}"
+  {{ end }}
 
   {{- /* Optional properties */}}
   {{- if .UsePrivateIP }}
