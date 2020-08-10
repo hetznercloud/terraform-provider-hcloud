@@ -34,18 +34,27 @@ resource "hcloud_load_balancer_target" "load_balancer_target" {
 
 ## Argument Reference
 
-- `type` - (Required, string) Type of the target. `server`
+- `type` - (Required, string) Type of the target. Possible values
+  `server`, `label_selector`, `ip`.
 - `load_balancer_id` - (Required, int) ID of the Load Balancer to which
   the target gets attached.
 - `server_id` - (Optional, int) ID of the server which should be a
   target for this Load Balancer. Required if `type` is `server`
+- `label_selector` - (Optional, string) Label Selector selecting targets
+  for this Load Balancer. Required if `type` is `label_selector`.
+- `ip` - (Optional, string) IP address for an IP Target. Required if
+  `type` is `ip`.
 - `use_private_ip` - (Optional, bool) use the private IP to connect to
-  Load Balancer targets.
+  Load Balancer targets. Only allowed if type is `server` or
+  `label_selector`.
 
 ## Attributes Reference
 
 - `type` - (string) Type of the target. `server`
 - `server_id` - (int) ID of the server which should be a target for this
   Load Balancer.
+- `label_selector` - (string) Label Selector selecting targets for this
+  Load Balancer.
+- `ip` - (string) IP address of an IP Target.
 - `use_private_ip` - (bool) use the private IP to connect to Load
   Balancer targets.
