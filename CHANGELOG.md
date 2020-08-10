@@ -1,5 +1,7 @@
 ## master (Unreleased)
 
+## 1.20.0 (August 10, 2020)
+
 FEATURES:
 
 * Allow updating/resizing a Load Balancer through the
