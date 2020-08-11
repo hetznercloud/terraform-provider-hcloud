@@ -1,6 +1,6 @@
 Terraform Provider for the Hetzner Cloud
 ==================
-[![GitHub release](https://img.shields.io/github/tag/hetznercloud/terraform-provider-hcloud.svg?label=release)](https://github.com/terraform-providers/terraform-provider-hcloud/releases/latest) [![Actions Status](https://github.com/hetznercloud/terraform-provider-hcloud/workflows/test/badge.svg)](https://github.com/hetznercloud/terraform-provider-hcloud/actions)[![Actions Status](https://github.com/hetznercloud/terraform-provider-hcloud/workflows/release/badge.svg)](https://github.com/hetznercloud/terraform-provider-hcloud/actions)
+[![GitHub release](https://img.shields.io/github/tag/hetznercloud/terraform-provider-hcloud.svg?label=release)](https://github.com/hetznercloud/terraform-provider-hcloud/releases/latest) [![Actions Status](https://github.com/hetznercloud/terraform-provider-hcloud/workflows/test/badge.svg)](https://github.com/hetznercloud/terraform-provider-hcloud/actions)[![Actions Status](https://github.com/hetznercloud/terraform-provider-hcloud/workflows/release/badge.svg)](https://github.com/hetznercloud/terraform-provider-hcloud/actions)
 
 - Website: https://www.terraform.io
 - Documentation: https://www.terraform.io/docs/providers/hcloud/index.html
@@ -10,8 +10,8 @@ Terraform Provider for the Hetzner Cloud
 Requirements
 ------------
 
--	[Terraform](https://www.terraform.io/downloads.html) 0.12.x
--	[Go](https://golang.org/doc/install) 1.13.0 (to build the provider plugin)
+-	[Terraform](https://www.terraform.io/downloads.html) 0.12.x, 0.13.x
+-	[Go](https://golang.org/doc/install) 1.14.0 (to build the provider plugin)
 
 Building the provider
 ---------------------
@@ -38,7 +38,7 @@ if you are building the provider, follow the instructions to [install it as a pl
 Developing the provider
 ---------------------------
 
-If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine (version 1.11+ is *required*). You'll also need to correctly setup a [GOPATH](http://golang.org/doc/code.html#GOPATH), as well as adding `$GOPATH/bin` to your `$PATH`.
+If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine (version 1.14+ is *required*). You'll also need to correctly setup a [GOPATH](http://golang.org/doc/code.html#GOPATH), as well as adding `$GOPATH/bin` to your `$PATH`.
 
 To compile the provider, run `make build`. This will build the provider and put the provider binary in the `$GOPATH/bin` directory.
 
