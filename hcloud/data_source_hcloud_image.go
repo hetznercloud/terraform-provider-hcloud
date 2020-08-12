@@ -123,7 +123,6 @@ func dataSourceHcloudImageRead(d *schema.ResourceData, m interface{}) (err error
 		}
 
 		opts := hcloud.ImageListOpts{ListOpts: hcloud.ListOpts{LabelSelector: selector}, Status: statuses}
-
 		allImages, err = client.Image.AllWithOpts(ctx, opts)
 		if err != nil {
 			return err
