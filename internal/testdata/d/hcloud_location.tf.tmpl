@@ -1,0 +1,6 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+data "hcloud_location" "{{ .RName }}" {
+  {{ if .LocationID -}}   id            = "{{ .LocationID }}"{{ end }}
+  {{ if .LocationName -}} name          = "{{ .LocationName }}"{{ end }}
+}
