@@ -2,12 +2,14 @@ package certificate
 
 import (
 	"context"
+	"fmt"
+	"github.com/terraform-providers/terraform-provider-hcloud/internal/testsupport"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hetznercloud/hcloud-go/hcloud"
-	"github.com/terraform-providers/terraform-provider-hcloud/internal/testsupport"
 	"github.com/terraform-providers/terraform-provider-hcloud/internal/testtemplate"
 )
 
@@ -58,6 +60,21 @@ func ByID(t *testing.T, cert *hcloud.Certificate) func(*hcloud.Client, int) bool
 	}
 }
 
+// DData defines the fields for the "testdata/d/hcloud_certificate"
+// template.
+type DData struct {
+	testtemplate.DataCommon
+
+	CertificateID   string
+	CertificateName string
+	LabelSelector   string
+}
+
+// TFID returns the data source identifier.
+func (d *DData) TFID() string {
+	return fmt.Sprintf("data.%s.%s", DataSourceType, d.RName())
+}
+
 // RData defines the fields for the "testdata/r/hcloud_certificate"
 // template.
 type RData struct {
@@ -66,17 +83,27 @@ type RData struct {
 	Name        string
 	PrivateKey  string
 	Certificate string
+	Labels      map[string]string
+}
+
+// TFID returns the resource identifier.
+func (d *RData) TFID() string {
+	return fmt.Sprintf("%s.%s", ResourceType, d.RName())
 }
 
 // NewRData creates data for a new certificate resource.
-func NewRData(t *testing.T, name, domain string) *RData {
-	rCert, rKey, err := acctest.RandTLSCert(domain)
+func NewRData(t *testing.T, name, org string) *RData {
+	rCert, rKey, err := acctest.RandTLSCert(org)
+	rInt := acctest.RandInt()
 	if err != nil {
 		t.Fatal(err)
 	}
-	return &RData{
+	r := &RData{
 		Name:        name,
 		PrivateKey:  rKey,
 		Certificate: rCert,
+		Labels:      map[string]string{"key": strconv.Itoa(rInt)},
 	}
+	r.SetRName(name)
+	return r
 }

@@ -200,7 +200,7 @@ func TestAccHcloudLoadBalancerService_HTTPS(t *testing.T) {
 	)
 
 	certData := certificate.NewRData(t, "test-cert", "example.org")
-	certResName := fmt.Sprintf("%s.%s", certificate.ResourceType, certData.Name)
+	certResName := fmt.Sprintf("%s.%s", certificate.ResourceType, certData.RName())
 
 	lbResName := fmt.Sprintf("%s.%s", loadbalancer.ResourceType, loadbalancer.Basic.Name)
 	svcName := "lb-https-service-test"
