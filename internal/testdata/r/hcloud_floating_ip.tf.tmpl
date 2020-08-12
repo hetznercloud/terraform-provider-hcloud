@@ -1,0 +1,16 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+resource "hcloud_floating_ip" "{{ .RName }}" {
+  {{/* Required properties */ -}}
+  name        = "{{ .Name }}--{{ .RInt }}"
+  type = "{{ .Type }}"
+  home_location       = "{{ .HomeLocationName }}"
+
+  {{- if .Labels }}
+  labels = {
+  {{- range $k,$v := .Labels }}
+    {{ $k }} = "{{ $v }}"
+  {{- end }}
+  }
+  {{ end }}
+}

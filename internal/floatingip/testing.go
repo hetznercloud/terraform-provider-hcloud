@@ -1,4 +1,4 @@
-package server
+package floatingip
 
 import (
 	"context"
@@ -19,7 +19,7 @@ func init() {
 	})
 }
 
-// Sweep removes all Servers from the Hetzner Cloud backend.
+// Sweep removes all Floating IPs from the Hetzner Cloud backend.
 func Sweep(r string) error {
 	client, err := testsupport.CreateClient()
 	if err != nil {
@@ -27,13 +27,13 @@ func Sweep(r string) error {
 	}
 
 	ctx := context.Background()
-	servers, err := client.Server.All(ctx)
+	servers, err := client.FloatingIP.All(ctx)
 	if err != nil {
 		return err
 	}
 
 	for _, srv := range servers {
-		if _, err := client.Server.Delete(ctx, srv); err != nil {
+		if _, err := client.FloatingIP.Delete(ctx, srv); err != nil {
 			return err
 		}
 	}
@@ -41,53 +41,34 @@ func Sweep(r string) error {
 	return nil
 }
 
-// ByID returns a function that obtains a server by its ID.
-func ByID(t *testing.T, srv *hcloud.Server) func(*hcloud.Client, int) bool {
+// ByID returns a function that obtains a Floating IP by its ID.
+func ByID(t *testing.T, fl *hcloud.FloatingIP) func(*hcloud.Client, int) bool {
 	return func(c *hcloud.Client, id int) bool {
-		found, _, err := c.Server.GetByID(context.Background(), id)
+		found, _, err := c.FloatingIP.GetByID(context.Background(), id)
 		if err != nil {
-			t.Fatalf("find server %d: %v", id, err)
+			t.Fatalf("find floating ip %d: %v", id, err)
 		}
 		if found == nil {
 			return false
 		}
-		if srv != nil {
-			*srv = *found
+		if fl != nil {
+			*fl = *found
 		}
 		return true
 	}
 }
 
-// RData defines the fields for the "testdata/r/hcloud_server" template.
+// RData defines the fields for the "testdata/r/hcloud_floating_ip" template.
 type RData struct {
 	testtemplate.DataCommon
 
-	Name         string
-	Type         string
-	Image        string
-	LocationName string
-	DataCenter   string
-	SSHKeys      []string
-	KeepDisk     bool
-	Rescue       bool
-	Backups      bool
-	Labels       map[string]string
-	UserData     string
+	Name             string
+	Type             string
+	HomeLocationName string
+	Labels           map[string]string
 }
 
 // TFID returns the resource identifier.
 func (d *RData) TFID() string {
 	return fmt.Sprintf("%s.%s", ResourceType, d.RName())
-}
-
-// RDataNetwork defines the fields for the "testdata/r/hcloud_server_network"
-// template.
-type RDataNetwork struct {
-	testtemplate.DataCommon
-
-	Name      string
-	ServerID  string
-	NetworkID string
-	IP        string
-	AliasIPs  []string
 }
