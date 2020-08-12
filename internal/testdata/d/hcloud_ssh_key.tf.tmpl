@@ -1,0 +1,7 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+data "hcloud_ssh_key" "{{ .RName }}" {
+  {{ if .SSHKeyID -}}   id            = {{ .SSHKeyID }}{{ end -}}
+  {{ if .SSHKeyName -}} name          = {{ .SSHKeyName }}{{ end -}}
+  {{ if .LabelSelector -}}    with_selector = "{{ .LabelSelector }}"{{ end }}
+}
