@@ -1,0 +1,12 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+resource "hcloud_rdns" "{{ .RName }}" {
+  {{- if .ServerID }}
+  server_id        = {{ .ServerID }}
+  {{ end }}
+  {{- if .FloatingIPID }}
+  floating_ip_id        = {{ .FloatingIPID }}
+  {{ end }}
+  ip_address = {{ .IpAddress }}
+  dns_ptr = "{{ .DnsPTR }}"
+}

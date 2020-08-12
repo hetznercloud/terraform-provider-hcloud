@@ -1,6 +1,6 @@
 {{- /* vim: set ft=terraform: */ -}}
 
-resource "hcloud_server" "{{ .Name }}" {
+resource "hcloud_server" "{{ .RName }}" {
   {{/* Required properties */ -}}
   name        = "{{ .Name }}--{{ .RInt }}"
   server_type = "{{ .Type }}"

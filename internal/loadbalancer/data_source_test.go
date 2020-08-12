@@ -2,6 +2,8 @@ package loadbalancer_test
 
 import (
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -17,7 +19,7 @@ func TestAccHcloudDataSourceLoadBalancerTest(t *testing.T) {
 		Name:         "some-load-balancer",
 		LocationName: "nbg1",
 		Labels: map[string]string{
-			"key": "value",
+			"key": strconv.Itoa(acctest.RandInt()),
 		},
 	}
 	lbByName := &loadbalancer.DData{
