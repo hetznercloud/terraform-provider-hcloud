@@ -1,0 +1,7 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+data "hcloud_certificate" "{{ .RName }}" {
+  {{ if .CertificateID -}}    id            = {{ .CertificateID }}{{ end -}}
+  {{ if .CertificateName -}}  name          =  {{ .CertificateName }}{{ end -}}
+  {{ if .LabelSelector -}}    with_selector = "{{ .LabelSelector }}"{{ end }}
+}
