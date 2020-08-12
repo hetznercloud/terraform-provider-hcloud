@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
@@ -22,12 +23,15 @@ func init() {
 // Data marks a struct as containing data for test templates.
 type Data interface {
 	SetRInt(int)
+	SetRName(string)
 	RInt() int
+	RName() string
 }
 
 // DataCommon contains fields required by all template data types.
 type DataCommon struct {
-	rInt int
+	rInt  int
+	rName string
 }
 
 // SetRInt sets a random integer.
@@ -40,11 +44,22 @@ func (tdc *DataCommon) RInt() int {
 	return tdc.rInt
 }
 
+// SetRName sets a resource name.
+func (tdc *DataCommon) SetRName(n string) {
+	tdc.rName = n
+}
+
+// RInt returns the random name
+func (tdc *DataCommon) RName() string {
+	return tdc.rName
+}
+
 // Manager loads and renders Terraform HCL templates.
 type Manager struct {
-	RandInt int
-	tmpl    *template.Template
-	once    sync.Once // ensures templates in <project-root>/internal/testdata/{r,d} are loaded only once.
+	RandInt  int
+	RandName string
+	tmpl     *template.Template
+	once     sync.Once // ensures templates in <project-root>/internal/testdata/{r,d} are loaded only once.
 }
 
 // init loads the templates in <project-root>/internal/testdata/{r,d} exactly
@@ -55,6 +70,9 @@ func (ts *Manager) init(t *testing.T) {
 	ts.once.Do(func() {
 		if ts.RandInt == 0 {
 			ts.RandInt = rng.Int()
+		}
+		if ts.RandName == "" {
+			ts.RandName = "r_" + strconv.Itoa(ts.RandInt)
 		}
 
 		ts.tmpl = template.New("testdata")
@@ -100,7 +118,9 @@ func (ts *Manager) Render(t *testing.T, args ...interface{}) string {
 			t.Fatalf("args[%d]: data required: %T", i+1, args[i+1])
 		}
 		data.SetRInt(ts.RandInt)
-
+		if data.RName() == "" {
+			data.SetRName(ts.RandName)
+		}
 		tmpl := ts.tmpl.Lookup(tmplName)
 		if tmpl == nil {
 			t.Fatalf("template %s: not found", tmplName)

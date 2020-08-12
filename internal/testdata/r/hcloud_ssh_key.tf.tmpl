@@ -1,0 +1,13 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+resource "hcloud_ssh_key" "{{ .RName }}" {
+  name        = "{{ .Name }}--{{ .RInt }}"
+  public_key  = "{{ StringsTrimSpace .PublicKey }}"
+  {{- if .Labels }}
+    labels = {
+    {{- range $k,$v := .Labels }}
+      {{ $k }} = "{{ $v }}"
+    {{- end }}
+  }
+  {{- end }}
+}
