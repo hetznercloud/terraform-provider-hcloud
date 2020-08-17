@@ -1,0 +1,7 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+resource "hcloud_floating_ip_assignment" "{{ .RName }}" {
+  {{/* Required properties */ -}}
+  floating_ip_id        = {{ .FloatingIPID }}
+  server_id = {{ .ServerID }}
+}

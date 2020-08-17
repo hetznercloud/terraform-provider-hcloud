@@ -122,6 +122,42 @@ func TestLoadBalancerResource_InlineTarget(t *testing.T) {
 	var srv0, srv1 hcloud.Server
 
 	tmplMan := testtemplate.Manager{RandInt: acctest.RandInt()}
+	resServer1 := &server.RData{
+		Name:  "some-server",
+		Type:  "cx11",
+		Image: "ubuntu-20.04",
+	}
+	resServer1.SetRName("some-server")
+	resServer2 := &server.RData{
+		Name:  "another-server",
+		Type:  "cx11",
+		Image: "ubuntu-20.04",
+	}
+	resServer2.SetRName("another-server")
+	res := &loadbalancer.RData{
+		Name:         "some-lb",
+		LocationName: "nbg1",
+		Algorithm:    "least_connections",
+		Labels: map[string]string{
+			"key1": "value1",
+			"key2": "value2",
+		},
+		ServerTargets: []loadbalancer.RDataInlineServerTarget{
+			{ServerID: resServer1.TFID() + ".id"},
+			{ServerID: resServer2.TFID() + ".id"},
+		},
+	}
+	resWithoutTargets := &loadbalancer.RData{
+		Name:         "some-lb",
+		LocationName: "nbg1",
+		Algorithm:    "least_connections",
+		Labels: map[string]string{
+			"key1": "value1",
+			"key2": "value2",
+		},
+	}
+	resWithoutTargets.SetRName(res.RName())
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:  testsupport.AccTestPreCheck(t),
 		Providers: testsupport.AccTestProviders(),
@@ -133,38 +169,18 @@ func TestLoadBalancerResource_InlineTarget(t *testing.T) {
 			{
 				// Add two inline targets to the load balancer
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_server", &server.RData{
-						Name:  "some-server",
-						Type:  "cx11",
-						Image: "ubuntu-20.04",
-					},
-					"testdata/r/hcloud_server", &server.RData{
-						Name:  "another-server",
-						Type:  "cx11",
-						Image: "ubuntu-20.04",
-					},
-					"testdata/r/hcloud_load_balancer", &loadbalancer.RData{
-						Name:         "some-lb",
-						LocationName: "nbg1",
-						Algorithm:    "least_connections",
-						Labels: map[string]string{
-							"key1": "value1",
-							"key2": "value2",
-						},
-						ServerTargets: []loadbalancer.RDataInlineServerTarget{
-							{ServerID: "hcloud_server.some-server.id"},
-							{ServerID: "hcloud_server.another-server.id"},
-						},
-					},
+					"testdata/r/hcloud_server", resServer1,
+					"testdata/r/hcloud_server", resServer2,
+					"testdata/r/hcloud_load_balancer", res,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testsupport.CheckResourceExists(server.ResourceType+".some-server", server.ByID(t, &srv0)),
-					testsupport.CheckResourceExists(server.ResourceType+".another-server", server.ByID(t, &srv1)),
-					testsupport.CheckResourceAttrFunc(loadbalancer.ResourceType+".some-lb",
+					testsupport.CheckResourceExists(resServer1.TFID(), server.ByID(t, &srv0)),
+					testsupport.CheckResourceExists(resServer2.TFID(), server.ByID(t, &srv1)),
+					testsupport.CheckResourceAttrFunc(res.TFID(),
 						"target.0.server_id", func() string {
 							return strconv.Itoa(srv0.ID)
 						}),
-					testsupport.CheckResourceAttrFunc(loadbalancer.ResourceType+".some-lb",
+					testsupport.CheckResourceAttrFunc(res.TFID(),
 						"target.1.server_id", func() string {
 							return strconv.Itoa(srv1.ID)
 						}),
@@ -173,17 +189,9 @@ func TestLoadBalancerResource_InlineTarget(t *testing.T) {
 			{
 				// Remove the targets from the load balancer
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_load_balancer", &loadbalancer.RData{
-						Name:         "some-lb",
-						LocationName: "nbg1",
-						Algorithm:    "least_connections",
-						Labels: map[string]string{
-							"key1": "value1",
-							"key2": "value2",
-						},
-					},
+					"testdata/r/hcloud_load_balancer", resWithoutTargets,
 				),
-				Check: resource.TestCheckNoResourceAttr(loadbalancer.ResourceType+".some-lb", "target"),
+				Check: resource.TestCheckNoResourceAttr(res.TFID(), "target"),
 			},
 		},
 	})

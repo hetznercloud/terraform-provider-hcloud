@@ -21,6 +21,12 @@ func TestAccHcloudLoadBalancerTarget_ServerTarget(t *testing.T) {
 	)
 
 	tmplMan := testtemplate.Manager{}
+	resServer := &server.RData{
+		Name:  "lb-server-target",
+		Type:  "cx11",
+		Image: "ubuntu-20.04",
+	}
+	resServer.SetRName("lb-server-target")
 	resource.Test(t, resource.TestCase{
 		PreCheck:     testsupport.AccTestPreCheck(t),
 		Providers:    testsupport.AccTestProviders(),
@@ -28,11 +34,7 @@ func TestAccHcloudLoadBalancerTarget_ServerTarget(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_server", &server.RData{
-						Name:  "lb-server-target",
-						Type:  "cx11",
-						Image: "ubuntu-20.04",
-					},
+					"testdata/r/hcloud_server", resServer,
 					"testdata/r/hcloud_load_balancer", &loadbalancer.RData{
 						Name:        "target-test-lb",
 						Type:        "lb11",
@@ -42,14 +44,13 @@ func TestAccHcloudLoadBalancerTarget_ServerTarget(t *testing.T) {
 						Name:           "lb-test-target",
 						Type:           "server",
 						LoadBalancerID: "hcloud_load_balancer.target-test-lb.id",
-						ServerID:       "hcloud_server.lb-server-target.id",
+						ServerID:       resServer.TFID() + ".id",
 					},
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckResourceExists(
 						loadbalancer.ResourceType+".target-test-lb", loadbalancer.ByID(t, &lb)),
-					testsupport.CheckResourceExists(
-						server.ResourceType+".lb-server-target", server.ByID(t, &srv)),
+					testsupport.CheckResourceExists(resServer.TFID(), server.ByID(t, &srv)),
 					resource.TestCheckResourceAttr(
 						loadbalancer.TargetResourceType+".lb-test-target", "type", "server"),
 					testsupport.CheckResourceAttrFunc(
@@ -74,6 +75,13 @@ func TestAccHcloudLoadBalancerTarget_ServerTarget_UsePrivateIP(t *testing.T) {
 	)
 
 	tmplMan := testtemplate.Manager{}
+
+	resServer := &server.RData{
+		Name:  "lb-server-target",
+		Type:  "cx11",
+		Image: "ubuntu-20.04",
+	}
+	resServer.SetRName("lb-server-target")
 	resource.Test(t, resource.TestCase{
 		PreCheck:     testsupport.AccTestPreCheck(t),
 		Providers:    testsupport.AccTestProviders(),
@@ -92,14 +100,10 @@ func TestAccHcloudLoadBalancerTarget_ServerTarget_UsePrivateIP(t *testing.T) {
 						NetworkZone: "eu-central",
 						IPRange:     "10.0.1.0/24",
 					},
-					"testdata/r/hcloud_server", &server.RData{
-						Name:  "lb-server-target",
-						Type:  "cx11",
-						Image: "ubuntu-20.04",
-					},
+					"testdata/r/hcloud_server", resServer,
 					"testdata/r/hcloud_server_network", &server.RDataNetwork{
 						Name:      "lb-server-network",
-						ServerID:  "hcloud_server.lb-server-target.id",
+						ServerID:  resServer.TFID() + ".id",
 						NetworkID: "hcloud_network.lb-target-test-network.id",
 					},
 					"testdata/r/hcloud_load_balancer", &loadbalancer.RData{
@@ -117,7 +121,7 @@ func TestAccHcloudLoadBalancerTarget_ServerTarget_UsePrivateIP(t *testing.T) {
 						Name:           "lb-test-target",
 						Type:           "server",
 						LoadBalancerID: "hcloud_load_balancer.target-test-lb.id",
-						ServerID:       "hcloud_server.lb-server-target.id",
+						ServerID:       resServer.TFID() + ".id",
 						UsePrivateIP:   true,
 						DependsOn: []string{
 							"hcloud_server_network.lb-server-network",
@@ -128,8 +132,7 @@ func TestAccHcloudLoadBalancerTarget_ServerTarget_UsePrivateIP(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckResourceExists(
 						loadbalancer.ResourceType+".target-test-lb", loadbalancer.ByID(t, &lb)),
-					testsupport.CheckResourceExists(
-						server.ResourceType+".lb-server-target", server.ByID(t, &srv)),
+					testsupport.CheckResourceExists(resServer.TFID(), server.ByID(t, &srv)),
 					resource.TestCheckResourceAttr(
 						loadbalancer.TargetResourceType+".lb-test-target", "use_private_ip", "true"),
 					testsupport.LiftTCF(hasServerTarget(&lb, &srv)),
@@ -147,6 +150,15 @@ func TestAccHcloudLoadBalancerTarget_LabelSelectorTarget(t *testing.T) {
 
 	tmplMan := testtemplate.Manager{}
 	selector := fmt.Sprintf("tf-test=tf-test-%d", tmplMan.RandInt)
+	resServer := &server.RData{
+		Name:  "lb-server-target",
+		Type:  "cx11",
+		Image: "ubuntu-20.04",
+		Labels: map[string]string{
+			"tf-test": fmt.Sprintf("tf-test-%d", tmplMan.RandInt),
+		},
+	}
+	resServer.SetRName("lb-server-target")
 	resource.Test(t, resource.TestCase{
 		PreCheck:     testsupport.AccTestPreCheck(t),
 		Providers:    testsupport.AccTestProviders(),
@@ -154,14 +166,7 @@ func TestAccHcloudLoadBalancerTarget_LabelSelectorTarget(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_server", &server.RData{
-						Name:  "lb-server-target",
-						Type:  "cx11",
-						Image: "ubuntu-20.04",
-						Labels: map[string]string{
-							"tf-test": fmt.Sprintf("tf-test-%d", tmplMan.RandInt),
-						},
-					},
+					"testdata/r/hcloud_server", resServer,
 					"testdata/r/hcloud_load_balancer", &loadbalancer.RData{
 						Name:        "target-test-lb",
 						Type:        "lb11",
@@ -177,8 +182,7 @@ func TestAccHcloudLoadBalancerTarget_LabelSelectorTarget(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckResourceExists(
 						loadbalancer.ResourceType+".target-test-lb", loadbalancer.ByID(t, &lb)),
-					testsupport.CheckResourceExists(
-						server.ResourceType+".lb-server-target", server.ByID(t, &srv)),
+					testsupport.CheckResourceExists(resServer.TFID(), server.ByID(t, &srv)),
 					resource.TestCheckResourceAttr(
 						loadbalancer.TargetResourceType+".lb-test-target", "type", "label_selector"),
 					resource.TestCheckResourceAttr(
@@ -195,8 +199,17 @@ func TestAccHcloudLoadBalancerTarget_LabelSelectorTarget_UsePrivateIP(t *testing
 		lb  hcloud.LoadBalancer
 		srv hcloud.Server
 	)
-
 	tmplMan := testtemplate.Manager{}
+	resServer := &server.RData{
+		Name:  "lb-server-target",
+		Type:  "cx11",
+		Image: "ubuntu-20.04",
+		Labels: map[string]string{
+			"tf-test": fmt.Sprintf("tf-test-%d", tmplMan.RandInt),
+		},
+	}
+	resServer.SetRName("lb-server-target")
+
 	selector := fmt.Sprintf("tf-test=tf-test-%d", tmplMan.RandInt)
 	resource.Test(t, resource.TestCase{
 		PreCheck:     testsupport.AccTestPreCheck(t),
@@ -216,17 +229,10 @@ func TestAccHcloudLoadBalancerTarget_LabelSelectorTarget_UsePrivateIP(t *testing
 						NetworkZone: "eu-central",
 						IPRange:     "10.0.1.0/24",
 					},
-					"testdata/r/hcloud_server", &server.RData{
-						Name:  "lb-server-target",
-						Type:  "cx11",
-						Image: "ubuntu-20.04",
-						Labels: map[string]string{
-							"tf-test": fmt.Sprintf("tf-test-%d", tmplMan.RandInt),
-						},
-					},
+					"testdata/r/hcloud_server", resServer,
 					"testdata/r/hcloud_server_network", &server.RDataNetwork{
 						Name:      "lb-server-network",
-						ServerID:  "hcloud_server.lb-server-target.id",
+						ServerID:  resServer.TFID() + ".id",
 						NetworkID: "hcloud_network.lb-target-test-network.id",
 					},
 					"testdata/r/hcloud_load_balancer", &loadbalancer.RData{
