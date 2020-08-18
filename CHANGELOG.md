@@ -1,4 +1,4 @@
-## master (Unreleased)
+## 1.20.1 (August 18, 2020)
 BUG FIXES:
 
 * `hcloud_certificate` resource: Updating the certificate needs to recreate the certificate.
