@@ -26,10 +26,12 @@ func resourceCertificate() *schema.Resource {
 				Type:      schema.TypeString,
 				Required:  true,
 				Sensitive: true,
+				ForceNew:  true,
 			},
 			"certificate": {
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"labels": {
 				Type:     schema.TypeMap,

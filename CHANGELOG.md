@@ -1,4 +1,11 @@
 ## master (Unreleased)
+BUG FIXES:
+
+* `hcloud_certificate` resource: Updating the certificate needs to recreate the certificate.
+
+NOTES:
+* The provider is now build with Go 1.15
+* We overhauled parts of the underlying test suite
 
 ## 1.20.0 (August 10, 2020)
 
