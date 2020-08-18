@@ -2,6 +2,7 @@ package hcloud
 
 import (
 	"errors"
+	"log"
 	"time"
 
 	"github.com/hashicorp/logutils"
@@ -11,6 +12,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 )
+
+var Version = "not build yet"
+var Commit = "not build yet"
 
 // Provider returns the hcloud terraform provider.
 func Provider() terraform.ResourceProvider {
@@ -75,7 +79,7 @@ func Provider() terraform.ResourceProvider {
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	opts := []hcloud.ClientOption{
 		hcloud.WithToken(d.Get("token").(string)),
-		hcloud.WithApplication("hcloud-terraform", "1.19.2"),
+		hcloud.WithApplication("hcloud-terraform", Version),
 	}
 	if endpoint, ok := d.GetOk("endpoint"); ok {
 		opts = append(opts, hcloud.WithEndpoint(endpoint.(string)))
@@ -94,5 +98,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		}
 		opts = append(opts, hcloud.WithDebugWriter(writer.(*logutils.LevelFilter).Writer))
 	}
+	log.Printf("[DEBUG] hcloud terraform provider version: %s commit: %s", Version, Commit)
+	log.Printf("[DEBUG] hcloud-go version: %s", hcloud.Version)
 	return hcloud.NewClient(opts...), nil
 }
