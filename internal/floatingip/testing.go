@@ -72,3 +72,16 @@ type RData struct {
 func (d *RData) TFID() string {
 	return fmt.Sprintf("%s.%s", ResourceType, d.RName())
 }
+
+// RDataAssignment defines the fields for the "testdata/r/hcloud_floating_ip_assignment" template.
+type RDataAssignment struct {
+	testtemplate.DataCommon
+
+	FloatingIPID string
+	ServerID     string
+}
+
+// TFID returns the resource identifier.
+func (d *RDataAssignment) TFID() string {
+	return fmt.Sprintf("%s.%s", AssignmentResourceType, d.RName())
+}

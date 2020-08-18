@@ -1,9 +1,8 @@
-package floatingip_assignment_test
+package floatingip_test
 
 import (
 	"fmt"
 	"github.com/terraform-providers/terraform-provider-hcloud/internal/floatingip"
-	"github.com/terraform-providers/terraform-provider-hcloud/internal/floatingip_assignment"
 	"github.com/terraform-providers/terraform-provider-hcloud/internal/server"
 	"testing"
 
@@ -33,24 +32,24 @@ func TestFloatingIPAssignmentResource_Basic(t *testing.T) {
 		Type:  "cx11",
 		Image: "ubuntu-20.04",
 		Labels: map[string]string{
-			"tf-test": fmt.Sprintf("tf-test-rdns-%d", tmplMan.RandInt),
+			"tf-test": fmt.Sprintf("tf-test-fip-assignment-%d", tmplMan.RandInt),
 		},
 	}
 	resServer2.SetRName("server2_assignment")
 
 	resFloatingIP := &floatingip.RData{
-		Name:             "server-rdns",
+		Name:             "fip-assignment",
 		Type:             "ipv4",
 		HomeLocationName: "fsn1",
 	}
 	resFloatingIP.SetRName("floating_ip_assignment")
 
-	res := &floatingip_assignment.RData{
+	res := &floatingip.RDataAssignment{
 		FloatingIPID: resFloatingIP.TFID() + ".id",
 		ServerID:     resServer.TFID() + ".id",
 	}
 
-	resMove := &floatingip_assignment.RData{
+	resMove := &floatingip.RDataAssignment{
 		FloatingIPID: resFloatingIP.TFID() + ".id",
 		ServerID:     resServer2.TFID() + ".id",
 	}

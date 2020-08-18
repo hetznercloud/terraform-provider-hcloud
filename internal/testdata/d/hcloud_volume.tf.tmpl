@@ -1,0 +1,7 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+data "hcloud_volume" "{{ .Name }}" {
+  {{ if .VolumeID -}}   id            = {{ .VolumeID }}{{ end -}}
+  {{ if .VolumeName -}} name          = {{ .VolumeName }}{{ end -}}
+  {{ if .LabelSelector -}}    with_selector = "{{ .LabelSelector }}"{{ end }}
+}
