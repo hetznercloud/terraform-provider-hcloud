@@ -1,0 +1,7 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+resource "hcloud_volume_attachment" "{{ .RName }}" {
+  {{/* Required properties */ -}}
+  volume_id        = {{ .VolumeID }}
+  server_id        = {{ .ServerID }}
+}
