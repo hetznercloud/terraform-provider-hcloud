@@ -1,0 +1,7 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+data "hcloud_floating_ip" "{{ .RName }}" {
+  {{ if .FloatingIPID -}}    id            = {{ .FloatingIPID }}{{ end -}}
+  {{ if .FloatingIPName -}}  name          =  {{ .FloatingIPName }}{{ end -}}
+  {{ if .LabelSelector -}}    with_selector = "{{ .LabelSelector }}"{{ end }}
+}

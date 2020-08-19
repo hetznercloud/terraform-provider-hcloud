@@ -4,7 +4,12 @@ resource "hcloud_floating_ip" "{{ .RName }}" {
   {{/* Required properties */ -}}
   name        = "{{ .Name }}--{{ .RInt }}"
   type = "{{ .Type }}"
+  {{- if .HomeLocationName }}
   home_location       = "{{ .HomeLocationName }}"
+  {{ end }}
+  {{- if .ServerID }}
+  server_id       = {{ .ServerID }}
+  {{ end }}
 
   {{- if .Labels }}
   labels = {
