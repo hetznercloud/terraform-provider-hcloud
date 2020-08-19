@@ -88,6 +88,8 @@ type RDataNetwork struct {
 	Name      string
 	ServerID  string
 	NetworkID string
+	SubNetID  string
 	IP        string
 	AliasIPs  []string
+	DependsOn []string
 }

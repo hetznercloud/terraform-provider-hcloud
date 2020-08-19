@@ -3,7 +3,12 @@
 resource "hcloud_server_network" "{{ .Name }}" {
   {{/* Required properties */ -}}
   server_id  = {{ .ServerID }}
-  network_id = {{ .NetworkID }}
+  {{- if .NetworkID }}
+  network_id               = {{ .NetworkID }}
+  {{ end }}
+  {{- if .SubNetID }}
+  subnet_id                = {{ .SubNetID }}
+  {{ end }}
 
   {{- /* Optional properties */}}
   {{- if .IP }}
@@ -11,5 +16,8 @@ resource "hcloud_server_network" "{{ .Name }}" {
   {{ end }}
   {{- if .AliasIPs }}
   alias_ips  = [{{ StringsJoin .AliasIPs ", " }}]
+  {{ end }}
+  {{- if .DependsOn }}
+  depends_on               = [{{ StringsJoin .DependsOn ", " }}]
   {{ end }}
 }
