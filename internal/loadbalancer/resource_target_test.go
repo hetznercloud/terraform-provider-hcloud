@@ -82,6 +82,12 @@ func TestAccHcloudLoadBalancerTarget_ServerTarget_UsePrivateIP(t *testing.T) {
 		Image: "ubuntu-20.04",
 	}
 	resServer.SetRName("lb-server-target")
+
+	resNetwork := &network.RData{
+		Name:    "lb-target-test-network",
+		IPRange: "10.0.0.0/16",
+	}
+	resNetwork.SetRName("lb-target-test-network")
 	resource.Test(t, resource.TestCase{
 		PreCheck:     testsupport.AccTestPreCheck(t),
 		Providers:    testsupport.AccTestProviders(),
@@ -89,12 +95,8 @@ func TestAccHcloudLoadBalancerTarget_ServerTarget_UsePrivateIP(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_network", &network.RData{
-						Name:    "lb-target-test-network",
-						IPRange: "10.0.0.0/16",
-					},
+					"testdata/r/hcloud_network", resNetwork,
 					"testdata/r/hcloud_network_subnet", &network.RDataSubnet{
-						Name:        "lb-target-test-subnet",
 						NetworkID:   "hcloud_network.lb-target-test-network.id",
 						Type:        "cloud",
 						NetworkZone: "eu-central",
@@ -210,6 +212,11 @@ func TestAccHcloudLoadBalancerTarget_LabelSelectorTarget_UsePrivateIP(t *testing
 	}
 	resServer.SetRName("lb-server-target")
 
+	resNetwork := &network.RData{
+		Name:    "lb-target-test-network",
+		IPRange: "10.0.0.0/16",
+	}
+	resNetwork.SetRName("lb-target-test-network")
 	selector := fmt.Sprintf("tf-test=tf-test-%d", tmplMan.RandInt)
 	resource.Test(t, resource.TestCase{
 		PreCheck:     testsupport.AccTestPreCheck(t),
@@ -218,12 +225,8 @@ func TestAccHcloudLoadBalancerTarget_LabelSelectorTarget_UsePrivateIP(t *testing
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_network", &network.RData{
-						Name:    "lb-target-test-network",
-						IPRange: "10.0.0.0/16",
-					},
+					"testdata/r/hcloud_network", resNetwork,
 					"testdata/r/hcloud_network_subnet", &network.RDataSubnet{
-						Name:        "lb-target-test-subnet",
 						NetworkID:   "hcloud_network.lb-target-test-network.id",
 						Type:        "cloud",
 						NetworkZone: "eu-central",

@@ -57,6 +57,21 @@ func ByID(t *testing.T, nw *hcloud.Network) func(*hcloud.Client, int) bool {
 	}
 }
 
+// DData defines the fields for the "testdata/d/hcloud_network"
+// template.
+type DData struct {
+	testtemplate.DataCommon
+
+	NetworkID     string
+	NetworkName   string
+	LabelSelector string
+}
+
+// TFID returns the data source identifier.
+func (d *DData) TFID() string {
+	return fmt.Sprintf("data.%s.%s", DataSourceType, d.RName())
+}
+
 // RData defines the fields for the "testdata/r/hcloud_network" template.
 type RData struct {
 	testtemplate.DataCommon
@@ -68,7 +83,7 @@ type RData struct {
 
 // TFID returns the resource identifier.
 func (d *RData) TFID() string {
-	return fmt.Sprintf("%s.%s", ResourceType, d.Name)
+	return fmt.Sprintf("%s.%s", ResourceType, d.RName())
 }
 
 // RDataSubnet defines the fields for the "testdata/r/hcloud_network_subnet"
@@ -76,7 +91,6 @@ func (d *RData) TFID() string {
 type RDataSubnet struct {
 	testtemplate.DataCommon
 
-	Name        string
 	Type        string
 	NetworkID   string
 	NetworkZone string
@@ -85,5 +99,20 @@ type RDataSubnet struct {
 
 // TFID returns the resource identifier.
 func (d *RDataSubnet) TFID() string {
-	return fmt.Sprintf("%s.%s", SubnetResourceType, d.Name)
+	return fmt.Sprintf("%s.%s", SubnetResourceType, d.RName())
+}
+
+// RDataRoute defines the fields for the "testdata/r/hcloud_network_route"
+// template.
+type RDataRoute struct {
+	testtemplate.DataCommon
+
+	NetworkID   string
+	Destination string
+	Gateway     string
+}
+
+// TFID returns the resource identifier.
+func (d *RDataRoute) TFID() string {
+	return fmt.Sprintf("%s.%s", RouteResourceType, d.RName())
 }

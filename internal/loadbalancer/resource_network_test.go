@@ -23,13 +23,14 @@ func TestAccHcloudLoadBalancerNetwork_NetworkID(t *testing.T) {
 		Name:    "test-network",
 		IPRange: "10.0.0.0/16",
 	}
+	netRes.SetRName("test-network")
 	subNetRes := &network.RDataSubnet{
-		Name:        "test-network-subnet",
 		Type:        "cloud",
 		NetworkID:   netRes.TFID() + ".id",
 		NetworkZone: "eu-central",
 		IPRange:     "10.0.1.0/24",
 	}
+	subNetRes.SetRName("test-network-subnet")
 	lbRes := &loadbalancer.RData{
 		Name:        "lb-network-test",
 		Type:        "lb11",
@@ -97,13 +98,14 @@ func TestAccHcloudLoadBalancerNetwork_SubNetID(t *testing.T) {
 		Name:    "test-network",
 		IPRange: "10.0.0.0/16",
 	}
+	netRes.SetRName("test-network")
 	subNetRes := &network.RDataSubnet{
-		Name:        "test-network-subnet",
 		Type:        "cloud",
 		NetworkID:   netRes.TFID() + ".id",
 		NetworkZone: "eu-central",
 		IPRange:     "10.0.1.0/24",
 	}
+	subNetRes.SetRName("test-network-subnet")
 	lbRes := &loadbalancer.RData{
 		Name:        "lb-network-test",
 		Type:        "lb11",

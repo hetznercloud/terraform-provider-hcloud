@@ -1,6 +1,6 @@
 {{- /* vim: set ft=terraform: */ -}}
 
-resource "hcloud_network_subnet" "{{ .Name }}" {
+resource "hcloud_network_subnet" "{{ .RName }}" {
   {{/* Required properties */ -}}
   type         = "{{ .Type }}"
   network_id   = {{ .NetworkID }}
