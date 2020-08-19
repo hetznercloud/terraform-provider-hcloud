@@ -39,6 +39,12 @@ func TestNetworkResource_Basic(t *testing.T) {
 				),
 			},
 			{
+				// Try to import the newly created Network
+				ResourceName:      res.TFID(),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
 				// Update the Network created in the previous step by
 				// setting all optional fields and renaming the Network.
 				Config: tmplMan.Render(t,

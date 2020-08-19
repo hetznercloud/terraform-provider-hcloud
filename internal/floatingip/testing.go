@@ -58,6 +58,21 @@ func ByID(t *testing.T, fl *hcloud.FloatingIP) func(*hcloud.Client, int) bool {
 	}
 }
 
+// DData defines the fields for the "testdata/d/hcloud_floating_ip"
+// template.
+type DData struct {
+	testtemplate.DataCommon
+
+	FloatingIPID   string
+	FloatingIPName string
+	LabelSelector  string
+}
+
+// TFID returns the data source identifier.
+func (d *DData) TFID() string {
+	return fmt.Sprintf("data.%s.%s", DataSourceType, d.RName())
+}
+
 // RData defines the fields for the "testdata/r/hcloud_floating_ip" template.
 type RData struct {
 	testtemplate.DataCommon
@@ -65,6 +80,7 @@ type RData struct {
 	Name             string
 	Type             string
 	HomeLocationName string
+	ServerID         string
 	Labels           map[string]string
 }
 
