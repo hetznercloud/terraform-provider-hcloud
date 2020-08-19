@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
 	"log"
 	"net"
 	"strconv"
@@ -29,6 +30,10 @@ func resourceNetworkSubnet() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
+				ValidateFunc: validation.StringInSlice([]string{
+					"cloud",
+					"server",
+				}, false),
 			},
 			"network_zone": {
 				Type:     schema.TypeString,
