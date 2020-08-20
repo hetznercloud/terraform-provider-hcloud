@@ -75,6 +75,18 @@ func (d *DData) TFID() string {
 	return fmt.Sprintf("data.%s.%s", DataSourceType, d.RName())
 }
 
+// SSHKeysDData defines the fields for the "testdata/d/hcloud_ssh_keys"
+// template.
+type SSHKeysDData struct {
+	testtemplate.DataCommon
+	LabelSelector string
+}
+
+// TFID returns the data source identifier.
+func (d *SSHKeysDData) TFID() string {
+	return fmt.Sprintf("data.%s.%s", SSHKeysDataSourceType, d.RName())
+}
+
 // RData defines the fields for the "testdata/r/hcloud_ssh_key"
 // template.
 type RData struct {

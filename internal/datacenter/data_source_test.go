@@ -43,3 +43,33 @@ func TestAccHcloudDataSourceDatacenterTest(t *testing.T) {
 		},
 	})
 }
+
+func TestAccHcloudDataSourceDatacentersTest(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
+	datacentersD := &datacenter.DatacentersDData{}
+	datacentersD.SetRName("ds")
+	resource.Test(t, resource.TestCase{
+		PreCheck:  testsupport.AccTestPreCheck(t),
+		Providers: testsupport.AccTestProviders(),
+		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t,
+					"testdata/d/hcloud_datacenters", datacentersD,
+				),
+
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(datacentersD.TFID(), "datacenter_ids.0", "2"),
+					resource.TestCheckResourceAttr(datacentersD.TFID(), "datacenter_ids.1", "3"),
+					resource.TestCheckResourceAttr(datacentersD.TFID(), "datacenter_ids.2", "4"),
+					resource.TestCheckResourceAttr(datacentersD.TFID(), "names.0", "nbg1-dc3"),
+					resource.TestCheckResourceAttr(datacentersD.TFID(), "names.1", "hel1-dc2"),
+					resource.TestCheckResourceAttr(datacentersD.TFID(), "names.2", "fsn1-dc14"),
+					resource.TestCheckResourceAttr(datacentersD.TFID(), "descriptions.0", "Nuremberg 1 DC 3"),
+					resource.TestCheckResourceAttr(datacentersD.TFID(), "descriptions.1", "Helsinki 1 DC 2"),
+					resource.TestCheckResourceAttr(datacentersD.TFID(), "descriptions.2", "Falkenstein 1 DC14"),
+				),
+			},
+		},
+	})
+}
