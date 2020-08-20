@@ -58,3 +58,31 @@ func TestAccHcloudDataSourceSSHKeyTest(t *testing.T) {
 		},
 	})
 }
+
+func TestAccHcloudDataSourceSSHKeysTest(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
+	res := sshkey.NewRData(t, "datasource-test")
+
+	sshKeysDS := &sshkey.SSHKeysDData{
+		LabelSelector: fmt.Sprintf("key=${%s.labels[\"key\"]}", res.TFID()),
+	}
+	sshKeysDS.SetRName("ds")
+	resource.Test(t, resource.TestCase{
+		PreCheck:  testsupport.AccTestPreCheck(t),
+		Providers: testsupport.AccTestProviders(),
+		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", res,
+					"testdata/d/hcloud_ssh_keys", sshKeysDS,
+				),
+
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(sshKeysDS.TFID(), "ssh_keys.0.name", fmt.Sprintf("%s--%d", res.Name, tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(sshKeysDS.TFID(), "ssh_keys.0.public_key", res.PublicKey),
+				),
+			},
+		},
+	})
+}
