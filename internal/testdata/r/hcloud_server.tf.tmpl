@@ -19,7 +19,7 @@ resource "hcloud_server" "{{ .RName }}" {
   {{- if .KeepDisk }}
   keep_disk   = {{ .KeepDisk }}
   {{ end }}
-  {{- if .KeepDisk }}
+  {{- if .ISO }}
   iso         = {{ .ISO }}
   {{ end }}
   {{- if .Rescue }}
@@ -38,8 +38,6 @@ resource "hcloud_server" "{{ .RName }}" {
   {{ end }}
 
   {{- if .UserData }}
-  user_data   =<<EOF
-{{ .UserData }}
-  EOF
+  user_data   = "{{ .UserData }}"
   {{ end }}
 }
