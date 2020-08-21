@@ -58,6 +58,21 @@ func ByID(t *testing.T, srv *hcloud.Server) func(*hcloud.Client, int) bool {
 	}
 }
 
+// DData defines the fields for the "testdata/d/hcloud_server"
+// template.
+type DData struct {
+	testtemplate.DataCommon
+
+	ServerID      string
+	ServerName    string
+	LabelSelector string
+}
+
+// TFID returns the data source identifier.
+func (d *DData) TFID() string {
+	return fmt.Sprintf("data.%s.%s", DataSourceType, d.RName())
+}
+
 // RData defines the fields for the "testdata/r/hcloud_server" template.
 type RData struct {
 	testtemplate.DataCommon
@@ -71,6 +86,7 @@ type RData struct {
 	KeepDisk     bool
 	Rescue       bool
 	Backups      bool
+	ISO          string
 	Labels       map[string]string
 	UserData     string
 }
