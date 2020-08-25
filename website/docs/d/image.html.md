@@ -21,7 +21,7 @@ data "hcloud_image" "image_3" {
 }
 
 resource "hcloud_server" "main" {
-  image  = "${data.hcloud_image.image_1.name}"
+  image  = data.hcloud_image.image_1.name
 }
 ```
 ## Argument Reference

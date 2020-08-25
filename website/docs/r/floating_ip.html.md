@@ -21,7 +21,7 @@ resource "hcloud_server" "node1" {
 
 resource "hcloud_floating_ip" "master" {
   type = "ipv4"
-  server_id = "${hcloud_server.node1.id}"
+  server_id = hcloud_server.node1.id
 }
 ```
 
