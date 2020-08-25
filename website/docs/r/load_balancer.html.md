@@ -25,7 +25,7 @@ resource "hcloud_load_balancer" "load_balancer" {
   location   = "nbg1"
   target {
     type = "server"
-    server_id = "${hcloud_server.myserver.id}"
+    server_id = hcloud_server.myserver.id
   }
 }
 ```

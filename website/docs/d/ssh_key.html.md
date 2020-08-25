@@ -23,7 +23,7 @@ data "hcloud_ssh_key" "ssh_key_4" {
   with_selector = "key=value"
 }
 resource "hcloud_server" "main" {
-  ssh_keys  = ["${data.hcloud_ssh_key.ssh_key_1.id}","${data.hcloud_ssh_key.ssh_key_2.id}","${data.hcloud_ssh_key.ssh_key_3.id}"]
+  ssh_keys  = [data.hcloud_ssh_key.ssh_key_1.id,data.hcloud_ssh_key.ssh_key_2.id,data.hcloud_ssh_key.ssh_key_3.id]
 }
 ```
 ## Argument Reference

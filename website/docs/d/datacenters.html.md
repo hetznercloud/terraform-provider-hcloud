@@ -18,7 +18,7 @@ resource "hcloud_server" "workers" {
   name = "node1"
   image = "debian-9"
   server_type = "cx31"
-  datacenter = "${element(data.hcloud_datacenters.ds.names, count.index)}"
+  datacenter = element(data.hcloud_datacenters.ds.names, count.index)
 
   count = 3
 }

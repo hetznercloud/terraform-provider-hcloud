@@ -27,9 +27,9 @@ data "hcloud_floating_ip" "image_2" {
   with_selector = "key=value"
 }
 resource "hcloud_floating_ip_assignment" "main" {
-  count          = "${var.counter}"
-  floating_ip_id = "${data.hcloud_floating_ip.ip_1.id}"
-  server_id      = "${hcloud_server.main.id}"
+  count          = var.counter
+  floating_ip_id = data.hcloud_floating_ip.ip_1.id
+  server_id      = hcloud_server.main.id
 }
 ```
 ## Argument Reference
