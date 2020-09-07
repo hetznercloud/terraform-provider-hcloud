@@ -45,10 +45,14 @@ resource "hcloud_load_balancer_network" "srvnetwork" {
   to the Load Balancer. Required if `subnet_id` is not set. Successful
   creation of the resource depends on the existence of a subnet in the
   Hetzner Cloud Backend. Using `network_id` will not create an explicit
-  dependency between load balancer and subnet. It is thus better to use
-  the `subnet_id` property. This property is deprecated.
+  dependency between the Load Balancer and the subnet. Therefore
+  `depends_on` may need to be used. Alternatively the `subnet_id`
+  property can be used, which will create an explicit dependency between
+  `hcloud_load_balancer_network` and the existence of a subnet.
 - `subnet_id` - (Optional, string) ID of the sub-network which should be
   added to the Load Balancer. Required if `network_id` is not set.
+  *Note*: if the `ip` property is missing, the Load Balancer is
+  currently added to the last created subnet.
 - `ip` - (Optional, string) IP to request to be assigned to this Load
   Balancer. If you do not provide this then you will be auto assigned an
   IP address.
