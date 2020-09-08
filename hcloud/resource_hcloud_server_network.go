@@ -23,10 +23,9 @@ func resourceServerNetwork() *schema.Resource {
 		Delete: resourceServerNetworkDelete,
 		Schema: map[string]*schema.Schema{
 			"network_id": {
-				Type:       schema.TypeInt,
-				Optional:   true,
-				ForceNew:   true,
-				Deprecated: "use subnet_id instead",
+				Type:     schema.TypeInt,
+				Optional: true,
+				ForceNew: true,
 			},
 			"subnet_id": {
 				Type:     schema.TypeString,

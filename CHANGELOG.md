@@ -1,3 +1,10 @@
+## Unreleased
+
+CHANGED:
+
+* Un-deprecate `network_id` property of `hcloud_load_balancer_network` and
+  `hcloud_server_network` resources.
+
 ## 1.20.1 (August 18, 2020)
 BUG FIXES:
 
