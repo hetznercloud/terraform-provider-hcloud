@@ -6,11 +6,11 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancer"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/network"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 	"github.com/stretchr/testify/assert"
-	"github.com/terraform-providers/terraform-provider-hcloud/internal/loadbalancer"
-	"github.com/terraform-providers/terraform-provider-hcloud/internal/network"
-	"github.com/terraform-providers/terraform-provider-hcloud/internal/testsupport"
-	"github.com/terraform-providers/terraform-provider-hcloud/internal/testtemplate"
 )
 
 func TestAccHcloudLoadBalancerNetwork_NetworkID(t *testing.T) {

@@ -2,13 +2,14 @@ package certificate_test
 
 import (
 	"fmt"
-	"github.com/terraform-providers/terraform-provider-hcloud/internal/certificate"
 	"testing"
 
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/certificate"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/terraform-providers/terraform-provider-hcloud/internal/loadbalancer"
-	"github.com/terraform-providers/terraform-provider-hcloud/internal/testsupport"
-	"github.com/terraform-providers/terraform-provider-hcloud/internal/testtemplate"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancer"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
 func TestAccHcloudDataSourceCertificateTest(t *testing.T) {

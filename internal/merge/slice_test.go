@@ -4,8 +4,8 @@ import (
 	"math/rand"
 	"testing"
 
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/merge"
 	"github.com/stretchr/testify/assert"
-	"github.com/terraform-providers/terraform-provider-hcloud/internal/merge"
 )
 
 func TestStringSlice(t *testing.T) {

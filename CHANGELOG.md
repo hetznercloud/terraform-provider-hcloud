@@ -4,6 +4,9 @@ CHANGED:
 
 * Un-deprecate `network_id` property of `hcloud_load_balancer_network` and
   `hcloud_server_network` resources.
+* Change module path from
+  `github.com/terraform-providers/terraform-provider-hcloud` to
+  `github.com/hetznercloud/terraform-provider-hcloud`
 
 ## 1.20.1 (August 18, 2020)
 BUG FIXES:

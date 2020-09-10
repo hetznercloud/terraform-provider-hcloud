@@ -2,7 +2,8 @@ package datacenter
 
 import (
 	"fmt"
-	"github.com/terraform-providers/terraform-provider-hcloud/internal/testtemplate"
+
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
 // DData defines the fields for the "testdata/d/hcloud_datacenter"

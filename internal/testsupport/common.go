@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/hetznercloud/hcloud-go/hcloud"
-	tfhcloud "github.com/terraform-providers/terraform-provider-hcloud/hcloud"
+	tfhcloud "github.com/hetznercloud/terraform-provider-hcloud/hcloud"
 )
 
 // AccTestProviders returns all providers used during acceptance testing.

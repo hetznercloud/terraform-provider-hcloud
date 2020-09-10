@@ -13,6 +13,20 @@ Requirements
 -	[Terraform](https://www.terraform.io/downloads.html) 0.12.x, 0.13.x
 -	[Go](https://golang.org/doc/install) 1.15.x (to build the provider plugin)
 
+API Stability
+-------------
+
+This Go module implements a Terraform Provider for Hetzner Cloud
+Services. We thus guarantee backwards compatibility only for use through
+Terraform HCL. The actual *Go code* in this repository *may change
+without a major version increase*.
+
+Currently the code is mostly located in the `hcloud` package. In the
+long term we want to move most of the `hcloud` package into individual
+sub-packages located in the `internal` directory. The goal is a
+structure similar to HashiCorp's [Terraform Provider
+Scaffolding](https://github.com/hashicorp/terraform-provider-scaffolding)
+
 Building the provider
 ---------------------
 
