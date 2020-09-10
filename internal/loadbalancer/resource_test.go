@@ -8,10 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hetznercloud/hcloud-go/hcloud"
-	"github.com/terraform-providers/terraform-provider-hcloud/internal/loadbalancer"
-	"github.com/terraform-providers/terraform-provider-hcloud/internal/server"
-	"github.com/terraform-providers/terraform-provider-hcloud/internal/testsupport"
-	"github.com/terraform-providers/terraform-provider-hcloud/internal/testtemplate"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancer"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
 func TestLoadBalancerResource_Basic(t *testing.T) {

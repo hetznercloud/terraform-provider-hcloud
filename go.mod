@@ -1,4 +1,4 @@
-module github.com/terraform-providers/terraform-provider-hcloud
+module github.com/hetznercloud/terraform-provider-hcloud
 
 require (
 	github.com/hashicorp/go-multierror v1.1.0 // indirect

@@ -2,15 +2,16 @@ package rdns_test
 
 import (
 	"fmt"
-	"github.com/terraform-providers/terraform-provider-hcloud/internal/floatingip"
-	"github.com/terraform-providers/terraform-provider-hcloud/internal/rdns"
-	"github.com/terraform-providers/terraform-provider-hcloud/internal/server"
 	"testing"
+
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/floatingip"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/rdns"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
 	"github.com/hetznercloud/hcloud-go/hcloud"
-	"github.com/terraform-providers/terraform-provider-hcloud/internal/testsupport"
-	"github.com/terraform-providers/terraform-provider-hcloud/internal/testtemplate"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
 func TestRDNSResource_Server(t *testing.T) {

@@ -1,12 +1,13 @@
 package location_test
 
 import (
-	"github.com/terraform-providers/terraform-provider-hcloud/internal/location"
 	"testing"
 
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/location"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/terraform-providers/terraform-provider-hcloud/internal/testsupport"
-	"github.com/terraform-providers/terraform-provider-hcloud/internal/testtemplate"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
 func TestAccHcloudDataSourceLocationTest(t *testing.T) {

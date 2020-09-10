@@ -1,13 +1,14 @@
 package image_test
 
 import (
-	"github.com/terraform-providers/terraform-provider-hcloud/internal/image"
 	"testing"
 
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/image"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/terraform-providers/terraform-provider-hcloud/internal/loadbalancer"
-	"github.com/terraform-providers/terraform-provider-hcloud/internal/testsupport"
-	"github.com/terraform-providers/terraform-provider-hcloud/internal/testtemplate"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancer"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
 const TestImageName = "ubuntu-20.04"

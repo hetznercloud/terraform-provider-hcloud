@@ -2,13 +2,14 @@ package sshkey_test
 
 import (
 	"fmt"
-	"github.com/terraform-providers/terraform-provider-hcloud/internal/sshkey"
 	"testing"
 
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
+
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/terraform-providers/terraform-provider-hcloud/internal/loadbalancer"
-	"github.com/terraform-providers/terraform-provider-hcloud/internal/testsupport"
-	"github.com/terraform-providers/terraform-provider-hcloud/internal/testtemplate"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancer"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
 func TestAccHcloudDataSourceSSHKeyTest(t *testing.T) {
