@@ -131,7 +131,7 @@ func TestVolumeResource_WithServer(t *testing.T) {
 		Name:         "some-server",
 		Type:         "cx11",
 		Image:        "ubuntu-20.04",
-		LocationName: "hel1",
+		LocationName: "nbg1",
 	}
 	resServer1.SetRName("some-server")
 
@@ -139,7 +139,7 @@ func TestVolumeResource_WithServer(t *testing.T) {
 		Name:         "another-server",
 		Type:         "cx11",
 		Image:        "ubuntu-20.04",
-		LocationName: "hel1",
+		LocationName: "nbg1",
 	}
 	resServer2.SetRName("another-server")
 
@@ -171,7 +171,7 @@ func TestVolumeResource_WithServer(t *testing.T) {
 					resource.TestCheckResourceAttr(res.TFID(), "name",
 						fmt.Sprintf("volume-with-server--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(res.TFID(), "size", "10"),
-					resource.TestCheckResourceAttr(res.TFID(), "location", "hel1"),
+					resource.TestCheckResourceAttr(res.TFID(), "location", "nbg1"),
 				),
 			},
 			{
@@ -186,7 +186,7 @@ func TestVolumeResource_WithServer(t *testing.T) {
 					resource.TestCheckResourceAttr(res.TFID(), "name",
 						fmt.Sprintf("volume-with-server--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(res.TFID(), "size", "10"),
-					resource.TestCheckResourceAttr(res.TFID(), "location", "hel1"),
+					resource.TestCheckResourceAttr(res.TFID(), "location", "nbg1"),
 				),
 			},
 		},
