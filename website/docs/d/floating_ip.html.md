@@ -23,7 +23,7 @@ This resource can be useful when you need to determine a Floating IP ID based on
 data "hcloud_floating_ip" "ip_1" {
   ip_address = "1.2.3.4"
 }
-data "hcloud_floating_ip" "image_2" {
+data "hcloud_floating_ip" "ip_2" {
   with_selector = "key=value"
 }
 resource "hcloud_floating_ip_assignment" "main" {
@@ -33,9 +33,18 @@ resource "hcloud_floating_ip_assignment" "main" {
 }
 ```
 ## Argument Reference
+- `id` - (Optional, string) ID of the Floating IP.
+- `name` - (Optional, string) Name of the Floating IP.
 - `ip_address` - (Optional, string) IP address of the Floating IP.
 - `with_selector` - (Optional, string) [Label selector](https://docs.hetzner.cloud/#overview-label-selector)
 
 ## Attributes Reference
 - `id` - (int) Unique ID of the Floating IP.
-- `ip_address` - (string) IP address of the Floating IP.
+- `type` - (string) Type of the Floating IP.
+- `name` - (string) Name of the Floating IP.
+- `server_id` - (int) Server to assign the Floating IP is assigned to.
+- `home_location` - (string) Home location.
+- `description` - (string) Description of the Floating IP.
+- `ip_address` - (string) IP Address of the Floating IP.
+- `ip_network` - (string) IPv6 subnet. (Only set if `type` is `ipv6`)
+- `labels` - (map) User-defined labels (key-value pairs).
