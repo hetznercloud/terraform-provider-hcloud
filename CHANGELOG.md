@@ -1,3 +1,8 @@
+## Unreleased
+
+BUG FIXES:
+* `hcloud_rdns` resource: It is now possible to import the resource as documented.
+
 ## 1.21.0 (September 09, 2020)
 
 CHANGED:

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/floatingip"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/rdns"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
@@ -27,6 +29,7 @@ func TestRDNSResource_Server(t *testing.T) {
 		},
 	}
 	resServer.SetRName("server_rdns")
+	resRDNS := rdns.NewRData(t, "rdnstest", resServer.TFID()+".id", "", resServer.TFID()+".ipv4_address", "example.hetzner.cloud")
 	resource.Test(t, resource.TestCase{
 		PreCheck:     testsupport.AccTestPreCheck(t),
 		Providers:    testsupport.AccTestProviders(),
@@ -37,12 +40,21 @@ func TestRDNSResource_Server(t *testing.T) {
 				// only.
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_server", resServer,
-					"testdata/r/hcloud_rdns", rdns.NewRData(t, "rdnstest", resServer.TFID()+".id", "", resServer.TFID()+".ipv4_address", "example.hetzner.cloud"),
+					"testdata/r/hcloud_rdns", resRDNS,
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckResourceExists(resServer.TFID(), server.ByID(t, &s)),
-					resource.TestCheckResourceAttr("hcloud_rdns.rdnstest", "dns_ptr", "example.hetzner.cloud"),
+					resource.TestCheckResourceAttr(resRDNS.TFID(), "dns_ptr", "example.hetzner.cloud"),
 				),
+			},
+			{
+				// Try to import the newly created RDNS
+				ResourceName: resRDNS.TFID(),
+				ImportStateIdFunc: func(state *terraform.State) (string, error) {
+					return fmt.Sprintf("s-%d-%s", s.ID, s.PublicNet.IPv4.IP.String()), nil
+				},
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -58,6 +70,7 @@ func TestRDNSResource_FloatingIP_IPv4(t *testing.T) {
 		HomeLocationName: "fsn1",
 	}
 	restFloatingIP.SetRName("floating_ips_rdns_v4")
+	resRDNS := rdns.NewRData(t, "floating_ips_rdns_v4", "", restFloatingIP.TFID()+".id", restFloatingIP.TFID()+".ip_address", "example.hetzner.cloud")
 	resource.Test(t, resource.TestCase{
 		PreCheck:     testsupport.AccTestPreCheck(t),
 		Providers:    testsupport.AccTestProviders(),
@@ -68,12 +81,21 @@ func TestRDNSResource_FloatingIP_IPv4(t *testing.T) {
 				// only.
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_floating_ip", restFloatingIP,
-					"testdata/r/hcloud_rdns", rdns.NewRData(t, "floating_ips_rdns_v4", "", restFloatingIP.TFID()+".id", restFloatingIP.TFID()+".ip_address", "example.hetzner.cloud"),
+					"testdata/r/hcloud_rdns", resRDNS,
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckResourceExists(restFloatingIP.TFID(), floatingip.ByID(t, &fl)),
 					resource.TestCheckResourceAttr("hcloud_rdns.floating_ips_rdns_v4", "dns_ptr", "example.hetzner.cloud"),
 				),
+			},
+			{
+				// Try to import the newly created RDNS
+				ResourceName: resRDNS.TFID(),
+				ImportStateIdFunc: func(state *terraform.State) (string, error) {
+					return fmt.Sprintf("f-%d-%s", fl.ID, fl.IP.String()), nil
+				},
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -89,6 +111,8 @@ func TestRDNSResource_FloatingIP_IPv6(t *testing.T) {
 		HomeLocationName: "fsn1",
 	}
 	restFloatingIP.SetRName("floating_ips_rdns_v6")
+
+	resRDNS := rdns.NewRData(t, "floating_ips_rdns_v6", "", restFloatingIP.TFID()+".id", restFloatingIP.TFID()+".ip_address", "example.hetzner.cloud")
 	resource.Test(t, resource.TestCase{
 		PreCheck:     testsupport.AccTestPreCheck(t),
 		Providers:    testsupport.AccTestProviders(),
@@ -99,12 +123,21 @@ func TestRDNSResource_FloatingIP_IPv6(t *testing.T) {
 				// only.
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_floating_ip", restFloatingIP,
-					"testdata/r/hcloud_rdns", rdns.NewRData(t, "floating_ips_rdns_v6", "", restFloatingIP.TFID()+".id", restFloatingIP.TFID()+".ip_address", "example.hetzner.cloud"),
+					"testdata/r/hcloud_rdns", resRDNS,
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckResourceExists(restFloatingIP.TFID(), floatingip.ByID(t, &fl)),
 					resource.TestCheckResourceAttr("hcloud_rdns.floating_ips_rdns_v6", "dns_ptr", "example.hetzner.cloud"),
 				),
+			},
+			{
+				// Try to import the newly created RDNS
+				ResourceName: resRDNS.TFID(),
+				ImportStateIdFunc: func(state *terraform.State) (string, error) {
+					return fmt.Sprintf("f-%d-%s", fl.ID, fl.IP.String()), nil
+				},
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

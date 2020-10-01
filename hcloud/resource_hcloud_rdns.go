@@ -20,7 +20,9 @@ func resourceReverseDNS() *schema.Resource {
 		Read:   resourceReverseDNSRead,
 		Update: resourceReverseDNSUpdate,
 		Delete: resourceReverseDNSDelete,
-
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 		Schema: map[string]*schema.Schema{
 			"server_id": {
 				Type:     schema.TypeInt,
@@ -83,7 +85,7 @@ func resourceReverseDNSRead(d *schema.ResourceData, m interface{}) error {
 		d.SetId(generateRDNSID(server, nil, ip.String()))
 		d.Set("dns_ptr", server.PublicNet.IPv4.DNSPtr)
 		d.Set("server_id", server.ID)
-		d.Set("ip_address", server.PublicNet.IPv4.IP)
+		d.Set("ip_address", server.PublicNet.IPv4.IP.String())
 		return nil
 	}
 
