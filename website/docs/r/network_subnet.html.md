@@ -40,3 +40,12 @@ resource "hcloud_network_subnet" "foonet" {
 - `type` - (string) Type of subnet.
 - `ip_range` - (string) Range to allocate IPs from.
 - `network_zone` - (string) Name of network zone.
+
+## Import
+
+Network Subnet entries can be imported using a compound ID with the following format:
+`<network-id>-<ip_range>`
+
+```
+terraform import hcloud_network_subnet.mysubnet 123-10.0.0.0/24
+```

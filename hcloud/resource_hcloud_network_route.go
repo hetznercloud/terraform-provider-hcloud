@@ -19,6 +19,9 @@ func resourceNetworkRoute() *schema.Resource {
 		Create: resourceNetworkRouteCreate,
 		Read:   resourceNetworkRouteRead,
 		Delete: resourceNetworkRouteDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 		Schema: map[string]*schema.Schema{
 			"network_id": {
 				Type:     schema.TypeInt,

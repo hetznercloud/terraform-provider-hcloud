@@ -37,3 +37,13 @@ resource "hcloud_network_route" "privNet" {
 - `network_id` - (int) ID of the Network.
 - `destination` - (string) Destination of this route.
 - `gateway` - (string) Gateway of the route.
+
+
+## Import
+
+Network Route entries can be imported using a compound ID with the following format:
+`<network-id>-<destination>`
+
+```
+terraform import hcloud_network_route.myroute 123-10.0.0.0/16
+```
