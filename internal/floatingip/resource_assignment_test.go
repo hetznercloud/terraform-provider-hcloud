@@ -2,6 +2,7 @@ package floatingip_test
 
 import (
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"testing"
 
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/floatingip"
@@ -74,8 +75,16 @@ func TestFloatingIPAssignmentResource_Basic(t *testing.T) {
 				),
 			},
 			{
-				// Create a new RDNS using the required values
-				// only.
+				// Try to import the newly created Floating IP assignment
+				ResourceName:      res.TFID(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: func(state *terraform.State) (string, error) {
+					return fmt.Sprintf("%d", f.ID), nil
+				},
+			},
+			{
+				// Move the floating IP to another server
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_server", resServer,
 					"testdata/r/hcloud_server", resServer2,
