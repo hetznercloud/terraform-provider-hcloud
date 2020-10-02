@@ -43,3 +43,11 @@ resource "hcloud_volume" "master" {
 - `id` - (int) Unique ID of the Volume Attachment.
 - `volume_id` - (int) ID of the Volume.
 - `server_id` - (int) Server the Volume was attached to.
+
+## Import
+
+Volume Attachments can be imported using the `volume_id`:
+
+```
+terraform import hcloud_volume_attachment.myvolumeattachment <volume_id>
+```

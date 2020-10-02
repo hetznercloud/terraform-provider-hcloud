@@ -15,7 +15,9 @@ func resourceVolumeAttachment() *schema.Resource {
 		Create: resourceVolumeAttachmentCreate,
 		Read:   resourceVolumeAttachmentRead,
 		Delete: resourceVolumeAttachmentDelete,
-
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 		Schema: map[string]*schema.Schema{
 			"volume_id": {
 				Type:     schema.TypeInt,
@@ -94,8 +96,23 @@ func resourceVolumeAttachmentRead(d *schema.ResourceData, m interface{}) error {
 		d.SetId("")
 		return nil
 	}
+	// check if volume is attached to any server
+	if volume.Server == nil {
+		log.Printf("[WARN] Volume (%v) is not attached to a server, removing volume attachment from state", d.Get("volume_id"))
+		d.SetId("")
+		return nil
+	}
 
-	server, _, err := client.Server.GetByID(ctx, d.Get("server_id").(int))
+	// when importing the resource the server_id is not given
+	// because only the terraform ID (volume ID in this case)
+	// is available, so we need to get the ID from the volume
+	// instead of from the configuration
+	serverID := d.Get("server_id").(int)
+	if serverID == 0 {
+		serverID = volume.Server.ID
+	}
+
+	server, _, err := client.Server.GetByID(ctx, serverID)
 	if err != nil {
 		return err
 	}
@@ -105,12 +122,7 @@ func resourceVolumeAttachmentRead(d *schema.ResourceData, m interface{}) error {
 		return nil
 	}
 
-	// check if volume is attached to any server
-	if volume.Server == nil {
-		log.Printf("[WARN] Volume (%v) is not attached to a server, removing volume attachment from state", d.Get("volume_id"))
-		d.SetId("")
-		return nil
-	}
+
 
 	d.Set("server_id", volume.Server.ID)
 	d.Set("volume_id", volume.ID)

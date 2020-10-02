@@ -175,6 +175,12 @@ func TestVolumeResource_WithServer(t *testing.T) {
 				),
 			},
 			{
+				// Try to import the newly created volume
+				ResourceName:      res.TFID(),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
 				// Update the Volume created in the previous step by
 				// changing the attached server.
 				Config: tmplMan.Render(t,
