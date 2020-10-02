@@ -2,6 +2,7 @@ package loadbalancer_test
 
 import (
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"strconv"
 	"testing"
 
@@ -50,7 +51,15 @@ func TestAccHcloudLoadBalancerService_TCP(t *testing.T) {
 					resource.TestCheckResourceAttr(svcResName, "proxyprotocol", "true"),
 				),
 			},
-
+			{
+				// Try to import the newly created volume attachment
+				ResourceName:      svcResName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: func(state *terraform.State) (string, error) {
+					return fmt.Sprintf("%d__%d", lb.ID, 70), nil
+				},
+			},
 			{ // Test disable Proxyprotocol
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_load_balancer", loadbalancer.Basic,

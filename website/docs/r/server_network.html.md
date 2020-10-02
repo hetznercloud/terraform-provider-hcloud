@@ -71,5 +71,5 @@ Server Network entries can be imported using a compound ID with the following fo
 `<server-id>-<network-id>`
 
 ```
-terraform import hcloud_server_network 123-654
+terraform import hcloud_server_network.myservernetwork 123-654
 ```

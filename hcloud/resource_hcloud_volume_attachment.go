@@ -122,8 +122,6 @@ func resourceVolumeAttachmentRead(d *schema.ResourceData, m interface{}) error {
 		return nil
 	}
 
-
-
 	d.Set("server_id", volume.Server.ID)
 	d.Set("volume_id", volume.ID)
 	return nil

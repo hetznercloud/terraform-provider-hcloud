@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
@@ -18,6 +20,9 @@ func resourceLoadBalancerService() *schema.Resource {
 		Read:   resourceLoadBalancerServiceRead,
 		Update: resourceLoadBalancerServiceUpdate,
 		Delete: resourceLoadBalancerServiceDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 		Schema: map[string]*schema.Schema{
 			"load_balancer_id": {
 				Type:     schema.TypeString,
@@ -163,18 +168,29 @@ func resourceLoadBalancerServiceCreate(d *schema.ResourceData, m interface{}) er
 	client := m.(*hcloud.Client)
 	ctx := context.Background()
 
-	lb, err := resourceLoadBalancerServiceGetLoadBalancer(d, m)
+	lbId, err := strconv.Atoi(d.Get("load_balancer_id").(string))
 	if err != nil {
 		return err
 	}
+	lb := hcloud.LoadBalancer{ID: lbId}
 
 	protocol := hcloud.LoadBalancerServiceProtocol(d.Get("protocol").(string))
 	opts := hcloud.LoadBalancerAddServiceOpts{
 		Protocol: protocol,
 	}
-	if p, ok := d.GetOk("listen_port"); ok {
-		opts.ListenPort = hcloud.Int(p.(int))
+	listenPort := d.Get("listen_port").(int)
+	// listenPort is a computed attribute. Since we are about to read the resource
+	// it may not have been set yet. If this is the case we derive it from the
+	// protocol
+	if listenPort == 0 {
+		switch protocol {
+		case hcloud.LoadBalancerServiceProtocolHTTP:
+			listenPort = 80
+		case hcloud.LoadBalancerServiceProtocolHTTPS:
+			listenPort = 443
+		}
 	}
+	opts.ListenPort = hcloud.Int(listenPort)
 	if p, ok := d.GetOk("destination_port"); ok {
 		opts.DestinationPort = hcloud.Int(p.(int))
 	}
@@ -188,7 +204,7 @@ func resourceLoadBalancerServiceCreate(d *schema.ResourceData, m interface{}) er
 		opts.HealthCheck = parseTFHealthCheckAdd(tfHealthCheck.([]interface{}))
 	}
 
-	action, _, err := client.LoadBalancer.AddService(ctx, lb, opts)
+	action, _, err := client.LoadBalancer.AddService(ctx, &lb, opts)
 	if resourceLoadBalancerIsNotFound(err, d) {
 		return nil
 	}
@@ -200,14 +216,18 @@ func resourceLoadBalancerServiceCreate(d *schema.ResourceData, m interface{}) er
 		// should give Terraform enough time to remove the conflicting service
 		// (if there is one).
 		time.Sleep(time.Second)
-		action, _, err = client.LoadBalancer.AddService(ctx, lb, opts)
+		action, _, err = client.LoadBalancer.AddService(ctx, &lb, opts)
 	}
 	if err != nil {
 		return err
 	}
-	if err := waitForLoadBalancerAction(ctx, client, action, lb); err != nil {
+	if err := waitForLoadBalancerAction(ctx, client, action, &lb); err != nil {
 		return err
 	}
+	svcID := fmt.Sprintf("%d__%d", lb.ID, listenPort)
+
+	d.SetId(svcID)
+
 	return resourceLoadBalancerServiceRead(d, m)
 }
 
@@ -215,21 +235,19 @@ func resourceLoadBalancerServiceUpdate(d *schema.ResourceData, m interface{}) er
 	client := m.(*hcloud.Client)
 	ctx := context.Background()
 
-	lb, err := resourceLoadBalancerServiceGetLoadBalancer(d, m)
+	lb, svc, err := lookupLoadBalancerServiceID(ctx, d.Id(), client)
+	if err == errInvalidLoadBalancerServiceID {
+		log.Printf("[WARN] Invalid id (%s), removing from state: %s", d.Id(), err)
+		d.SetId("")
+		return nil
+	}
 	if err != nil {
 		return err
 	}
-
 	protocol := hcloud.LoadBalancerServiceProtocol(d.Get("protocol").(string))
 	opts := hcloud.LoadBalancerUpdateServiceOpts{
 		Protocol: protocol,
 	}
-
-	lp, ok := d.GetOk("listen_port")
-	if !ok {
-		return errors.New("listen_port not set")
-	}
-	listenPort := lp.(int)
 
 	pp := d.Get("proxyprotocol")
 	opts.Proxyprotocol = hcloud.Bool(pp.(bool))
@@ -246,7 +264,7 @@ func resourceLoadBalancerServiceUpdate(d *schema.ResourceData, m interface{}) er
 		opts.HealthCheck = parseTFHealthCheckUpdate(tfHealthCheck.([]interface{}))
 	}
 
-	action, _, err := client.LoadBalancer.UpdateService(ctx, lb, listenPort, opts)
+	action, _, err := client.LoadBalancer.UpdateService(ctx, lb, svc.ListenPort, opts)
 	if err != nil {
 		if resourceLoadBalancerIsNotFound(err, d) {
 			return nil
@@ -260,23 +278,24 @@ func resourceLoadBalancerServiceUpdate(d *schema.ResourceData, m interface{}) er
 }
 
 func resourceLoadBalancerServiceRead(d *schema.ResourceData, m interface{}) error {
-	lb, err := resourceLoadBalancerServiceGetLoadBalancer(d, m)
+	client := m.(*hcloud.Client)
+	ctx := context.Background()
+	lb, svc, err := lookupLoadBalancerServiceID(ctx, d.Id(), client)
+	if err == errInvalidLoadBalancerServiceID {
+		log.Printf("[WARN] Invalid id (%s), removing from state: %s", d.Id(), err)
+		d.SetId("")
+		return nil
+	}
 	if err != nil {
 		return err
 	}
 
-	protocol := hcloud.LoadBalancerServiceProtocol(d.Get("protocol").(string))
 	listenPort := d.Get("listen_port").(int)
 	// listenPort is a computed attribute. Since we are about to read the resource
 	// it may not have been set yet. If this is the case we derive it from the
 	// protocol
 	if listenPort == 0 {
-		switch protocol {
-		case hcloud.LoadBalancerServiceProtocolHTTP:
-			listenPort = 80
-		case hcloud.LoadBalancerServiceProtocolHTTPS:
-			listenPort = 443
-		}
+		listenPort = svc.ListenPort
 	}
 	var (
 		service hcloud.LoadBalancerService
@@ -294,7 +313,7 @@ func resourceLoadBalancerServiceRead(d *schema.ResourceData, m interface{}) erro
 		return nil
 	}
 
-	return setLoadBalancerServiceSchema(d, lb, service)
+	return setLoadBalancerServiceSchema(d, lb, &service)
 }
 
 func resourceLoadBalancerServiceDelete(d *schema.ResourceData, m interface{}) error {
@@ -303,16 +322,17 @@ func resourceLoadBalancerServiceDelete(d *schema.ResourceData, m interface{}) er
 	client := m.(*hcloud.Client)
 	ctx := context.Background()
 
-	lb, err := resourceLoadBalancerServiceGetLoadBalancer(d, m)
+	lb, svc, err := lookupLoadBalancerServiceID(ctx, d.Id(), client)
+	if err == errInvalidLoadBalancerServiceID {
+		log.Printf("[WARN] Invalid id (%s), removing from state: %s", d.Id(), err)
+		d.SetId("")
+		return nil
+	}
 	if err != nil {
-		return fmt.Errorf("%s: %v", op, err)
+		return err
 	}
 
-	listenPort, ok := d.GetOk("listen_port")
-	if !ok {
-		return fmt.Errorf("%s: no listen_port set", op)
-	}
-	action, _, err := client.LoadBalancer.DeleteService(ctx, lb, listenPort.(int))
+	action, _, err := client.LoadBalancer.DeleteService(ctx, lb, svc.ListenPort)
 	if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
 		return nil
 	}
@@ -326,9 +346,11 @@ func resourceLoadBalancerServiceDelete(d *schema.ResourceData, m interface{}) er
 	return nil
 }
 
-func setLoadBalancerServiceSchema(d *schema.ResourceData, lb *hcloud.LoadBalancer, svc hcloud.LoadBalancerService) error {
+func setLoadBalancerServiceSchema(d *schema.ResourceData, lb *hcloud.LoadBalancer, svc *hcloud.LoadBalancerService) error {
 	svcID := fmt.Sprintf("%d__%d", lb.ID, svc.ListenPort)
 
+	d.SetId(svcID)
+	d.Set("load_balancer_id", strconv.Itoa(lb.ID))
 	d.Set("protocol", string(svc.Protocol))
 	d.Set("listen_port", svc.ListenPort)
 	d.Set("destination_port", svc.DestinationPort)
@@ -363,26 +385,58 @@ func setLoadBalancerServiceSchema(d *schema.ResourceData, lb *hcloud.LoadBalance
 		d.Set("health_check", healthCheck)
 	}
 
-	d.SetId(svcID)
 	return nil
 }
 
-func resourceLoadBalancerServiceGetLoadBalancer(d *schema.ResourceData, m interface{}) (*hcloud.LoadBalancer, error) {
-	client := m.(*hcloud.Client)
-	ctx := context.Background()
+var errInvalidLoadBalancerServiceID = errors.New("invalid load balancer service id")
 
-	lbID, err := strconv.Atoi(d.Get("load_balancer_id").(string))
+// lookupLoadBalancerServiceID parses the terraform load balancer service record id and return the load balancer and the service
+//
+// id format: <load balancer id>__<listen-port>
+// Examples:
+// 123__80
+func lookupLoadBalancerServiceID(ctx context.Context, terraformID string, client *hcloud.Client) (loadBalancer *hcloud.LoadBalancer, loadBalancerService *hcloud.LoadBalancerService, err error) {
+	if terraformID == "" {
+		err = errInvalidLoadBalancerServiceID
+		return
+	}
+	parts := strings.SplitN(terraformID, "__", 2)
+	if len(parts) != 2 {
+		err = errInvalidLoadBalancerServiceID
+		return
+	}
+
+	loadBalancerID, err := strconv.Atoi(parts[0])
 	if err != nil {
-		return nil, err
+		err = errInvalidLoadBalancerServiceID
+		return
 	}
-	lb, _, err := client.LoadBalancer.GetByID(ctx, lbID)
+
+	loadBalancer, _, err = client.LoadBalancer.GetByID(ctx, loadBalancerID)
 	if err != nil {
-		return nil, err
+		err = errInvalidLoadBalancerServiceID
+		return
 	}
-	if lb == nil {
-		return nil, fmt.Errorf("no load balancer with id %d", lbID)
+	if loadBalancer == nil {
+		err = errInvalidLoadBalancerServiceID
+		return
 	}
-	return lb, err
+
+	serviceListenPort, err := strconv.Atoi(parts[1])
+	if err != nil {
+		err = errInvalidLoadBalancerServiceID
+		return
+	}
+
+	for _, svc := range loadBalancer.Services {
+		if svc.ListenPort == serviceListenPort {
+			loadBalancerService = &svc
+			return
+		}
+	}
+
+	err = errInvalidLoadBalancerServiceID
+	return
 }
 
 func parseTFHTTP(tfHTTP []interface{}) *hcloud.LoadBalancerAddServiceOptsHTTP {
