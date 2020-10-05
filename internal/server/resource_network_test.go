@@ -2,6 +2,7 @@ package server_test
 
 import (
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -38,7 +39,13 @@ func TestAccHcloudServerNetwork_NetworkID(t *testing.T) {
 		Image:        "ubuntu-20.04",
 	}
 	sRes.SetRName("s-network-test")
-
+	sNRes := &server.RDataNetwork{
+		Name:      "test-network",
+		ServerID:  sRes.TFID() + ".id",
+		NetworkID: netRes.TFID() + ".id",
+		IP:        "10.0.1.5",
+		DependsOn: []string{subNetRes.TFID()},
+	}
 	tmplMan := testtemplate.Manager{}
 	resource.Test(t, resource.TestCase{
 		PreCheck:     testsupport.AccTestPreCheck(t),
@@ -50,13 +57,7 @@ func TestAccHcloudServerNetwork_NetworkID(t *testing.T) {
 					"testdata/r/hcloud_network", netRes,
 					"testdata/r/hcloud_network_subnet", subNetRes,
 					"testdata/r/hcloud_server", sRes,
-					"testdata/r/hcloud_server_network", &server.RDataNetwork{
-						Name:      "test-network",
-						ServerID:  sRes.TFID() + ".id",
-						NetworkID: netRes.TFID() + ".id",
-						IP:        "10.0.1.5",
-						DependsOn: []string{subNetRes.TFID()},
-					},
+					"testdata/r/hcloud_server_network", sNRes,
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckResourceExists(netRes.TFID(), network.ByID(t, &nw)),
@@ -65,6 +66,15 @@ func TestAccHcloudServerNetwork_NetworkID(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						server.NetworkResourceType+".test-network", "ip", "10.0.1.5"),
 				),
+			},
+			{
+				// Try to import the newly created Server
+				ResourceName:      server.NetworkResourceType + ".test-network",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: func(state *terraform.State) (string, error) {
+					return fmt.Sprintf("%d-%d", s.ID, nw.ID), nil
+				},
 			},
 		},
 	})

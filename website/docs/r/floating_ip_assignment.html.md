@@ -41,3 +41,11 @@ resource "hcloud_floating_ip" "master" {
 - `id` - (int) Unique ID of the Floating IP Assignment.
 - `floating_ip_id` - (int) ID of the Floating IP.
 - `server_id` - (int) Server the Floating IP was assigned to.
+
+## Import
+
+Floating IP Assignments can be imported using the `floating_ip_id`:
+
+```
+terraform import hcloud_floating_ip_assignment.myfloatingipassignment <floating_ip_id>
+```

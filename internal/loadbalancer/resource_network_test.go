@@ -2,6 +2,7 @@ package loadbalancer_test
 
 import (
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -66,6 +67,15 @@ func TestAccHcloudLoadBalancerNetwork_NetworkID(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						loadbalancer.NetworkResourceType+".test-network", "enable_public_interface", "false"),
 				),
+			},
+			{
+				// Try to import the newly created Server
+				ResourceName:      loadbalancer.NetworkResourceType + ".test-network",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: func(state *terraform.State) (string, error) {
+					return fmt.Sprintf("%d-%d", lb.ID, nw.ID), nil
+				},
 			},
 			{
 				Config: tmplMan.Render(t,

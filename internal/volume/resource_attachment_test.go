@@ -2,6 +2,7 @@ package volume_test
 
 import (
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"testing"
 
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
@@ -16,7 +17,7 @@ import (
 func TestVolumeAssignmentResource_Basic(t *testing.T) {
 	var s hcloud.Server
 	var s2 hcloud.Server
-	var f hcloud.Volume
+	var v hcloud.Volume
 	tmplMan := testtemplate.Manager{}
 	resServer := &server.RData{
 		Name:  "vol-attachment",
@@ -72,8 +73,17 @@ func TestVolumeAssignmentResource_Basic(t *testing.T) {
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckResourceExists(resServer.TFID(), server.ByID(t, &s)),
-					testsupport.CheckResourceExists(resVolume.TFID(), volume.ByID(t, &f)),
+					testsupport.CheckResourceExists(resVolume.TFID(), volume.ByID(t, &v)),
 				),
+			},
+			{
+				// Try to import the newly created volume attachment
+				ResourceName:      res.TFID(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: func(state *terraform.State) (string, error) {
+					return fmt.Sprintf("%d", v.ID), nil
+				},
 			},
 			{
 				// Move the Volume to another server using the
@@ -86,7 +96,7 @@ func TestVolumeAssignmentResource_Basic(t *testing.T) {
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckResourceExists(resServer2.TFID(), server.ByID(t, &s2)),
-					testsupport.CheckResourceExists(resVolume.TFID(), volume.ByID(t, &f)),
+					testsupport.CheckResourceExists(resVolume.TFID(), volume.ByID(t, &v)),
 				),
 			},
 		},

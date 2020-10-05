@@ -1,5 +1,9 @@
 ## Unreleased
 
+FEATURES:
+
+* All `hcloud_*` resources are now importable.
+
 BUG FIXES:
 * `hcloud_rdns` resource: It is now possible to import the resource as documented.
 

@@ -19,6 +19,9 @@ func resourceLoadBalancerNetwork() *schema.Resource {
 		Create: resourceLoadBalancerNetworkCreate,
 		Read:   resourceLoadBalancerNetworkRead,
 		Delete: resourceLoadBalancerNetworkDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 		Schema: map[string]*schema.Schema{
 			"network_id": {
 				Type:     schema.TypeInt,
@@ -182,16 +185,24 @@ func resourceLoadBalancerNetworkDelete(d *schema.ResourceData, m interface{}) er
 	return nil
 }
 
-func setLoadBalancerNetworkSchema(d *schema.ResourceData, server *hcloud.LoadBalancer, network *hcloud.Network, serverPrivateNet *hcloud.LoadBalancerPrivateNet) {
-	d.SetId(generateLoadBalancerNetworkID(server, network))
-	d.Set("ip", serverPrivateNet.IP.String())
+func setLoadBalancerNetworkSchema(d *schema.ResourceData, loadBalancer *hcloud.LoadBalancer, network *hcloud.Network, loadBalancerPrivateNet *hcloud.LoadBalancerPrivateNet) {
+	d.SetId(generateLoadBalancerNetworkID(loadBalancer, network))
+	d.Set("ip", loadBalancerPrivateNet.IP.String())
+	d.Set("enable_public_interface", loadBalancer.PublicNet.Enabled)
+	d.Set("load_balancer_id", loadBalancer.ID)
+	if subnetID, ok := d.GetOk("subnet_id"); ok {
+		d.Set("subnet_id", subnetID)
+	} else {
+		d.Set("network_id", network.ID)
+	}
+
 }
 
 func generateLoadBalancerNetworkID(server *hcloud.LoadBalancer, network *hcloud.Network) string {
 	return fmt.Sprintf("%d-%d", server.ID, network.ID)
 }
 
-var errInvalidLoadBalancerNetworkID = errors.New("invalid server network id")
+var errInvalidLoadBalancerNetworkID = errors.New("invalid load balancer network id")
 
 // lookupLoadBalancerNetworkID parses the terraform load balancer network record id and return the load balancer, network and the LoadBalancerPrivateNet
 //

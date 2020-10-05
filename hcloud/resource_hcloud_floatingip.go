@@ -18,7 +18,6 @@ func resourceFloatingIP() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
-
 		Schema: map[string]*schema.Schema{
 			"type": {
 				Type:     schema.TypeString,

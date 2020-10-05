@@ -1,6 +1,8 @@
 package network_test
 
 import (
+	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"testing"
 
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/network"
@@ -46,6 +48,15 @@ func TestNetworkSubnetResource_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(res.TFID(), "ip_range", res.IPRange),
 					resource.TestCheckResourceAttr(res.TFID(), "network_zone", res.NetworkZone),
 				),
+			},
+			{
+				// Try to import the newly created Network
+				ResourceName:      res.TFID(),
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: func(state *terraform.State) (string, error) {
+					return fmt.Sprintf("%d-%s", nw.ID, res.IPRange), nil
+				},
 			},
 		},
 	})

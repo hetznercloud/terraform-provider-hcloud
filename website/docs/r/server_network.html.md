@@ -64,3 +64,12 @@ resource "hcloud_server_network" "srvnetwork" {
 - `server_id` - (int) ID of the server.
 - `ip` - (string) IP assigned to this server.
 - `alias_ips` - (list[string]) Additional IPs assigned to this server.
+
+## Import
+
+Server Network entries can be imported using a compound ID with the following format:
+`<server-id>-<network-id>`
+
+```
+terraform import hcloud_server_network.myservernetwork 123-654
+```

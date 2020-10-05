@@ -21,6 +21,9 @@ func resourceServerNetwork() *schema.Resource {
 		Read:   resourceServerNetworkRead,
 		Update: resourceServerNetworkUpdate,
 		Delete: resourceServerNetworkDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 		Schema: map[string]*schema.Schema{
 			"network_id": {
 				Type:     schema.TypeInt,
@@ -248,6 +251,12 @@ func setServerNetworkSchema(d *schema.ResourceData, server *hcloud.Server, netwo
 	d.Set("alias_ips", aliasIPs)
 
 	d.Set("mac_address", serverPrivateNet.MACAddress)
+	if subnetID, ok := d.GetOk("subnet_id"); ok {
+		d.Set("subnet_id", subnetID.(string))
+	} else {
+		d.Set("network_id", network.ID)
+	}
+	d.Set("server_id", server.ID)
 }
 
 func generateServerNetworkID(server *hcloud.Server, network *hcloud.Network) string {

@@ -65,3 +65,13 @@ resource "hcloud_load_balancer_network" "srvnetwork" {
 - `network_id` - (int) ID of the network.
 - `load_balancer_id` - (int) ID of the Load Balancer.
 - `ip` - (string) IP assigned to this Load Balancer.
+
+## Import
+
+Load Balancer Network entries can be imported using a compound ID with the following format:
+`<load-balancer-id>-<network-id>`
+
+```
+terraform import hcloud_load_balancer_network.myloadbalancernetwork 123-654
+```
+

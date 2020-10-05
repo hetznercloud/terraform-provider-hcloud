@@ -21,6 +21,9 @@ func resourceNetworkSubnet() *schema.Resource {
 		Create: resourceNetworkSubnetCreate,
 		Read:   resourceNetworkSubnetRead,
 		Delete: resourceNetworkSubnetDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 		Schema: map[string]*schema.Schema{
 			"network_id": {
 				Type:     schema.TypeInt,

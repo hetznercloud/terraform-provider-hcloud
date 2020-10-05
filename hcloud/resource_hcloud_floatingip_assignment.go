@@ -14,7 +14,9 @@ func resourceFloatingIPAssignment() *schema.Resource {
 		Create: resourceFloatingIPAssignmentCreate,
 		Read:   resourceFloatingIPAssignmentRead,
 		Delete: resourceFloatingIPAssignmentDelete,
-
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 		Schema: map[string]*schema.Schema{
 			"floating_ip_id": {
 				Type:     schema.TypeInt,
@@ -75,19 +77,27 @@ func resourceFloatingIPAssignmentRead(d *schema.ResourceData, m interface{}) err
 		return nil
 	}
 
-	server, _, err := client.Server.GetByID(ctx, d.Get("server_id").(int))
+	// check if floating api is assigned to any server
+	if floatingIP.Server == nil {
+		log.Printf("[WARN] Floating IP (%v) is not associated to a server, removing Floating IP Association from state", d.Get("floating_ip_id"))
+		d.SetId("")
+		return nil
+	}
+
+	// when importing the resource the server_id is not given
+	// because only the terraform ID (Floating IP ID in this case)
+	// is available, so we need to get the ID from the volume
+	// instead of from the configuration
+	serverId := d.Get("server_id").(int)
+	if serverId == 0 {
+		serverId = floatingIP.Server.ID
+	}
+	server, _, err := client.Server.GetByID(ctx, serverId)
 	if err != nil {
 		return err
 	}
 	if server == nil {
 		log.Printf("[WARN] Server ID (%v) not found, removing Floating IP Association from state", d.Get("server_id"))
-		d.SetId("")
-		return nil
-	}
-
-	// check if floating api is assigned to any server
-	if floatingIP.Server == nil {
-		log.Printf("[WARN] Floating IP (%v) is not associated to a server, removing Floating IP Association from state", d.Get("floating_ip_id"))
 		d.SetId("")
 		return nil
 	}
