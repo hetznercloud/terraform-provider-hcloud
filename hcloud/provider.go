@@ -5,11 +5,9 @@ import (
 	"log"
 	"time"
 
-	"github.com/hashicorp/logutils"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/logging"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 
@@ -17,7 +15,7 @@ var Version = "not build yet"
 var Commit = "not build yet"
 
 // Provider returns the hcloud terraform provider.
-func Provider() terraform.ResourceProvider {
+func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"token": {
@@ -92,11 +90,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		opts = append(opts, hcloud.WithPollInterval(pollInterval))
 	}
 	if logging.LogLevel() != "" {
-		writer, err := logging.LogOutput()
-		if err != nil {
-			return nil, err
-		}
-		opts = append(opts, hcloud.WithDebugWriter(writer.(*logutils.LevelFilter).Writer))
+		opts = append(opts, hcloud.WithDebugWriter(log.Writer()))
 	}
 	log.Printf("[DEBUG] hcloud terraform provider version: %s commit: %s", Version, Commit)
 	log.Printf("[DEBUG] hcloud-go version: %s", hcloud.Version)

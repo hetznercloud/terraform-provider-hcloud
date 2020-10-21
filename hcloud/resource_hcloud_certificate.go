@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 
@@ -151,7 +151,7 @@ func resourceCertificateUpdate(d *schema.ResourceData, m interface{}) error {
 		if _, _, err := client.Certificate.Update(ctx, cert, opts); err != nil {
 			return err
 		}
-		d.SetPartial("name")
+		d.Partial(true)
 	}
 	if d.HasChange("labels") {
 		opts := hcloud.CertificateUpdateOpts{
@@ -163,7 +163,7 @@ func resourceCertificateUpdate(d *schema.ResourceData, m interface{}) error {
 		if _, _, err := client.Certificate.Update(ctx, cert, opts); err != nil {
 			return err
 		}
-		d.SetPartial("labels")
+		d.Partial(true)
 	}
 	d.Partial(false)
 	return resourceCertificateRead(d, m)

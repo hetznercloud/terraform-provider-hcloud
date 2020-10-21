@@ -11,6 +11,10 @@ jobs:
       -
         name: Unshallow
         run: git fetch --prune --unshallow
+      - uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: "0.12.25"
+          terraform_wrapper: false
       -
         name: Set up Go
         uses: actions/setup-go@v2

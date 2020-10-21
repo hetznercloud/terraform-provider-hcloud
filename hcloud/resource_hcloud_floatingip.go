@@ -5,7 +5,7 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 
@@ -151,7 +151,6 @@ func resourceFloatingIPUpdate(d *schema.ResourceData, m interface{}) error {
 			}
 			return err
 		}
-		d.SetPartial("description")
 	}
 
 	if d.HasChange("name") {
@@ -165,7 +164,6 @@ func resourceFloatingIPUpdate(d *schema.ResourceData, m interface{}) error {
 			}
 			return err
 		}
-		d.SetPartial("name")
 	}
 
 	if d.HasChange("server_id") {
@@ -193,7 +191,6 @@ func resourceFloatingIPUpdate(d *schema.ResourceData, m interface{}) error {
 				return err
 			}
 		}
-		d.SetPartial("server_id")
 	}
 	if d.HasChange("labels") {
 		labels := d.Get("labels")
@@ -210,7 +207,6 @@ func resourceFloatingIPUpdate(d *schema.ResourceData, m interface{}) error {
 			}
 			return err
 		}
-		d.SetPartial("labels")
 	}
 	d.Partial(false)
 

@@ -5,7 +5,7 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 
@@ -162,7 +162,7 @@ func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 			}
 			return err
 		}
-		d.SetPartial("name")
+		d.Partial(true)
 	}
 
 	if d.HasChange("server_id") {
@@ -203,7 +203,7 @@ func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 				return err
 			}
 		}
-		d.SetPartial("server_id")
+		d.Partial(true)
 	}
 
 	if d.HasChange("size") {
@@ -219,7 +219,7 @@ func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 			return err
 		}
 
-		d.SetPartial("size")
+		d.Partial(true)
 	}
 
 	if d.HasChange("labels") {
@@ -237,7 +237,8 @@ func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 			}
 			return err
 		}
-		d.SetPartial("labels")
+
+		d.Partial(true)
 	}
 	d.Partial(false)
 

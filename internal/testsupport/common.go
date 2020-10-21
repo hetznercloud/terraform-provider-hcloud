@@ -2,17 +2,17 @@ package testsupport
 
 import (
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	tfhcloud "github.com/hetznercloud/terraform-provider-hcloud/hcloud"
 )
 
 // AccTestProviders returns all providers used during acceptance testing.
-func AccTestProviders() map[string]terraform.ResourceProvider {
-	return map[string]terraform.ResourceProvider{
+func AccTestProviders() map[string]*schema.Provider {
+	return map[string]*schema.Provider {
 		"hcloud": tfhcloud.Provider(),
 	}
 }

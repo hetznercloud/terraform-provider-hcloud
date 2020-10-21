@@ -1,15 +1,29 @@
 package main
 
 import (
-	"github.com/hashicorp/terraform-plugin-sdk/plugin"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"context"
+	"flag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 	"github.com/hetznercloud/terraform-provider-hcloud/hcloud"
+	"log"
 )
 
 func main() {
-	plugin.Serve(&plugin.ServeOpts{
-		ProviderFunc: func() terraform.ResourceProvider {
-			return hcloud.Provider()
-		},
-	})
+	var debugMode bool
+
+	flag.BoolVar(&debugMode, "debuggable", false, "set to true to run the provider with support for debuggers like delve")
+	flag.Parse()
+
+	if debugMode {
+		err := plugin.Debug(context.Background(), "registry.terraform.io/hetznercloud/hcloud",
+			&plugin.ServeOpts{
+				ProviderFunc: hcloud.Provider,
+			})
+		if err != nil {
+			log.Println(err.Error())
+		}
+	} else {
+		plugin.Serve(&plugin.ServeOpts{
+			ProviderFunc: hcloud.Provider})
+	}
 }
