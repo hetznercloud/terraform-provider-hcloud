@@ -12,7 +12,7 @@ import (
 
 // AccTestProviders returns all providers used during acceptance testing.
 func AccTestProviders() map[string]*schema.Provider {
-	return map[string]*schema.Provider {
+	return map[string]*schema.Provider{
 		"hcloud": tfhcloud.Provider(),
 	}
 }

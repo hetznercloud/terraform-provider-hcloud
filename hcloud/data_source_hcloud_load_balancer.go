@@ -106,7 +106,6 @@ func dataSourceHcloudLoadBalancer() *schema.Resource {
 						"http": {
 							Type:     schema.TypeList,
 							Computed: true,
-							MaxItems: 1,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"sticky_sessions": {
@@ -138,7 +137,6 @@ func dataSourceHcloudLoadBalancer() *schema.Resource {
 						"health_check": {
 							Type:     schema.TypeList,
 							Computed: true,
-							MaxItems: 1,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"protocol": {
@@ -164,7 +162,6 @@ func dataSourceHcloudLoadBalancer() *schema.Resource {
 									"http": {
 										Type:     schema.TypeList,
 										Computed: true,
-										MaxItems: 1,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
 												"domain": {

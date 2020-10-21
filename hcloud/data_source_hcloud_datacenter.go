@@ -80,14 +80,14 @@ func setDatacenterSchema(data *schema.ResourceData, d *hcloud.Datacenter) {
 	data.SetId(strconv.Itoa(d.ID))
 	data.Set("name", d.Name)
 	data.Set("description", d.Description)
-	data.Set("location", map[string]interface{}{
-		"id":          d.Location.ID,
+	data.Set("location", map[string]string{
+		"id":          strconv.Itoa(d.Location.ID),
 		"name":        d.Location.Name,
 		"description": d.Location.Description,
 		"country":     d.Location.Country,
 		"city":        d.Location.City,
-		"latitude":    d.Location.Latitude,
-		"longitude":   d.Location.Longitude,
+		"latitude":    fmt.Sprintf("%f", d.Location.Latitude),
+		"longitude":   fmt.Sprintf("%f", d.Location.Longitude),
 	})
 	var supported, available []int
 	for _, v := range d.ServerTypes.Supported {

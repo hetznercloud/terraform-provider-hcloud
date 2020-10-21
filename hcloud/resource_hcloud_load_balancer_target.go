@@ -382,7 +382,7 @@ func setLoadBalancerTarget(d *schema.ResourceData, lbID int, tgt hcloud.LoadBala
 		tgtID := generateLoadBalancerServerTargetID(tgt.Server.Server, lbID)
 		d.SetId(tgtID)
 	case hcloud.LoadBalancerTargetTypeLabelSelector:
-		d.Set("label_selector", tgt.LabelSelector)
+		d.Set("label_selector", tgt.LabelSelector.Selector)
 		tgtID := generateLoadBalancerLabelSelectorTargetID(tgt.LabelSelector.Selector, lbID)
 		d.SetId(tgtID)
 	case hcloud.LoadBalancerTargetTypeIP:

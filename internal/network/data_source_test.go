@@ -46,6 +46,11 @@ func TestAccHcloudDataSourceNetworkTest(t *testing.T) {
 			{
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_network", res,
+				),
+			},
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_network", res,
 					"testdata/d/hcloud_network", networkByName,
 					"testdata/d/hcloud_network", networkByID,
 					"testdata/d/hcloud_network", networkBySel,

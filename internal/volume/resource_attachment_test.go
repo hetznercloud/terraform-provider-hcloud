@@ -26,7 +26,6 @@ func TestVolumeAssignmentResource_Basic(t *testing.T) {
 		Labels: map[string]string{
 			"tf-test": fmt.Sprintf("tf-test-vol-attachment-%d", tmplMan.RandInt),
 		},
-		LocationName: "fsn1",
 	}
 	resServer.SetRName("server_attachment")
 
@@ -37,14 +36,14 @@ func TestVolumeAssignmentResource_Basic(t *testing.T) {
 		Labels: map[string]string{
 			"tf-test": fmt.Sprintf("tf-test-vol-attachment-%d", tmplMan.RandInt),
 		},
-		LocationName: "fsn1",
+		LocationName: fmt.Sprintf("${%s.location}", resServer.TFID()),
 	}
 	resServer2.SetRName("server2_attachment")
 
 	resVolume := &volume.RData{
 		Name:         "volume-attachment",
 		Size:         10,
-		LocationName: "fsn1",
+		LocationName: fmt.Sprintf("${%s.location}", resServer.TFID()),
 	}
 	resVolume.SetRName("volume-attachment")
 

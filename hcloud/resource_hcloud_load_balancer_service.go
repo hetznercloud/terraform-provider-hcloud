@@ -59,6 +59,7 @@ func resourceLoadBalancerService() *schema.Resource {
 				Type:     schema.TypeList,
 				Optional: true,
 				MaxItems: 1,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"sticky_sessions": {
@@ -368,21 +369,21 @@ func setLoadBalancerServiceSchema(d *schema.ResourceData, lb *hcloud.LoadBalance
 			httpMap["cookie_lifetime"] = int(svc.HTTP.CookieLifetime.Seconds())
 		}
 		if len(svc.HTTP.Certificates) > 0 {
-			certIDs := make([]string, len(svc.HTTP.Certificates))
+			certIDs := make([]int, len(svc.HTTP.Certificates))
 			for i := 0; i < len(svc.HTTP.Certificates); i++ {
-				certIDs[i] = strconv.Itoa(svc.HTTP.Certificates[i].ID)
+				certIDs[i] = svc.HTTP.Certificates[i].ID
 			}
 			httpMap["certificates"] = certIDs
 		}
 		httpMap["redirect_http"] = svc.HTTP.RedirectHTTP
 		if len(httpMap) > 0 {
-			d.Set("http", httpMap)
+			d.Set("http", []interface{}{httpMap})
 		}
 	}
 
 	healthCheck := toTFHealthCheck(svc.HealthCheck)
 	if len(healthCheck) > 0 {
-		d.Set("health_check", healthCheck)
+		d.Set("health_check", []interface{}{healthCheck})
 	}
 
 	return nil
@@ -528,7 +529,7 @@ func toTFHealthCheck(healthCheck hcloud.LoadBalancerServiceHealthCheck) map[stri
 		httpMap["tls"] = healthCheck.HTTP.TLS
 		httpMap["status_codes"] = healthCheck.HTTP.StatusCodes
 
-		healthCheckMap["http"] = httpMap
+		healthCheckMap["http"] = []interface{}{httpMap}
 	}
 
 	return healthCheckMap

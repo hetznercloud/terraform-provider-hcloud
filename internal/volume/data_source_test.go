@@ -46,6 +46,11 @@ func TestAccHcloudDataSourceVolumeTest(t *testing.T) {
 			{
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_volume", res,
+				),
+			},
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_volume", res,
 					"testdata/d/hcloud_volume", volByName,
 					"testdata/d/hcloud_volume", volByID,
 					"testdata/d/hcloud_volume", volBySel,

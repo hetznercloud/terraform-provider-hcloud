@@ -38,11 +38,16 @@ func TestAccHcloudDataSourceFloatingIPTest(t *testing.T) {
 	}
 	floatingipBySel.SetRName("floatingip_by_sel")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     testsupport.AccTestPreCheck(t),
 		Providers:    testsupport.AccTestProviders(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(floatingip.ResourceType, floatingip.ByID(t, nil)),
 		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_floating_ip", res,
+				),
+			},
 			{
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_floating_ip", res,

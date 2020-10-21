@@ -47,6 +47,11 @@ func TestAccHcloudDataSourceServerTest(t *testing.T) {
 			{
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_server", res,
+				),
+			},
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_server", res,
 					"testdata/d/hcloud_server", serverByName,
 					"testdata/d/hcloud_server", serverByID,
 					"testdata/d/hcloud_server", serverBySel,
