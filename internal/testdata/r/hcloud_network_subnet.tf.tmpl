@@ -6,4 +6,7 @@ resource "hcloud_network_subnet" "{{ .RName }}" {
   network_id   = {{ .NetworkID }}
   network_zone = "{{ .NetworkZone }}"
   ip_range     = "{{ .IPRange }}"
+  {{- if .VSwitchID }}
+  vswitch_id   = {{ .VSwitchID }}
+  {{ end }}
 }
