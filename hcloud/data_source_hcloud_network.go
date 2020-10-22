@@ -2,7 +2,8 @@ package hcloud
 
 import (
 	"context"
-	"fmt"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
@@ -10,7 +11,7 @@ import (
 
 func dataSourceHcloudNetwork() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceHcloudNetworkRead,
+		ReadContext: dataSourceHcloudNetworkRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:     schema.TypeInt,
@@ -35,31 +36,30 @@ func dataSourceHcloudNetwork() *schema.Resource {
 		},
 	}
 }
-func dataSourceHcloudNetworkRead(d *schema.ResourceData, m interface{}) (err error) {
+func dataSourceHcloudNetworkRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
-	var n *hcloud.Network
+
 	if id, ok := d.GetOk("id"); ok {
-		n, _, err = client.Network.GetByID(ctx, id.(int))
+		n, _, err := client.Network.GetByID(ctx, id.(int))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if n == nil {
-			return fmt.Errorf("no network found with id %d", id)
+			return diag.Errorf("no network found with id %d", id)
 		}
 		setNetworkSchema(d, n)
-		return
+		return nil
 	}
 	if name, ok := d.GetOk("name"); ok {
-		n, _, err = client.Network.GetByName(ctx, name.(string))
+		n, _, err := client.Network.GetByName(ctx, name.(string))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if n == nil {
-			return fmt.Errorf("no network found with name %s", name)
+			return diag.Errorf("no network found with name %s", name)
 		}
 		setNetworkSchema(d, n)
-		return
+		return nil
 	}
 
 	selector := d.Get("with_selector").(string)
@@ -71,18 +71,18 @@ func dataSourceHcloudNetworkRead(d *schema.ResourceData, m interface{}) (err err
 				LabelSelector: selector,
 			},
 		}
-		allNetworks, err = client.Network.AllWithOpts(ctx, opts)
+		allNetworks, err := client.Network.AllWithOpts(ctx, opts)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if len(allNetworks) == 0 {
-			return fmt.Errorf("no network found for selector %q", selector)
+			return diag.Errorf("no network found for selector %q", selector)
 		}
 		if len(allNetworks) > 1 {
-			return fmt.Errorf("more than one network found for selector %q", selector)
+			return diag.Errorf("more than one network found for selector %q", selector)
 		}
 		setNetworkSchema(d, allNetworks[0])
-		return
+		return nil
 	}
-	return fmt.Errorf("please specify an id, a name or a selector to lookup the network")
+	return diag.Errorf("please specify an id, a name or a selector to lookup the network")
 }

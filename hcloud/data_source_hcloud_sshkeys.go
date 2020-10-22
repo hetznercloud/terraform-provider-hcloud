@@ -4,13 +4,15 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 
 func dataSourceHcloudSSHKeys() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceHcloudSSHKeysRead,
+		ReadContext: dataSourceHcloudSSHKeysRead,
 		Schema: map[string]*schema.Schema{
 			"with_selector": {
 				Type:     schema.TypeString,
@@ -47,7 +49,7 @@ func dataSourceHcloudSSHKeys() *schema.Resource {
 		},
 	}
 }
-func dataSourceHcloudSSHKeysRead(d *schema.ResourceData, m interface{}) error {
+func dataSourceHcloudSSHKeysRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	labelSelector := d.Get("with_selector")
@@ -60,7 +62,7 @@ func dataSourceHcloudSSHKeysRead(d *schema.ResourceData, m interface{}) error {
 	}
 	keys, err := client.SSHKey.AllWithOpts(context.Background(), opts)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	var keyMaps []map[string]interface{}
 	id := ""

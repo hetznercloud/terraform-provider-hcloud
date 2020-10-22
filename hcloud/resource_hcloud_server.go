@@ -10,16 +10,18 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 
 func resourceServer() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceServerCreate,
-		Read:   resourceServerRead,
-		Update: resourceServerUpdate,
-		Delete: resourceServerDelete,
+		CreateContext: resourceServerCreate,
+		ReadContext:   resourceServerRead,
+		UpdateContext: resourceServerUpdate,
+		DeleteContext: resourceServerDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -139,14 +141,13 @@ func userDataDiffSuppress(k, old, new string, d *schema.ResourceData) bool {
 	return strings.TrimSpace(old) == strings.TrimSpace(new)
 }
 
-func resourceServerCreate(d *schema.ResourceData, m interface{}) error {
+func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	var err error
 	image, _, err := client.Image.Get(ctx, d.Get("image").(string))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	opts := hcloud.ServerCreateOpts{
@@ -160,7 +161,7 @@ func resourceServerCreate(d *schema.ResourceData, m interface{}) error {
 
 	opts.SSHKeys, err = getSSHkeys(ctx, client, d)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	if datacenter, ok := d.GetOk("datacenter"); ok {
@@ -180,50 +181,49 @@ func resourceServerCreate(d *schema.ResourceData, m interface{}) error {
 
 	res, _, err := client.Server.Create(ctx, opts)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(strconv.Itoa(res.Server.ID))
 	if err := waitForServerAction(ctx, client, res.Action, res.Server); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	for _, nextAction := range res.NextActions {
 		if err := waitForServerAction(ctx, client, nextAction, res.Server); err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 
 	}
 
 	backups := d.Get("backups").(bool)
 	if err := setBackups(ctx, client, res.Server, backups); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	if iso, ok := d.GetOk("iso"); ok {
 		if err := setISO(ctx, client, res.Server, iso.(string)); err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
 	if rescue, ok := d.GetOk("rescue"); ok {
 		if err := setRescue(ctx, client, res.Server, rescue.(string), opts.SSHKeys, 0); err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	return resourceServerRead(d, m)
+	return resourceServerRead(ctx, d, m)
 }
 
-func resourceServerRead(d *schema.ResourceData, m interface{}) error {
+func resourceServerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	server, _, err := client.Server.Get(ctx, d.Id())
 	if err != nil {
 		if resourceServerIsNotFound(err, d) {
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 	if server == nil {
 		d.SetId("")
@@ -239,13 +239,12 @@ func resourceServerRead(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceServerUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	server, _, err := client.Server.Get(ctx, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if server == nil {
 		d.SetId("")
@@ -262,7 +261,7 @@ func resourceServerUpdate(d *schema.ResourceData, m interface{}) error {
 			if resourceServerIsNotFound(err, d) {
 				return nil
 			}
-			return err
+			return diag.FromErr(err)
 		}
 	}
 	if d.HasChange("labels") {
@@ -278,7 +277,7 @@ func resourceServerUpdate(d *schema.ResourceData, m interface{}) error {
 			if resourceServerIsNotFound(err, d) {
 				return nil
 			}
-			return err
+			return diag.FromErr(err)
 		}
 	}
 	if d.HasChange("server_type") {
@@ -288,10 +287,10 @@ func resourceServerUpdate(d *schema.ResourceData, m interface{}) error {
 		if server.Status == hcloud.ServerStatusRunning {
 			action, _, err := client.Server.Poweroff(ctx, server)
 			if err != nil {
-				return err
+				return diag.FromErr(err)
 			}
 			if err := waitForServerAction(ctx, client, action, server); err != nil {
-				return err
+				return diag.FromErr(err)
 			}
 		}
 
@@ -300,24 +299,24 @@ func resourceServerUpdate(d *schema.ResourceData, m interface{}) error {
 			UpgradeDisk: !keepDisk,
 		})
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if err := waitForServerAction(ctx, client, action, server); err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
 	if d.HasChange("backups") {
 		backups := d.Get("backups").(bool)
 		if err := setBackups(ctx, client, server, backups); err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
 	if d.HasChange("iso") {
 		iso := d.Get("iso").(string)
 		if err := setISO(ctx, client, server, iso); err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
@@ -325,20 +324,19 @@ func resourceServerUpdate(d *schema.ResourceData, m interface{}) error {
 		rescue := d.Get("rescue").(string)
 		sshKeys, err := getSSHkeys(ctx, client, d)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if err := setRescue(ctx, client, server, rescue, sshKeys, 0); err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
 	d.Partial(false)
-	return resourceServerRead(d, m)
+	return resourceServerRead(ctx, d, m)
 }
 
-func resourceServerDelete(d *schema.ResourceData, m interface{}) error {
+func resourceServerDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	serverID, err := strconv.Atoi(d.Id())
 	if err != nil {
@@ -347,7 +345,7 @@ func resourceServerDelete(d *schema.ResourceData, m interface{}) error {
 		return nil
 	}
 	if _, err := client.Server.Delete(ctx, &hcloud.Server{ID: serverID}); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil

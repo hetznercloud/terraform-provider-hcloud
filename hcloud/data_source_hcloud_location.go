@@ -2,8 +2,9 @@ package hcloud
 
 import (
 	"context"
-	"fmt"
 	"strconv"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
@@ -11,7 +12,7 @@ import (
 
 func dataSourceHcloudLocation() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceHcloudLocationRead,
+		ReadContext: dataSourceHcloudLocationRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:     schema.TypeInt,
@@ -47,34 +48,33 @@ func dataSourceHcloudLocation() *schema.Resource {
 	}
 }
 
-func dataSourceHcloudLocationRead(d *schema.ResourceData, m interface{}) (err error) {
+func dataSourceHcloudLocationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
-	var l *hcloud.Location
+
 	if id, ok := d.GetOk("id"); ok {
-		l, _, err = client.Location.GetByID(ctx, id.(int))
+		l, _, err := client.Location.GetByID(ctx, id.(int))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if l == nil {
-			return fmt.Errorf("no location found with id %d", id)
+			return diag.Errorf("no location found with id %d", id)
 		}
 		setLocationSchema(d, l)
-		return
+		return nil
 	}
 	if name, ok := d.GetOk("name"); ok {
-		l, _, err = client.Location.GetByName(ctx, name.(string))
+		l, _, err := client.Location.GetByName(ctx, name.(string))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if l == nil {
-			return fmt.Errorf("no location found with name %v", name)
+			return diag.Errorf("no location found with name %v", name)
 		}
 		setLocationSchema(d, l)
-		return
+		return nil
 	}
 
-	return fmt.Errorf("please specify an id, or a name to lookup for a location")
+	return diag.Errorf("please specify an id, or a name to lookup for a location")
 }
 
 func setLocationSchema(d *schema.ResourceData, l *hcloud.Location) {

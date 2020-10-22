@@ -2,7 +2,8 @@ package hcloud
 
 import (
 	"context"
-	"fmt"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
@@ -10,7 +11,7 @@ import (
 
 func dataSourceHcloudSSHKey() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceHcloudSSHKeyRead,
+		ReadContext: dataSourceHcloudSSHKeyRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:     schema.TypeInt,
@@ -48,42 +49,41 @@ func dataSourceHcloudSSHKey() *schema.Resource {
 		},
 	}
 }
-func dataSourceHcloudSSHKeyRead(d *schema.ResourceData, m interface{}) (err error) {
+func dataSourceHcloudSSHKeyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
-	var s *hcloud.SSHKey
+
 	if id, ok := d.GetOk("id"); ok {
-		s, _, err = client.SSHKey.GetByID(ctx, id.(int))
+		s, _, err := client.SSHKey.GetByID(ctx, id.(int))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if s == nil {
-			return fmt.Errorf("no sshkey found with id %d", id)
+			return diag.Errorf("no sshkey found with id %d", id)
 		}
 		setSSHKeySchema(d, s)
-		return
+		return nil
 	}
 	if name, ok := d.GetOk("name"); ok {
-		s, _, err = client.SSHKey.GetByName(ctx, name.(string))
+		s, _, err := client.SSHKey.GetByName(ctx, name.(string))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if s == nil {
-			return fmt.Errorf("no sshkey found with name %v", name)
+			return diag.Errorf("no sshkey found with name %v", name)
 		}
 		setSSHKeySchema(d, s)
-		return
+		return nil
 	}
 	if fingerprint, ok := d.GetOk("fingerprint"); ok {
-		s, _, err = client.SSHKey.GetByFingerprint(ctx, fingerprint.(string))
+		s, _, err := client.SSHKey.GetByFingerprint(ctx, fingerprint.(string))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if s == nil {
-			return fmt.Errorf("no sshkey found with fingerprint %v", fingerprint)
+			return diag.Errorf("no sshkey found with fingerprint %v", fingerprint)
 		}
 		setSSHKeySchema(d, s)
-		return
+		return nil
 	}
 
 	var selector string
@@ -99,18 +99,18 @@ func dataSourceHcloudSSHKeyRead(d *schema.ResourceData, m interface{}) (err erro
 				LabelSelector: selector,
 			},
 		}
-		allKeys, err = client.SSHKey.AllWithOpts(ctx, opts)
+		allKeys, err := client.SSHKey.AllWithOpts(ctx, opts)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if len(allKeys) == 0 {
-			return fmt.Errorf("no sshkey found for selector %q", selector)
+			return diag.Errorf("no sshkey found for selector %q", selector)
 		}
 		if len(allKeys) > 1 {
-			return fmt.Errorf("more than one sshkey found for selector %q", selector)
+			return diag.Errorf("more than one sshkey found for selector %q", selector)
 		}
 		setSSHKeySchema(d, allKeys[0])
-		return
+		return nil
 	}
-	return fmt.Errorf("please specify a id, a name, a fingerprint or a selector to lookup the sshkey")
+	return diag.Errorf("please specify a id, a name, a fingerprint or a selector to lookup the sshkey")
 }

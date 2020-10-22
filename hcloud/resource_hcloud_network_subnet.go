@@ -10,6 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -18,9 +20,9 @@ import (
 
 func resourceNetworkSubnet() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetworkSubnetCreate,
-		Read:   resourceNetworkSubnetRead,
-		Delete: resourceNetworkSubnetDelete,
+		CreateContext: resourceNetworkSubnetCreate,
+		ReadContext:   resourceNetworkSubnetRead,
+		DeleteContext: resourceNetworkSubnetDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -57,13 +59,12 @@ func resourceNetworkSubnet() *schema.Resource {
 	}
 }
 
-func resourceNetworkSubnetCreate(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkSubnetCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	_, ipRange, err := net.ParseCIDR(d.Get("ip_range").(string))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	networkID := d.Get("network_id")
 	network := &hcloud.Network{ID: networkID.(int)}
@@ -80,22 +81,21 @@ func resourceNetworkSubnetCreate(d *schema.ResourceData, m interface{}) error {
 		if hcloud.IsError(err, hcloud.ErrorCodeConflict) {
 			log.Printf("[INFO] Network (%v) conflict, retrying in one second", network.ID)
 			time.Sleep(time.Second)
-			return resourceNetworkSubnetCreate(d, m)
+			return resourceNetworkSubnetCreate(ctx, d, m)
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
 	if err := waitForNetworkAction(ctx, client, action, network); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.SetId(generateNetworkSubnetID(network, ipRange.String()))
 
-	return resourceNetworkSubnetRead(d, m)
+	return resourceNetworkSubnetRead(ctx, d, m)
 }
 
-func resourceNetworkSubnetRead(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkSubnetRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	network, subnet, err := lookupNetworkSubnetID(ctx, d.Id(), client)
 	if err == errInvalidNetworkSubnetID {
@@ -104,7 +104,7 @@ func resourceNetworkSubnetRead(d *schema.ResourceData, m interface{}) error {
 		return nil
 	}
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if network == nil {
 		log.Printf("[WARN] Network Subnet (%s) not found, removing from state", d.Id())
@@ -117,9 +117,8 @@ func resourceNetworkSubnetRead(d *schema.ResourceData, m interface{}) error {
 
 }
 
-func resourceNetworkSubnetDelete(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkSubnetDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	network, subnet, err := lookupNetworkSubnetID(ctx, d.Id(), client)
 
@@ -138,22 +137,22 @@ func resourceNetworkSubnetDelete(d *schema.ResourceData, m interface{}) error {
 		} else if hcloud.IsError(err, hcloud.ErrorCodeConflict) {
 			log.Printf("[INFO] Network (%v) conflict, retrying in one second", network.ID)
 			time.Sleep(time.Second)
-			return resourceNetworkSubnetDelete(d, m)
+			return resourceNetworkSubnetDelete(ctx, d, m)
 		} else if hcloud.IsError(err, hcloud.ErrorCodeLocked) {
 			log.Printf("[INFO] Network (%v) locked, retrying in one second", network.ID)
 			time.Sleep(time.Second)
-			return resourceNetworkSubnetDelete(d, m)
+			return resourceNetworkSubnetDelete(ctx, d, m)
 		} else if hcloud.IsError(err, hcloud.ErrorCodeServiceError) {
 			if err.Error() == "cannot remove subnet because servers are attached to it (service_error)" {
 				log.Printf("[INFO] Network (%v) has servers attached to it, retrying in one second", network.ID)
 				time.Sleep(time.Second)
-				return resourceNetworkSubnetDelete(d, m)
+				return resourceNetworkSubnetDelete(ctx, d, m)
 			}
 		}
-		return err
+		return diag.FromErr(err)
 	}
 	if err := waitForNetworkAction(ctx, client, action, network); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	return nil
 }

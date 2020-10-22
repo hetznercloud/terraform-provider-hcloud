@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"golang.org/x/crypto/ssh"
@@ -13,10 +15,10 @@ import (
 
 func resourceSSHKey() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceSSHKeyCreate,
-		Read:   resourceSSHKeyRead,
-		Update: resourceSSHKeyUpdate,
-		Delete: resourceSSHKeyDelete,
+		CreateContext: resourceSSHKeyCreate,
+		ReadContext:   resourceSSHKeyRead,
+		UpdateContext: resourceSSHKeyUpdate,
+		DeleteContext: resourceSSHKeyDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -56,9 +58,8 @@ func resourceSSHKeyPublicKeyDiffSuppress(k, old, new string, d *schema.ResourceD
 	return strings.TrimSpace(old) == strings.TrimSpace(new)
 }
 
-func resourceSSHKeyCreate(d *schema.ResourceData, m interface{}) error {
+func resourceSSHKeyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 	opts := hcloud.SSHKeyCreateOpts{
 		Name:      d.Get("name").(string),
 		PublicKey: d.Get("public_key").(string),
@@ -73,16 +74,15 @@ func resourceSSHKeyCreate(d *schema.ResourceData, m interface{}) error {
 
 	sshKey, _, err := client.SSHKey.Create(ctx, opts)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.SetId(strconv.Itoa(sshKey.ID))
 
-	return resourceSSHKeyRead(d, m)
+	return resourceSSHKeyRead(ctx, d, m)
 }
 
-func resourceSSHKeyRead(d *schema.ResourceData, m interface{}) error {
+func resourceSSHKeyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	sshKeyID, err := strconv.Atoi(d.Id())
 	if err != nil {
@@ -93,7 +93,7 @@ func resourceSSHKeyRead(d *schema.ResourceData, m interface{}) error {
 
 	sshKey, _, err := client.SSHKey.GetByID(ctx, sshKeyID)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if sshKey == nil {
 		log.Printf("[WARN] SSH key (%s) not found, removing from state", d.Id())
@@ -106,9 +106,8 @@ func resourceSSHKeyRead(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceSSHKeyUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceSSHKeyUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	sshKeyID, err := strconv.Atoi(d.Id())
 	if err != nil {
@@ -128,7 +127,7 @@ func resourceSSHKeyUpdate(d *schema.ResourceData, m interface{}) error {
 				d.SetId("")
 				return nil
 			}
-			return err
+			return diag.FromErr(err)
 		}
 	}
 	if d.HasChange("labels") {
@@ -145,16 +144,15 @@ func resourceSSHKeyUpdate(d *schema.ResourceData, m interface{}) error {
 				d.SetId("")
 				return nil
 			}
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
-	return resourceSSHKeyRead(d, m)
+	return resourceSSHKeyRead(ctx, d, m)
 }
 
-func resourceSSHKeyDelete(d *schema.ResourceData, m interface{}) error {
+func resourceSSHKeyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	sshKeyID, err := strconv.Atoi(d.Id())
 	if err != nil {
@@ -167,7 +165,7 @@ func resourceSSHKeyDelete(d *schema.ResourceData, m interface{}) error {
 			// SSH key has already been deleted
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil

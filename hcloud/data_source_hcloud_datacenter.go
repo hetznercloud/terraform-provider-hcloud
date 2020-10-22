@@ -6,13 +6,15 @@ import (
 	"sort"
 	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 
 func dataSourceHcloudDatacenter() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceHcloudDatacenterRead,
+		ReadContext: dataSourceHcloudDatacenterRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:     schema.TypeInt,
@@ -46,34 +48,33 @@ func dataSourceHcloudDatacenter() *schema.Resource {
 	}
 }
 
-func dataSourceHcloudDatacenterRead(data *schema.ResourceData, m interface{}) (err error) {
+func dataSourceHcloudDatacenterRead(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
-	var d *hcloud.Datacenter
+
 	if id, ok := data.GetOk("id"); ok {
-		d, _, err = client.Datacenter.GetByID(ctx, id.(int))
+		d, _, err := client.Datacenter.GetByID(ctx, id.(int))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if d == nil {
-			return fmt.Errorf("no datacenter found with id %d", id)
+			return diag.Errorf("no datacenter found with id %d", id)
 		}
 		setDatacenterSchema(data, d)
-		return
+		return nil
 	}
 	if name, ok := data.GetOk("name"); ok {
-		d, _, err = client.Datacenter.GetByName(ctx, name.(string))
+		d, _, err := client.Datacenter.GetByName(ctx, name.(string))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if d == nil {
-			return fmt.Errorf("no datacenter found with name %v", name)
+			return diag.Errorf("no datacenter found with name %v", name)
 		}
 		setDatacenterSchema(data, d)
-		return
+		return nil
 	}
 
-	return fmt.Errorf("please specify an id, or a name to lookup for a datacenter")
+	return diag.Errorf("please specify an id, or a name to lookup for a datacenter")
 }
 
 func setDatacenterSchema(data *schema.ResourceData, d *hcloud.Datacenter) {

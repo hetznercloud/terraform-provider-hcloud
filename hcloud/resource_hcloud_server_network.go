@@ -10,6 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/merge"
@@ -17,10 +19,10 @@ import (
 
 func resourceServerNetwork() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceServerNetworkCreate,
-		Read:   resourceServerNetworkRead,
-		Update: resourceServerNetworkUpdate,
-		Delete: resourceServerNetworkDelete,
+		CreateContext: resourceServerNetworkCreate,
+		ReadContext:   resourceServerNetworkRead,
+		UpdateContext: resourceServerNetworkUpdate,
+		DeleteContext: resourceServerNetworkDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -59,22 +61,21 @@ func resourceServerNetwork() *schema.Resource {
 	}
 }
 
-func resourceServerNetworkCreate(d *schema.ResourceData, m interface{}) error {
+func resourceServerNetworkCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	ip := net.ParseIP(d.Get("ip").(string))
 
 	networkID, nwIDSet := d.GetOk("network_id")
 	subNetID, snIDSet := d.GetOk("subnet_id")
 	if (nwIDSet && snIDSet) || (!nwIDSet && !snIDSet) {
-		return errors.New("either network_id or subnet_id must be set")
+		return diag.Errorf("either network_id or subnet_id must be set")
 	}
 
 	if snIDSet {
 		nwID, _, err := parseNetworkSubnetID(subNetID.(string))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		networkID = nwID
 	}
@@ -97,30 +98,29 @@ func resourceServerNetworkCreate(d *schema.ResourceData, m interface{}) error {
 		if hcloud.IsError(err, hcloud.ErrorCodeConflict) {
 			log.Printf("[INFO] Network (%v) conflict, retrying in one second", network.ID)
 			time.Sleep(time.Second)
-			return resourceServerNetworkCreate(d, m)
+			return resourceServerNetworkCreate(ctx, d, m)
 		} else if hcloud.IsError(err, hcloud.ErrorCodeLocked) {
 			log.Printf("[INFO] Network (%v) locked, retrying in one second", network.ID)
 			time.Sleep(time.Second)
-			return resourceServerNetworkCreate(d, m)
+			return resourceServerNetworkCreate(ctx, d, m)
 		} else if hcloud.IsError(err, hcloud.ErrorCodeServerAlreadyAttached) {
 			log.Printf("[INFO] Server (%v) already attachted to network %v", server.ID, network.ID)
 			d.SetId(generateServerNetworkID(server, network))
 
-			return resourceServerNetworkRead(d, m)
+			return resourceServerNetworkRead(ctx, d, m)
 		}
-		return err
+		return diag.FromErr(err)
 	}
 	if err := waitForNetworkAction(ctx, client, action, network); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.SetId(generateServerNetworkID(server, network))
 
-	return resourceServerNetworkRead(d, m)
+	return resourceServerNetworkRead(ctx, d, m)
 }
 
-func resourceServerNetworkUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceServerNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 	server, network, _, err := lookupServerNetworkID(ctx, d.Id(), client)
 	if err == errInvalidServerNetworkID {
 		log.Printf("[WARN] Invalid id (%s), removing from state: %s", d.Id(), err)
@@ -128,7 +128,7 @@ func resourceServerNetworkUpdate(d *schema.ResourceData, m interface{}) error {
 		return nil
 	}
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if server == nil {
 		log.Printf("[WARN] Server (%s) not found, removing from state", d.Id())
@@ -151,18 +151,17 @@ func resourceServerNetworkUpdate(d *schema.ResourceData, m interface{}) error {
 		}
 		action, _, err := client.Server.ChangeAliasIPs(ctx, server, opts)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if err := waitForNetworkAction(ctx, client, action, network); err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
-	return resourceServerNetworkRead(d, m)
+	return resourceServerNetworkRead(ctx, d, m)
 }
 
-func resourceServerNetworkRead(d *schema.ResourceData, m interface{}) error {
+func resourceServerNetworkRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	server, network, privateNet, err := lookupServerNetworkID(ctx, d.Id(), client)
 	if err == errInvalidServerNetworkID {
@@ -171,7 +170,7 @@ func resourceServerNetworkRead(d *schema.ResourceData, m interface{}) error {
 		return nil
 	}
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if server == nil {
 		log.Printf("[WARN] Server (%s) not found, removing from state", d.Id())
@@ -194,9 +193,8 @@ func resourceServerNetworkRead(d *schema.ResourceData, m interface{}) error {
 
 }
 
-func resourceServerNetworkDelete(d *schema.ResourceData, m interface{}) error {
+func resourceServerNetworkDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	server, network, _, err := lookupServerNetworkID(ctx, d.Id(), client)
 
@@ -215,17 +213,17 @@ func resourceServerNetworkDelete(d *schema.ResourceData, m interface{}) error {
 		} else if hcloud.IsError(err, hcloud.ErrorCodeConflict) {
 			log.Printf("[INFO] Network (%v) conflict, retrying in one second", network.ID)
 			time.Sleep(time.Second)
-			return resourceServerNetworkDelete(d, m)
+			return resourceServerNetworkDelete(ctx, d, m)
 		} else if hcloud.IsError(err, hcloud.ErrorCodeLocked) {
 			log.Printf("[INFO] Network (%v) locked, retrying in one second", network.ID)
 			time.Sleep(time.Second)
-			return resourceServerNetworkDelete(d, m)
+			return resourceServerNetworkDelete(ctx, d, m)
 		}
 
-		return err
+		return diag.FromErr(err)
 	}
 	if err := waitForNetworkAction(ctx, client, action, network); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil

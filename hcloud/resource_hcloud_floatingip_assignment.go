@@ -5,15 +5,17 @@ import (
 	"log"
 	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 
 func resourceFloatingIPAssignment() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceFloatingIPAssignmentCreate,
-		Read:   resourceFloatingIPAssignmentRead,
-		Delete: resourceFloatingIPAssignmentDelete,
+		CreateContext: resourceFloatingIPAssignmentCreate,
+		ReadContext:   resourceFloatingIPAssignmentRead,
+		DeleteContext: resourceFloatingIPAssignmentDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -32,9 +34,8 @@ func resourceFloatingIPAssignment() *schema.Resource {
 	}
 }
 
-func resourceFloatingIPAssignmentCreate(d *schema.ResourceData, m interface{}) error {
+func resourceFloatingIPAssignmentCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	floatingIPID := d.Get("floating_ip_id")
 	floatingIP := &hcloud.FloatingIP{ID: floatingIPID.(int)}
@@ -45,18 +46,17 @@ func resourceFloatingIPAssignmentCreate(d *schema.ResourceData, m interface{}) e
 
 	_, _, err := client.FloatingIP.Assign(ctx, floatingIP, server)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	// Since a floating ip can only be assigned to one server
 	// we can use the floating ip id as floating ip association id.
 	d.SetId(strconv.Itoa(floatingIP.ID))
-	return resourceFloatingIPAssignmentRead(d, m)
+	return resourceFloatingIPAssignmentRead(ctx, d, m)
 }
 
-func resourceFloatingIPAssignmentRead(d *schema.ResourceData, m interface{}) error {
+func resourceFloatingIPAssignmentRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	floatingIPID, err := strconv.Atoi(d.Id())
 	if err != nil {
@@ -69,7 +69,7 @@ func resourceFloatingIPAssignmentRead(d *schema.ResourceData, m interface{}) err
 	// therefore the cast should always work
 	floatingIP, _, err := client.FloatingIP.GetByID(ctx, floatingIPID)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if floatingIP == nil {
 		log.Printf("[WARN] Floating IP ID (%v) not found, removing Floating IP Association from state", d.Get("floating_ip_id"))
@@ -94,7 +94,7 @@ func resourceFloatingIPAssignmentRead(d *schema.ResourceData, m interface{}) err
 	}
 	server, _, err := client.Server.GetByID(ctx, serverId)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if server == nil {
 		log.Printf("[WARN] Server ID (%v) not found, removing Floating IP Association from state", d.Get("server_id"))
@@ -107,9 +107,8 @@ func resourceFloatingIPAssignmentRead(d *schema.ResourceData, m interface{}) err
 	return nil
 }
 
-func resourceFloatingIPAssignmentDelete(d *schema.ResourceData, m interface{}) error {
+func resourceFloatingIPAssignmentDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	floatingIPID, err := strconv.Atoi(d.Id())
 	if err != nil {
@@ -127,7 +126,7 @@ func resourceFloatingIPAssignmentDelete(d *schema.ResourceData, m interface{}) e
 	if floatingIP.Server != nil {
 		_, _, err = client.FloatingIP.Unassign(ctx, floatingIP)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 	return nil

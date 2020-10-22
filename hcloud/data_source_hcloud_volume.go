@@ -2,7 +2,8 @@ package hcloud
 
 import (
 	"context"
-	"fmt"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
@@ -10,7 +11,7 @@ import (
 
 func dataSourceHcloudVolume() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceHcloudVolumeRead,
+		ReadContext: dataSourceHcloudVolumeRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:     schema.TypeInt,
@@ -63,31 +64,30 @@ func dataSourceHcloudVolume() *schema.Resource {
 		},
 	}
 }
-func dataSourceHcloudVolumeRead(d *schema.ResourceData, m interface{}) (err error) {
+func dataSourceHcloudVolumeRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
-	var v *hcloud.Volume
+
 	if id, ok := d.GetOk("id"); ok {
-		v, _, err = client.Volume.GetByID(ctx, id.(int))
+		v, _, err := client.Volume.GetByID(ctx, id.(int))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if v == nil {
-			return fmt.Errorf("no volume found with id %d", id)
+			return diag.Errorf("no volume found with id %d", id)
 		}
 		setVolumeSchema(d, v)
-		return
+		return nil
 	}
 	if name, ok := d.GetOk("name"); ok {
-		v, _, err = client.Volume.GetByName(ctx, name.(string))
+		v, _, err := client.Volume.GetByName(ctx, name.(string))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if v == nil {
-			return fmt.Errorf("no volume found with name %v", name)
+			return diag.Errorf("no volume found with name %v", name)
 		}
 		setVolumeSchema(d, v)
-		return
+		return nil
 	}
 
 	var selector string
@@ -110,18 +110,18 @@ func dataSourceHcloudVolumeRead(d *schema.ResourceData, m interface{}) (err erro
 			},
 			Status: statuses,
 		}
-		allVolumes, err = client.Volume.AllWithOpts(ctx, opts)
+		allVolumes, err := client.Volume.AllWithOpts(ctx, opts)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if len(allVolumes) == 0 {
-			return fmt.Errorf("no volume found for selector %q", selector)
+			return diag.Errorf("no volume found for selector %q", selector)
 		}
 		if len(allVolumes) > 1 {
-			return fmt.Errorf("more than one volume found for selector %q", selector)
+			return diag.Errorf("more than one volume found for selector %q", selector)
 		}
 		setVolumeSchema(d, allVolumes[0])
-		return
+		return nil
 	}
-	return fmt.Errorf("please specify an id, a name or a selector to lookup the volume")
+	return diag.Errorf("please specify an id, a name or a selector to lookup the volume")
 }

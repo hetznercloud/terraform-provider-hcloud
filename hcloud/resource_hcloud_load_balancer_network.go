@@ -10,15 +10,17 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 
 func resourceLoadBalancerNetwork() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceLoadBalancerNetworkCreate,
-		Read:   resourceLoadBalancerNetworkRead,
-		Delete: resourceLoadBalancerNetworkDelete,
+		CreateContext: resourceLoadBalancerNetworkCreate,
+		ReadContext:   resourceLoadBalancerNetworkRead,
+		DeleteContext: resourceLoadBalancerNetworkDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -54,22 +56,21 @@ func resourceLoadBalancerNetwork() *schema.Resource {
 	}
 }
 
-func resourceLoadBalancerNetworkCreate(d *schema.ResourceData, m interface{}) error {
+func resourceLoadBalancerNetworkCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	ip := net.ParseIP(d.Get("ip").(string))
 
 	networkID, nwIDSet := d.GetOk("network_id")
 	subNetID, snIDSet := d.GetOk("subnet_id")
 	if (nwIDSet && snIDSet) || (!nwIDSet && !snIDSet) {
-		return errors.New("either network_id or subnet_id must be set")
+		return diag.Errorf("either network_id or subnet_id must be set")
 	}
 
 	if snIDSet {
 		nwID, _, err := parseNetworkSubnetID(subNetID.(string))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		networkID = nwID
 	}
@@ -91,32 +92,31 @@ func resourceLoadBalancerNetworkCreate(d *schema.ResourceData, m interface{}) er
 			hcErr := err.(hcloud.Error)
 			log.Printf("[INFO] Network (%v) %s, retrying in one second", network.ID, hcErr.Code)
 			time.Sleep(time.Second)
-			return resourceLoadBalancerNetworkCreate(d, m)
+			return resourceLoadBalancerNetworkCreate(ctx, d, m)
 		} else if string(err.(hcloud.Error).Code) == "load_balancer_already_attached" { // TODO: Change to correct error code and hcloud.IsError with next hcloud-go release
 			log.Printf("[INFO] Load Balancer (%v) already attachted to network %v", loadBalancer.ID, network.ID)
 			d.SetId(generateLoadBalancerNetworkID(loadBalancer, network))
 
-			return resourceLoadBalancerNetworkRead(d, m)
+			return resourceLoadBalancerNetworkRead(ctx, d, m)
 		}
-		return err
+		return diag.FromErr(err)
 	}
 	if err := waitForNetworkAction(ctx, client, action, network); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	enablePublicInterface := d.Get("enable_public_interface").(bool)
 	err = resourceLoadBalancerNetworkUpdatePublicInterface(ctx, enablePublicInterface, loadBalancer, client, d)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.SetId(generateLoadBalancerNetworkID(loadBalancer, network))
 
-	return resourceLoadBalancerNetworkRead(d, m)
+	return resourceLoadBalancerNetworkRead(ctx, d, m)
 }
 
-func resourceLoadBalancerNetworkRead(d *schema.ResourceData, m interface{}) error {
+func resourceLoadBalancerNetworkRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	server, network, privateNet, err := lookupLoadBalancerNetworkID(ctx, d.Id(), client)
 	if err == errInvalidLoadBalancerNetworkID {
@@ -125,7 +125,7 @@ func resourceLoadBalancerNetworkRead(d *schema.ResourceData, m interface{}) erro
 		return nil
 	}
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if server == nil {
 		log.Printf("[WARN] LoadBalancer (%s) not found, removing from state", d.Id())
@@ -148,9 +148,8 @@ func resourceLoadBalancerNetworkRead(d *schema.ResourceData, m interface{}) erro
 
 }
 
-func resourceLoadBalancerNetworkDelete(d *schema.ResourceData, m interface{}) error {
+func resourceLoadBalancerNetworkDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	server, network, _, err := lookupLoadBalancerNetworkID(ctx, d.Id(), client)
 
@@ -169,17 +168,17 @@ func resourceLoadBalancerNetworkDelete(d *schema.ResourceData, m interface{}) er
 		} else if hcloud.IsError(err, hcloud.ErrorCodeConflict) {
 			log.Printf("[INFO] Network (%v) conflict, retrying in one second", network.ID)
 			time.Sleep(time.Second)
-			return resourceLoadBalancerNetworkDelete(d, m)
+			return resourceLoadBalancerNetworkDelete(ctx, d, m)
 		} else if hcloud.IsError(err, hcloud.ErrorCodeLocked) {
 			log.Printf("[INFO] Network (%v) locked, retrying in one second", network.ID)
 			time.Sleep(time.Second)
-			return resourceLoadBalancerNetworkDelete(d, m)
+			return resourceLoadBalancerNetworkDelete(ctx, d, m)
 		}
 
-		return err
+		return diag.FromErr(err)
 	}
 	if err := waitForNetworkAction(ctx, client, action, network); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil

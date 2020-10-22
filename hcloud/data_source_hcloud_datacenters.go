@@ -5,13 +5,15 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 
 func dataSourceHcloudDatacenters() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceHcloudDatacentersRead,
+		ReadContext: dataSourceHcloudDatacentersRead,
 		Schema: map[string]*schema.Schema{
 			"datacenter_ids": {
 				Type:     schema.TypeList,
@@ -32,12 +34,11 @@ func dataSourceHcloudDatacenters() *schema.Resource {
 	}
 }
 
-func dataSourceHcloudDatacentersRead(data *schema.ResourceData, m interface{}) (err error) {
+func dataSourceHcloudDatacentersRead(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 	ds, err := client.Datacenter.All(ctx)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	data.SetId(time.Now().UTC().String())
@@ -50,5 +51,5 @@ func dataSourceHcloudDatacentersRead(data *schema.ResourceData, m interface{}) (
 	data.Set("datacenter_ids", ids)
 	data.Set("names", names)
 	data.Set("descriptions", descriptions)
-	return
+	return nil
 }

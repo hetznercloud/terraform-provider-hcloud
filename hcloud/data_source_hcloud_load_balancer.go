@@ -2,7 +2,8 @@ package hcloud
 
 import (
 	"context"
-	"fmt"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
@@ -10,7 +11,7 @@ import (
 
 func dataSourceHcloudLoadBalancer() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceHcloudLoadBalancerRead,
+		ReadContext: dataSourceHcloudLoadBalancerRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:     schema.TypeInt,
@@ -199,31 +200,29 @@ func dataSourceHcloudLoadBalancer() *schema.Resource {
 		},
 	}
 }
-func dataSourceHcloudLoadBalancerRead(d *schema.ResourceData, m interface{}) (err error) {
+func dataSourceHcloudLoadBalancerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
-	var lb *hcloud.LoadBalancer
 	if id, ok := d.GetOk("id"); ok {
-		lb, _, err = client.LoadBalancer.GetByID(ctx, id.(int))
+		lb, _, err := client.LoadBalancer.GetByID(ctx, id.(int))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if lb == nil {
-			return fmt.Errorf("no Load Balancer found with id %d", id)
+			return diag.Errorf("no Load Balancer found with id %d", id)
 		}
 		setLoadBalancerSchema(d, lb)
-		return
+		return nil
 	}
 	if name, ok := d.GetOk("name"); ok {
-		lb, _, err = client.LoadBalancer.GetByName(ctx, name.(string))
+		lb, _, err := client.LoadBalancer.GetByName(ctx, name.(string))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if lb == nil {
-			return fmt.Errorf("no Load Balancer found with name %s", name)
+			return diag.Errorf("no Load Balancer found with name %s", name)
 		}
 		setLoadBalancerSchema(d, lb)
-		return
+		return nil
 	}
 
 	selector := d.Get("with_selector").(string)
@@ -235,18 +234,18 @@ func dataSourceHcloudLoadBalancerRead(d *schema.ResourceData, m interface{}) (er
 				LabelSelector: selector,
 			},
 		}
-		allLoadBalancers, err = client.LoadBalancer.AllWithOpts(ctx, opts)
+		allLoadBalancers, err := client.LoadBalancer.AllWithOpts(ctx, opts)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if len(allLoadBalancers) == 0 {
-			return fmt.Errorf("no Load Balancer found for selector %q", selector)
+			return diag.Errorf("no Load Balancer found for selector %q", selector)
 		}
 		if len(allLoadBalancers) > 1 {
-			return fmt.Errorf("more than one Load Balancer found for selector %q", selector)
+			return diag.Errorf("more than one Load Balancer found for selector %q", selector)
 		}
 		setLoadBalancerSchema(d, allLoadBalancers[0])
-		return
+		return nil
 	}
-	return fmt.Errorf("please specify an id, a name or a selector to lookup the Load Balancer")
+	return diag.Errorf("please specify an id, a name or a selector to lookup the Load Balancer")
 }

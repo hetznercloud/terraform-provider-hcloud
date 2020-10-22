@@ -10,15 +10,17 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 
 func resourceNetworkRoute() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetworkRouteCreate,
-		Read:   resourceNetworkRouteRead,
-		Delete: resourceNetworkRouteDelete,
+		CreateContext: resourceNetworkRouteCreate,
+		ReadContext:   resourceNetworkRouteRead,
+		DeleteContext: resourceNetworkRouteDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -42,13 +44,12 @@ func resourceNetworkRoute() *schema.Resource {
 	}
 }
 
-func resourceNetworkRouteCreate(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkRouteCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	_, destination, err := net.ParseCIDR(d.Get("destination").(string))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	gateway := net.ParseIP(d.Get("gateway").(string))
@@ -71,21 +72,20 @@ func resourceNetworkRouteCreate(d *schema.ResourceData, m interface{}) error {
 		if hcloud.IsError(err, hcloud.ErrorCodeConflict) {
 			log.Printf("[INFO] Network (%v) conflict, retrying in one second", network.ID)
 			time.Sleep(time.Second)
-			return resourceNetworkRouteCreate(d, m)
+			return resourceNetworkRouteCreate(ctx, d, m)
 		}
-		return err
+		return diag.FromErr(err)
 	}
 	if err := waitForNetworkAction(ctx, client, action, network); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.SetId(generateNetworkRouteID(network, destination.String()))
 
-	return resourceNetworkRouteRead(d, m)
+	return resourceNetworkRouteRead(ctx, d, m)
 }
 
-func resourceNetworkRouteRead(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkRouteRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	network, route, err := lookupNetworkRouteID(ctx, d.Id(), client)
 	if err == errInvalidNetworkRouteID {
@@ -94,7 +94,7 @@ func resourceNetworkRouteRead(d *schema.ResourceData, m interface{}) error {
 		return nil
 	}
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if network == nil {
 		log.Printf("[WARN] Network Route (%s) not found, removing from state", d.Id())
@@ -107,9 +107,8 @@ func resourceNetworkRouteRead(d *schema.ResourceData, m interface{}) error {
 
 }
 
-func resourceNetworkRouteDelete(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkRouteDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	network, route, err := lookupNetworkRouteID(ctx, d.Id(), client)
 
@@ -128,12 +127,12 @@ func resourceNetworkRouteDelete(d *schema.ResourceData, m interface{}) error {
 		} else if hcloud.IsError(err, hcloud.ErrorCodeConflict) {
 			log.Printf("[INFO] Network (%v) conflict, retrying in one second", network.ID)
 			time.Sleep(time.Second)
-			return resourceNetworkRouteDelete(d, m)
+			return resourceNetworkRouteDelete(ctx, d, m)
 		}
-		return err
+		return diag.FromErr(err)
 	}
 	if err := waitForNetworkAction(ctx, client, action, network); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	return nil
 }
