@@ -1,3 +1,8 @@
+## master
+
+Notes:
+* The provider was updated to use the Terraform Plugin SDK v2.
+
 ## 1.22.0 (October 05, 2020)
 
 FEATURES:

@@ -151,7 +151,6 @@ func resourceCertificateUpdate(d *schema.ResourceData, m interface{}) error {
 		if _, _, err := client.Certificate.Update(ctx, cert, opts); err != nil {
 			return err
 		}
-		d.Partial(true)
 	}
 	if d.HasChange("labels") {
 		opts := hcloud.CertificateUpdateOpts{
@@ -163,7 +162,6 @@ func resourceCertificateUpdate(d *schema.ResourceData, m interface{}) error {
 		if _, _, err := client.Certificate.Update(ctx, cert, opts); err != nil {
 			return err
 		}
-		d.Partial(true)
 	}
 	d.Partial(false)
 	return resourceCertificateRead(d, m)

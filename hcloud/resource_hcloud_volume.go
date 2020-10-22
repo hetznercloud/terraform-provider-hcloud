@@ -162,7 +162,6 @@ func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 			}
 			return err
 		}
-		d.Partial(true)
 	}
 
 	if d.HasChange("server_id") {
@@ -203,7 +202,6 @@ func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 				return err
 			}
 		}
-		d.Partial(true)
 	}
 
 	if d.HasChange("size") {
@@ -219,7 +217,6 @@ func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 			return err
 		}
 
-		d.Partial(true)
 	}
 
 	if d.HasChange("labels") {
@@ -237,8 +234,6 @@ func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 			}
 			return err
 		}
-
-		d.Partial(true)
 	}
 	d.Partial(false)
 
