@@ -22,7 +22,7 @@ func resourceLoadBalancerNetwork() *schema.Resource {
 		ReadContext:   resourceLoadBalancerNetworkRead,
 		DeleteContext: resourceLoadBalancerNetworkDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"network_id": {

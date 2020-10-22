@@ -19,7 +19,7 @@ func resourceLoadBalancer() *schema.Resource {
 		UpdateContext: resourceLoadBalancerUpdate,
 		DeleteContext: resourceLoadBalancerDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{

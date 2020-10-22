@@ -17,7 +17,7 @@ func resourceFloatingIPAssignment() *schema.Resource {
 		ReadContext:   resourceFloatingIPAssignmentRead,
 		DeleteContext: resourceFloatingIPAssignmentDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"floating_ip_id": {
