@@ -22,7 +22,7 @@ func resourceNetworkRoute() *schema.Resource {
 		ReadContext:   resourceNetworkRouteRead,
 		DeleteContext: resourceNetworkRouteDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"network_id": {

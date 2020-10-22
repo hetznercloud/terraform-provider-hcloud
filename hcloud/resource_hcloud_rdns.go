@@ -23,7 +23,7 @@ func resourceReverseDNS() *schema.Resource {
 		UpdateContext: resourceReverseDNSUpdate,
 		DeleteContext: resourceReverseDNSDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"server_id": {

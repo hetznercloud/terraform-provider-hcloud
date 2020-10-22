@@ -24,7 +24,7 @@ func resourceServerNetwork() *schema.Resource {
 		UpdateContext: resourceServerNetworkUpdate,
 		DeleteContext: resourceServerNetworkDelete,
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"network_id": {
