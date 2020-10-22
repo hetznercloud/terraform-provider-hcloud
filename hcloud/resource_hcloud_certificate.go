@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 
@@ -125,7 +125,7 @@ func setCertificateSchema(d *schema.ResourceData, cert *hcloud.Certificate) {
 	d.Set("domain_names", cert.DomainNames)
 	d.Set("fingerprint", cert.Fingerprint)
 	d.Set("labels", cert.Labels)
-	d.Set("created", cert.Created)
+	d.Set("created", cert.Created.String())
 	d.Set("not_valid_before", cert.NotValidBefore.Format(time.RFC3339))
 	d.Set("not_valid_after", cert.NotValidAfter.Format(time.RFC3339))
 }
@@ -151,7 +151,6 @@ func resourceCertificateUpdate(d *schema.ResourceData, m interface{}) error {
 		if _, _, err := client.Certificate.Update(ctx, cert, opts); err != nil {
 			return err
 		}
-		d.SetPartial("name")
 	}
 	if d.HasChange("labels") {
 		opts := hcloud.CertificateUpdateOpts{
@@ -163,7 +162,6 @@ func resourceCertificateUpdate(d *schema.ResourceData, m interface{}) error {
 		if _, _, err := client.Certificate.Update(ctx, cert, opts); err != nil {
 			return err
 		}
-		d.SetPartial("labels")
 	}
 	d.Partial(false)
 	return resourceCertificateRead(d, m)

@@ -6,8 +6,7 @@ import (
 
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancer"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
@@ -32,8 +31,13 @@ func TestAccHcloudDataSourceSSHKeyTest(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     testsupport.AccTestPreCheck(t),
 		Providers:    testsupport.AccTestProviders(),
-		CheckDestroy: testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
+		CheckDestroy: testsupport.CheckResourcesDestroyed(sshkey.ResourceType, sshkey.ByID(t, nil)),
 		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", res,
+				),
+			},
 			{
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_ssh_key", res,
@@ -73,6 +77,11 @@ func TestAccHcloudDataSourceSSHKeysTest(t *testing.T) {
 		PreCheck:  testsupport.AccTestPreCheck(t),
 		Providers: testsupport.AccTestProviders(),
 		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", res,
+				),
+			},
 			{
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_ssh_key", res,

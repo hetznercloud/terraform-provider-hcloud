@@ -5,8 +5,8 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 
@@ -196,7 +196,6 @@ func resourceLoadBalancerUpdate(d *schema.ResourceData, m interface{}) error {
 			}
 			return err
 		}
-		d.SetPartial("name")
 	}
 
 	if d.HasChange("load_balancer_type") {
@@ -210,7 +209,6 @@ func resourceLoadBalancerUpdate(d *schema.ResourceData, m interface{}) error {
 			}
 			return err
 		}
-		d.SetPartial("load_balancer_type")
 	}
 
 	if d.HasChange("algorithm") {
@@ -229,7 +227,6 @@ func resourceLoadBalancerUpdate(d *schema.ResourceData, m interface{}) error {
 		if err := waitForLoadBalancerAction(ctx, client, action, loadBalancer); err != nil {
 			return err
 		}
-		d.SetPartial("algorithm")
 	}
 
 	if d.HasChange("labels") {
@@ -247,7 +244,6 @@ func resourceLoadBalancerUpdate(d *schema.ResourceData, m interface{}) error {
 			}
 			return err
 		}
-		d.SetPartial("labels")
 	}
 
 	if d.HasChange("target") {
@@ -314,7 +310,6 @@ func resourceLoadBalancerUpdate(d *schema.ResourceData, m interface{}) error {
 				}
 			}
 		}
-		d.SetPartial("target")
 	}
 	d.Partial(false)
 	return resourceLoadBalancerRead(d, m)
@@ -355,7 +350,6 @@ func resourceLoadBalancerIsNotFound(err error, d *schema.ResourceData) bool {
 
 func setLoadBalancerSchema(d *schema.ResourceData, lb *hcloud.LoadBalancer) {
 	d.SetId(strconv.Itoa(lb.ID))
-	d.Set("id", strconv.Itoa(lb.ID))
 	d.Set("name", lb.Name)
 	d.Set("load_balancer_type", lb.LoadBalancerType.Name)
 	d.Set("ipv4", lb.PublicNet.IPv4.IP.String())
@@ -364,7 +358,7 @@ func setLoadBalancerSchema(d *schema.ResourceData, lb *hcloud.LoadBalancer) {
 	d.Set("algorithm", algorithmToTerraformAlgorithm(lb.Algorithm))
 	d.Set("network_zone", lb.Location.NetworkZone)
 	d.Set("labels", lb.Labels)
-	d.Set("targets", targetToTerraformTargets(lb.Targets))
+	d.Set("target", targetToTerraformTargets(lb.Targets))
 
 	if len(lb.PrivateNet) > 0 {
 		d.Set("network_id", lb.PrivateNet[0].Network.ID)

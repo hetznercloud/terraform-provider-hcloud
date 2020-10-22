@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"golang.org/x/crypto/ssh"
 )
@@ -130,7 +130,6 @@ func resourceSSHKeyUpdate(d *schema.ResourceData, m interface{}) error {
 			}
 			return err
 		}
-		d.SetPartial("name")
 	}
 	if d.HasChange("labels") {
 		labels := make(map[string]string)
@@ -148,7 +147,6 @@ func resourceSSHKeyUpdate(d *schema.ResourceData, m interface{}) error {
 			}
 			return err
 		}
-		d.SetPartial("labels")
 	}
 
 	return resourceSSHKeyRead(d, m)

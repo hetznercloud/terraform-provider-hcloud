@@ -2,11 +2,12 @@ package hcloud
 
 import (
 	"context"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"log"
 	"net"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 
@@ -26,9 +27,10 @@ func resourceNetwork() *schema.Resource {
 				Required: true,
 			},
 			"ip_range": {
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.IsCIDR,
 			},
 			"labels": {
 				Type:     schema.TypeMap,
@@ -114,7 +116,6 @@ func resourceNetworkUpdate(d *schema.ResourceData, m interface{}) error {
 			}
 			return err
 		}
-		d.SetPartial("name")
 	}
 	if d.HasChange("labels") {
 		labels := d.Get("labels")
@@ -131,7 +132,6 @@ func resourceNetworkUpdate(d *schema.ResourceData, m interface{}) error {
 			}
 			return err
 		}
-		d.SetPartial("labels")
 	}
 	d.Partial(false)
 

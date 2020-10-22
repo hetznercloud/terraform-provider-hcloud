@@ -2,13 +2,13 @@ package volume_test
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"testing"
 
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/volume"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
@@ -26,7 +26,6 @@ func TestVolumeAssignmentResource_Basic(t *testing.T) {
 		Labels: map[string]string{
 			"tf-test": fmt.Sprintf("tf-test-vol-attachment-%d", tmplMan.RandInt),
 		},
-		LocationName: "fsn1",
 	}
 	resServer.SetRName("server_attachment")
 
@@ -37,14 +36,14 @@ func TestVolumeAssignmentResource_Basic(t *testing.T) {
 		Labels: map[string]string{
 			"tf-test": fmt.Sprintf("tf-test-vol-attachment-%d", tmplMan.RandInt),
 		},
-		LocationName: "fsn1",
+		LocationName: fmt.Sprintf("${%s.location}", resServer.TFID()),
 	}
 	resServer2.SetRName("server2_attachment")
 
 	resVolume := &volume.RData{
 		Name:         "volume-attachment",
 		Size:         10,
-		LocationName: "fsn1",
+		LocationName: fmt.Sprintf("${%s.location}", resServer.TFID()),
 	}
 	resVolume.SetRName("volume-attachment")
 

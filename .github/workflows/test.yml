@@ -4,6 +4,10 @@ on:
 jobs:
   integration_tests:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        terraform_version: [ "0.12.x", "0.13.x" ]
+    name: integration-${{ matrix.terraform_version }}
     steps:
       -
         name: Checkout
@@ -11,6 +15,10 @@ jobs:
       -
         name: Unshallow
         run: git fetch --prune --unshallow
+      - uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: ${{ matrix.terraform_version }}
+          terraform_wrapper: false
       -
         name: Set up Go
         uses: actions/setup-go@v2

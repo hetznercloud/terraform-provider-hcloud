@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 
@@ -264,7 +264,6 @@ func resourceServerUpdate(d *schema.ResourceData, m interface{}) error {
 			}
 			return err
 		}
-		d.SetPartial("name")
 	}
 	if d.HasChange("labels") {
 		labels := d.Get("labels")
@@ -281,7 +280,6 @@ func resourceServerUpdate(d *schema.ResourceData, m interface{}) error {
 			}
 			return err
 		}
-		d.SetPartial("labels")
 	}
 	if d.HasChange("server_type") {
 		serverType := d.Get("server_type").(string)
@@ -307,7 +305,6 @@ func resourceServerUpdate(d *schema.ResourceData, m interface{}) error {
 		if err := waitForServerAction(ctx, client, action, server); err != nil {
 			return err
 		}
-		d.SetPartial("server_type")
 	}
 
 	if d.HasChange("backups") {
@@ -315,7 +312,6 @@ func resourceServerUpdate(d *schema.ResourceData, m interface{}) error {
 		if err := setBackups(ctx, client, server, backups); err != nil {
 			return err
 		}
-		d.SetPartial("backups")
 	}
 
 	if d.HasChange("iso") {
@@ -323,7 +319,6 @@ func resourceServerUpdate(d *schema.ResourceData, m interface{}) error {
 		if err := setISO(ctx, client, server, iso); err != nil {
 			return err
 		}
-		d.SetPartial("iso")
 	}
 
 	if d.HasChange("rescue") {
