@@ -4,13 +4,14 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 
 func dataSourceHcloudCertificate() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceHcloudCertificateRead,
+		ReadContext: dataSourceHcloudCertificateRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:     schema.TypeInt,
@@ -60,17 +61,16 @@ func dataSourceHcloudCertificate() *schema.Resource {
 	}
 }
 
-func dataSourceHcloudCertificateRead(d *schema.ResourceData, m interface{}) error {
+func dataSourceHcloudCertificateRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	if id, ok := d.GetOk("id"); ok {
 		cert, _, err := client.Certificate.GetByID(ctx, id.(int))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if cert == nil {
-			return fmt.Errorf("certificate not found: id: %d", id)
+			return diag.Errorf("certificate not found: id: %d", id)
 		}
 		setCertificateSchema(d, cert)
 		return nil
@@ -78,10 +78,10 @@ func dataSourceHcloudCertificateRead(d *schema.ResourceData, m interface{}) erro
 	if name, ok := d.GetOk("name"); ok {
 		cert, _, err := client.Certificate.Get(ctx, name.(string))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if cert == nil {
-			return fmt.Errorf("certificate not found: name: %s", name)
+			return diag.Errorf("certificate not found: name: %s", name)
 		}
 		setCertificateSchema(d, cert)
 		return nil
@@ -95,17 +95,17 @@ func dataSourceHcloudCertificateRead(d *schema.ResourceData, m interface{}) erro
 		}
 		allCertificates, err := client.Certificate.AllWithOpts(ctx, opts)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if len(allCertificates) == 0 {
-			return fmt.Errorf("no Certificate found for selector %q", selector)
+			return diag.FromErr(fmt.Errorf("no Certificate found for selector %q", selector))
 		}
 		if len(allCertificates) > 1 {
-			return fmt.Errorf("more than one Certificate found for selector %q", selector)
+			return diag.FromErr(fmt.Errorf("more than one Certificate found for selector %q", selector))
 		}
 		setCertificateSchema(d, allCertificates[0])
 		return nil
 	}
 
-	return fmt.Errorf("please specify an id or name to lookup the certificate")
+	return diag.Errorf("please specify an id or name to lookup the certificate")
 }

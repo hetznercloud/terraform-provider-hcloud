@@ -7,6 +7,8 @@ import (
 	"log"
 	"net"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+
 	"strconv"
 	"strings"
 
@@ -16,10 +18,10 @@ import (
 
 func resourceReverseDNS() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceReverseDNSCreate,
-		Read:   resourceReverseDNSRead,
-		Update: resourceReverseDNSUpdate,
-		Delete: resourceReverseDNSDelete,
+		CreateContext: resourceReverseDNSCreate,
+		ReadContext:   resourceReverseDNSRead,
+		UpdateContext: resourceReverseDNSUpdate,
+		DeleteContext: resourceReverseDNSDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -47,8 +49,7 @@ func resourceReverseDNS() *schema.Resource {
 	}
 }
 
-func resourceReverseDNSRead(d *schema.ResourceData, m interface{}) error {
-	ctx := context.Background()
+func resourceReverseDNSRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	server, floatingIP, ip, err := lookupRDNSID(ctx, d.Id(), client)
@@ -58,7 +59,7 @@ func resourceReverseDNSRead(d *schema.ResourceData, m interface{}) error {
 		return nil
 	}
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if server == nil && floatingIP == nil {
 		log.Printf("[WARN] RDNS entry (%s) not found, removing from state", d.Id())
@@ -104,9 +105,8 @@ func resourceReverseDNSRead(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceReverseDNSCreate(d *schema.ResourceData, m interface{}) error {
+func resourceReverseDNSCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 	ip := d.Get("ip_address").(string)
 	ptr := d.Get("dns_ptr").(string)
 
@@ -121,7 +121,7 @@ func resourceReverseDNSCreate(d *schema.ResourceData, m interface{}) error {
 
 		floatingIP, _, err := client.FloatingIP.GetByID(ctx, id.(int))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if floatingIP == nil {
 			log.Printf("[WARN] Floating IP (%s) not found, removing from state", d.Id())
@@ -132,18 +132,18 @@ func resourceReverseDNSCreate(d *schema.ResourceData, m interface{}) error {
 		d.SetId(generateRDNSID(nil, floatingIP, ip))
 		action, _, err := client.FloatingIP.ChangeDNSPtr(ctx, floatingIP, ip, &ptr)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 
 		if err := waitForFloatingIPAction(ctx, client, action, floatingIP); err != nil {
-			return err
+			return diag.FromErr(err)
 		}
-		return resourceReverseDNSRead(d, m)
+		return resourceReverseDNSRead(ctx, d, m)
 	}
 
 	server, _, err := client.Server.GetByID(ctx, id.(int))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if server == nil {
 		log.Printf("[WARN] Server (%s) not found, removing from state", d.Id())
@@ -154,18 +154,17 @@ func resourceReverseDNSCreate(d *schema.ResourceData, m interface{}) error {
 	d.SetId(generateRDNSID(server, nil, ip))
 	action, _, err := client.Server.ChangeDNSPtr(ctx, server, ip, &ptr)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err := waitForServerAction(ctx, client, action, server); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
-	return resourceReverseDNSRead(d, m)
+	return resourceReverseDNSRead(ctx, d, m)
 }
 
-func resourceReverseDNSUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceReverseDNSUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	server, floatingIP, _, err := lookupRDNSID(ctx, d.Id(), client)
 	if err == errInvalidRDNSID {
@@ -174,7 +173,7 @@ func resourceReverseDNSUpdate(d *schema.ResourceData, m interface{}) error {
 		return nil
 	}
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if server == nil && floatingIP == nil {
 		log.Printf("[WARN] RDNS entry (%s) not found, removing from state", d.Id())
@@ -189,28 +188,27 @@ func resourceReverseDNSUpdate(d *schema.ResourceData, m interface{}) error {
 		if floatingIP != nil {
 			action, _, err := client.FloatingIP.ChangeDNSPtr(ctx, floatingIP, ip, &ptr)
 			if err != nil {
-				return err
+				return diag.FromErr(err)
 			}
 			if err := waitForFloatingIPAction(ctx, client, action, floatingIP); err != nil {
-				return err
+				return diag.FromErr(err)
 			}
 		} else if server != nil {
 			action, _, err := client.Server.ChangeDNSPtr(ctx, server, ip, &ptr)
 			if err != nil {
-				return err
+				return diag.FromErr(err)
 			}
 			if err := waitForServerAction(ctx, client, action, server); err != nil {
-				return err
+				return diag.FromErr(err)
 			}
 
 		}
 	}
-	return resourceReverseDNSRead(d, m)
+	return resourceReverseDNSRead(ctx, d, m)
 }
 
-func resourceReverseDNSDelete(d *schema.ResourceData, m interface{}) error {
+func resourceReverseDNSDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	server, floatingIP, ip, err := lookupRDNSID(ctx, d.Id(), client)
 	if err == errInvalidRDNSID {
@@ -219,7 +217,7 @@ func resourceReverseDNSDelete(d *schema.ResourceData, m interface{}) error {
 		return nil
 	}
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if server == nil && floatingIP == nil {
 		log.Printf("[WARN] RDNS entry (%s) not found, removing from state", d.Id())
@@ -234,10 +232,10 @@ func resourceReverseDNSDelete(d *schema.ResourceData, m interface{}) error {
 				// floating ip has already been deleted
 				return nil
 			}
-			return err
+			return diag.FromErr(err)
 		}
 		if err := waitForFloatingIPAction(ctx, client, action, floatingIP); err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		return nil
 	}
@@ -248,10 +246,10 @@ func resourceReverseDNSDelete(d *schema.ResourceData, m interface{}) error {
 			// server has already been deleted
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 	if err := waitForServerAction(ctx, client, action, server); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil

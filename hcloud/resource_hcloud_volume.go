@@ -5,16 +5,18 @@ import (
 	"log"
 	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 
 func resourceVolume() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceVolumeCreate,
-		Read:   resourceVolumeRead,
-		Update: resourceVolumeUpdate,
-		Delete: resourceVolumeDelete,
+		CreateContext: resourceVolumeCreate,
+		ReadContext:   resourceVolumeRead,
+		UpdateContext: resourceVolumeUpdate,
+		DeleteContext: resourceVolumeDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -59,9 +61,8 @@ func resourceVolume() *schema.Resource {
 	}
 }
 
-func resourceVolumeCreate(d *schema.ResourceData, m interface{}) error {
+func resourceVolumeCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	opts := hcloud.VolumeCreateOpts{
 		Name: d.Get("name").(string),
@@ -90,25 +91,24 @@ func resourceVolumeCreate(d *schema.ResourceData, m interface{}) error {
 
 	result, _, err := client.Volume.Create(ctx, opts)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err := waitForVolumeAction(ctx, client, result.Action, result.Volume); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	for _, nextAction := range result.NextActions {
 		if err := waitForVolumeAction(ctx, client, nextAction, result.Volume); err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 
 	}
 	d.SetId(strconv.Itoa(result.Volume.ID))
 
-	return resourceVolumeRead(d, m)
+	return resourceVolumeRead(ctx, d, m)
 }
 
-func resourceVolumeRead(d *schema.ResourceData, m interface{}) error {
+func resourceVolumeRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
@@ -119,7 +119,7 @@ func resourceVolumeRead(d *schema.ResourceData, m interface{}) error {
 
 	volume, _, err := client.Volume.GetByID(ctx, id)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if volume == nil {
 		log.Printf("[WARN] volume (%s) not found, removing from state", d.Id())
@@ -131,9 +131,8 @@ func resourceVolumeRead(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	id, err := strconv.Atoi(d.Id())
 	if err != nil {
@@ -146,7 +145,7 @@ func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 		if resourceVolumeIsNotFound(err, d) {
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.Partial(true)
@@ -160,7 +159,7 @@ func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 			if resourceVolumeIsNotFound(err, d) {
 				return nil
 			}
-			return err
+			return diag.FromErr(err)
 		}
 	}
 
@@ -172,10 +171,10 @@ func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 				if resourceVolumeIsNotFound(err, d) {
 					return nil
 				}
-				return err
+				return diag.FromErr(err)
 			}
 			if err := waitForVolumeAction(ctx, client, action, volume); err != nil {
-				return err
+				return diag.FromErr(err)
 			}
 		} else {
 			if volume.Server != nil {
@@ -184,10 +183,10 @@ func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 					if resourceVolumeIsNotFound(err, d) {
 						return nil
 					}
-					return err
+					return diag.FromErr(err)
 				}
 				if err := waitForVolumeAction(ctx, client, action, volume); err != nil {
-					return err
+					return diag.FromErr(err)
 				}
 			}
 			action, _, err := client.Volume.Attach(ctx, volume, &hcloud.Server{ID: serverID})
@@ -196,10 +195,10 @@ func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 				if resourceVolumeIsNotFound(err, d) {
 					return nil
 				}
-				return err
+				return diag.FromErr(err)
 			}
 			if err := waitForVolumeAction(ctx, client, action, volume); err != nil {
-				return err
+				return diag.FromErr(err)
 			}
 		}
 	}
@@ -211,10 +210,10 @@ func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 			if resourceVolumeIsNotFound(err, d) {
 				return nil
 			}
-			return err
+			return diag.FromErr(err)
 		}
 		if err := waitForVolumeAction(ctx, client, action, volume); err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 
 	}
@@ -232,17 +231,16 @@ func resourceVolumeUpdate(d *schema.ResourceData, m interface{}) error {
 			if resourceVolumeIsNotFound(err, d) {
 				return nil
 			}
-			return err
+			return diag.FromErr(err)
 		}
 	}
 	d.Partial(false)
 
-	return resourceVolumeRead(d, m)
+	return resourceVolumeRead(ctx, d, m)
 }
 
-func resourceVolumeDelete(d *schema.ResourceData, m interface{}) error {
+func resourceVolumeDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	volumeID, err := strconv.Atoi(d.Id())
 	if err != nil {
@@ -252,7 +250,7 @@ func resourceVolumeDelete(d *schema.ResourceData, m interface{}) error {
 	}
 	volume, _, err := client.Volume.GetByID(ctx, volumeID)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	if volume.Server != nil {
@@ -261,10 +259,10 @@ func resourceVolumeDelete(d *schema.ResourceData, m interface{}) error {
 			if resourceVolumeIsNotFound(err, d) {
 				return nil
 			}
-			return err
+			return diag.FromErr(err)
 		}
 		if err := waitForVolumeAction(ctx, client, action, volume); err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 	if _, err := client.Volume.Delete(ctx, volume); err != nil {
@@ -272,7 +270,7 @@ func resourceVolumeDelete(d *schema.ResourceData, m interface{}) error {
 			// volume has already been deleted
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil

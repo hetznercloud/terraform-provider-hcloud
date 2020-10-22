@@ -2,7 +2,8 @@ package hcloud
 
 import (
 	"context"
-	"fmt"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
@@ -10,7 +11,7 @@ import (
 
 func dataSourceHcloudFloatingIP() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceHcloudFloatingIPRead,
+		ReadContext: dataSourceHcloudFloatingIPRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:     schema.TypeInt,
@@ -64,48 +65,46 @@ func dataSourceHcloudFloatingIP() *schema.Resource {
 	}
 }
 
-func dataSourceHcloudFloatingIPRead(d *schema.ResourceData, m interface{}) (err error) {
+func dataSourceHcloudFloatingIPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
-	var f *hcloud.FloatingIP
 	if id, ok := d.GetOk("id"); ok {
-		f, _, err = client.FloatingIP.GetByID(ctx, id.(int))
+		f, _, err := client.FloatingIP.GetByID(ctx, id.(int))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if f == nil {
-			return fmt.Errorf("no Floating IP found with id %d", id)
+			return diag.Errorf("no Floating IP found with id %d", id)
 		}
 		setFloatingIPSchema(d, f)
-		return
+		return nil
 	}
 	if name, ok := d.GetOk("name"); ok {
-		f, _, err = client.FloatingIP.GetByName(ctx, name.(string))
+		f, _, err := client.FloatingIP.GetByName(ctx, name.(string))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if f == nil {
-			return fmt.Errorf("no Floating IP found with name %s", name)
+			return diag.Errorf("no Floating IP found with name %s", name)
 		}
 		setFloatingIPSchema(d, f)
-		return
+		return nil
 	}
 	if ip, ok := d.GetOk("ip_address"); ok {
 		var allIPs []*hcloud.FloatingIP
-		allIPs, err = client.FloatingIP.All(ctx)
+		allIPs, err := client.FloatingIP.All(ctx)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 
 		// Find by 'ip_address'
 		for _, f := range allIPs {
 			if f.IP.String() == ip.(string) {
 				setFloatingIPSchema(d, f)
-				return
+				return nil
 			}
 		}
-		return fmt.Errorf("no Floating IP found with ip_address %s", ip)
+		return diag.Errorf("no Floating IP found with ip_address %s", ip)
 	}
 
 	var selector string
@@ -121,19 +120,19 @@ func dataSourceHcloudFloatingIPRead(d *schema.ResourceData, m interface{}) (err 
 				LabelSelector: selector,
 			},
 		}
-		allIPs, err = client.FloatingIP.AllWithOpts(ctx, opts)
+		allIPs, err := client.FloatingIP.AllWithOpts(ctx, opts)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if len(allIPs) == 0 {
-			return fmt.Errorf("no Floating IP found for selector %q", selector)
+			return diag.Errorf("no Floating IP found for selector %q", selector)
 		}
 		if len(allIPs) > 1 {
-			return fmt.Errorf("more than one Floating IP found for selector %q", selector)
+			return diag.Errorf("more than one Floating IP found for selector %q", selector)
 		}
 		setFloatingIPSchema(d, allIPs[0])
-		return
+		return nil
 	}
 
-	return fmt.Errorf("please specify a id, ip_address or a selector to lookup the FloatingIP")
+	return diag.Errorf("please specify a id, ip_address or a selector to lookup the FloatingIP")
 }

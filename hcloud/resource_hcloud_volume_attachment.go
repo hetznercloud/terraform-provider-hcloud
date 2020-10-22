@@ -6,15 +6,17 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 
 func resourceVolumeAttachment() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceVolumeAttachmentCreate,
-		Read:   resourceVolumeAttachmentRead,
-		Delete: resourceVolumeAttachmentDelete,
+		CreateContext: resourceVolumeAttachmentCreate,
+		ReadContext:   resourceVolumeAttachmentRead,
+		DeleteContext: resourceVolumeAttachmentDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -38,9 +40,8 @@ func resourceVolumeAttachment() *schema.Resource {
 	}
 }
 
-func resourceVolumeAttachmentCreate(d *schema.ResourceData, m interface{}) error {
+func resourceVolumeAttachmentCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	volumeID := d.Get("volume_id")
 	volume := &hcloud.Volume{ID: volumeID.(int)}
@@ -61,22 +62,21 @@ func resourceVolumeAttachmentCreate(d *schema.ResourceData, m interface{}) error
 		if hcloud.IsError(err, hcloud.ErrorCodeLocked) {
 			log.Printf("[INFO] Server (%v) locked, retrying in one second", serverID)
 			time.Sleep(time.Second)
-			return resourceVolumeAttachmentCreate(d, m)
+			return resourceVolumeAttachmentCreate(ctx, d, m)
 		}
-		return err
+		return diag.FromErr(err)
 	}
 	if err := waitForVolumeAction(ctx, client, action, volume); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	// Since a volume can only be attached to one server
 	// we can use the volume id as volume attachment id.
 	d.SetId(strconv.Itoa(volume.ID))
-	return resourceVolumeAttachmentRead(d, m)
+	return resourceVolumeAttachmentRead(ctx, d, m)
 }
 
-func resourceVolumeAttachmentRead(d *schema.ResourceData, m interface{}) error {
+func resourceVolumeAttachmentRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	volumeID, err := strconv.Atoi(d.Id())
 	if err != nil {
@@ -89,7 +89,7 @@ func resourceVolumeAttachmentRead(d *schema.ResourceData, m interface{}) error {
 	// therefore the cast should always work
 	volume, _, err := client.Volume.GetByID(ctx, volumeID)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if volume == nil {
 		log.Printf("[WARN] Volume ID (%v) not found, removing volume attachment from state", d.Get("volume_id"))
@@ -114,7 +114,7 @@ func resourceVolumeAttachmentRead(d *schema.ResourceData, m interface{}) error {
 
 	server, _, err := client.Server.GetByID(ctx, serverID)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if server == nil {
 		log.Printf("[WARN] Server ID (%v) not found, removing volume attachment from state", d.Get("server_id"))
@@ -127,9 +127,8 @@ func resourceVolumeAttachmentRead(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-func resourceVolumeAttachmentDelete(d *schema.ResourceData, m interface{}) error {
+func resourceVolumeAttachmentDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	volumeID, err := strconv.Atoi(d.Id())
 	if err != nil {
@@ -150,12 +149,12 @@ func resourceVolumeAttachmentDelete(d *schema.ResourceData, m interface{}) error
 			if hcloud.IsError(err, hcloud.ErrorCodeLocked) {
 				log.Printf("[INFO] Server (%v) locked, retrying in one second", volume.Server.ID)
 				time.Sleep(time.Second)
-				return resourceVolumeAttachmentDelete(d, m)
+				return resourceVolumeAttachmentDelete(ctx, d, m)
 			}
-			return err
+			return diag.FromErr(err)
 		}
 		if err := waitForVolumeAction(ctx, client, action, volume); err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 	return nil

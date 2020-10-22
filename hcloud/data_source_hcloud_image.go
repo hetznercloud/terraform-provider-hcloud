@@ -2,10 +2,11 @@ package hcloud
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"sort"
 	"strconv"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
@@ -13,7 +14,7 @@ import (
 
 func dataSourceHcloudImage() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceHcloudImageRead,
+		ReadContext: dataSourceHcloudImageRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:     schema.TypeInt,
@@ -82,31 +83,29 @@ func dataSourceHcloudImage() *schema.Resource {
 	}
 }
 
-func dataSourceHcloudImageRead(d *schema.ResourceData, m interface{}) (err error) {
+func dataSourceHcloudImageRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
-	var i *hcloud.Image
 	if id, ok := d.GetOk("id"); ok {
-		i, _, err = client.Image.GetByID(ctx, id.(int))
+		i, _, err := client.Image.GetByID(ctx, id.(int))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if i == nil {
-			return fmt.Errorf("no image found with id %d", id)
+			return diag.Errorf("no image found with id %d", id)
 		}
 		setImageSchema(d, i)
-		return
+		return nil
 	}
 	if name, ok := d.GetOk("name"); ok {
-		i, _, err = client.Image.GetByName(ctx, name.(string))
+		i, _, err := client.Image.GetByName(ctx, name.(string))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if i == nil {
-			return fmt.Errorf("no image found with name %v", name)
+			return diag.Errorf("no image found with name %v", name)
 		}
 		setImageSchema(d, i)
-		return
+		return nil
 	}
 	var selector string
 	if v := d.Get("with_selector").(string); v != "" {
@@ -123,24 +122,24 @@ func dataSourceHcloudImageRead(d *schema.ResourceData, m interface{}) (err error
 		}
 
 		opts := hcloud.ImageListOpts{ListOpts: hcloud.ListOpts{LabelSelector: selector}, Status: statuses}
-		allImages, err = client.Image.AllWithOpts(ctx, opts)
+		allImages, err := client.Image.AllWithOpts(ctx, opts)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if len(allImages) == 0 {
-			return fmt.Errorf("no image found for selector %q", selector)
+			return diag.Errorf("no image found for selector %q", selector)
 		}
 		if len(allImages) > 1 {
 			if _, ok := d.GetOk("most_recent"); !ok {
-				return fmt.Errorf("more than one image found for selector %q", selector)
+				return diag.Errorf("more than one image found for selector %q", selector)
 			}
 			sortImageListByCreated(allImages)
 			log.Printf("[INFO] %d images found for selector %q, using %d as the most recent one", len(allImages), selector, allImages[0].ID)
 		}
 		setImageSchema(d, allImages[0])
-		return
+		return nil
 	}
-	return fmt.Errorf("please specify an id, a name or a selector to lookup the image")
+	return diag.Errorf("please specify an id, a name or a selector to lookup the image")
 }
 
 func sortImageListByCreated(imageList []*hcloud.Image) {

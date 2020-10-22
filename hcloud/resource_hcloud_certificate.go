@@ -7,16 +7,18 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 
 func resourceCertificate() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceCertificateCreate,
-		Read:   resourceCertificateRead,
-		Update: resourceCertificateUpdate,
-		Delete: resourceCertificateDelete,
+		CreateContext: resourceCertificateCreate,
+		ReadContext:   resourceCertificateRead,
+		UpdateContext: resourceCertificateUpdate,
+		DeleteContext: resourceCertificateDelete,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:     schema.TypeString,
@@ -65,9 +67,8 @@ func resourceCertificate() *schema.Resource {
 	}
 }
 
-func resourceCertificateCreate(d *schema.ResourceData, m interface{}) error {
+func resourceCertificateCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	opts := hcloud.CertificateCreateOpts{
 		Name:        d.Get("name").(string),
@@ -80,24 +81,24 @@ func resourceCertificateCreate(d *schema.ResourceData, m interface{}) error {
 			opts.Labels[k] = v.(string)
 		}
 	}
+
 	res, _, err := client.Certificate.Create(ctx, opts)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	d.SetId(strconv.Itoa(res.ID))
-	return resourceCertificateRead(d, m)
+	return resourceCertificateRead(ctx, d, m)
 }
 
-func resourceCertificateRead(d *schema.ResourceData, m interface{}) error {
+func resourceCertificateRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	cert, _, err := client.Certificate.Get(ctx, d.Id())
 	if err != nil {
 		if resourceCertificateNotFound(err, d) {
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 	if cert == nil {
 		d.SetId("")
@@ -130,13 +131,12 @@ func setCertificateSchema(d *schema.ResourceData, cert *hcloud.Certificate) {
 	d.Set("not_valid_after", cert.NotValidAfter.Format(time.RFC3339))
 }
 
-func resourceCertificateUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceCertificateUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	cert, _, err := client.Certificate.Get(ctx, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if cert == nil {
 		d.SetId("")
@@ -149,7 +149,7 @@ func resourceCertificateUpdate(d *schema.ResourceData, m interface{}) error {
 			Name: d.Get("name").(string),
 		}
 		if _, _, err := client.Certificate.Update(ctx, cert, opts); err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 	if d.HasChange("labels") {
@@ -160,16 +160,15 @@ func resourceCertificateUpdate(d *schema.ResourceData, m interface{}) error {
 			opts.Labels[k] = v.(string)
 		}
 		if _, _, err := client.Certificate.Update(ctx, cert, opts); err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 	}
 	d.Partial(false)
-	return resourceCertificateRead(d, m)
+	return resourceCertificateRead(ctx, d, m)
 }
 
-func resourceCertificateDelete(d *schema.ResourceData, m interface{}) error {
+func resourceCertificateDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	certID, err := strconv.Atoi(d.Id())
 	if err != nil {
@@ -182,7 +181,7 @@ func resourceCertificateDelete(d *schema.ResourceData, m interface{}) error {
 			// certificate has already been deleted
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 	d.SetId("")
 	return nil

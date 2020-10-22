@@ -2,10 +2,12 @@ package hcloud
 
 import (
 	"context"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"log"
 	"net"
 	"strconv"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
@@ -13,10 +15,10 @@ import (
 
 func resourceNetwork() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceNetworkCreate,
-		Read:   resourceNetworkRead,
-		Update: resourceNetworkUpdate,
-		Delete: resourceNetworkDelete,
+		CreateContext: resourceNetworkCreate,
+		ReadContext:   resourceNetworkRead,
+		UpdateContext: resourceNetworkUpdate,
+		DeleteContext: resourceNetworkDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -40,13 +42,12 @@ func resourceNetwork() *schema.Resource {
 	}
 }
 
-func resourceNetworkCreate(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	_, ipRange, err := net.ParseCIDR(d.Get("ip_range").(string))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	opts := hcloud.NetworkCreateOpts{
@@ -63,24 +64,23 @@ func resourceNetworkCreate(d *schema.ResourceData, m interface{}) error {
 
 	network, _, err := client.Network.Create(ctx, opts)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	d.SetId(strconv.Itoa(network.ID))
 
-	return resourceNetworkRead(d, m)
+	return resourceNetworkRead(ctx, d, m)
 }
 
-func resourceNetworkRead(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	network, _, err := client.Network.Get(ctx, d.Id())
 	if err != nil {
 		if resourceNetworkIsNotFound(err, d) {
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 	if network == nil {
 		d.SetId("")
@@ -91,13 +91,12 @@ func resourceNetworkRead(d *schema.ResourceData, m interface{}) error {
 
 }
 
-func resourceNetworkUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	network, _, err := client.Network.Get(ctx, d.Id())
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if network == nil {
 		d.SetId("")
@@ -114,7 +113,7 @@ func resourceNetworkUpdate(d *schema.ResourceData, m interface{}) error {
 			if resourceNetworkIsNotFound(err, d) {
 				return nil
 			}
-			return err
+			return diag.FromErr(err)
 		}
 	}
 	if d.HasChange("labels") {
@@ -130,17 +129,16 @@ func resourceNetworkUpdate(d *schema.ResourceData, m interface{}) error {
 			if resourceNetworkIsNotFound(err, d) {
 				return nil
 			}
-			return err
+			return diag.FromErr(err)
 		}
 	}
 	d.Partial(false)
 
-	return resourceNetworkRead(d, m)
+	return resourceNetworkRead(ctx, d, m)
 }
 
-func resourceNetworkDelete(d *schema.ResourceData, m interface{}) error {
+func resourceNetworkDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	networkID, err := strconv.Atoi(d.Id())
 
@@ -154,7 +152,7 @@ func resourceNetworkDelete(d *schema.ResourceData, m interface{}) error {
 			// network has already been deleted
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 
 	return nil

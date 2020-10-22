@@ -10,6 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/hetznercloud/hcloud-go/hcloud"
@@ -20,10 +22,10 @@ var errLoadBalancerTargetNotFound = errors.New("load balancer target not found")
 func resourceLoadBalancerTarget() *schema.Resource {
 	targetProps := []string{"server_id", "label_selector", "ip"}
 	return &schema.Resource{
-		Create: resourceLoadBalancerTargetCreate,
-		Read:   resourceLoadBalancerTargetRead,
-		Update: resourceLoadBalancerTargetUpdate,
-		Delete: resourceLoadBalancerTargetDelete,
+		CreateContext: resourceLoadBalancerTargetCreate,
+		ReadContext:   resourceLoadBalancerTargetRead,
+		UpdateContext: resourceLoadBalancerTargetUpdate,
+		DeleteContext: resourceLoadBalancerTargetDelete,
 
 		Schema: map[string]*schema.Schema{
 			"type": {
@@ -64,7 +66,7 @@ func resourceLoadBalancerTarget() *schema.Resource {
 	}
 }
 
-func resourceLoadBalancerTargetCreate(d *schema.ResourceData, m interface{}) error {
+func resourceLoadBalancerTargetCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var (
 		lb     *hcloud.LoadBalancer
 		tgt    hcloud.LoadBalancerTarget
@@ -73,15 +75,14 @@ func resourceLoadBalancerTargetCreate(d *schema.ResourceData, m interface{}) err
 	)
 
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	lbID := d.Get("load_balancer_id").(int)
 	lb, _, err = client.LoadBalancer.GetByID(ctx, lbID)
 	if err != nil {
-		return fmt.Errorf("get load balancer by id: %d: %v", lbID, err)
+		return diag.Errorf("get load balancer by id: %d: %v", lbID, err)
 	}
 	if lb == nil {
-		return fmt.Errorf("load balancer %d: not found", lbID)
+		return diag.Errorf("load balancer %d: not found", lbID)
 	}
 
 	tgtType := hcloud.LoadBalancerTargetType(d.Get("type").(string))
@@ -93,14 +94,14 @@ func resourceLoadBalancerTargetCreate(d *schema.ResourceData, m interface{}) err
 	case hcloud.LoadBalancerTargetTypeIP:
 		action, tgt, err = resourceLoadBalancerCreateIPTarget(ctx, client, lb, d)
 	default:
-		return fmt.Errorf("unsupported target type: %s", tgtType)
+		return diag.Errorf("unsupported target type: %s", tgtType)
 	}
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if action != nil {
 		if err := waitForLoadBalancerAction(ctx, client, action, lb); err != nil {
-			return fmt.Errorf("add load balancer target: %v", err)
+			return diag.Errorf("add load balancer target: %v", err)
 		}
 	}
 	setLoadBalancerTarget(d, lbID, tgt)
@@ -232,43 +233,40 @@ func resourceLoadBalancerCreateIPTarget(
 	return action, tgt, nil
 }
 
-func resourceLoadBalancerTargetRead(d *schema.ResourceData, m interface{}) error {
+func resourceLoadBalancerTargetRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 	lbID := d.Get("load_balancer_id").(int)
 	tgtType := hcloud.LoadBalancerTargetType(d.Get("type").(string))
 
 	_, tgt, err := findLoadBalancerTarget(ctx, client, lbID, tgtType, d)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	setLoadBalancerTarget(d, lbID, tgt)
 	return nil
 }
 
-func resourceLoadBalancerTargetUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceLoadBalancerTargetUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 	lbID := d.Get("load_balancer_id").(int)
 	tgtType := hcloud.LoadBalancerTargetType(d.Get("type").(string))
 
 	lb, tgt, err := findLoadBalancerTarget(ctx, client, lbID, tgtType, d)
 	if errors.Is(err, errLoadBalancerTargetNotFound) {
-		return resourceLoadBalancerTargetCreate(d, m)
+		return resourceLoadBalancerTargetCreate(ctx, d, m)
 	}
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err := removeLoadBalancerTarget(ctx, client, lb, tgt); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	return resourceLoadBalancerTargetCreate(d, m)
+	return resourceLoadBalancerTargetCreate(ctx, d, m)
 }
 
-func resourceLoadBalancerTargetDelete(d *schema.ResourceData, m interface{}) error {
+func resourceLoadBalancerTargetDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 	tgtType := hcloud.LoadBalancerTargetType(d.Get("type").(string))
 	lbID := d.Get("load_balancer_id").(int)
 
@@ -277,9 +275,12 @@ func resourceLoadBalancerTargetDelete(d *schema.ResourceData, m interface{}) err
 		return nil
 	}
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	return removeLoadBalancerTarget(ctx, client, lb, tgt)
+	if err := removeLoadBalancerTarget(ctx, client, lb, tgt); err != nil {
+		return diag.FromErr(err)
+	}
+	return nil
 }
 
 func removeLoadBalancerTarget(ctx context.Context, client *hcloud.Client, lb *hcloud.LoadBalancer, tgt hcloud.LoadBalancerTarget) error {

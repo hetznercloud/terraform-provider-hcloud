@@ -38,7 +38,7 @@ func TestAccHcloudDataSourceFloatingIPTest(t *testing.T) {
 	}
 	floatingipBySel.SetRName("floatingip_by_sel")
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:     testsupport.AccTestPreCheck(t),
 		Providers:    testsupport.AccTestProviders(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(floatingip.ResourceType, floatingip.ByID(t, nil)),

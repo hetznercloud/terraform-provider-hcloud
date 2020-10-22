@@ -2,7 +2,8 @@ package hcloud
 
 import (
 	"context"
-	"fmt"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
@@ -10,7 +11,7 @@ import (
 
 func dataSourceHcloudServer() *schema.Resource {
 	return &schema.Resource{
-		Read: dataSourceHcloudServerRead,
+		ReadContext: dataSourceHcloudServerRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:     schema.TypeInt,
@@ -96,33 +97,31 @@ func dataSourceHcloudServer() *schema.Resource {
 	}
 }
 
-func dataSourceHcloudServerRead(d *schema.ResourceData, m interface{}) (err error) {
+func dataSourceHcloudServerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
-	var s *hcloud.Server
 	if id, ok := d.GetOk("id"); ok {
-		s, _, err = client.Server.GetByID(ctx, id.(int))
+		s, _, err := client.Server.GetByID(ctx, id.(int))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if s == nil {
-			return fmt.Errorf("no Server found with id %d", id)
+			return diag.Errorf("no Server found with id %d", id)
 		}
 		setServerSchema(d, s)
-		return
+		return nil
 	}
 
 	if name, ok := d.GetOk("name"); ok {
-		s, _, err = client.Server.GetByName(ctx, name.(string))
+		s, _, err := client.Server.GetByName(ctx, name.(string))
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if s == nil {
-			return fmt.Errorf("no Server found with name %s", name)
+			return diag.Errorf("no Server found with name %s", name)
 		}
 		setServerSchema(d, s)
-		return
+		return nil
 	}
 
 	var selector string
@@ -144,19 +143,19 @@ func dataSourceHcloudServerRead(d *schema.ResourceData, m interface{}) (err erro
 			},
 			Status: statuses,
 		}
-		allServers, err = client.Server.AllWithOpts(ctx, opts)
+		allServers, err := client.Server.AllWithOpts(ctx, opts)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		if len(allServers) == 0 {
-			return fmt.Errorf("no Server found for selector %q", selector)
+			return diag.Errorf("no Server found for selector %q", selector)
 		}
 		if len(allServers) > 1 {
-			return fmt.Errorf("more than one Server found for selector %q", selector)
+			return diag.Errorf("more than one Server found for selector %q", selector)
 		}
 		setServerSchema(d, allServers[0])
-		return
+		return nil
 	}
 
-	return fmt.Errorf("please specify a id, name or a selector to lookup the Server")
+	return diag.Errorf("please specify a id, name or a selector to lookup the Server")
 }

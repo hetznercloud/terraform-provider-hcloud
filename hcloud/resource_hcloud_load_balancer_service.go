@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/hetznercloud/hcloud-go/hcloud"
@@ -16,10 +18,10 @@ import (
 
 func resourceLoadBalancerService() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceLoadBalancerServiceCreate,
-		Read:   resourceLoadBalancerServiceRead,
-		Update: resourceLoadBalancerServiceUpdate,
-		Delete: resourceLoadBalancerServiceDelete,
+		CreateContext: resourceLoadBalancerServiceCreate,
+		ReadContext:   resourceLoadBalancerServiceRead,
+		UpdateContext: resourceLoadBalancerServiceUpdate,
+		DeleteContext: resourceLoadBalancerServiceDelete,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -165,13 +167,12 @@ func resourceLoadBalancerService() *schema.Resource {
 	}
 }
 
-func resourceLoadBalancerServiceCreate(d *schema.ResourceData, m interface{}) error {
+func resourceLoadBalancerServiceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	lbId, err := strconv.Atoi(d.Get("load_balancer_id").(string))
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	lb := hcloud.LoadBalancer{ID: lbId}
 
@@ -220,21 +221,20 @@ func resourceLoadBalancerServiceCreate(d *schema.ResourceData, m interface{}) er
 		action, _, err = client.LoadBalancer.AddService(ctx, &lb, opts)
 	}
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	if err := waitForLoadBalancerAction(ctx, client, action, &lb); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	svcID := fmt.Sprintf("%d__%d", lb.ID, listenPort)
 
 	d.SetId(svcID)
 
-	return resourceLoadBalancerServiceRead(d, m)
+	return resourceLoadBalancerServiceRead(ctx, d, m)
 }
 
-func resourceLoadBalancerServiceUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceLoadBalancerServiceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	lb, svc, err := lookupLoadBalancerServiceID(ctx, d.Id(), client)
 	if err == errInvalidLoadBalancerServiceID {
@@ -243,7 +243,7 @@ func resourceLoadBalancerServiceUpdate(d *schema.ResourceData, m interface{}) er
 		return nil
 	}
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 	protocol := hcloud.LoadBalancerServiceProtocol(d.Get("protocol").(string))
 	opts := hcloud.LoadBalancerUpdateServiceOpts{
@@ -270,17 +270,16 @@ func resourceLoadBalancerServiceUpdate(d *schema.ResourceData, m interface{}) er
 		if resourceLoadBalancerIsNotFound(err, d) {
 			return nil
 		}
-		return err
+		return diag.FromErr(err)
 	}
 	if err := waitForLoadBalancerAction(ctx, client, action, lb); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
-	return resourceLoadBalancerServiceRead(d, m)
+	return resourceLoadBalancerServiceRead(ctx, d, m)
 }
 
-func resourceLoadBalancerServiceRead(d *schema.ResourceData, m interface{}) error {
+func resourceLoadBalancerServiceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 	lb, svc, err := lookupLoadBalancerServiceID(ctx, d.Id(), client)
 	if err == errInvalidLoadBalancerServiceID {
 		log.Printf("[WARN] Invalid id (%s), removing from state: %s", d.Id(), err)
@@ -288,7 +287,7 @@ func resourceLoadBalancerServiceRead(d *schema.ResourceData, m interface{}) erro
 		return nil
 	}
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	listenPort := d.Get("listen_port").(int)
@@ -314,14 +313,16 @@ func resourceLoadBalancerServiceRead(d *schema.ResourceData, m interface{}) erro
 		return nil
 	}
 
-	return setLoadBalancerServiceSchema(d, lb, &service)
+	if err := setLoadBalancerServiceSchema(d, lb, &service); err != nil {
+		return diag.FromErr(err)
+	}
+	return nil
 }
 
-func resourceLoadBalancerServiceDelete(d *schema.ResourceData, m interface{}) error {
+func resourceLoadBalancerServiceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	const op = "hcloud/resourceLoadBalancerServiceDelete"
 
 	client := m.(*hcloud.Client)
-	ctx := context.Background()
 
 	lb, svc, err := lookupLoadBalancerServiceID(ctx, d.Id(), client)
 	if err == errInvalidLoadBalancerServiceID {
@@ -330,7 +331,7 @@ func resourceLoadBalancerServiceDelete(d *schema.ResourceData, m interface{}) er
 		return nil
 	}
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	action, _, err := client.LoadBalancer.DeleteService(ctx, lb, svc.ListenPort)
@@ -338,10 +339,10 @@ func resourceLoadBalancerServiceDelete(d *schema.ResourceData, m interface{}) er
 		return nil
 	}
 	if err != nil {
-		return fmt.Errorf("%s: %v", op, err)
+		return diag.Errorf("%s: %v", op, err)
 	}
 	if err := waitForLoadBalancerAction(ctx, client, action, lb); err != nil {
-		return fmt.Errorf("%s: %v", op, err)
+		return diag.Errorf("%s: %v", op, err)
 	}
 
 	return nil
