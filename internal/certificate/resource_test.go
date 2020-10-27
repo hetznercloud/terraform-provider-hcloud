@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/certificate"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -59,7 +58,7 @@ func TestCertificateResource_ChangeCertRequiresNewResource(t *testing.T) {
 
 	res := certificate.NewRData(t, "basic-cert", "TFAccTests")
 
-	rCert, rKey, err := acctest.RandTLSCert("TFAccTests")
+	rCert, rKey, err := testsupport.RandTLSCert("TFAccTests")
 	if err != nil {
 		t.Fatalf("%s", err)
 	}

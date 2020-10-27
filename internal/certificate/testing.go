@@ -94,7 +94,7 @@ func (d *RData) TFID() string {
 
 // NewRData creates data for a new certificate resource.
 func NewRData(t *testing.T, name, org string) *RData {
-	rCert, rKey, err := acctest.RandTLSCert(org)
+	rCert, rKey, err := testsupport.RandTLSCert(org)
 	rInt := acctest.RandInt()
 	if err != nil {
 		t.Fatal(err)
