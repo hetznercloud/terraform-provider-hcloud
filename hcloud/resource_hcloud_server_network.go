@@ -93,6 +93,9 @@ func resourceServerNetworkCreate(ctx context.Context, d *schema.ResourceData, m 
 		ip := net.ParseIP(aliasIP.(string))
 		opts.AliasIPs = append(opts.AliasIPs, ip)
 	}
+	// workaround for
+	// https://github.com/hetznercloud/terraform-provider-hcloud/issues/161#issuecomment-621125799
+	time.Sleep(5 * time.Second)
 	action, _, err := client.Server.AttachToNetwork(ctx, server, opts)
 	if err != nil {
 		if hcloud.IsError(err, hcloud.ErrorCodeConflict) {
