@@ -1,4 +1,7 @@
-## master
+## 1.23.0 (November 03, 2020)
+
+FEATURES:
+* `hcloud_network_subnet` supports vSwitch Subnets
 
 Notes:
 * The provider was updated to use the Terraform Plugin SDK v2.
