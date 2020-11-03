@@ -95,6 +95,7 @@ type RDataSubnet struct {
 	NetworkID   string
 	NetworkZone string
 	IPRange     string
+	VSwitchID   string
 }
 
 // TFID returns the resource identifier.

@@ -39,6 +39,7 @@ func resourceNetworkSubnet() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{
 					"cloud",
 					"server",
+					"vswitch",
 				}, false),
 			},
 			"network_zone": {
@@ -55,6 +56,11 @@ func resourceNetworkSubnet() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"vswitch_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+				ForceNew: true,
+			},
 		},
 	}
 }
@@ -68,12 +74,19 @@ func resourceNetworkSubnetCreate(ctx context.Context, d *schema.ResourceData, m 
 	}
 	networkID := d.Get("network_id")
 	network := &hcloud.Network{ID: networkID.(int)}
+
+	subnetType := hcloud.NetworkSubnetType(d.Get("type").(string))
 	opts := hcloud.NetworkAddSubnetOpts{
 		Subnet: hcloud.NetworkSubnet{
 			IPRange:     ipRange,
 			NetworkZone: hcloud.NetworkZone(d.Get("network_zone").(string)),
-			Type:        hcloud.NetworkSubnetType(d.Get("type").(string)),
+			Type:        subnetType,
 		},
+	}
+
+	if subnetType == hcloud.NetworkSubnetTypeVSwitch {
+		vSwitchID := d.Get("vswitch_id")
+		opts.Subnet.VSwitchID = vSwitchID.(int)
 	}
 
 	action, _, err := client.Network.AddSubnet(ctx, network, opts)
@@ -164,6 +177,9 @@ func setNetworkSubnetSchema(d *schema.ResourceData, n *hcloud.Network, s hcloud.
 	d.Set("ip_range", s.IPRange.String())
 	d.Set("type", s.Type)
 	d.Set("gateway", s.Gateway.String())
+	if s.Type == hcloud.NetworkSubnetTypeVSwitch {
+		d.Set("vswitch_id", s.VSwitchID)
+	}
 }
 
 func generateNetworkSubnetID(network *hcloud.Network, ipRange string) string {
