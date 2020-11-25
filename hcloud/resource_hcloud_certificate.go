@@ -34,6 +34,14 @@ func resourceCertificate() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
+				DiffSuppressFunc: func(_, certOld, certNew string, d *schema.ResourceData) bool {
+					res, err := EqualCert(certOld, certNew)
+					if err != nil {
+						log.Printf("[ERROR] compare certificates for equality: %v", err)
+						return false
+					}
+					return res
+				},
 			},
 			"labels": {
 				Type:     schema.TypeMap,
