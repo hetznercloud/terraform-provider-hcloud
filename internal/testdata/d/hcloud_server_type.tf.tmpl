@@ -1,0 +1,6 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+data "hcloud_server_type" "{{ .RName }}" {
+  {{ if .ServerTypeID -}}   id            = "{{ .ServerTypeID }}"{{ end }}
+  {{ if .ServerTypeName -}} name          = "{{ .ServerTypeName }}"{{ end }}
+}

@@ -63,6 +63,8 @@ func Provider() *schema.Provider {
 			"hcloud_location":      dataSourceHcloudLocation(),
 			"hcloud_locations":     dataSourceHcloudLocations(),
 			"hcloud_server":        dataSourceHcloudServer(),
+			"hcloud_server_type":   dataSourceHcloudServerType(),
+			"hcloud_server_types":  dataSourceHcloudServerTypes(),
 			"hcloud_ssh_key":       dataSourceHcloudSSHKey(),
 			"hcloud_ssh_keys":      dataSourceHcloudSSHKeys(),
 			"hcloud_volume":        dataSourceHcloudVolume(),

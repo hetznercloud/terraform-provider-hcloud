@@ -1,3 +1,9 @@
+## unreleased 
+
+FEATURES:
+* **New Datasource**: `hcloud_server_type`
+* **New Datasource**: `hcloud_server_types`
+
 ## 1.23.0 (November 03, 2020)
 
 FEATURES:
