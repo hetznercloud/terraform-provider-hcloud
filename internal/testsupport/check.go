@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/hetznercloud/hcloud-go/hcloud"
@@ -79,13 +80,36 @@ func backendResourceByKey(s *terraform.State, name string, k KeyFunc) error {
 // CheckResourceAttrFunc uses valueFunc to obtain the expected attribute value.
 //
 // This allows to delay determining the expected value to just before the
-// moment it is checked. In contrast to resource.TestCheckResourceAttrPtr
-// valueFunc can return the string representation of any value and is not
-// restricted to string pointers.
-func CheckResourceAttrFunc(name, key string, valueFunc func() string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		value := valueFunc()
-		return resource.TestCheckResourceAttr(name, key, value)(s)
+// moment it is checked.
+//
+// The valueFunc may either be a func() string or a func() []string. If
+// valueFunc is a func() []string it is enough if the resource attribute
+// matches any value in the string slice returned by valueFunc.
+func CheckResourceAttrFunc(name, key string, valueFunc interface{}) resource.TestCheckFunc {
+	switch f := valueFunc.(type) {
+	case func() string:
+		return func(s *terraform.State) error {
+			return resource.TestCheckResourceAttr(name, key, f())(s)
+		}
+	case func() []string:
+		return func(s *terraform.State) error {
+			var mErr error
+
+			for _, v := range f() {
+				err := resource.TestCheckResourceAttr(name, key, v)(s)
+				if err == nil {
+					// Value matched; we are happy :-)
+					return nil
+				}
+				mErr = multierror.Append(mErr, err)
+			}
+
+			return mErr
+		}
+	default:
+		return func(_ *terraform.State) error {
+			return fmt.Errorf("unsupported valueFunc: %T", valueFunc)
+		}
 	}
 }
 
