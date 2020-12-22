@@ -11,7 +11,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-const TestImageName = "ubuntu-20.04"
+const TestImageName = testsupport.TestImage
 const TestImageId = "15512617"
 
 func TestAccHcloudDataSourceImageTest(t *testing.T) {

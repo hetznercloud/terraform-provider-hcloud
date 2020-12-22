@@ -20,6 +20,17 @@ import (
 	tfhcloud "github.com/hetznercloud/terraform-provider-hcloud/hcloud"
 )
 
+const (
+	// TestImage is the system image that is used in all tests
+	TestImage = "ubuntu-20.04"
+
+	// TestServerType is the default server type used in all tests
+	TestServerType = "cx11"
+
+	// TestLoadBalancerType is the default Load Balancer type used in all tests
+	TestLoadBalancerType = "lb11"
+)
+
 func init() {
 	rand.Seed(time.Now().UTC().UnixNano())
 }

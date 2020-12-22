@@ -42,7 +42,7 @@ func TestLoadBalancerResource_Basic(t *testing.T) {
 					testsupport.CheckResourceExists(res.TFID(), loadbalancer.ByID(t, &lb)),
 					resource.TestCheckResourceAttr(res.TFID(), "name",
 						fmt.Sprintf("basic-load-balancer--%d", tmplMan.RandInt)),
-					resource.TestCheckResourceAttr(res.TFID(), "load_balancer_type", "lb11"),
+					resource.TestCheckResourceAttr(res.TFID(), "load_balancer_type", testsupport.TestLoadBalancerType),
 					resource.TestCheckResourceAttr(res.TFID(), "location", "nbg1"),
 				),
 			},
@@ -62,7 +62,7 @@ func TestLoadBalancerResource_Basic(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resRenamed.TFID(), "name",
 						fmt.Sprintf("basic-load-balancer-renamed--%d", tmplMan.RandInt)),
-					resource.TestCheckResourceAttr(resRenamed.TFID(), "load_balancer_type", "lb11"),
+					resource.TestCheckResourceAttr(resRenamed.TFID(), "load_balancer_type", testsupport.TestLoadBalancerType),
 					resource.TestCheckResourceAttr(resRenamed.TFID(), "location", "nbg1"),
 					resource.TestCheckResourceAttr(resRenamed.TFID(), "algorithm.0.type", "least_connections"),
 					resource.TestCheckResourceAttr(resRenamed.TFID(), "labels.key1", "value1"),
@@ -97,7 +97,7 @@ func TestLoadBalancerResource_Resize(t *testing.T) {
 					testsupport.CheckResourceExists(res.TFID(), loadbalancer.ByID(t, &lb)),
 					resource.TestCheckResourceAttr(res.TFID(), "name",
 						fmt.Sprintf("basic-load-balancer--%d", tmplMan.RandInt)),
-					resource.TestCheckResourceAttr(res.TFID(), "load_balancer_type", "lb11"),
+					resource.TestCheckResourceAttr(res.TFID(), "load_balancer_type", testsupport.TestLoadBalancerType),
 					resource.TestCheckResourceAttr(res.TFID(), "location", "nbg1"),
 				),
 			},
@@ -124,14 +124,14 @@ func TestLoadBalancerResource_InlineTarget(t *testing.T) {
 	tmplMan := testtemplate.Manager{RandInt: acctest.RandInt()}
 	resServer1 := &server.RData{
 		Name:  "some-server",
-		Type:  "cx11",
-		Image: "ubuntu-20.04",
+		Type:  testsupport.TestServerType,
+		Image: testsupport.TestImage,
 	}
 	resServer1.SetRName("some-server")
 	resServer2 := &server.RData{
 		Name:  "another-server",
-		Type:  "cx11",
-		Image: "ubuntu-20.04",
+		Type:  testsupport.TestServerType,
+		Image: testsupport.TestImage,
 	}
 	resServer2.SetRName("another-server")
 	res := &loadbalancer.RData{

@@ -2,6 +2,7 @@ package loadbalancer_test
 
 import (
 	"fmt"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
 	"strconv"
 	"testing"
 
@@ -21,10 +22,13 @@ func TestAccHcloudLoadBalancerTarget_ServerTarget(t *testing.T) {
 	)
 
 	tmplMan := testtemplate.Manager{}
+
+	resSSHKey := sshkey.NewRData(t, "lb-server-target")
 	resServer := &server.RData{
-		Name:  "lb-server-target",
-		Type:  "cx11",
-		Image: "ubuntu-20.04",
+		Name:    "lb-server-target",
+		Type:    testsupport.TestServerType,
+		Image:   testsupport.TestImage,
+		SSHKeys: []string{resSSHKey.TFID() + ".id"},
 	}
 	resServer.SetRName("lb-server-target")
 	resource.Test(t, resource.TestCase{
@@ -34,10 +38,11 @@ func TestAccHcloudLoadBalancerTarget_ServerTarget(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
 					"testdata/r/hcloud_server", resServer,
 					"testdata/r/hcloud_load_balancer", &loadbalancer.RData{
 						Name:        "target-test-lb",
-						Type:        "lb11",
+						Type:        testsupport.TestLoadBalancerType,
 						NetworkZone: "eu-central",
 					},
 					"testdata/r/hcloud_load_balancer_target", &loadbalancer.RDataTarget{
@@ -76,10 +81,12 @@ func TestAccHcloudLoadBalancerTarget_ServerTarget_UsePrivateIP(t *testing.T) {
 
 	tmplMan := testtemplate.Manager{}
 
+	resSSHKey := sshkey.NewRData(t, "lb-server-target-pi")
 	resServer := &server.RData{
-		Name:  "lb-server-target",
-		Type:  "cx11",
-		Image: "ubuntu-20.04",
+		Name:    "lb-server-target-pi",
+		Type:    testsupport.TestServerType,
+		Image:   testsupport.TestImage,
+		SSHKeys: []string{resSSHKey.TFID() + ".id"},
 	}
 	resServer.SetRName("lb-server-target")
 
@@ -102,6 +109,7 @@ func TestAccHcloudLoadBalancerTarget_ServerTarget_UsePrivateIP(t *testing.T) {
 						NetworkZone: "eu-central",
 						IPRange:     "10.0.1.0/24",
 					},
+					"testdata/r/hcloud_ssh_key", resSSHKey,
 					"testdata/r/hcloud_server", resServer,
 					"testdata/r/hcloud_server_network", &server.RDataNetwork{
 						Name:      "lb-server-network",
@@ -110,7 +118,7 @@ func TestAccHcloudLoadBalancerTarget_ServerTarget_UsePrivateIP(t *testing.T) {
 					},
 					"testdata/r/hcloud_load_balancer", &loadbalancer.RData{
 						Name:        "target-test-lb",
-						Type:        "lb11",
+						Type:        testsupport.TestLoadBalancerType,
 						NetworkZone: "eu-central",
 					},
 					"testdata/r/hcloud_load_balancer_network", &loadbalancer.RDataNetwork{
@@ -152,13 +160,15 @@ func TestAccHcloudLoadBalancerTarget_LabelSelectorTarget(t *testing.T) {
 
 	tmplMan := testtemplate.Manager{}
 	selector := fmt.Sprintf("tf-test=tf-test-%d", tmplMan.RandInt)
+	resSSHKey := sshkey.NewRData(t, "lb-label-target")
 	resServer := &server.RData{
 		Name:  "lb-server-target",
-		Type:  "cx11",
-		Image: "ubuntu-20.04",
+		Type:  testsupport.TestServerType,
+		Image: testsupport.TestImage,
 		Labels: map[string]string{
 			"tf-test": fmt.Sprintf("tf-test-%d", tmplMan.RandInt),
 		},
+		SSHKeys: []string{resSSHKey.TFID() + ".id"},
 	}
 	resServer.SetRName("lb-server-target")
 	resource.Test(t, resource.TestCase{
@@ -168,10 +178,11 @@ func TestAccHcloudLoadBalancerTarget_LabelSelectorTarget(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
 					"testdata/r/hcloud_server", resServer,
 					"testdata/r/hcloud_load_balancer", &loadbalancer.RData{
 						Name:        "target-test-lb",
-						Type:        "lb11",
+						Type:        testsupport.TestLoadBalancerType,
 						NetworkZone: "eu-central",
 					},
 					"testdata/r/hcloud_load_balancer_target", &loadbalancer.RDataTarget{
@@ -202,13 +213,16 @@ func TestAccHcloudLoadBalancerTarget_LabelSelectorTarget_UsePrivateIP(t *testing
 		srv hcloud.Server
 	)
 	tmplMan := testtemplate.Manager{}
+
+	resSSHKey := sshkey.NewRData(t, "lb-label-target")
 	resServer := &server.RData{
 		Name:  "lb-server-target",
-		Type:  "cx11",
-		Image: "ubuntu-20.04",
+		Type:  testsupport.TestServerType,
+		Image: testsupport.TestImage,
 		Labels: map[string]string{
 			"tf-test": fmt.Sprintf("tf-test-%d", tmplMan.RandInt),
 		},
+		SSHKeys: []string{resSSHKey.TFID() + ".id"},
 	}
 	resServer.SetRName("lb-server-target")
 
@@ -232,6 +246,7 @@ func TestAccHcloudLoadBalancerTarget_LabelSelectorTarget_UsePrivateIP(t *testing
 						NetworkZone: "eu-central",
 						IPRange:     "10.0.1.0/24",
 					},
+					"testdata/r/hcloud_ssh_key", resSSHKey,
 					"testdata/r/hcloud_server", resServer,
 					"testdata/r/hcloud_server_network", &server.RDataNetwork{
 						Name:      "lb-server-network",
@@ -240,7 +255,7 @@ func TestAccHcloudLoadBalancerTarget_LabelSelectorTarget_UsePrivateIP(t *testing
 					},
 					"testdata/r/hcloud_load_balancer", &loadbalancer.RData{
 						Name:        "target-test-lb",
-						Type:        "lb11",
+						Type:        testsupport.TestLoadBalancerType,
 						NetworkZone: "eu-central",
 					},
 					"testdata/r/hcloud_load_balancer_network", &loadbalancer.RDataNetwork{
@@ -295,7 +310,7 @@ func TestAccHcloudLoadBalancerTarget_IPTarget(t *testing.T) {
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_load_balancer", &loadbalancer.RData{
 						Name:        "target-test-lb",
-						Type:        "lb11",
+						Type:        testsupport.TestLoadBalancerType,
 						NetworkZone: "eu-central",
 					},
 					"testdata/r/hcloud_load_balancer_target", &loadbalancer.RDataTarget{

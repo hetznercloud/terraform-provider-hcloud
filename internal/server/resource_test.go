@@ -4,6 +4,7 @@ import (
 	"crypto/sha1"
 	"encoding/base64"
 	"fmt"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
 	"testing"
 
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
@@ -17,10 +18,12 @@ import (
 func TestServerResource_Basic(t *testing.T) {
 	var s hcloud.Server
 
+	sk := sshkey.NewRData(t, "server-basic")
 	res := &server.RData{
-		Name:  "server-basic",
-		Type:  "cx11",
-		Image: "ubuntu-20.04",
+		Name:    "server-basic",
+		Type:    testsupport.TestServerType,
+		Image:   testsupport.TestImage,
+		SSHKeys: []string{sk.TFID() + ".id"},
 	}
 	res.SetRName("server-basic")
 	resRenamed := &server.RData{Name: res.Name + "-renamed", Type: res.Type, Image: res.Image}
@@ -34,7 +37,10 @@ func TestServerResource_Basic(t *testing.T) {
 			{
 				// Create a new Server using the required values
 				// only.
-				Config: tmplMan.Render(t, "testdata/r/hcloud_server", res),
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_server", res,
+				),
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s)),
 					resource.TestCheckResourceAttr(res.TFID(), "name",
@@ -71,10 +77,12 @@ func TestServerResource_Basic(t *testing.T) {
 func TestServerResource_Resize(t *testing.T) {
 	var s hcloud.Server
 
+	sk := sshkey.NewRData(t, "server-resize")
 	res := &server.RData{
-		Name:  "server-resize",
-		Type:  "cx11",
-		Image: "ubuntu-20.04",
+		Name:    "server-resize",
+		Type:    testsupport.TestServerType,
+		Image:   testsupport.TestImage,
+		SSHKeys: []string{sk.TFID() + ".id"},
 	}
 	res.SetRName("server-resize")
 	resResized := &server.RData{Name: res.Name, Type: "cx21", Image: res.Image, KeepDisk: true}
@@ -88,7 +96,10 @@ func TestServerResource_Resize(t *testing.T) {
 			{
 				// Create a new Server using the required values
 				// only.
-				Config: tmplMan.Render(t, "testdata/r/hcloud_server", res),
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_server", res,
+				),
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s)),
 					resource.TestCheckResourceAttr(res.TFID(), "name",
@@ -101,6 +112,7 @@ func TestServerResource_Resize(t *testing.T) {
 				// Update the Server created in the previous step by
 				// setting all optional fields and renaming the Server.
 				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
 					"testdata/r/hcloud_server", resResized,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -117,11 +129,13 @@ func TestServerResource_Resize(t *testing.T) {
 func TestServerResource_ChangeUserData(t *testing.T) {
 	var s, s2 hcloud.Server
 
+	sk := sshkey.NewRData(t, "server-userdata")
 	res := &server.RData{
 		Name:     "server-userdata",
-		Type:     "cx11",
-		Image:    "ubuntu-20.04",
+		Type:     testsupport.TestServerType,
+		Image:    testsupport.TestImage,
 		UserData: "stuff",
+		SSHKeys:  []string{sk.TFID() + ".id"},
 	}
 	res.SetRName("server-userdata")
 	resChangedUserdata := &server.RData{Name: res.Name, Type: res.Type, Image: res.Image, UserData: "updated stuff"}
@@ -135,7 +149,10 @@ func TestServerResource_ChangeUserData(t *testing.T) {
 			{
 				// Create a new Server using the required values
 				// only.
-				Config: tmplMan.Render(t, "testdata/r/hcloud_server", res),
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_server", res,
+				),
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s)),
 					resource.TestCheckResourceAttr(res.TFID(), "name",
@@ -149,6 +166,7 @@ func TestServerResource_ChangeUserData(t *testing.T) {
 				// Update the Server created in the previous step by
 				// setting all optional fields and renaming the Server.
 				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
 					"testdata/r/hcloud_server", resChangedUserdata,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -168,12 +186,14 @@ func TestServerResource_ChangeUserData(t *testing.T) {
 func TestServerResource_ISO(t *testing.T) {
 	var s hcloud.Server
 
+	sk := sshkey.NewRData(t, "server-iso")
 	res := &server.RData{
 		Name:     "server-iso",
-		Type:     "cx11",
-		Image:    "ubuntu-20.04",
+		Type:     testsupport.TestServerType,
+		Image:    testsupport.TestImage,
 		UserData: "stuff",
 		ISO:      "3500",
+		SSHKeys:  []string{sk.TFID() + ".id"},
 	}
 	res.SetRName("server-iso")
 	tmplMan := testtemplate.Manager{}
@@ -185,7 +205,10 @@ func TestServerResource_ISO(t *testing.T) {
 			{
 				// Create a new Server using the required values
 				// only.
-				Config: tmplMan.Render(t, "testdata/r/hcloud_server", res),
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_server", res,
+				),
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s)),
 					resource.TestCheckResourceAttr(res.TFID(), "name",

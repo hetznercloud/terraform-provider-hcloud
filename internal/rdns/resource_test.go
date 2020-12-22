@@ -2,6 +2,7 @@ package rdns_test
 
 import (
 	"fmt"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -18,18 +19,21 @@ import (
 
 func TestRDNSResource_Server(t *testing.T) {
 	var s hcloud.Server
-
 	tmplMan := testtemplate.Manager{}
+
+	sk := sshkey.NewRData(t, "server-rdns")
 	resServer := &server.RData{
 		Name:  "server-rdns",
-		Type:  "cx11",
-		Image: "ubuntu-20.04",
+		Type:  testsupport.TestServerType,
+		Image: testsupport.TestImage,
 		Labels: map[string]string{
 			"tf-test": fmt.Sprintf("tf-test-rdns-%d", tmplMan.RandInt),
 		},
+		SSHKeys: []string{sk.TFID() + ".id"},
 	}
 	resServer.SetRName("server_rdns")
 	resRDNS := rdns.NewRData(t, "rdnstest", resServer.TFID()+".id", "", resServer.TFID()+".ipv4_address", "example.hetzner.cloud")
+
 	resource.Test(t, resource.TestCase{
 		PreCheck:     testsupport.AccTestPreCheck(t),
 		Providers:    testsupport.AccTestProviders(),
@@ -39,6 +43,7 @@ func TestRDNSResource_Server(t *testing.T) {
 				// Create a new RDNS using the required values
 				// only.
 				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
 					"testdata/r/hcloud_server", resServer,
 					"testdata/r/hcloud_rdns", resRDNS,
 				),

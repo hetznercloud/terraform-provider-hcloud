@@ -19,8 +19,8 @@ func TestAccHcloudDataSourceServerTest(t *testing.T) {
 
 	res := &server.RData{
 		Name:  "server-ds-test",
-		Type:  "cx11",
-		Image: "ubuntu-20.04",
+		Type:  testsupport.TestServerType,
+		Image: testsupport.TestImage,
 		Labels: map[string]string{
 			"key": strconv.Itoa(acctest.RandInt()),
 		},
