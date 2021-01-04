@@ -57,7 +57,9 @@ func resourceLoadBalancerNetwork() *schema.Resource {
 }
 
 func resourceLoadBalancerNetworkCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*hcloud.Client)
+	var action *hcloud.Action
+
+	c := m.(*hcloud.Client)
 
 	ip := net.ParseIP(d.Get("ip").(string))
 
@@ -75,42 +77,45 @@ func resourceLoadBalancerNetworkCreate(ctx context.Context, d *schema.ResourceDa
 		networkID = nwID
 	}
 
-	loadBalancerID := d.Get("load_balancer_id")
+	loadBalancerID := d.Get("load_balancer_id").(int)
+	lb := &hcloud.LoadBalancer{ID: loadBalancerID}
 
-	loadBalancer := &hcloud.LoadBalancer{ID: loadBalancerID.(int)}
-
-	network := &hcloud.Network{ID: networkID.(int)}
+	nw := &hcloud.Network{ID: networkID.(int)}
 	opts := hcloud.LoadBalancerAttachToNetworkOpts{
-		Network: network,
+		Network: nw,
 		IP:      ip,
 	}
-	action, _, err := client.LoadBalancer.AttachToNetwork(ctx, loadBalancer, opts)
-	if err != nil {
+
+	err := retry(1, func() error {
+		var err error
+
+		action, _, err = c.LoadBalancer.AttachToNetwork(ctx, lb, opts)
 		if hcloud.IsError(err, hcloud.ErrorCodeConflict) ||
 			hcloud.IsError(err, hcloud.ErrorCodeLocked) ||
 			hcloud.IsError(err, hcloud.ErrorCodeServiceError) {
-			hcErr := err.(hcloud.Error)
-			log.Printf("[INFO] Network (%v) %s, retrying in one second", network.ID, hcErr.Code)
-			time.Sleep(time.Second)
-			return resourceLoadBalancerNetworkCreate(ctx, d, m)
-		} else if string(err.(hcloud.Error).Code) == "load_balancer_already_attached" { // TODO: Change to correct error code and hcloud.IsError with next hcloud-go release
-			log.Printf("[INFO] Load Balancer (%v) already attachted to network %v", loadBalancer.ID, network.ID)
-			d.SetId(generateLoadBalancerNetworkID(loadBalancer, network))
-
-			return resourceLoadBalancerNetworkRead(ctx, d, m)
+			// Retry on any of the above listed errors
+			return err
 		}
+		if hcloud.IsError(err, hcloud.ErrorCodeLoadBalancerAlreadyAttached) &&
+			isLoadBalancerAttachedToNetwork(ctx, c, lb, nw) {
+			return nil
+		}
+		return abortRetry(err)
+	})
+	if err != nil {
 		return diag.FromErr(err)
 	}
-	if err := waitForNetworkAction(ctx, client, action, network); err != nil {
+
+	if err := waitForNetworkAction(ctx, c, action, nw); err != nil {
 		return diag.FromErr(err)
 	}
 
 	enablePublicInterface := d.Get("enable_public_interface").(bool)
-	err = resourceLoadBalancerNetworkUpdatePublicInterface(ctx, enablePublicInterface, loadBalancer, client, d)
+	err = resourceLoadBalancerNetworkUpdatePublicInterface(ctx, enablePublicInterface, lb, c, d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	d.SetId(generateLoadBalancerNetworkID(loadBalancer, network))
+	d.SetId(generateLoadBalancerNetworkID(lb, nw))
 
 	return resourceLoadBalancerNetworkRead(ctx, d, m)
 }
@@ -194,7 +199,23 @@ func setLoadBalancerNetworkSchema(d *schema.ResourceData, loadBalancer *hcloud.L
 	} else {
 		d.Set("network_id", network.ID)
 	}
+}
 
+func isLoadBalancerAttachedToNetwork(
+	ctx context.Context, c *hcloud.Client, lb *hcloud.LoadBalancer, n *hcloud.Network,
+) bool {
+	lbID := lb.ID
+	lb, _, err := c.LoadBalancer.GetByID(ctx, lbID)
+	if lb == nil || err != nil {
+		log.Printf("[WARN] Failed to retrieve load balancer with id %d", lbID)
+		return false
+	}
+	for _, privNet := range lb.PrivateNet {
+		if privNet.Network != nil && privNet.Network.ID == n.ID {
+			return true
+		}
+	}
+	return false
 }
 
 func generateLoadBalancerNetworkID(server *hcloud.LoadBalancer, network *hcloud.Network) string {

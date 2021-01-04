@@ -2,8 +2,10 @@ package loadbalancer_test
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"regexp"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hetznercloud/hcloud-go/hcloud"
@@ -145,6 +147,63 @@ func TestAccHcloudLoadBalancerNetwork_SubNetID(t *testing.T) {
 					testsupport.CheckResourceExists(lbRes.TFID(), loadbalancer.ByID(t, &lb)),
 					testsupport.LiftTCF(hasLoadBalancerNetwork(t, &lb, &nw)),
 				),
+			},
+		},
+	})
+}
+
+func TestAccHcloudLoadBalancerNetwork_CannotAttachToTwoNetworks(t *testing.T) {
+	nwRess := make([]*network.RData, 2)
+	snRess := make([]*network.RDataSubnet, len(nwRess))
+	for i := 0; i < len(nwRess); i++ {
+		nwName := fmt.Sprintf("test-network-%d", i)
+		nwRes := &network.RData{Name: nwName, IPRange: "10.0.0.0/16"}
+		nwRes.SetRName(nwName)
+		nwRess[i] = nwRes
+
+		snRes := &network.RDataSubnet{
+			Type:        "cloud",
+			NetworkID:   nwRes.TFID() + ".id",
+			NetworkZone: "eu-central",
+			IPRange:     "10.0.1.0/24",
+		}
+		snRes.SetRName(fmt.Sprintf("test-network-subnet-%d", i))
+		snRess[i] = snRes
+	}
+
+	lbRes := &loadbalancer.RData{
+		Name:        "lb-double-attach-test",
+		Type:        testsupport.TestLoadBalancerType,
+		NetworkZone: "eu-central",
+	}
+
+	tmplMan := testtemplate.Manager{}
+	resource.Test(t, resource.TestCase{
+		PreCheck:     testsupport.AccTestPreCheck(t),
+		Providers:    testsupport.AccTestProviders(),
+		CheckDestroy: testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
+		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_network", nwRess[0],
+					"testdata/r/hcloud_network", nwRess[1],
+					"testdata/r/hcloud_network_subnet", snRess[0],
+					"testdata/r/hcloud_network_subnet", snRess[1],
+					"testdata/r/hcloud_load_balancer", lbRes,
+					"testdata/r/hcloud_load_balancer_network", &loadbalancer.RDataNetwork{
+						Name:           "test-network-0",
+						LoadBalancerID: lbRes.TFID() + ".id",
+						SubNetID:       snRess[0].TFID() + ".id",
+						IP:             "10.0.1.5",
+					},
+					"testdata/r/hcloud_load_balancer_network", &loadbalancer.RDataNetwork{
+						Name:           "test-network-1",
+						LoadBalancerID: lbRes.TFID() + ".id",
+						SubNetID:       snRess[1].TFID() + ".id",
+						IP:             "10.0.1.5",
+					},
+				),
+				ExpectError: regexp.MustCompile(`.*load_balancer_already_attached.*`),
 			},
 		},
 	})
