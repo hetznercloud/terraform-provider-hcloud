@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        terraform_version: [ "0.12.x", "0.13.x" ]
+        terraform_version: [ "0.13.x", "0.14.x" ]
     name: integration-${{ matrix.terraform_version }}
     steps:
       -
