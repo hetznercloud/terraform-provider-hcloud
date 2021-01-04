@@ -14,7 +14,7 @@ func TestAccHcloudDataSourceServerTypeTest(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	stByName := &servertype.DData{
-		ServerTypeName: "cx11",
+		ServerTypeName: testsupport.TestServerType,
 	}
 	stByName.SetRName("st_by_name")
 	stByID := &servertype.DData{

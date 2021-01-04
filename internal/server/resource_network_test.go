@@ -3,6 +3,7 @@ package server_test
 import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -20,6 +21,7 @@ func TestAccHcloudServerNetwork_NetworkID(t *testing.T) {
 		s  hcloud.Server
 	)
 
+	sk := sshkey.NewRData(t, "server-network-id")
 	netRes := &network.RData{
 		Name:    "test-network",
 		IPRange: "10.0.0.0/16",
@@ -34,9 +36,10 @@ func TestAccHcloudServerNetwork_NetworkID(t *testing.T) {
 	subNetRes.SetRName("test-network-subnet")
 	sRes := &server.RData{
 		Name:         "s-network-test",
-		Type:         "cx11",
+		Type:         testsupport.TestServerType,
 		LocationName: "nbg1",
-		Image:        "ubuntu-20.04",
+		Image:        testsupport.TestImage,
+		SSHKeys:      []string{sk.TFID() + ".id"},
 	}
 	sRes.SetRName("s-network-test")
 	sNRes := &server.RDataNetwork{
@@ -54,6 +57,7 @@ func TestAccHcloudServerNetwork_NetworkID(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
 					"testdata/r/hcloud_network", netRes,
 					"testdata/r/hcloud_network_subnet", subNetRes,
 					"testdata/r/hcloud_server", sRes,
@@ -86,6 +90,7 @@ func TestAccHcloudServerNetwork_SubNetID(t *testing.T) {
 		s  hcloud.Server
 	)
 
+	sk := sshkey.NewRData(t, "server-network-subnetid")
 	netRes := &network.RData{
 		Name:    "test-network",
 		IPRange: "10.0.0.0/16",
@@ -100,9 +105,10 @@ func TestAccHcloudServerNetwork_SubNetID(t *testing.T) {
 	subNetRes.SetRName("test-network-subnet")
 	sRes := &server.RData{
 		Name:         "s-network-test",
-		Type:         "cx11",
+		Type:         testsupport.TestServerType,
 		LocationName: "nbg1",
-		Image:        "ubuntu-20.04",
+		Image:        testsupport.TestImage,
+		SSHKeys:      []string{sk.TFID() + ".id"},
 	}
 	sRes.SetRName("s-network-test")
 
@@ -114,6 +120,7 @@ func TestAccHcloudServerNetwork_SubNetID(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
 					"testdata/r/hcloud_network", netRes,
 					"testdata/r/hcloud_network_subnet", subNetRes,
 					"testdata/r/hcloud_server", sRes,

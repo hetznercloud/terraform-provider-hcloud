@@ -3,6 +3,7 @@ package floatingip_test
 import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
 	"testing"
 
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/floatingip"
@@ -19,23 +20,27 @@ func TestFloatingIPAssignmentResource_Basic(t *testing.T) {
 	var s2 hcloud.Server
 	var f hcloud.FloatingIP
 	tmplMan := testtemplate.Manager{}
+
+	resSSHKey := sshkey.NewRData(t, "server-floating-ip-basic")
 	resServer := &server.RData{
 		Name:  "fip-assignment",
-		Type:  "cx11",
-		Image: "ubuntu-20.04",
+		Type:  testsupport.TestServerType,
+		Image: testsupport.TestImage,
 		Labels: map[string]string{
 			"tf-test": fmt.Sprintf("tf-test-fip-assignment-%d", tmplMan.RandInt),
 		},
+		SSHKeys: []string{resSSHKey.TFID() + ".id"},
 	}
 	resServer.SetRName("server_assignment")
 
 	resServer2 := &server.RData{
 		Name:  "fip-assignment-2",
-		Type:  "cx11",
-		Image: "ubuntu-20.04",
+		Type:  testsupport.TestServerType,
+		Image: testsupport.TestImage,
 		Labels: map[string]string{
 			"tf-test": fmt.Sprintf("tf-test-fip-assignment-%d", tmplMan.RandInt),
 		},
+		SSHKeys: []string{resSSHKey.TFID() + ".id"},
 	}
 	resServer2.SetRName("server2_assignment")
 
@@ -64,6 +69,7 @@ func TestFloatingIPAssignmentResource_Basic(t *testing.T) {
 				// Create a new RDNS using the required values
 				// only.
 				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
 					"testdata/r/hcloud_server", resServer,
 					"testdata/r/hcloud_server", resServer2,
 					"testdata/r/hcloud_floating_ip", resFloatingIP,
@@ -86,6 +92,7 @@ func TestFloatingIPAssignmentResource_Basic(t *testing.T) {
 			{
 				// Move the floating IP to another server
 				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
 					"testdata/r/hcloud_server", resServer,
 					"testdata/r/hcloud_server", resServer2,
 					"testdata/r/hcloud_floating_ip", resFloatingIP,

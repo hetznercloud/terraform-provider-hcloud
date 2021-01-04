@@ -3,6 +3,7 @@ package volume_test
 import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
 	"testing"
 
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
@@ -19,24 +20,28 @@ func TestVolumeAssignmentResource_Basic(t *testing.T) {
 	var s2 hcloud.Server
 	var v hcloud.Volume
 	tmplMan := testtemplate.Manager{}
+
+	resSSHKey := sshkey.NewRData(t, "server-vol")
 	resServer := &server.RData{
 		Name:  "vol-attachment",
-		Type:  "cx11",
-		Image: "ubuntu-20.04",
+		Type:  testsupport.TestServerType,
+		Image: testsupport.TestImage,
 		Labels: map[string]string{
 			"tf-test": fmt.Sprintf("tf-test-vol-attachment-%d", tmplMan.RandInt),
 		},
+		SSHKeys: []string{resSSHKey.TFID() + ".id"},
 	}
 	resServer.SetRName("server_attachment")
 
 	resServer2 := &server.RData{
 		Name:  "vol-attachment-2",
-		Type:  "cx11",
-		Image: "ubuntu-20.04",
+		Type:  testsupport.TestServerType,
+		Image: testsupport.TestImage,
 		Labels: map[string]string{
 			"tf-test": fmt.Sprintf("tf-test-vol-attachment-%d", tmplMan.RandInt),
 		},
 		LocationName: fmt.Sprintf("${%s.location}", resServer.TFID()),
+		SSHKeys:      []string{resSSHKey.TFID() + ".id"},
 	}
 	resServer2.SetRName("server2_attachment")
 
@@ -65,6 +70,7 @@ func TestVolumeAssignmentResource_Basic(t *testing.T) {
 				// Create a new Volume attachment using the required values
 				// only.
 				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
 					"testdata/r/hcloud_server", resServer,
 					"testdata/r/hcloud_server", resServer2,
 					"testdata/r/hcloud_volume", resVolume,
@@ -88,6 +94,7 @@ func TestVolumeAssignmentResource_Basic(t *testing.T) {
 				// Move the Volume to another server using the
 				// attachment.
 				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
 					"testdata/r/hcloud_server", resServer,
 					"testdata/r/hcloud_server", resServer2,
 					"testdata/r/hcloud_volume", resVolume,

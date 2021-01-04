@@ -34,7 +34,7 @@ func TestAccHcloudLoadBalancerNetwork_NetworkID(t *testing.T) {
 	subNetRes.SetRName("test-network-subnet")
 	lbRes := &loadbalancer.RData{
 		Name:        "lb-network-test",
-		Type:        "lb11",
+		Type:        testsupport.TestLoadBalancerType,
 		NetworkZone: "eu-central",
 	}
 
@@ -118,7 +118,7 @@ func TestAccHcloudLoadBalancerNetwork_SubNetID(t *testing.T) {
 	subNetRes.SetRName("test-network-subnet")
 	lbRes := &loadbalancer.RData{
 		Name:        "lb-network-test",
-		Type:        "lb11",
+		Type:        testsupport.TestLoadBalancerType,
 		NetworkZone: "eu-central",
 	}
 

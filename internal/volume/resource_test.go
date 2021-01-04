@@ -129,16 +129,16 @@ func TestVolumeResource_WithServer(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 	resServer1 := &server.RData{
 		Name:         "some-server",
-		Type:         "cx11",
-		Image:        "ubuntu-20.04",
+		Type:         testsupport.TestServerType,
+		Image:        testsupport.TestImage,
 		LocationName: "nbg1",
 	}
 	resServer1.SetRName("some-server")
 
 	resServer2 := &server.RData{
 		Name:         "another-server",
-		Type:         "cx11",
-		Image:        "ubuntu-20.04",
+		Type:         testsupport.TestServerType,
+		Image:        testsupport.TestImage,
 		LocationName: "nbg1",
 	}
 	resServer2.SetRName("another-server")
