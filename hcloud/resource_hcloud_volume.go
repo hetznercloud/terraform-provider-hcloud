@@ -2,10 +2,10 @@ package hcloud
 
 import (
 	"context"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"log"
 	"strconv"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
@@ -98,7 +98,37 @@ func resourceVolumeCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 	for _, nextAction := range result.NextActions {
 		if err := waitForVolumeAction(ctx, client, nextAction, result.Volume); err != nil {
-			return diag.FromErr(err)
+			if nextAction.Command == "attach_volume" {
+				// Sometimes, when multiple volumes are created (for the same server)
+				// we get a failed attach_volume action with the "locked" error identifier
+				// We should then simply wait a few seconds and retry the attachment.
+				if strings.Contains(err.(hcloud.ActionError).Message, string(hcloud.ErrorCodeLocked)) {
+					// Use a sleeping timeout that is high enough,
+					// most volume actions will be done in less than 5 seconds
+					// so with 5 seconds we should be safe enough. after that retry the attach
+					// call and it should work.
+					for _, resource := range nextAction.Resources {
+						if resource.Type == hcloud.ActionResourceTypeServer {
+							err := retry(defaultMaxRetries, func() error {
+								action, _, err := client.Volume.Attach(ctx, result.Volume, &hcloud.Server{ID: resource.ID})
+
+								if err != nil {
+									return err
+								}
+								if err := waitForVolumeAction(ctx, client, action, result.Volume); err != nil {
+									return err
+								}
+								return nil
+							})
+							if err != nil {
+								return diag.FromErr(err)
+							}
+						}
+					}
+				}
+			} else {
+				return diag.FromErr(err)
+			}
 		}
 
 	}
@@ -166,38 +196,56 @@ func resourceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 	if d.HasChange("server_id") {
 		serverID := d.Get("server_id").(int)
 		if serverID == 0 {
-			action, _, err := client.Volume.Detach(ctx, volume)
-			if err != nil {
-				if resourceVolumeIsNotFound(err, d) {
-					return nil
-				}
-				return diag.FromErr(err)
-			}
-			if err := waitForVolumeAction(ctx, client, action, volume); err != nil {
-				return diag.FromErr(err)
-			}
-		} else {
-			if volume.Server != nil {
+			err := retry(defaultMaxRetries, func() error {
 				action, _, err := client.Volume.Detach(ctx, volume)
 				if err != nil {
 					if resourceVolumeIsNotFound(err, d) {
 						return nil
 					}
-					return diag.FromErr(err)
+					return err
 				}
-				if err := waitForVolumeAction(ctx, client, action, volume); err != nil {
-					return diag.FromErr(err)
-				}
-			}
-			action, _, err := client.Volume.Attach(ctx, volume, &hcloud.Server{ID: serverID})
 
-			if err != nil {
-				if resourceVolumeIsNotFound(err, d) {
-					return nil
+				if err := waitForVolumeAction(ctx, client, action, volume); err != nil {
+					return err
 				}
+				return nil
+			})
+			if err != nil {
 				return diag.FromErr(err)
 			}
-			if err := waitForVolumeAction(ctx, client, action, volume); err != nil {
+		} else {
+			if volume.Server != nil {
+				err := retry(defaultMaxRetries, func() error {
+					action, _, err := client.Volume.Detach(ctx, volume)
+					if err != nil {
+						if resourceVolumeIsNotFound(err, d) {
+							return nil
+						}
+						return err
+					}
+					if err := waitForVolumeAction(ctx, client, action, volume); err != nil {
+						return err
+					}
+					return nil
+				})
+				if err != nil {
+					return diag.FromErr(err)
+				}
+			}
+			err := retry(defaultMaxRetries, func() error {
+				action, _, err := client.Volume.Attach(ctx, volume, &hcloud.Server{ID: serverID})
+				if err != nil {
+					if resourceVolumeIsNotFound(err, d) {
+						return nil
+					}
+					return err
+				}
+				if err := waitForVolumeAction(ctx, client, action, volume); err != nil {
+					return err
+				}
+				return nil
+			})
+			if err != nil {
 				return diag.FromErr(err)
 			}
 		}
@@ -254,14 +302,21 @@ func resourceVolumeDelete(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 
 	if volume.Server != nil {
-		action, _, err := client.Volume.Detach(ctx, volume)
-		if err != nil {
-			if resourceVolumeIsNotFound(err, d) {
-				return nil
+		err := retry(5, func() error {
+			action, _, err := client.Volume.Detach(ctx, volume)
+			if err != nil {
+				if resourceVolumeIsNotFound(err, d) {
+					return nil
+				}
+				return err
 			}
-			return diag.FromErr(err)
-		}
-		if err := waitForVolumeAction(ctx, client, action, volume); err != nil {
+
+			if err := waitForVolumeAction(ctx, client, action, volume); err != nil {
+				return err
+			}
+			return nil
+		})
+		if err != nil {
 			return diag.FromErr(err)
 		}
 	}

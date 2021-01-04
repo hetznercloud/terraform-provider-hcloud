@@ -15,10 +15,10 @@ import (
 func TestSSHKeyResource_Basic(t *testing.T) {
 	var sk hcloud.SSHKey
 
+	tmplMan := testtemplate.Manager{}
 	res := sshkey.NewRData(t, "basic-ssh-key")
 	resRenamed := &sshkey.RData{Name: res.Name + "-renamed", PublicKey: res.PublicKey}
 	resRenamed.SetRName(res.Name)
-	tmplMan := testtemplate.Manager{}
 	resource.Test(t, resource.TestCase{
 		PreCheck:     testsupport.AccTestPreCheck(t),
 		Providers:    testsupport.AccTestProviders(),

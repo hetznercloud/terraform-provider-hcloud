@@ -4,6 +4,9 @@ FEATURES:
 * **New Datasource**: `hcloud_server_type`
 * **New Datasource**: `hcloud_server_types`
 
+BUG FIXES:
+* `hcloud_volume` resource: A race condition was fixed, that was called when you tried to create multiple volumes for a single server
+
 Notes:
 * This release is tested against Terraform 0.13.x and 0.14.x. Testing on 0.12.x was removed, therefore Terraform 0.12.x is no longer officially supported
 
