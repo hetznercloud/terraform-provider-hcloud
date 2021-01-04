@@ -4,6 +4,9 @@ FEATURES:
 * **New Datasource**: `hcloud_server_type`
 * **New Datasource**: `hcloud_server_types`
 
+Notes:
+* This release is tested against Terraform 0.13.x and 0.14.x. Testing on 0.12.x was removed, therefore Terraform 0.12.x is no longer officially supported
+
 ## 1.23.0 (November 03, 2020)
 
 FEATURES:
