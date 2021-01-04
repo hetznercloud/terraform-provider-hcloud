@@ -198,3 +198,53 @@ func TestVolumeResource_WithServer(t *testing.T) {
 		},
 	})
 }
+
+func TestVolumeResource_WithServerMultipleVolumes(t *testing.T) {
+	var vol, vol2 hcloud.Volume
+	tmplMan := testtemplate.Manager{}
+	resServer1 := &server.RData{
+		Name:         "some-server",
+		Type:         "cx11",
+		Image:        "ubuntu-20.04",
+		LocationName: "nbg1",
+	}
+	resServer1.SetRName("some-server")
+
+	res := volume.Basic
+	res.Name = "volume-with-server"
+	res.LocationName = ""
+	res.ServerID = resServer1.TFID() + ".id"
+	res.SetRName("first-volume")
+
+	resAnotherVolume := &volume.RData{
+		Name:         "volume-with-server-2",
+		LocationName: "",
+		Size:         10,
+		ServerID:     resServer1.TFID() + ".id",
+	}
+	resAnotherVolume.SetRName("another-volume")
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     testsupport.AccTestPreCheck(t),
+		Providers:    testsupport.AccTestProviders(),
+		CheckDestroy: testsupport.CheckResourcesDestroyed(volume.ResourceType, volume.ByID(t, &vol)),
+		Steps: []resource.TestStep{
+			{
+				// Create a new Volume using the required values
+				// only.
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_server", resServer1,
+					"testdata/r/hcloud_volume", res,
+					"testdata/r/hcloud_volume", resAnotherVolume),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(res.TFID(), volume.ByID(t, &vol)),
+					testsupport.CheckResourceExists(resAnotherVolume.TFID(), volume.ByID(t, &vol2)),
+					resource.TestCheckResourceAttr(res.TFID(), "name",
+						fmt.Sprintf("volume-with-server--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(res.TFID(), "size", "10"),
+					resource.TestCheckResourceAttr(res.TFID(), "location", "nbg1"),
+				),
+			},
+		},
+	})
+}
