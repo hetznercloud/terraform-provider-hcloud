@@ -1,27 +1,48 @@
 package hcloud
 
 import (
-	"fmt"
+	"errors"
 	"log"
 	"time"
 )
 
 const defaultMaxRetries = 5
 
-func retry(maxRetries int, f func() error) error {
-	try := 1
-	for {
-		if err := f(); err != nil {
-			if try <= maxRetries {
-				log.Printf("[WARN] function returned error in try %d, retry after %d: %v", try, time.Duration(try)*time.Second, err)
-				time.Sleep(time.Duration(try) * time.Second)
-				try++
-			} else {
-				return fmt.Errorf("func returned an error after %d try: %w", try, err)
-			}
-		} else {
-			break
+type abortErr struct {
+	Err error
+}
+
+func (e abortErr) Error() string {
+	return e.Err.Error()
+}
+
+func (e abortErr) Unwrap() error {
+	return e.Err
+}
+
+func abortRetry(err error) error {
+	return abortErr{Err: err}
+}
+
+func retry(maxTries int, f func() error) error {
+	var err error
+
+	for try := 0; try < maxTries; try++ {
+		var aerr abortErr
+
+		err = f()
+		if errors.As(err, &aerr) {
+			return aerr.Err
 		}
+		if err != nil {
+			d := time.Duration(try) * time.Second
+			log.Printf("[WARN] try %d/%d failed: retrying after %v: error: %v", try, maxTries, d, err)
+			time.Sleep(time.Duration(try) * time.Second)
+			continue
+		}
+
+		return nil
 	}
-	return nil
+
+	return err
 }
