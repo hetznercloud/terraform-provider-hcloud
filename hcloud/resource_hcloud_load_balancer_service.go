@@ -80,7 +80,7 @@ func resourceLoadBalancerService() *schema.Resource {
 							Computed: true,
 						},
 						"certificates": {
-							Type:     schema.TypeList,
+							Type:     schema.TypeSet,
 							Optional: true,
 							Elem: &schema.Schema{
 								Type: schema.TypeInt,
@@ -461,7 +461,7 @@ func parseTFHTTP(tfHTTP []interface{}) *hcloud.LoadBalancerAddServiceOptsHTTP {
 	}
 
 	if certificates, ok := httpMap["certificates"]; ok {
-		http.Certificates = parseTFCertificates(certificates.([]interface{}))
+		http.Certificates = parseTFCertificates(certificates.(*schema.Set))
 	}
 	if redirectHTTP, ok := httpMap["redirect_http"]; ok {
 		http.RedirectHTTP = hcloud.Bool(redirectHTTP.(bool))
@@ -489,7 +489,7 @@ func parseUpdateTFHTTP(tfHTTP []interface{}) *hcloud.LoadBalancerUpdateServiceOp
 	}
 
 	if certificates, ok := httpMap["certificates"]; ok {
-		http.Certificates = parseTFCertificates(certificates.([]interface{}))
+		http.Certificates = parseTFCertificates(certificates.(*schema.Set))
 	}
 	if redirectHTTP, ok := httpMap["redirect_http"]; ok {
 		http.RedirectHTTP = hcloud.Bool(redirectHTTP.(bool))
@@ -497,9 +497,9 @@ func parseUpdateTFHTTP(tfHTTP []interface{}) *hcloud.LoadBalancerUpdateServiceOp
 	return http
 }
 
-func parseTFCertificates(tfCerts []interface{}) []*hcloud.Certificate {
-	certs := make([]*hcloud.Certificate, 0, len(tfCerts))
-	for _, c := range tfCerts {
+func parseTFCertificates(tfCerts *schema.Set) []*hcloud.Certificate {
+	certs := make([]*hcloud.Certificate, 0, tfCerts.Len())
+	for _, c := range tfCerts.List() {
 		certs = append(certs, &hcloud.Certificate{ID: c.(int)})
 	}
 	return certs

@@ -2,9 +2,10 @@ package loadbalancer_test
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"strconv"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hetznercloud/hcloud-go/hcloud"
@@ -246,6 +247,43 @@ func TestAccHcloudLoadBalancerService_HTTPS(t *testing.T) {
 					resource.TestCheckResourceAttr(svcResName, "protocol", "https"),
 					resource.TestCheckResourceAttr(svcResName, "listen_port", "443"),
 					resource.TestCheckResourceAttr(svcResName, "destination_port", "80"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccHcloudLoadBalancerService_HTTPS_UpdateUnchangedCertificates(t *testing.T) {
+	certRes1 := certificate.NewRData(t, "cert-res1", "TFAccTests1")
+	certRes2 := certificate.NewRData(t, "cert-res2", "TFAccTests2")
+	lbRes := &loadbalancer.RData{
+		Name:         "load-balancer-certificates-unchanged",
+		LocationName: "nbg1",
+	}
+	svcRes := &loadbalancer.RDataService{
+		Name:           "service-with-two-certs",
+		LoadBalancerID: lbRes.TFID() + ".id",
+		Protocol:       "https",
+		AddHTTP:        true,
+		HTTP: loadbalancer.RDataServiceHTTP{
+			Certificates: []string{certRes1.TFID() + ".id", certRes2.TFID() + ".id"},
+			RedirectHTTP: true,
+		},
+	}
+
+	tmplMan := testtemplate.Manager{}
+	resource.Test(t, resource.TestCase{
+		PreCheck:     testsupport.AccTestPreCheck(t),
+		Providers:    testsupport.AccTestProviders(),
+		CheckDestroy: testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
+		Steps: []resource.TestStep{
+			{
+				// Create a new Load Balancer using two certificates
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_certificate", certRes1,
+					"testdata/r/hcloud_certificate", certRes2,
+					"testdata/r/hcloud_load_balancer", lbRes,
+					"testdata/r/hcloud_load_balancer_service", svcRes,
 				),
 			},
 		},
