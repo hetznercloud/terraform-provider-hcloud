@@ -29,6 +29,18 @@ resource "hcloud_server" "{{ .RName }}" {
   backups     = {{ .Backups }}
   {{ end }}
 
+  {{- if .Network.NetworkID }}{{ with .Network }}
+  network {
+      network_id = {{ .NetworkID }}
+      {{- if .IP }}
+      ip         = "{{ .IP }}"
+      {{ end }}
+      {{- if .AliasIPs }}
+      alias_ips = {{ with DQuoteS .AliasIPs }}[{{ StringsJoin . ", " }}]{{ end }}
+      {{- end }}
+  }
+  {{ end }}{{ end }}
+
   {{- if .Labels }}
   labels = {
   {{- range $k,$v := .Labels }}
@@ -39,5 +51,8 @@ resource "hcloud_server" "{{ .RName }}" {
 
   {{- if .UserData }}
   user_data   = "{{ .UserData }}"
+  {{ end }}
+  {{- if .DependsOn }}
+  depends_on               = [{{ StringsJoin .DependsOn ", " }}]
   {{ end }}
 }

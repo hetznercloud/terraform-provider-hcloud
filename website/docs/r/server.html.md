@@ -12,12 +12,54 @@ Provides an Hetzner Cloud server resource. This can be used to create, modify, a
 
 ## Example Usage
 
+### Basic server creation
+
 ```hcl
 # Create a new server running debian
 resource "hcloud_server" "node1" {
   name = "node1"
   image = "debian-9"
   server_type = "cx11"
+}
+```
+
+### Server creation with network
+
+```
+resource "hcloud_network" "network" {
+  name     = "network"
+  ip_range = "10.0.0.0/16"
+}
+
+resource "hcloud_network_subnet" "network-subnet" {
+  type         = "cloud"
+  network_id   = hcloud_network.network.id
+  network_zone = "eu-central"
+  ip_range     = "10.0.1.0/24"
+}
+
+resource "hcloud_server" "server" {
+  name        = "server"
+  server_type = "cx11"
+  image       = "ubuntu-20.04"
+  location    = "nbg1"
+
+  network {
+      network_id = hcloud_network.network.id
+      ip         = "10.0.1.5"
+      alias_ips  = [
+        "10.0.1.6",
+        "10.0.1.7"
+      ]
+  }
+
+  # **Note**: the depends_on is important when directly attaching the
+  # server to a network. Otherwise Terraform will attempt to create
+  # server and sub-network in parallel. This may result in the server
+  # creation failing randomly.
+  depends_on = [
+    hcloud_network_subnet.network-subnet
+  ]
 }
 ```
 
@@ -56,6 +98,13 @@ The following attributes are exported:
 - `ipv6_network` - (string) The IPv6 network.
 - `status` - (string) The status of the server.
 - `labels` - (map) User-defined labels (key-value pairs)
+- `network` - (map) Private Network the server shall be attached to.
+  The Network that should be attached to the server requires at least
+  one subnetwork. Subnetworks cannot be referenced by Servers in the
+  Hetzner Cloud API. Therefore Terraform attempts to create the
+  subnetwork in parallel to the server. This leads to a concurrency
+  issue. It is therefore necessary to use `depends_on` to link the server
+  to the respective subnetwork. See examples.
 
 ## Import
 

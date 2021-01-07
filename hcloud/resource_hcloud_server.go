@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"log"
+	"net"
 	"strconv"
 	"strings"
 	"time"
@@ -65,9 +66,9 @@ func resourceServer() *schema.Resource {
 				ForceNew:         true,
 				DiffSuppressFunc: userDataDiffSuppress,
 				StateFunc: func(v interface{}) string {
-					switch v.(type) {
+					switch x := v.(type) {
 					case string:
-						return userDataHashSum(v.(string))
+						return userDataHashSum(x)
 					default:
 						return ""
 					}
@@ -121,6 +122,32 @@ func resourceServer() *schema.Resource {
 			"labels": {
 				Type:     schema.TypeMap,
 				Optional: true,
+			},
+			"network": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"network_id": {
+							Type:     schema.TypeInt,
+							Required: true,
+						},
+						"ip": {
+							Type:     schema.TypeString,
+							Computed: true,
+							Optional: true,
+						},
+						"alias_ips": {
+							Type:     schema.TypeSet,
+							Elem:     &schema.Schema{Type: schema.TypeString},
+							Optional: true,
+						},
+						"mac_address": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
 			},
 		},
 	}
@@ -183,8 +210,8 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	d.SetId(strconv.Itoa(res.Server.ID))
+
 	if err := waitForServerAction(ctx, client, res.Action, res.Server); err != nil {
 		return diag.FromErr(err)
 	}
@@ -192,7 +219,15 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		if err := waitForServerAction(ctx, client, nextAction, res.Server); err != nil {
 			return diag.FromErr(err)
 		}
+	}
 
+	if nwSet, ok := d.GetOk("network"); ok {
+		for _, item := range nwSet.(*schema.Set).List() {
+			nwData := item.(map[string]interface{})
+			if err := inlineAttachServerToNetwork(ctx, client, res.Server, nwData); err != nil {
+				return diag.FromErr(err)
+			}
+		}
 	}
 
 	backups := d.Get("backups").(bool)
@@ -327,6 +362,13 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 			return diag.FromErr(err)
 		}
 		if err := setRescue(ctx, client, server, rescue, sshKeys, 0); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChange("network") {
+		data := d.Get("network").(*schema.Set)
+		if err := updateServerInlineNetworkAttachments(ctx, client, data, server); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -495,6 +537,133 @@ func waitForServerAction(ctx context.Context, client *hcloud.Client, action *hcl
 		return err
 	}
 	log.Printf("[INFO] server (%d) %q action succeeded", server.ID, action.Command)
+	return nil
+}
+
+func inlineAttachServerToNetwork(ctx context.Context, c *hcloud.Client, s *hcloud.Server, nwData map[string]interface{}) error {
+	const op = "hcloud/inlineAttachServerToNetwork"
+	var aliasIPs []net.IP
+
+	nw := &hcloud.Network{ID: nwData["network_id"].(int)}
+	ip := net.ParseIP(nwData["ip"].(string))
+	for _, v := range nwData["alias_ips"].(*schema.Set).List() {
+		aliasIP := net.ParseIP(v.(string))
+		aliasIPs = append(aliasIPs, aliasIP)
+	}
+	if err := attachServerToNetwork(ctx, c, s, nw, ip, aliasIPs); err != nil {
+		return fmt.Errorf("%s: %v", op, err)
+	}
+
+	return nil
+}
+
+func updateServerInlineNetworkAttachments(ctx context.Context, c *hcloud.Client, data *schema.Set, s *hcloud.Server) error {
+	const op = "hcloud/updateServerInlineNetworkAttachments"
+
+	log.Printf("[INFO] Updating inline network attachments for server %d", s.ID)
+
+	cfgNetworks := make(map[int]map[string]interface{}, data.Len())
+	for _, v := range data.List() {
+		nwData := v.(map[string]interface{})
+		nwID := nwData["network_id"].(int)
+		cfgNetworks[nwID] = nwData
+	}
+
+	for _, n := range s.PrivateNet {
+		nwData, ok := cfgNetworks[n.Network.ID]
+		if !ok {
+			// The server should no longer be a member of this network.
+			// Detach it.
+			if err := detachServerFromNetwork(ctx, c, s, n.Network); err != nil {
+				return fmt.Errorf("%s: %v", op, err)
+			}
+			continue
+		}
+		// Remove the network from the cfgNetworks map. We are going to
+		// handle it right now.
+		delete(cfgNetworks, n.Network.ID)
+
+		if nwData["ip"].(string) != n.IP.String() {
+			// IP changed. Our API provides now way to change this. So we
+			// need to detach and re-attach. Alias IPs are updated, too. This
+			// saves us from the next step.
+			if err := detachServerFromNetwork(ctx, c, s, n.Network); err != nil {
+				return fmt.Errorf("%s: %v", op, err)
+			}
+			if err := inlineAttachServerToNetwork(ctx, c, s, nwData); err != nil {
+				return fmt.Errorf("%s: %v", op, err)
+			}
+			continue
+		}
+		cfgAliasIPs := nwData["alias_ips"].(*schema.Set)
+		curAliasIPs := newIPSet(cfgAliasIPs.F, n.Aliases)
+		if !cfgAliasIPs.Equal(curAliasIPs) {
+			if err := updateServerAliasIPs(ctx, c, s, n.Network, cfgAliasIPs); err != nil {
+				return fmt.Errorf("%s: %v", op, err)
+			}
+			continue
+		}
+	}
+
+	// Whatever remains in cfgNetworks now is a newly added network. We attach
+	// the server to it.
+	for _, nwData := range cfgNetworks {
+		if err := inlineAttachServerToNetwork(ctx, c, s, nwData); err != nil {
+			return fmt.Errorf("%s: %v", op, err)
+		}
+	}
+
+	return nil
+}
+
+func newIPSet(f schema.SchemaSetFunc, ips []net.IP) *schema.Set {
+	ss := make([]interface{}, len(ips))
+	for i, ip := range ips {
+		ss[i] = ip.String()
+	}
+	return schema.NewSet(f, ss)
+}
+
+func updateServerAliasIPs(ctx context.Context, c *hcloud.Client, s *hcloud.Server, n *hcloud.Network, aliasIPs *schema.Set) error {
+	const op = "hcloud/updateServerAliasIPs"
+
+	opts := hcloud.ServerChangeAliasIPsOpts{
+		Network:  n,
+		AliasIPs: make([]net.IP, aliasIPs.Len()),
+	}
+	for i, v := range aliasIPs.List() {
+		opts.AliasIPs[i] = net.ParseIP(v.(string))
+	}
+	a, _, err := c.Server.ChangeAliasIPs(ctx, s, opts)
+	if err != nil {
+		return fmt.Errorf("%s: %v", op, err)
+	}
+	if err := waitForServerAction(ctx, c, a, s); err != nil {
+		return fmt.Errorf("%s: %v", op, err)
+	}
+	return nil
+}
+
+func detachServerFromNetwork(ctx context.Context, c *hcloud.Client, s *hcloud.Server, n *hcloud.Network) error {
+	const op = "hcloud/detachServerFromNetwork"
+	var a *hcloud.Action
+
+	err := retry(5, func() error {
+		var err error
+
+		a, _, err = c.Server.DetachFromNetwork(ctx, s, hcloud.ServerDetachFromNetworkOpts{Network: n})
+		if hcloud.IsError(err, hcloud.ErrorCodeConflict) || hcloud.IsError(err, hcloud.ErrorCodeLocked) {
+			return err
+		}
+		return abortRetry(err)
+	})
+	if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
+		// network has already been deleted
+		return nil
+	}
+	if err := waitForServerAction(ctx, c, a, s); err != nil {
+		return fmt.Errorf("%s: %v", op, err)
+	}
 	return nil
 }
 

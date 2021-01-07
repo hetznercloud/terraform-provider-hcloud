@@ -49,7 +49,7 @@ func resourceServerNetwork() *schema.Resource {
 				ForceNew: true,
 			},
 			"alias_ips": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Optional: true,
 			},
@@ -62,16 +62,17 @@ func resourceServerNetwork() *schema.Resource {
 }
 
 func resourceServerNetworkCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*hcloud.Client)
+	var aliasIPs []net.IP
 
+	client := m.(*hcloud.Client)
 	ip := net.ParseIP(d.Get("ip").(string))
 
 	networkID, nwIDSet := d.GetOk("network_id")
+
 	subNetID, snIDSet := d.GetOk("subnet_id")
 	if (nwIDSet && snIDSet) || (!nwIDSet && !snIDSet) {
 		return diag.Errorf("either network_id or subnet_id must be set")
 	}
-
 	if snIDSet {
 		nwID, _, err := parseNetworkSubnetID(subNetID.(string))
 		if err != nil {
@@ -80,38 +81,16 @@ func resourceServerNetworkCreate(ctx context.Context, d *schema.ResourceData, m 
 		networkID = nwID
 	}
 
-	serverID := d.Get("server_id")
-
-	server := &hcloud.Server{ID: serverID.(int)}
-
+	server := &hcloud.Server{ID: d.Get("server_id").(int)}
 	network := &hcloud.Network{ID: networkID.(int)}
-	opts := hcloud.ServerAttachToNetworkOpts{
-		Network: network,
-		IP:      ip,
-	}
-	for _, aliasIP := range d.Get("alias_ips").([]interface{}) {
-		ip := net.ParseIP(aliasIP.(string))
-		opts.AliasIPs = append(opts.AliasIPs, ip)
-	}
-	action, _, err := client.Server.AttachToNetwork(ctx, server, opts)
-	if err != nil {
-		if hcloud.IsError(err, hcloud.ErrorCodeConflict) {
-			log.Printf("[INFO] Network (%v) conflict, retrying in one second", network.ID)
-			time.Sleep(time.Second)
-			return resourceServerNetworkCreate(ctx, d, m)
-		} else if hcloud.IsError(err, hcloud.ErrorCodeLocked) {
-			log.Printf("[INFO] Network (%v) locked, retrying in one second", network.ID)
-			time.Sleep(time.Second)
-			return resourceServerNetworkCreate(ctx, d, m)
-		} else if hcloud.IsError(err, hcloud.ErrorCodeServerAlreadyAttached) {
-			log.Printf("[INFO] Server (%v) already attachted to network %v", server.ID, network.ID)
-			d.SetId(generateServerNetworkID(server, network))
 
-			return resourceServerNetworkRead(ctx, d, m)
-		}
-		return diag.FromErr(err)
+	for _, aliasIP := range d.Get("alias_ips").(*schema.Set).List() {
+		ip := net.ParseIP(aliasIP.(string))
+		aliasIPs = append(aliasIPs, ip)
 	}
-	if err := waitForNetworkAction(ctx, client, action, network); err != nil {
+
+	err := attachServerToNetwork(ctx, client, server, network, ip, aliasIPs)
+	if err != nil {
 		return diag.FromErr(err)
 	}
 	d.SetId(generateServerNetworkID(server, network))
@@ -145,7 +124,7 @@ func resourceServerNetworkUpdate(ctx context.Context, d *schema.ResourceData, m 
 		opts := hcloud.ServerChangeAliasIPsOpts{
 			Network: network,
 		}
-		for _, aliasIP := range d.Get("alias_ips").([]interface{}) {
+		for _, aliasIP := range d.Get("alias_ips").(*schema.Set).List() {
 			ip := net.ParseIP(aliasIP.(string))
 			opts.AliasIPs = append(opts.AliasIPs, ip)
 		}
@@ -236,7 +215,7 @@ func setServerNetworkSchema(d *schema.ResourceData, server *hcloud.Server, netwo
 	// We need to ensure that order of the list of alias_ips is kept stable no
 	// matter what the Hetzner Cloud API returns. Therefore we merge the
 	// returned IPs with the currently known alias_ips.
-	tfAliasIPs := d.Get("alias_ips").([]interface{})
+	tfAliasIPs := d.Get("alias_ips").(*schema.Set).List()
 	aliasIPs := make([]string, len(tfAliasIPs))
 	for i, v := range tfAliasIPs {
 		aliasIPs[i] = v.(string)
@@ -255,6 +234,40 @@ func setServerNetworkSchema(d *schema.ResourceData, server *hcloud.Server, netwo
 		d.Set("network_id", network.ID)
 	}
 	d.Set("server_id", server.ID)
+}
+
+func attachServerToNetwork(ctx context.Context, c *hcloud.Client, srv *hcloud.Server, nw *hcloud.Network, ip net.IP, aliasIPs []net.IP) error {
+	var a *hcloud.Action
+
+	opts := hcloud.ServerAttachToNetworkOpts{
+		Network:  nw,
+		IP:       ip,
+		AliasIPs: aliasIPs,
+	}
+
+	err := retry(defaultMaxRetries, func() error {
+		var err error
+
+		a, _, err = c.Server.AttachToNetwork(ctx, srv, opts)
+		if hcloud.IsError(err, hcloud.ErrorCodeConflict) || hcloud.IsError(err, hcloud.ErrorCodeLocked) {
+			return err
+		}
+		if err != nil {
+			return abortRetry(err)
+		}
+		return nil
+	})
+	if hcloud.IsError(err, hcloud.ErrorCodeServerAlreadyAttached) {
+		log.Printf("[INFO] Server (%v) already attachted to network %v", srv.ID, nw.ID)
+		return nil
+	}
+	if err != nil {
+		return fmt.Errorf("attach server to network: %v", err)
+	}
+	if err := waitForNetworkAction(ctx, c, a, nw); err != nil {
+		return fmt.Errorf("attach server to network: %v", err)
+	}
+	return nil
 }
 
 func generateServerNetworkID(server *hcloud.Server, network *hcloud.Network) string {
