@@ -4,8 +4,11 @@ import (
 	"crypto/sha1"
 	"encoding/base64"
 	"fmt"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
 	"testing"
+
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/network"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
 
@@ -216,6 +219,128 @@ func TestServerResource_ISO(t *testing.T) {
 					resource.TestCheckResourceAttr(res.TFID(), "server_type", res.Type),
 					resource.TestCheckResourceAttr(res.TFID(), "image", res.Image),
 					resource.TestCheckResourceAttr(res.TFID(), "iso", res.ISO),
+				),
+			},
+		},
+	})
+}
+
+func TestServerResource_DirectAttachToNetwork(t *testing.T) {
+	var (
+		nw hcloud.Network
+		s  hcloud.Server
+
+		// Helper functions to modify the test data. Those functions modify
+		// the passed in server on purpose. Calling them once to change the
+		// respective value es enough.
+		updateIP = func(d *server.RData, ip string) *server.RData {
+			d.Network.IP = ip
+			return d
+		}
+		updateAliasIPs = func(d *server.RData, ips ...string) *server.RData {
+			d.Network.AliasIPs = ips
+			return d
+		}
+	)
+
+	sk := sshkey.NewRData(t, "server-iso")
+	nwRes := &network.RData{
+		Name:    "test-network",
+		IPRange: "10.0.0.0/16",
+	}
+	nwRes.SetRName("test-network")
+	snwRes := &network.RDataSubnet{
+		Type:        "cloud",
+		NetworkID:   nwRes.TFID() + ".id",
+		NetworkZone: "eu-central",
+		IPRange:     "10.0.1.0/24",
+	}
+	snwRes.SetRName("test-network-subnet")
+	sRes := &server.RData{
+		Name:         "server-direct-attach",
+		Type:         testsupport.TestServerType,
+		LocationName: "nbg1",
+		Image:        testsupport.TestImage,
+		SSHKeys:      []string{sk.TFID() + ".id"},
+	}
+	sRes.SetRName(sRes.Name)
+
+	sResWithNet := &server.RData{
+		Name:         sRes.Name,
+		Type:         sRes.Type,
+		LocationName: sRes.LocationName,
+		Image:        sRes.Image,
+		SSHKeys:      sRes.SSHKeys,
+		Network: server.RDataInlineNetwork{
+			NetworkID: nwRes.TFID() + ".id",
+			IP:        "10.0.1.5",
+			AliasIPs:  []string{"10.0.1.6", "10.0.1.7"},
+		},
+		DependsOn: []string{snwRes.TFID()},
+	}
+	sResWithNet.SetRName(sResWithNet.Name)
+
+	tmplMan := testtemplate.Manager{}
+	resource.Test(t, resource.TestCase{
+		PreCheck:     testsupport.AccTestPreCheck(t),
+		Providers:    testsupport.AccTestProviders(),
+		CheckDestroy: testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, nil)),
+		Steps: []resource.TestStep{
+			{
+				// Create a new server and directly attach it to a network.
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_network", nwRes,
+					"testdata/r/hcloud_network_subnet", snwRes,
+					"testdata/r/hcloud_server", sResWithNet,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(nwRes.TFID(), network.ByID(t, &nw)),
+					testsupport.CheckResourceExists(sResWithNet.TFID(), server.ByID(t, &s)),
+					testsupport.LiftTCF(hasServerNetwork(t, &s, &nw, "10.0.1.5", "10.0.1.6", "10.0.1.7")),
+				),
+			},
+			{
+				// Change the IP of the server
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_network", nwRes,
+					"testdata/r/hcloud_network_subnet", snwRes,
+					"testdata/r/hcloud_server", updateIP(sResWithNet, "10.0.1.4"),
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(nwRes.TFID(), network.ByID(t, &nw)),
+					testsupport.CheckResourceExists(sResWithNet.TFID(), server.ByID(t, &s)),
+					testsupport.LiftTCF(hasServerNetwork(t, &s, &nw, "10.0.1.4", "10.0.1.6", "10.0.1.7")),
+				),
+			},
+			{
+				// Change the AliasIPs of the server
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_network", nwRes,
+					"testdata/r/hcloud_network_subnet", snwRes,
+					"testdata/r/hcloud_server", updateAliasIPs(sResWithNet, "10.0.1.5", "10.0.1.7"),
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(nwRes.TFID(), network.ByID(t, &nw)),
+					testsupport.CheckResourceExists(sResWithNet.TFID(), server.ByID(t, &s)),
+					testsupport.LiftTCF(hasServerNetwork(t, &s, &nw, "10.0.1.4", "10.0.1.5", "10.0.1.7")),
+				),
+			},
+			{
+				// Detach the server from the network.
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_server", sRes,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(sRes.TFID(), server.ByID(t, &s)),
+					testsupport.LiftTCF(func() error {
+						t.Log("Checking if server has no private network")
+						assert.Empty(t, s.PrivateNet)
+						return nil
+					}),
 				),
 			},
 		},

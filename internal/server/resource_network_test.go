@@ -2,9 +2,10 @@ package server_test
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
-	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hetznercloud/hcloud-go/hcloud"
@@ -66,7 +67,7 @@ func TestAccHcloudServerNetwork_NetworkID(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckResourceExists(netRes.TFID(), network.ByID(t, &nw)),
 					testsupport.CheckResourceExists(sRes.TFID(), server.ByID(t, &s)),
-					testsupport.LiftTCF(hasServerNetwork(t, &s, &nw)),
+					testsupport.LiftTCF(hasServerNetwork(t, &s, &nw, "10.0.1.5")),
 					resource.TestCheckResourceAttr(
 						server.NetworkResourceType+".test-network", "ip", "10.0.1.5"),
 				),
@@ -134,26 +135,33 @@ func TestAccHcloudServerNetwork_SubNetID(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckResourceExists(netRes.TFID(), network.ByID(t, &nw)),
 					testsupport.CheckResourceExists(sRes.TFID(), server.ByID(t, &s)),
-					testsupport.LiftTCF(hasServerNetwork(t, &s, &nw)),
+					testsupport.LiftTCF(hasServerNetwork(t, &s, &nw, "10.0.1.5")),
 				),
 			},
 		},
 	})
 }
 
-func hasServerNetwork(t *testing.T, s *hcloud.Server, nw *hcloud.Network) func() error {
+func hasServerNetwork(t *testing.T, s *hcloud.Server, nw *hcloud.Network, ips ...string) func() error {
 	return func() error {
 		var privNet *hcloud.ServerPrivateNet
+
 		for _, n := range s.PrivateNet {
 			if n.Network.ID == nw.ID {
 				privNet = &n
 				break
 			}
 		}
-		if privNet == nil {
-			return fmt.Errorf("server has no private network")
+		if !assert.NotNil(t, privNet, "server has no private network") {
+			return nil
 		}
-		assert.Equal(t, "10.0.1.5", privNet.IP.String())
+		assert.Contains(t, ips, privNet.IP.String())
+		if len(ips) > 1 {
+			for _, aip := range privNet.Aliases {
+				assert.Contains(t, ips, aip.String())
+			}
+		}
+
 		return nil
 	}
 }

@@ -1,8 +1,9 @@
-## unreleased 
+## unreleased
 
 FEATURES:
 * **New Datasource**: `hcloud_server_type`
 * **New Datasource**: `hcloud_server_types`
+* New `network` property for `hcloud_server` resource.
 
 BUG FIXES:
 * `hcloud_volume` resource: A race condition was fixed, that was called when you tried to create multiple volumes for a single server

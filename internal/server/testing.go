@@ -89,6 +89,16 @@ type RData struct {
 	ISO          string
 	Labels       map[string]string
 	UserData     string
+	Network      RDataInlineNetwork
+	DependsOn    []string
+}
+
+// RDataInlineNetwork defines the information required to attach a server
+// to a network directly in the server resource.
+type RDataInlineNetwork struct {
+	NetworkID string
+	IP        string
+	AliasIPs  []string
 }
 
 // TFID returns the resource identifier.
