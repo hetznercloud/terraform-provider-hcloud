@@ -120,18 +120,7 @@ func resourceServerNetworkUpdate(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	if d.HasChange("alias_ips") {
-		opts := hcloud.ServerChangeAliasIPsOpts{
-			Network: network,
-		}
-		for _, aliasIP := range d.Get("alias_ips").(*schema.Set).List() {
-			ip := net.ParseIP(aliasIP.(string))
-			opts.AliasIPs = append(opts.AliasIPs, ip)
-		}
-		action, _, err := client.Server.ChangeAliasIPs(ctx, server, opts)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		if err := waitForNetworkAction(ctx, client, action, network); err != nil {
+		if err := updateServerAliasIPs(ctx, client, server, network, d.Get("alias_ips").(*schema.Set)); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -172,40 +161,17 @@ func resourceServerNetworkRead(ctx context.Context, d *schema.ResourceData, m in
 }
 
 func resourceServerNetworkDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	var action *hcloud.Action
-
 	client := m.(*hcloud.Client)
 
 	server, network, _, err := lookupServerNetworkID(ctx, d.Id(), client)
-
 	if err != nil {
 		log.Printf("[WARN] Invalid id (%s), removing from state: %s", d.Id(), err)
 		d.SetId("")
 		return nil
 	}
-	err = retry(defaultMaxRetries, func() error {
-		var err error
-
-		action, _, err = client.Server.DetachFromNetwork(ctx, server, hcloud.ServerDetachFromNetworkOpts{
-			Network: network,
-		})
-		if hcloud.IsError(err, hcloud.ErrorCodeConflict) || hcloud.IsError(err, hcloud.ErrorCodeLocked) {
-			return err
-		}
-		return abortRetry(err)
-	})
-
-	if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
-		// network has already been deleted
-		return nil
-	}
-	if err != nil {
+	if err := detachServerFromNetwork(ctx, client, server, network); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := waitForNetworkAction(ctx, client, action, network); err != nil {
-		return diag.FromErr(err)
-	}
-
 	return nil
 }
 
@@ -328,4 +294,47 @@ func lookupServerNetworkID(ctx context.Context, terraformID string, client *hclo
 		}
 	}
 	return
+}
+
+func updateServerAliasIPs(ctx context.Context, c *hcloud.Client, s *hcloud.Server, n *hcloud.Network, aliasIPs *schema.Set) error {
+	const op = "hcloud/updateServerAliasIPs"
+
+	opts := hcloud.ServerChangeAliasIPsOpts{
+		Network:  n,
+		AliasIPs: make([]net.IP, aliasIPs.Len()),
+	}
+	for i, v := range aliasIPs.List() {
+		opts.AliasIPs[i] = net.ParseIP(v.(string))
+	}
+	a, _, err := c.Server.ChangeAliasIPs(ctx, s, opts)
+	if err != nil {
+		return fmt.Errorf("%s: %v", op, err)
+	}
+	if err := waitForServerAction(ctx, c, a, s); err != nil {
+		return fmt.Errorf("%s: %v", op, err)
+	}
+	return nil
+}
+
+func detachServerFromNetwork(ctx context.Context, c *hcloud.Client, s *hcloud.Server, n *hcloud.Network) error {
+	const op = "hcloud/detachServerFromNetwork"
+	var a *hcloud.Action
+
+	err := retry(defaultMaxRetries, func() error {
+		var err error
+
+		a, _, err = c.Server.DetachFromNetwork(ctx, s, hcloud.ServerDetachFromNetworkOpts{Network: n})
+		if hcloud.IsError(err, hcloud.ErrorCodeConflict) || hcloud.IsError(err, hcloud.ErrorCodeLocked) {
+			return err
+		}
+		return abortRetry(err)
+	})
+	if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
+		// network has already been deleted
+		return nil
+	}
+	if err := waitForServerAction(ctx, c, a, s); err != nil {
+		return fmt.Errorf("%s: %v", op, err)
+	}
+	return nil
 }

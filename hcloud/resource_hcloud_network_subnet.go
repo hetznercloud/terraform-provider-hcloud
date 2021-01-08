@@ -135,19 +135,23 @@ func resourceNetworkSubnetRead(ctx context.Context, d *schema.ResourceData, m in
 }
 
 func resourceNetworkSubnetDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	var action *hcloud.Action
+	var (
+		action  *hcloud.Action
+		network *hcloud.Network
+	)
 
 	client := m.(*hcloud.Client)
 
-	network, subnet, err := lookupNetworkSubnetID(ctx, d.Id(), client)
+	err := retry(2*defaultMaxRetries, func() error {
+		var (
+			subnet hcloud.NetworkSubnet
+			err    error
+		)
 
-	if err != nil {
-		log.Printf("[WARN] Invalid id (%s), removing from state: %s", d.Id(), err)
-		d.SetId("")
-		return nil
-	}
-	err = retry(defaultMaxRetries, func() error {
-		var err error
+		network, subnet, err = lookupNetworkSubnetID(ctx, d.Id(), client)
+		if err != nil {
+			return abortRetry(err)
+		}
 
 		action, _, err = client.Network.DeleteSubnet(ctx, network, hcloud.NetworkDeleteSubnetOpts{
 			Subnet: subnet,
@@ -155,14 +159,13 @@ func resourceNetworkSubnetDelete(ctx context.Context, d *schema.ResourceData, m 
 		if hcloud.IsError(err, hcloud.ErrorCodeConflict) || hcloud.IsError(err, hcloud.ErrorCodeLocked) {
 			return err
 		}
-		if hcloud.IsError(err, hcloud.ErrorCodeServiceError) &&
-			err.Error() == "cannot remove subnet because servers are attached to it (service_error)" {
+		if hcloud.IsError(err, hcloud.ErrorCodeServiceError) && strings.Contains(err.Error(), "servers are attached") {
 			return err
 		}
 		return abortRetry(err)
 	})
-	if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
-		// network subnet has already been deleted
+	if hcloud.IsError(err, hcloud.ErrorCodeNotFound) || errors.Is(err, errInvalidNetworkSubnetID) {
+		d.SetId("")
 		return nil
 	}
 	if err != nil {

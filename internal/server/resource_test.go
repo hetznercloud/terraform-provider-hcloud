@@ -332,6 +332,8 @@ func TestServerResource_DirectAttachToNetwork(t *testing.T) {
 				// Detach the server from the network.
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_network", nwRes,
+					"testdata/r/hcloud_network_subnet", snwRes,
 					"testdata/r/hcloud_server", sRes,
 				),
 				Check: resource.ComposeTestCheckFunc(
