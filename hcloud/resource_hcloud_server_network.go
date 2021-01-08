@@ -8,7 +8,6 @@ import (
 	"net"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
@@ -173,6 +172,8 @@ func resourceServerNetworkRead(ctx context.Context, d *schema.ResourceData, m in
 }
 
 func resourceServerNetworkDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	var action *hcloud.Action
+
 	client := m.(*hcloud.Client)
 
 	server, network, _, err := lookupServerNetworkID(ctx, d.Id(), client)
@@ -182,23 +183,23 @@ func resourceServerNetworkDelete(ctx context.Context, d *schema.ResourceData, m 
 		d.SetId("")
 		return nil
 	}
-	action, _, err := client.Server.DetachFromNetwork(ctx, server, hcloud.ServerDetachFromNetworkOpts{
-		Network: network,
-	})
-	if err != nil {
-		if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
-			// network has already been deleted
-			return nil
-		} else if hcloud.IsError(err, hcloud.ErrorCodeConflict) {
-			log.Printf("[INFO] Network (%v) conflict, retrying in one second", network.ID)
-			time.Sleep(time.Second)
-			return resourceServerNetworkDelete(ctx, d, m)
-		} else if hcloud.IsError(err, hcloud.ErrorCodeLocked) {
-			log.Printf("[INFO] Network (%v) locked, retrying in one second", network.ID)
-			time.Sleep(time.Second)
-			return resourceServerNetworkDelete(ctx, d, m)
-		}
+	err = retry(defaultMaxRetries, func() error {
+		var err error
 
+		action, _, err = client.Server.DetachFromNetwork(ctx, server, hcloud.ServerDetachFromNetworkOpts{
+			Network: network,
+		})
+		if hcloud.IsError(err, hcloud.ErrorCodeConflict) || hcloud.IsError(err, hcloud.ErrorCodeLocked) {
+			return err
+		}
+		return abortRetry(err)
+	})
+
+	if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
+		// network has already been deleted
+		return nil
+	}
+	if err != nil {
 		return diag.FromErr(err)
 	}
 	if err := waitForNetworkAction(ctx, client, action, network); err != nil {

@@ -9,7 +9,6 @@ import (
 	"net"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
@@ -242,7 +241,7 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 
 	if rescue, ok := d.GetOk("rescue"); ok {
-		if err := setRescue(ctx, client, res.Server, rescue.(string), opts.SSHKeys, 0); err != nil {
+		if err := setRescue(ctx, client, res.Server, rescue.(string), opts.SSHKeys); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -361,7 +360,7 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if err := setRescue(ctx, client, server, rescue, sshKeys, 0); err != nil {
+		if err := setRescue(ctx, client, server, rescue, sshKeys); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -470,44 +469,43 @@ func setISO(ctx context.Context, client *hcloud.Client, server *hcloud.Server, i
 	return nil
 }
 
-func setRescue(ctx context.Context, client *hcloud.Client, server *hcloud.Server, rescue string, sshKeys []*hcloud.SSHKey, retry int) error {
+func setRescue(ctx context.Context, client *hcloud.Client, server *hcloud.Server, rescue string, sshKeys []*hcloud.SSHKey) error {
+	const op = "hcloud/setRescue"
+
 	rescueChanged := false
 	if server.RescueEnabled {
 		rescueChanged = true
 		action, _, err := client.Server.DisableRescue(ctx, server)
 		if err != nil {
-			return err
+			return fmt.Errorf("%s: %v", op, err)
 		}
 		if err := waitForServerAction(ctx, client, action, server); err != nil {
-			return err
+			return fmt.Errorf("%s: %v", op, err)
 		}
 	}
 	if rescue != "" {
 		rescueChanged = true
-		res, _, err := client.Server.EnableRescue(ctx, server, hcloud.ServerEnableRescueOpts{
-			Type:    hcloud.ServerRescueType(rescue),
-			SSHKeys: sshKeys,
+		err := retry(defaultMaxRetries, func() error {
+			res, _, err := client.Server.EnableRescue(ctx, server, hcloud.ServerEnableRescueOpts{
+				Type:    hcloud.ServerRescueType(rescue),
+				SSHKeys: sshKeys,
+			})
+			if err != nil {
+				return err
+			}
+			return waitForServerAction(ctx, client, res.Action, server)
 		})
 		if err != nil {
-			return err
-		}
-		if err := waitForServerAction(ctx, client, res.Action, server); err != nil {
-			if retry < 5 {
-				log.Printf("[INFO] server (%d) action enable_rescue failed, retrying...", server.ID)
-				time.Sleep(time.Duration(1+retry) * time.Second)
-				retry = retry + 1
-				return setRescue(ctx, client, server, rescue, sshKeys, retry)
-			}
-			return err
+			return fmt.Errorf("%s: %v", op, err)
 		}
 	}
 	if rescueChanged {
 		action, _, err := client.Server.Reset(ctx, server)
 		if err != nil {
-			return err
+			return fmt.Errorf("%s: %v", op, err)
 		}
 		if err := waitForServerAction(ctx, client, action, server); err != nil {
-			return err
+			return fmt.Errorf("%s: %v", op, err)
 		}
 	}
 	return nil
@@ -648,7 +646,7 @@ func detachServerFromNetwork(ctx context.Context, c *hcloud.Client, s *hcloud.Se
 	const op = "hcloud/detachServerFromNetwork"
 	var a *hcloud.Action
 
-	err := retry(5, func() error {
+	err := retry(defaultMaxRetries, func() error {
 		var err error
 
 		a, _, err = c.Server.DetachFromNetwork(ctx, s, hcloud.ServerDetachFromNetworkOpts{Network: n})

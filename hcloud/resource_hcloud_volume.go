@@ -302,7 +302,7 @@ func resourceVolumeDelete(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 
 	if volume.Server != nil {
-		err := retry(5, func() error {
+		err := retry(defaultMaxRetries, func() error {
 			action, _, err := client.Volume.Detach(ctx, volume)
 			if err != nil {
 				if resourceVolumeIsNotFound(err, d) {
