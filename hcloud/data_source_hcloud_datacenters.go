@@ -2,13 +2,13 @@ package hcloud
 
 import (
 	"context"
-	"strconv"
-	"time"
-
+	"crypto/sha1"
+	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
+	"strconv"
+	"strings"
 )
 
 func dataSourceHcloudDatacenters() *schema.Resource {
@@ -34,22 +34,22 @@ func dataSourceHcloudDatacenters() *schema.Resource {
 	}
 }
 
-func dataSourceHcloudDatacentersRead(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourceHcloudDatacentersRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	ds, err := client.Datacenter.All(ctx)
+	dcs, err := client.Datacenter.All(ctx)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	data.SetId(time.Now().UTC().String())
 	var names, descriptions, ids []string
-	for _, v := range ds {
+	for _, v := range dcs {
 		ids = append(ids, strconv.Itoa(v.ID))
 		descriptions = append(descriptions, v.Description)
 		names = append(names, v.Name)
 	}
-	data.Set("datacenter_ids", ids)
-	data.Set("names", names)
-	data.Set("descriptions", descriptions)
+	d.SetId(fmt.Sprintf("%x", sha1.Sum([]byte(strings.Join(ids, "")))))
+	d.Set("datacenter_ids", ids)
+	d.Set("names", names)
+	d.Set("descriptions", descriptions)
 	return nil
 }

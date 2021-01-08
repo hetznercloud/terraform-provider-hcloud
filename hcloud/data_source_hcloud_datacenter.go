@@ -77,28 +77,28 @@ func dataSourceHcloudDatacenterRead(ctx context.Context, data *schema.ResourceDa
 	return diag.Errorf("please specify an id, or a name to lookup for a datacenter")
 }
 
-func setDatacenterSchema(data *schema.ResourceData, d *hcloud.Datacenter) {
-	data.SetId(strconv.Itoa(d.ID))
-	data.Set("name", d.Name)
-	data.Set("description", d.Description)
-	data.Set("location", map[string]string{
-		"id":          strconv.Itoa(d.Location.ID),
-		"name":        d.Location.Name,
-		"description": d.Location.Description,
-		"country":     d.Location.Country,
-		"city":        d.Location.City,
-		"latitude":    fmt.Sprintf("%f", d.Location.Latitude),
-		"longitude":   fmt.Sprintf("%f", d.Location.Longitude),
+func setDatacenterSchema(d *schema.ResourceData, dc *hcloud.Datacenter) {
+	d.SetId(strconv.Itoa(dc.ID))
+	d.Set("name", dc.Name)
+	d.Set("description", dc.Description)
+	d.Set("location", map[string]string{
+		"id":          strconv.Itoa(dc.Location.ID),
+		"name":        dc.Location.Name,
+		"description": dc.Location.Description,
+		"country":     dc.Location.Country,
+		"city":        dc.Location.City,
+		"latitude":    fmt.Sprintf("%f", dc.Location.Latitude),
+		"longitude":   fmt.Sprintf("%f", dc.Location.Longitude),
 	})
 	var supported, available []int
-	for _, v := range d.ServerTypes.Supported {
+	for _, v := range dc.ServerTypes.Supported {
 		supported = append(supported, v.ID)
 	}
-	for _, v := range d.ServerTypes.Available {
+	for _, v := range dc.ServerTypes.Available {
 		available = append(available, v.ID)
 	}
 	sort.Ints(available)
 	sort.Ints(supported)
-	data.Set("supported_server_type_ids", supported)
-	data.Set("available_server_type_ids", available)
+	d.Set("supported_server_type_ids", supported)
+	d.Set("available_server_type_ids", available)
 }

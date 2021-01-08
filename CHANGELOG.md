@@ -6,6 +6,8 @@ FEATURES:
 
 BUG FIXES:
 * `hcloud_volume` resource: A race condition was fixed, that was called when you tried to create multiple volumes for a single server
+* `hcloud_locations` datasource: Use a stable value as IDs instead of a timestamp. We now use a hash of the concatenation of all location IDs as ID
+* `hcloud_datacenters` datasource: Use a stable value as IDs instead of a timestamp. We now use a hash of the concatenation of all datacenters IDs as ID
 
 Notes:
 * This release is tested against Terraform 0.13.x and 0.14.x. Testing on 0.12.x was removed, therefore Terraform 0.12.x is no longer officially supported
