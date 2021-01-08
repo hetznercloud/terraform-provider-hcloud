@@ -8,7 +8,6 @@ import (
 	"net"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
@@ -66,6 +65,8 @@ func resourceNetworkSubnet() *schema.Resource {
 }
 
 func resourceNetworkSubnetCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	var action *hcloud.Action
+
 	client := m.(*hcloud.Client)
 
 	_, ipRange, err := net.ParseCIDR(d.Get("ip_range").(string))
@@ -89,13 +90,16 @@ func resourceNetworkSubnetCreate(ctx context.Context, d *schema.ResourceData, m 
 		opts.Subnet.VSwitchID = vSwitchID.(int)
 	}
 
-	action, _, err := client.Network.AddSubnet(ctx, network, opts)
-	if err != nil {
+	err = retry(defaultMaxRetries, func() error {
+		var err error
+
+		action, _, err = client.Network.AddSubnet(ctx, network, opts)
 		if hcloud.IsError(err, hcloud.ErrorCodeConflict) {
-			log.Printf("[INFO] Network (%v) conflict, retrying in one second", network.ID)
-			time.Sleep(time.Second)
-			return resourceNetworkSubnetCreate(ctx, d, m)
+			return err
 		}
+		return abortRetry(err)
+	})
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -131,6 +135,8 @@ func resourceNetworkSubnetRead(ctx context.Context, d *schema.ResourceData, m in
 }
 
 func resourceNetworkSubnetDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	var action *hcloud.Action
+
 	client := m.(*hcloud.Client)
 
 	network, subnet, err := lookupNetworkSubnetID(ctx, d.Id(), client)
@@ -140,28 +146,26 @@ func resourceNetworkSubnetDelete(ctx context.Context, d *schema.ResourceData, m 
 		d.SetId("")
 		return nil
 	}
-	action, _, err := client.Network.DeleteSubnet(ctx, network, hcloud.NetworkDeleteSubnetOpts{
-		Subnet: subnet,
-	})
-	if err != nil {
-		if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
-			// network subnet has already been deleted
-			return nil
-		} else if hcloud.IsError(err, hcloud.ErrorCodeConflict) {
-			log.Printf("[INFO] Network (%v) conflict, retrying in one second", network.ID)
-			time.Sleep(time.Second)
-			return resourceNetworkSubnetDelete(ctx, d, m)
-		} else if hcloud.IsError(err, hcloud.ErrorCodeLocked) {
-			log.Printf("[INFO] Network (%v) locked, retrying in one second", network.ID)
-			time.Sleep(time.Second)
-			return resourceNetworkSubnetDelete(ctx, d, m)
-		} else if hcloud.IsError(err, hcloud.ErrorCodeServiceError) {
-			if err.Error() == "cannot remove subnet because servers are attached to it (service_error)" {
-				log.Printf("[INFO] Network (%v) has servers attached to it, retrying in one second", network.ID)
-				time.Sleep(time.Second)
-				return resourceNetworkSubnetDelete(ctx, d, m)
-			}
+	err = retry(defaultMaxRetries, func() error {
+		var err error
+
+		action, _, err = client.Network.DeleteSubnet(ctx, network, hcloud.NetworkDeleteSubnetOpts{
+			Subnet: subnet,
+		})
+		if hcloud.IsError(err, hcloud.ErrorCodeConflict) || hcloud.IsError(err, hcloud.ErrorCodeLocked) {
+			return err
 		}
+		if hcloud.IsError(err, hcloud.ErrorCodeServiceError) &&
+			err.Error() == "cannot remove subnet because servers are attached to it (service_error)" {
+			return err
+		}
+		return abortRetry(err)
+	})
+	if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
+		// network subnet has already been deleted
+		return nil
+	}
+	if err != nil {
 		return diag.FromErr(err)
 	}
 	if err := waitForNetworkAction(ctx, client, action, network); err != nil {

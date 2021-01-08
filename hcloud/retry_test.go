@@ -26,6 +26,12 @@ func TestRetry(t *testing.T) {
 			expectedTries: 1,
 		},
 		{
+			name:          "abortRetry is no-op on success",
+			f:             func(_ *testCase) error { return abortRetry(nil) },
+			maxTries:      5,
+			expectedTries: 1,
+		},
+		{
 			name: "Retries if unsuccessful",
 			f: func(tt *testCase) error {
 				if tt.actualTries < tt.expectedTries {

@@ -5,10 +5,8 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
-	"log"
 	"net"
 	"strings"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
@@ -111,6 +109,8 @@ func resourceLoadBalancerTargetCreate(ctx context.Context, d *schema.ResourceDat
 func resourceLoadBalancerCreateServerTarget(
 	ctx context.Context, client *hcloud.Client, lb *hcloud.LoadBalancer, d *schema.ResourceData,
 ) (*hcloud.Action, hcloud.LoadBalancerTarget, error) {
+	const op = "hcloud/resourceLoadBalancerCreateServerTarget"
+
 	var (
 		usePrivateIP bool
 		tgt          hcloud.LoadBalancerTarget
@@ -138,18 +138,25 @@ func resourceLoadBalancerCreateServerTarget(
 		opts.UsePrivateIP = hcloud.Bool(usePrivateIP)
 	}
 
-	if usePrivateIP && len(lb.PrivateNet) == 0 {
-		log.Printf("[INFO] Load balancer (%d) not (yet) attached to a network. Retrying in one second", lb.ID)
-		time.Sleep(time.Second)
+	err = retry(defaultMaxRetries, func() error {
+		var err error
 
+		if usePrivateIP && len(lb.PrivateNet) == 0 {
+			return errors.New("no private networks")
+		}
 		lb, _, err = client.LoadBalancer.GetByID(ctx, lb.ID)
 		if err != nil {
-			return nil, tgt, fmt.Errorf("get load balancer by id: %d: %v", lb.ID, err)
+			return abortRetry(err)
 		}
 		if lb == nil {
-			return nil, tgt, fmt.Errorf("load balancer %d: not found", lb.ID)
+			return abortRetry(fmt.Errorf("load balancer %d: not found", lb.ID))
 		}
+		return nil
+	})
+	if err != nil {
+		return nil, tgt, fmt.Errorf("%s: load balancer %d: %v", op, lb.ID, err)
 	}
+
 	tgt = hcloud.LoadBalancerTarget{
 		Type:         hcloud.LoadBalancerTargetTypeServer,
 		Server:       &hcloud.LoadBalancerTargetServer{Server: server},
@@ -284,12 +291,13 @@ func resourceLoadBalancerTargetDelete(ctx context.Context, d *schema.ResourceDat
 }
 
 func removeLoadBalancerTarget(ctx context.Context, client *hcloud.Client, lb *hcloud.LoadBalancer, tgt hcloud.LoadBalancerTarget) error {
-	for i := 0; i < 3; i++ {
-		var (
-			action *hcloud.Action
-			err    error
-		)
+	var (
+		action *hcloud.Action
+		err    error
+		hcErr  hcloud.Error
+	)
 
+	err = retry(defaultMaxRetries, func() error {
 		switch tgt.Type {
 		case hcloud.LoadBalancerTargetTypeServer:
 			action, _, err = client.LoadBalancer.RemoveServerTarget(ctx, lb, tgt.Server.Server)
@@ -298,28 +306,24 @@ func removeLoadBalancerTarget(ctx context.Context, client *hcloud.Client, lb *hc
 		case hcloud.LoadBalancerTargetTypeIP:
 			action, _, err = client.LoadBalancer.RemoveIPTarget(ctx, lb, net.ParseIP(tgt.IP.IP))
 		default:
-			return fmt.Errorf("unsupported target type: %s", tgt.Type)
+			return abortRetry(fmt.Errorf("unsupported target type: %s", tgt.Type))
 		}
-
 		if hcloud.IsError(err, hcloud.ErrorCodeConflict) || hcloud.IsError(err, hcloud.ErrorCodeLocked) {
-			// Retry after a short delay
-			time.Sleep(time.Duration(i+1) * time.Second)
-			continue
+			return err
 		}
-		if hcErr, ok := err.(hcloud.Error); ok {
-			if hcErr.Code == "load_balancer_target_not_found" || strings.Contains(hcErr.Message, "target not found") {
-				// Target has been deleted already (e.g. by deleting the
-				// network it was attached to)
-				return nil
-			}
-		}
-		if err != nil {
-			return fmt.Errorf("remove server target: %v", err)
-		}
-		if err := waitForLoadBalancerAction(ctx, client, action, lb); err != nil {
-			return fmt.Errorf("remove server target: wait for action: %v", err)
-		}
+		return abortRetry(err)
+	})
+	if errors.As(err, &hcErr) && (hcErr.Code == "load_balancer_target_not_found" || strings.Contains(hcErr.Message, "target not found")) {
+		// Target has been deleted already (e.g. by deleting the
+		// network it was attached to)
 		return nil
+	}
+	if err != nil {
+		return fmt.Errorf("remove server target: %v", err)
+	}
+
+	if err := waitForLoadBalancerAction(ctx, client, action, lb); err != nil {
+		return fmt.Errorf("remove server target: wait for action: %v", err)
 	}
 	return nil
 }

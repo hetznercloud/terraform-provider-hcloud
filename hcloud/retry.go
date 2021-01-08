@@ -21,6 +21,9 @@ func (e abortErr) Unwrap() error {
 }
 
 func abortRetry(err error) error {
+	if err == nil {
+		return nil
+	}
 	return abortErr{Err: err}
 }
 

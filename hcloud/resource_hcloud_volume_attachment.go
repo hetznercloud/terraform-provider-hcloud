@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 	"strconv"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
@@ -41,6 +40,8 @@ func resourceVolumeAttachment() *schema.Resource {
 }
 
 func resourceVolumeAttachmentCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	var action *hcloud.Action
+
 	client := m.(*hcloud.Client)
 
 	volumeID := d.Get("volume_id")
@@ -57,13 +58,16 @@ func resourceVolumeAttachmentCreate(ctx context.Context, d *schema.ResourceData,
 		opts.Automount = hcloud.Bool(automount.(bool))
 	}
 
-	action, _, err := client.Volume.AttachWithOpts(ctx, volume, opts)
-	if err != nil {
+	err := retry(defaultMaxRetries, func() error {
+		var err error
+
+		action, _, err = client.Volume.AttachWithOpts(ctx, volume, opts)
 		if hcloud.IsError(err, hcloud.ErrorCodeLocked) {
-			log.Printf("[INFO] Server (%v) locked, retrying in one second", serverID)
-			time.Sleep(time.Second)
-			return resourceVolumeAttachmentCreate(ctx, d, m)
+			return err
 		}
+		return abortRetry(err)
+	})
+	if err != nil {
 		return diag.FromErr(err)
 	}
 	if err := waitForVolumeAction(ctx, client, action, volume); err != nil {
@@ -144,15 +148,21 @@ func resourceVolumeAttachmentDelete(ctx context.Context, d *schema.ResourceData,
 		return nil
 	}
 	if volume.Server != nil {
-		action, _, err := client.Volume.Detach(ctx, volume)
-		if err != nil {
+		var action *hcloud.Action
+
+		err := retry(defaultMaxRetries, func() error {
+			var err error
+
+			action, _, err = client.Volume.Detach(ctx, volume)
 			if hcloud.IsError(err, hcloud.ErrorCodeLocked) {
-				log.Printf("[INFO] Server (%v) locked, retrying in one second", volume.Server.ID)
-				time.Sleep(time.Second)
-				return resourceVolumeAttachmentDelete(ctx, d, m)
+				return err
 			}
+			return abortRetry(err)
+		})
+		if err != nil {
 			return diag.FromErr(err)
 		}
+
 		if err := waitForVolumeAction(ctx, client, action, volume); err != nil {
 			return diag.FromErr(err)
 		}

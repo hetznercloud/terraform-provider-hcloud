@@ -8,7 +8,6 @@ import (
 	"net"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
@@ -45,6 +44,8 @@ func resourceNetworkRoute() *schema.Resource {
 }
 
 func resourceNetworkRouteCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	var action *hcloud.Action
+
 	client := m.(*hcloud.Client)
 
 	_, destination, err := net.ParseCIDR(d.Get("destination").(string))
@@ -67,13 +68,16 @@ func resourceNetworkRouteCreate(ctx context.Context, d *schema.ResourceData, m i
 		},
 	}
 
-	action, _, err := client.Network.AddRoute(ctx, network, opts)
-	if err != nil {
+	err = retry(defaultMaxRetries, func() error {
+		var err error
+
+		action, _, err = client.Network.AddRoute(ctx, network, opts)
 		if hcloud.IsError(err, hcloud.ErrorCodeConflict) {
-			log.Printf("[INFO] Network (%v) conflict, retrying in one second", network.ID)
-			time.Sleep(time.Second)
-			return resourceNetworkRouteCreate(ctx, d, m)
+			return err
 		}
+		return abortRetry(err)
+	})
+	if err != nil {
 		return diag.FromErr(err)
 	}
 	if err := waitForNetworkAction(ctx, client, action, network); err != nil {
@@ -108,29 +112,35 @@ func resourceNetworkRouteRead(ctx context.Context, d *schema.ResourceData, m int
 }
 
 func resourceNetworkRouteDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	var action *hcloud.Action
+
 	client := m.(*hcloud.Client)
 
 	network, route, err := lookupNetworkRouteID(ctx, d.Id(), client)
-
 	if err != nil {
 		log.Printf("[WARN] Invalid id (%s), removing from state: %s", d.Id(), err)
 		d.SetId("")
 		return nil
 	}
-	action, _, err := client.Network.DeleteRoute(ctx, network, hcloud.NetworkDeleteRouteOpts{
-		Route: route,
-	})
-	if err != nil {
-		if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
-			// network route has already been deleted
-			return nil
-		} else if hcloud.IsError(err, hcloud.ErrorCodeConflict) {
-			log.Printf("[INFO] Network (%v) conflict, retrying in one second", network.ID)
-			time.Sleep(time.Second)
-			return resourceNetworkRouteDelete(ctx, d, m)
+	err = retry(defaultMaxRetries, func() error {
+		var err error
+
+		action, _, err = client.Network.DeleteRoute(ctx, network, hcloud.NetworkDeleteRouteOpts{
+			Route: route,
+		})
+		if hcloud.IsError(err, hcloud.ErrorCodeConflict) {
+			return err
 		}
+		return abortRetry(err)
+	})
+	if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
+		// network route has already been deleted
+		return nil
+	}
+	if err != nil {
 		return diag.FromErr(err)
 	}
+
 	if err := waitForNetworkAction(ctx, client, action, network); err != nil {
 		return diag.FromErr(err)
 	}

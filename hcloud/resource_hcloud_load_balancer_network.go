@@ -8,7 +8,6 @@ import (
 	"net"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
@@ -86,7 +85,7 @@ func resourceLoadBalancerNetworkCreate(ctx context.Context, d *schema.ResourceDa
 		IP:      ip,
 	}
 
-	err := retry(1, func() error {
+	err := retry(defaultMaxRetries, func() error {
 		var err error
 
 		action, _, err = c.LoadBalancer.AttachToNetwork(ctx, lb, opts)
@@ -96,12 +95,13 @@ func resourceLoadBalancerNetworkCreate(ctx context.Context, d *schema.ResourceDa
 			// Retry on any of the above listed errors
 			return err
 		}
-		if hcloud.IsError(err, hcloud.ErrorCodeLoadBalancerAlreadyAttached) &&
-			isLoadBalancerAttachedToNetwork(ctx, c, lb, nw) {
-			return nil
-		}
+
 		return abortRetry(err)
 	})
+	if hcloud.IsError(err, hcloud.ErrorCodeLoadBalancerAlreadyAttached) &&
+		isLoadBalancerAttachedToNetwork(ctx, c, lb, nw) {
+		return nil
+	}
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -154,6 +154,8 @@ func resourceLoadBalancerNetworkRead(ctx context.Context, d *schema.ResourceData
 }
 
 func resourceLoadBalancerNetworkDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	var action *hcloud.Action
+
 	client := m.(*hcloud.Client)
 
 	server, network, _, err := lookupLoadBalancerNetworkID(ctx, d.Id(), client)
@@ -163,23 +165,24 @@ func resourceLoadBalancerNetworkDelete(ctx context.Context, d *schema.ResourceDa
 		d.SetId("")
 		return nil
 	}
-	action, _, err := client.LoadBalancer.DetachFromNetwork(ctx, server, hcloud.LoadBalancerDetachFromNetworkOpts{
-		Network: network,
-	})
-	if err != nil {
-		if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
-			// network has already been deleted
-			return nil
-		} else if hcloud.IsError(err, hcloud.ErrorCodeConflict) {
-			log.Printf("[INFO] Network (%v) conflict, retrying in one second", network.ID)
-			time.Sleep(time.Second)
-			return resourceLoadBalancerNetworkDelete(ctx, d, m)
-		} else if hcloud.IsError(err, hcloud.ErrorCodeLocked) {
-			log.Printf("[INFO] Network (%v) locked, retrying in one second", network.ID)
-			time.Sleep(time.Second)
-			return resourceLoadBalancerNetworkDelete(ctx, d, m)
-		}
 
+	err = retry(defaultMaxRetries, func() error {
+		var err error
+
+		action, _, err = client.LoadBalancer.DetachFromNetwork(ctx, server, hcloud.LoadBalancerDetachFromNetworkOpts{
+			Network: network,
+		})
+		if hcloud.IsError(err, hcloud.ErrorCodeConflict) || hcloud.IsError(err, hcloud.ErrorCodeLocked) {
+			return err
+		}
+		return abortRetry(err)
+	})
+
+	if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
+		// network has already been deleted
+		return nil
+	}
+	if err != nil {
 		return diag.FromErr(err)
 	}
 	if err := waitForNetworkAction(ctx, client, action, network); err != nil {

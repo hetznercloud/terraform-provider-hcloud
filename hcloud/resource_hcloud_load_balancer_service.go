@@ -168,6 +168,8 @@ func resourceLoadBalancerService() *schema.Resource {
 }
 
 func resourceLoadBalancerServiceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	var action *hcloud.Action
+
 	client := m.(*hcloud.Client)
 
 	lbId, err := strconv.Atoi(d.Get("load_balancer_id").(string))
@@ -206,19 +208,23 @@ func resourceLoadBalancerServiceCreate(ctx context.Context, d *schema.ResourceDa
 		opts.HealthCheck = parseTFHealthCheckAdd(tfHealthCheck.([]interface{}))
 	}
 
-	action, _, err := client.LoadBalancer.AddService(ctx, &lb, opts)
+	err = retry(defaultMaxRetries, func() error {
+		var err error
+
+		action, _, err = client.LoadBalancer.AddService(ctx, &lb, opts)
+		if hcloud.IsError(err, hcloud.ErrorCodeServiceError) {
+			// Terraform performs CRUD operations for different resources of the
+			// same type in parallel. As such it can happen, that a service can't
+			// be added, because another service which has not been deleted yet
+			// prevents it. We therefore retry the action after a short delay. This
+			// should give Terraform enough time to remove the conflicting service
+			// (if there is one).
+			return err
+		}
+		return abortRetry(err)
+	})
 	if resourceLoadBalancerIsNotFound(err, d) {
 		return nil
-	}
-	if hcloud.IsError(err, hcloud.ErrorCodeServiceError) {
-		// Terraform performs CRUD operations for different resources of the
-		// same type in parallel. As such it can happen, that a service can't
-		// be added, because another service which has not been deleted yet
-		// prevents it. We therefore retry the action after a short delay. This
-		// should give Terraform enough time to remove the conflicting service
-		// (if there is one).
-		time.Sleep(time.Second)
-		action, _, err = client.LoadBalancer.AddService(ctx, &lb, opts)
 	}
 	if err != nil {
 		return diag.FromErr(err)
