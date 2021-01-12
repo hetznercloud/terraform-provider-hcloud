@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/e2etests"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -24,7 +25,7 @@ func init() {
 
 // Sweep removes all certificates from the Hetzner Cloud backend.
 func Sweep(r string) error {
-	client, err := testsupport.CreateClient()
+	client, err := e2etests.CreateClient()
 	if err != nil {
 		return err
 	}
