@@ -1,5 +1,7 @@
 ## unreleased
 
+## 1.24.0 (January 12, 2021)
+
 FEATURES:
 * **New Datasource**: `hcloud_server_type`
 * **New Datasource**: `hcloud_server_types`
