@@ -9,6 +9,18 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/certificate"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/datacenter"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/floatingip"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/image"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancer"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/location"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/network"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/rdns"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/servertype"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/volume"
 )
 
 var Version = "not build yet"
@@ -38,39 +50,39 @@ func Provider() *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"hcloud_server":                 resourceServer(),
-			"hcloud_floating_ip":            resourceFloatingIP(),
-			"hcloud_floating_ip_assignment": resourceFloatingIPAssignment(),
-			"hcloud_ssh_key":                resourceSSHKey(),
-			"hcloud_rdns":                   resourceReverseDNS(),
-			"hcloud_volume":                 resourceVolume(),
-			"hcloud_volume_attachment":      resourceVolumeAttachment(),
-			"hcloud_network":                resourceNetwork(),
-			"hcloud_network_subnet":         resourceNetworkSubnet(),
-			"hcloud_network_route":          resourceNetworkRoute(),
-			"hcloud_server_network":         resourceServerNetwork(),
-			"hcloud_load_balancer":          resourceLoadBalancer(),
-			"hcloud_load_balancer_service":  resourceLoadBalancerService(),
-			"hcloud_load_balancer_network":  resourceLoadBalancerNetwork(),
-			"hcloud_load_balancer_target":   resourceLoadBalancerTarget(),
-			"hcloud_certificate":            resourceCertificate(),
+			"hcloud_server":                 server.Resource(),
+			"hcloud_floating_ip":            floatingip.Resource(),
+			"hcloud_floating_ip_assignment": floatingip.AssignmentResource(),
+			"hcloud_ssh_key":                sshkey.Resource(),
+			"hcloud_rdns":                   rdns.Resource(),
+			"hcloud_volume":                 volume.Resource(),
+			"hcloud_volume_attachment":      volume.ResourceVolumeAttachment(),
+			"hcloud_network":                network.Resource(),
+			"hcloud_network_subnet":         network.SubnetResource(),
+			"hcloud_network_route":          network.ResourceRoute(),
+			"hcloud_server_network":         server.ResourceNetwork(),
+			"hcloud_load_balancer":          loadbalancer.Resource(),
+			"hcloud_load_balancer_service":  loadbalancer.ServiceResource(),
+			"hcloud_load_balancer_network":  loadbalancer.NetworkResource(),
+			"hcloud_load_balancer_target":   loadbalancer.TargetResource(),
+			"hcloud_certificate":            certificate.Resource(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"hcloud_datacenter":    dataSourceHcloudDatacenter(),
-			"hcloud_datacenters":   dataSourceHcloudDatacenters(),
-			"hcloud_floating_ip":   dataSourceHcloudFloatingIP(),
-			"hcloud_image":         dataSourceHcloudImage(),
-			"hcloud_location":      dataSourceHcloudLocation(),
-			"hcloud_locations":     dataSourceHcloudLocations(),
-			"hcloud_server":        dataSourceHcloudServer(),
-			"hcloud_server_type":   dataSourceHcloudServerType(),
-			"hcloud_server_types":  dataSourceHcloudServerTypes(),
-			"hcloud_ssh_key":       dataSourceHcloudSSHKey(),
-			"hcloud_ssh_keys":      dataSourceHcloudSSHKeys(),
-			"hcloud_volume":        dataSourceHcloudVolume(),
-			"hcloud_network":       dataSourceHcloudNetwork(),
-			"hcloud_load_balancer": dataSourceHcloudLoadBalancer(),
-			"hcloud_certificate":   dataSourceHcloudCertificate(),
+			"hcloud_datacenter":    datacenter.DataSource(),
+			"hcloud_datacenters":   datacenter.DataSourceDatacenters(),
+			"hcloud_floating_ip":   floatingip.DataSource(),
+			"hcloud_image":         image.DataSource(),
+			"hcloud_location":      location.DataSource(),
+			"hcloud_locations":     location.DataSourceLocations(),
+			"hcloud_server":        server.DataSource(),
+			"hcloud_server_type":   servertype.DataSource(),
+			"hcloud_server_types":  servertype.DataSourceServerTypes(),
+			"hcloud_ssh_key":       sshkey.DataSource(),
+			"hcloud_ssh_keys":      sshkey.DataSourceSSHKeys(),
+			"hcloud_volume":        volume.DataSource(),
+			"hcloud_network":       network.DataSource(),
+			"hcloud_load_balancer": loadbalancer.DataSource(),
+			"hcloud_certificate":   certificate.DataSource(),
 		},
 		ConfigureFunc: providerConfigure,
 	}

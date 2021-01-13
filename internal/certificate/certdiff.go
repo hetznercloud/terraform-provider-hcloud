@@ -1,4 +1,4 @@
-package hcloud
+package certificate
 
 import (
 	"crypto/sha256"

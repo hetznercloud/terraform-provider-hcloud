@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hetznercloud/terraform-provider-hcloud/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/certificate"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/stretchr/testify/assert"
 )
@@ -37,7 +37,7 @@ func TestEqualCert_EqualCertificates(t *testing.T) {
 			}
 
 			cert := strings.Join(certs, "\n")
-			res, err := hcloud.EqualCert(cert, cert)
+			res, err := certificate.EqualCert(cert, cert)
 			if !assert.NoError(t, err) {
 				return
 			}
@@ -96,7 +96,7 @@ func TestEqualCert_DifferentCertificates(t *testing.T) {
 
 			cert := strings.Join(certs, "\n")
 			certAlt := strings.Join(certsAlt, "\n")
-			res, err := hcloud.EqualCert(cert, certAlt)
+			res, err := certificate.EqualCert(cert, certAlt)
 			if !assert.NoError(t, err) {
 				return
 			}
