@@ -1,4 +1,4 @@
-package hcloud
+package server
 
 import (
 	"context"
@@ -13,10 +13,19 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/control"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/merge"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/network"
 )
 
-func resourceServerNetwork() *schema.Resource {
+// NetworkResourceType is the type name of the Hetzner Cloud Server
+// network resource.
+const NetworkResourceType = "hcloud_server_network"
+
+// ResourceNetwork creates a Terraform schema for the hcloud_server_network
+// resource.
+func ResourceNetwork() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceServerNetworkCreate,
 		ReadContext:   resourceServerNetworkRead,
@@ -73,7 +82,7 @@ func resourceServerNetworkCreate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.Errorf("either network_id or subnet_id must be set")
 	}
 	if snIDSet {
-		nwID, _, err := parseNetworkSubnetID(subNetID.(string))
+		nwID, _, err := network.ParseSubnetID(subNetID.(string))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -212,7 +221,7 @@ func attachServerToNetwork(ctx context.Context, c *hcloud.Client, srv *hcloud.Se
 		AliasIPs: aliasIPs,
 	}
 
-	err := retry(defaultMaxRetries, func() error {
+	err := control.Retry(control.DefaultRetries, func() error {
 		var err error
 
 		a, _, err = c.Server.AttachToNetwork(ctx, srv, opts)
@@ -220,7 +229,7 @@ func attachServerToNetwork(ctx context.Context, c *hcloud.Client, srv *hcloud.Se
 			return err
 		}
 		if err != nil {
-			return abortRetry(err)
+			return control.AbortRetry(err)
 		}
 		return nil
 	})
@@ -231,7 +240,7 @@ func attachServerToNetwork(ctx context.Context, c *hcloud.Client, srv *hcloud.Se
 	if err != nil {
 		return fmt.Errorf("attach server to network: %v", err)
 	}
-	if err := waitForNetworkAction(ctx, c, a, nw); err != nil {
+	if err := hcclient.WaitForAction(ctx, &c.Action, a); err != nil {
 		return fmt.Errorf("attach server to network: %v", err)
 	}
 	return nil
@@ -310,7 +319,7 @@ func updateServerAliasIPs(ctx context.Context, c *hcloud.Client, s *hcloud.Serve
 	if err != nil {
 		return fmt.Errorf("%s: %v", op, err)
 	}
-	if err := waitForServerAction(ctx, c, a, s); err != nil {
+	if err := hcclient.WaitForAction(ctx, &c.Action, a); err != nil {
 		return fmt.Errorf("%s: %v", op, err)
 	}
 	return nil
@@ -320,20 +329,20 @@ func detachServerFromNetwork(ctx context.Context, c *hcloud.Client, s *hcloud.Se
 	const op = "hcloud/detachServerFromNetwork"
 	var a *hcloud.Action
 
-	err := retry(defaultMaxRetries, func() error {
+	err := control.Retry(control.DefaultRetries, func() error {
 		var err error
 
 		a, _, err = c.Server.DetachFromNetwork(ctx, s, hcloud.ServerDetachFromNetworkOpts{Network: n})
 		if hcloud.IsError(err, hcloud.ErrorCodeConflict) || hcloud.IsError(err, hcloud.ErrorCodeLocked) {
 			return err
 		}
-		return abortRetry(err)
+		return control.AbortRetry(err)
 	})
 	if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
 		// network has already been deleted
 		return nil
 	}
-	if err := waitForServerAction(ctx, c, a, s); err != nil {
+	if err := hcclient.WaitForAction(ctx, &c.Action, a); err != nil {
 		return fmt.Errorf("%s: %v", op, err)
 	}
 	return nil

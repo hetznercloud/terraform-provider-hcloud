@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/hetznercloud/hcloud-go/hcloud"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/e2etests"
 )
 
 // KeyFunc allows to retrieve a resource from the Hetzner Cloud backend using
@@ -68,7 +67,7 @@ func backendResourceByKey(s *terraform.State, name string, k KeyFunc) error {
 	if err != nil {
 		return fmt.Errorf("%s: resource %s: primary id: %w", op, name, err)
 	}
-	client, err := e2etests.CreateClient()
+	client, err := CreateClient()
 	if err != nil {
 		return fmt.Errorf("%s: create client: %w", op, err)
 	}

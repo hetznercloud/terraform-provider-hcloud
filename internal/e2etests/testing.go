@@ -1,14 +1,12 @@
 package e2etests
 
 import (
-	"fmt"
 	"math/rand"
 	"os"
 	"testing"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hetznercloud/hcloud-go/hcloud"
 	tfhcloud "github.com/hetznercloud/terraform-provider-hcloud/hcloud"
 )
 
@@ -42,16 +40,4 @@ func PreCheck(t *testing.T) func() {
 			t.Fatal("HCLOUD_TOKEN must be set for acceptance tests")
 		}
 	}
-}
-
-// CreateClient creates a new *hcloud.Client which authenticates using the
-// HCLOUD_TOKEN variable.
-func CreateClient() (*hcloud.Client, error) {
-	if os.Getenv("HCLOUD_TOKEN") == "" {
-		return nil, fmt.Errorf("empty HCLOUD_TOKEN")
-	}
-	opts := []hcloud.ClientOption{
-		hcloud.WithToken(os.Getenv("HCLOUD_TOKEN")),
-	}
-	return hcloud.NewClient(opts...), nil
 }
