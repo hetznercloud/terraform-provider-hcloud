@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/control"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
 )
 
 // SubnetResourceType is the type name of the Hetzner Cloud Network Subnet resource.
@@ -71,9 +72,9 @@ func SubnetResource() *schema.Resource {
 }
 
 func resourceNetworkSubnetCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	var action *hcloud.Action
+	var a *hcloud.Action
 
-	client := m.(*hcloud.Client)
+	c := m.(*hcloud.Client)
 
 	_, ipRange, err := net.ParseCIDR(d.Get("ip_range").(string))
 	if err != nil {
@@ -99,7 +100,7 @@ func resourceNetworkSubnetCreate(ctx context.Context, d *schema.ResourceData, m 
 	err = control.Retry(control.DefaultRetries, func() error {
 		var err error
 
-		action, _, err = client.Network.AddSubnet(ctx, network, opts)
+		a, _, err = c.Network.AddSubnet(ctx, network, opts)
 		if hcloud.IsError(err, hcloud.ErrorCodeConflict) {
 			return err
 		}
@@ -109,7 +110,7 @@ func resourceNetworkSubnetCreate(ctx context.Context, d *schema.ResourceData, m 
 		return diag.FromErr(err)
 	}
 
-	if err := waitForNetworkAction(ctx, client, action, network); err != nil {
+	if err := hcclient.WaitForAction(ctx, &c.Action, a); err != nil {
 		return diag.FromErr(err)
 	}
 	d.SetId(generateNetworkSubnetID(network, ipRange.String()))
@@ -142,11 +143,11 @@ func resourceNetworkSubnetRead(ctx context.Context, d *schema.ResourceData, m in
 
 func resourceNetworkSubnetDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var (
-		action  *hcloud.Action
+		a       *hcloud.Action
 		network *hcloud.Network
 	)
 
-	client := m.(*hcloud.Client)
+	c := m.(*hcloud.Client)
 
 	err := control.Retry(control.DefaultRetries, func() error {
 		var (
@@ -154,12 +155,12 @@ func resourceNetworkSubnetDelete(ctx context.Context, d *schema.ResourceData, m 
 			err    error
 		)
 
-		network, subnet, err = lookupNetworkSubnetID(ctx, d.Id(), client)
+		network, subnet, err = lookupNetworkSubnetID(ctx, d.Id(), c)
 		if err != nil {
 			return control.AbortRetry(err)
 		}
 
-		action, _, err = client.Network.DeleteSubnet(ctx, network, hcloud.NetworkDeleteSubnetOpts{
+		a, _, err = c.Network.DeleteSubnet(ctx, network, hcloud.NetworkDeleteSubnetOpts{
 			Subnet: subnet,
 		})
 		if hcloud.IsError(err, hcloud.ErrorCodeConflict) || hcloud.IsError(err, hcloud.ErrorCodeLocked) {
@@ -177,7 +178,7 @@ func resourceNetworkSubnetDelete(ctx context.Context, d *schema.ResourceData, m 
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if err := waitForNetworkAction(ctx, client, action, network); err != nil {
+	if err := hcclient.WaitForAction(ctx, &c.Action, a); err != nil {
 		return diag.FromErr(err)
 	}
 	return nil

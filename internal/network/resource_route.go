@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/control"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
 )
 
 // RouteResourceType is the type name of the Hetzner Cloud Network Route resource.
@@ -50,9 +51,9 @@ func ResourceRoute() *schema.Resource {
 }
 
 func resourceNetworkRouteCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	var action *hcloud.Action
+	var a *hcloud.Action
 
-	client := m.(*hcloud.Client)
+	c := m.(*hcloud.Client)
 
 	_, destination, err := net.ParseCIDR(d.Get("destination").(string))
 	if err != nil {
@@ -77,7 +78,7 @@ func resourceNetworkRouteCreate(ctx context.Context, d *schema.ResourceData, m i
 	err = control.Retry(control.DefaultRetries, func() error {
 		var err error
 
-		action, _, err = client.Network.AddRoute(ctx, network, opts)
+		a, _, err = c.Network.AddRoute(ctx, network, opts)
 		if hcloud.IsError(err, hcloud.ErrorCodeConflict) {
 			return err
 		}
@@ -86,7 +87,7 @@ func resourceNetworkRouteCreate(ctx context.Context, d *schema.ResourceData, m i
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if err := waitForNetworkAction(ctx, client, action, network); err != nil {
+	if err := hcclient.WaitForAction(ctx, &c.Action, a); err != nil {
 		return diag.FromErr(err)
 	}
 	d.SetId(generateNetworkRouteID(network, destination.String()))
@@ -120,9 +121,9 @@ func resourceNetworkRouteRead(ctx context.Context, d *schema.ResourceData, m int
 func resourceNetworkRouteDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var action *hcloud.Action
 
-	client := m.(*hcloud.Client)
+	c := m.(*hcloud.Client)
 
-	network, route, err := lookupNetworkRouteID(ctx, d.Id(), client)
+	network, route, err := lookupNetworkRouteID(ctx, d.Id(), c)
 	if err != nil {
 		log.Printf("[WARN] Invalid id (%s), removing from state: %s", d.Id(), err)
 		d.SetId("")
@@ -131,7 +132,7 @@ func resourceNetworkRouteDelete(ctx context.Context, d *schema.ResourceData, m i
 	err = control.Retry(control.DefaultRetries, func() error {
 		var err error
 
-		action, _, err = client.Network.DeleteRoute(ctx, network, hcloud.NetworkDeleteRouteOpts{
+		action, _, err = c.Network.DeleteRoute(ctx, network, hcloud.NetworkDeleteRouteOpts{
 			Route: route,
 		})
 		if hcloud.IsError(err, hcloud.ErrorCodeConflict) {
@@ -147,7 +148,7 @@ func resourceNetworkRouteDelete(ctx context.Context, d *schema.ResourceData, m i
 		return diag.FromErr(err)
 	}
 
-	if err := waitForNetworkAction(ctx, client, action, network); err != nil {
+	if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
 		return diag.FromErr(err)
 	}
 	return nil

@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/control"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
 )
 
 // ServiceResourceType is the type name of the Hetzner Cloud Load Balancer
@@ -175,9 +176,9 @@ func ServiceResource() *schema.Resource {
 }
 
 func resourceLoadBalancerServiceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	var action *hcloud.Action
+	var a *hcloud.Action
 
-	client := m.(*hcloud.Client)
+	c := m.(*hcloud.Client)
 
 	lbID, err := strconv.Atoi(d.Get("load_balancer_id").(string))
 	if err != nil {
@@ -218,7 +219,7 @@ func resourceLoadBalancerServiceCreate(ctx context.Context, d *schema.ResourceDa
 	err = control.Retry(control.DefaultRetries, func() error {
 		var err error
 
-		action, _, err = client.LoadBalancer.AddService(ctx, &lb, opts)
+		a, _, err = c.LoadBalancer.AddService(ctx, &lb, opts)
 		if hcloud.IsError(err, hcloud.ErrorCodeServiceError) {
 			// Terraform performs CRUD operations for different resources of the
 			// same type in parallel. As such it can happen, that a service can't
@@ -236,7 +237,7 @@ func resourceLoadBalancerServiceCreate(ctx context.Context, d *schema.ResourceDa
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if err := waitForLoadBalancerAction(ctx, client, action, &lb); err != nil {
+	if err := hcclient.WaitForAction(ctx, &c.Action, a); err != nil {
 		return diag.FromErr(err)
 	}
 	svcID := fmt.Sprintf("%d__%d", lb.ID, listenPort)
@@ -247,9 +248,9 @@ func resourceLoadBalancerServiceCreate(ctx context.Context, d *schema.ResourceDa
 }
 
 func resourceLoadBalancerServiceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*hcloud.Client)
+	c := m.(*hcloud.Client)
 
-	lb, svc, err := lookupLoadBalancerServiceID(ctx, d.Id(), client)
+	lb, svc, err := lookupLoadBalancerServiceID(ctx, d.Id(), c)
 	if err == errInvalidLoadBalancerServiceID {
 		log.Printf("[WARN] Invalid id (%s), removing from state: %s", d.Id(), err)
 		d.SetId("")
@@ -278,14 +279,14 @@ func resourceLoadBalancerServiceUpdate(ctx context.Context, d *schema.ResourceDa
 		opts.HealthCheck = parseTFHealthCheckUpdate(tfHealthCheck.([]interface{}))
 	}
 
-	action, _, err := client.LoadBalancer.UpdateService(ctx, lb, svc.ListenPort, opts)
+	action, _, err := c.LoadBalancer.UpdateService(ctx, lb, svc.ListenPort, opts)
 	if err != nil {
 		if resourceLoadBalancerIsNotFound(err, d) {
 			return nil
 		}
 		return diag.FromErr(err)
 	}
-	if err := waitForLoadBalancerAction(ctx, client, action, lb); err != nil {
+	if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
 		return diag.FromErr(err)
 	}
 	return resourceLoadBalancerServiceRead(ctx, d, m)
@@ -335,9 +336,9 @@ func resourceLoadBalancerServiceRead(ctx context.Context, d *schema.ResourceData
 func resourceLoadBalancerServiceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	const op = "hcloud/resourceLoadBalancerServiceDelete"
 
-	client := m.(*hcloud.Client)
+	c := m.(*hcloud.Client)
 
-	lb, svc, err := lookupLoadBalancerServiceID(ctx, d.Id(), client)
+	lb, svc, err := lookupLoadBalancerServiceID(ctx, d.Id(), c)
 	if err == errInvalidLoadBalancerServiceID {
 		log.Printf("[WARN] Invalid id (%s), removing from state: %s", d.Id(), err)
 		d.SetId("")
@@ -347,14 +348,14 @@ func resourceLoadBalancerServiceDelete(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	action, _, err := client.LoadBalancer.DeleteService(ctx, lb, svc.ListenPort)
+	a, _, err := c.LoadBalancer.DeleteService(ctx, lb, svc.ListenPort)
 	if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
 		return nil
 	}
 	if err != nil {
 		return diag.Errorf("%s: %v", op, err)
 	}
-	if err := waitForLoadBalancerAction(ctx, client, action, lb); err != nil {
+	if err := hcclient.WaitForAction(ctx, &c.Action, a); err != nil {
 		return diag.Errorf("%s: %v", op, err)
 	}
 

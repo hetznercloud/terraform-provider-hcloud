@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/control"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
 )
 
 // AttachmentResourceType is the type name of the Hetzner Cloud Volume
@@ -47,9 +48,9 @@ func ResourceVolumeAttachment() *schema.Resource {
 }
 
 func resourceVolumeAttachmentCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	var action *hcloud.Action
+	var a *hcloud.Action
 
-	client := m.(*hcloud.Client)
+	c := m.(*hcloud.Client)
 
 	volumeID := d.Get("volume_id")
 	volume := &hcloud.Volume{ID: volumeID.(int)}
@@ -68,7 +69,7 @@ func resourceVolumeAttachmentCreate(ctx context.Context, d *schema.ResourceData,
 	err := control.Retry(control.DefaultRetries, func() error {
 		var err error
 
-		action, _, err = client.Volume.AttachWithOpts(ctx, volume, opts)
+		a, _, err = c.Volume.AttachWithOpts(ctx, volume, opts)
 		if hcloud.IsError(err, hcloud.ErrorCodeLocked) {
 			return err
 		}
@@ -77,7 +78,7 @@ func resourceVolumeAttachmentCreate(ctx context.Context, d *schema.ResourceData,
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if err := waitForVolumeAction(ctx, client, action, volume); err != nil {
+	if err := hcclient.WaitForAction(ctx, &c.Action, a); err != nil {
 		return diag.FromErr(err)
 	}
 	// Since a volume can only be attached to one server
@@ -139,7 +140,7 @@ func resourceVolumeAttachmentRead(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceVolumeAttachmentDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*hcloud.Client)
+	c := m.(*hcloud.Client)
 
 	volumeID, err := strconv.Atoi(d.Id())
 	if err != nil {
@@ -148,19 +149,19 @@ func resourceVolumeAttachmentDelete(ctx context.Context, d *schema.ResourceData,
 		return nil
 	}
 
-	volume, _, err := client.Volume.GetByID(ctx, volumeID)
+	volume, _, err := c.Volume.GetByID(ctx, volumeID)
 	if volume == nil {
 		log.Printf("[WARN] Volume ID (%v) not found, removing volume attachment from state", d.Get("volume_id"))
 		d.SetId("")
 		return nil
 	}
 	if volume.Server != nil {
-		var action *hcloud.Action
+		var a *hcloud.Action
 
 		err := control.Retry(control.DefaultRetries, func() error {
 			var err error
 
-			action, _, err = client.Volume.Detach(ctx, volume)
+			a, _, err = c.Volume.Detach(ctx, volume)
 			if hcloud.IsError(err, hcloud.ErrorCodeLocked) {
 				return err
 			}
@@ -170,7 +171,7 @@ func resourceVolumeAttachmentDelete(ctx context.Context, d *schema.ResourceData,
 			return diag.FromErr(err)
 		}
 
-		if err := waitForVolumeAction(ctx, client, action, volume); err != nil {
+		if err := hcclient.WaitForAction(ctx, &c.Action, a); err != nil {
 			return diag.FromErr(err)
 		}
 	}
