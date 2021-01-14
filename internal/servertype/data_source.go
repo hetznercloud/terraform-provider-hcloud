@@ -13,13 +13,13 @@ import (
 )
 
 const (
-	// DataSourceServerTypeType is the type name of the Hetzner Cloud Server Type
+	// DataSourceType is the type name of the Hetzner Cloud Server Type
 	// data source.
-	DataSourceServerTypeType = "hcloud_server_type"
+	DataSourceType = "hcloud_server_type"
 
-	// DataSourceServerTypesType is the type name of the Hetzner Cloud Server Types
+	// ServerTypesDataSourceType is the type name of the Hetzner Cloud Server Types
 	// data source.
-	DataSourceServerTypesType = "hcloud_server_types"
+	ServerTypesDataSourceType = "hcloud_server_types"
 )
 
 // DataSourcecreates a new Terraform schema for the hcloud_server_type data

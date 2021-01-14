@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
 )
 
 // ResourceType is the type name of the Hetzner Cloud Load Balancer resource.
@@ -118,7 +119,7 @@ func Resource() *schema.Resource {
 }
 
 func resourceLoadBalancerCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*hcloud.Client)
+	c := m.(*hcloud.Client)
 
 	opts := hcloud.LoadBalancerCreateOpts{
 		Name:             d.Get("name").(string),
@@ -145,13 +146,13 @@ func resourceLoadBalancerCreate(ctx context.Context, d *schema.ResourceData, m i
 		opts.Targets = parseTerraformTarget(targets.(*schema.Set))
 	}
 
-	res, _, err := client.LoadBalancer.Create(ctx, opts)
+	res, _, err := c.LoadBalancer.Create(ctx, opts)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	d.SetId(strconv.Itoa(res.LoadBalancer.ID))
-	if err := waitForLoadBalancerAction(ctx, client, res.Action, res.LoadBalancer); err != nil {
+	if err := hcclient.WaitForAction(ctx, &c.Action, res.Action); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -177,8 +178,8 @@ func resourceLoadBalancerRead(ctx context.Context, d *schema.ResourceData, m int
 }
 
 func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*hcloud.Client)
-	loadBalancer, _, err := client.LoadBalancer.Get(ctx, d.Id())
+	c := m.(*hcloud.Client)
+	loadBalancer, _, err := c.LoadBalancer.Get(ctx, d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -190,7 +191,7 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, m i
 	d.Partial(true)
 	if d.HasChange("name") {
 		newName := d.Get("name")
-		_, _, err := client.LoadBalancer.Update(ctx, loadBalancer, hcloud.LoadBalancerUpdateOpts{
+		_, _, err := c.LoadBalancer.Update(ctx, loadBalancer, hcloud.LoadBalancerUpdateOpts{
 			Name: newName.(string),
 		})
 		if err != nil {
@@ -203,7 +204,7 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, m i
 
 	if d.HasChange("load_balancer_type") {
 		newType := d.Get("load_balancer_type")
-		action, _, err := client.LoadBalancer.ChangeType(ctx, loadBalancer, hcloud.LoadBalancerChangeTypeOpts{
+		action, _, err := c.LoadBalancer.ChangeType(ctx, loadBalancer, hcloud.LoadBalancerChangeTypeOpts{
 			LoadBalancerType: &hcloud.LoadBalancerType{Name: newType.(string)},
 		})
 		if err != nil {
@@ -212,7 +213,7 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, m i
 			}
 			return diag.FromErr(err)
 		}
-		if err := waitForLoadBalancerAction(ctx, client, action, loadBalancer); err != nil {
+		if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -220,7 +221,7 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, m i
 	if d.HasChange("algorithm") {
 		algorithm := d.Get("algorithm")
 		hcloudAlgorithm := parseTerraformAlgorithm(algorithm.([]interface{}))
-		action, _, err := client.LoadBalancer.ChangeAlgorithm(ctx, loadBalancer, hcloud.LoadBalancerChangeAlgorithmOpts{
+		action, _, err := c.LoadBalancer.ChangeAlgorithm(ctx, loadBalancer, hcloud.LoadBalancerChangeAlgorithmOpts{
 			Type: hcloudAlgorithm.Type,
 		})
 
@@ -230,7 +231,7 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, m i
 			}
 			return diag.FromErr(err)
 		}
-		if err := waitForLoadBalancerAction(ctx, client, action, loadBalancer); err != nil {
+		if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -241,7 +242,7 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, m i
 		for k, v := range labels.(map[string]interface{}) {
 			tmpLabels[k] = v.(string)
 		}
-		_, _, err := client.LoadBalancer.Update(ctx, loadBalancer, hcloud.LoadBalancerUpdateOpts{
+		_, _, err := c.LoadBalancer.Update(ctx, loadBalancer, hcloud.LoadBalancerUpdateOpts{
 			Labels: tmpLabels,
 		})
 		if err != nil {
@@ -267,21 +268,21 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, m i
 				}
 			}
 			if !foundServer && liveTarget.Type == hcloud.LoadBalancerTargetTypeServer {
-				action, _, err := client.LoadBalancer.RemoveServerTarget(ctx, loadBalancer, liveTarget.Server.Server)
+				action, _, err := c.LoadBalancer.RemoveServerTarget(ctx, loadBalancer, liveTarget.Server.Server)
 				if err != nil {
 					if resourceLoadBalancerIsNotFound(err, d) {
 						return nil
 					}
 					return diag.FromErr(err)
 				}
-				if err := waitForLoadBalancerAction(ctx, client, action, loadBalancer); err != nil {
+				if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
 					return diag.FromErr(err)
 				}
 			}
 		}
 
 		// now we get the loadbalancer again
-		loadBalancer, _, err := client.LoadBalancer.Get(ctx, d.Id())
+		loadBalancer, _, err := c.LoadBalancer.Get(ctx, d.Id())
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -304,14 +305,14 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, m i
 					Server:       hcloudTarget.Server.Server,
 					UsePrivateIP: hcloudTarget.UsePrivateIP,
 				}
-				action, _, err := client.LoadBalancer.AddServerTarget(ctx, loadBalancer, opts)
+				action, _, err := c.LoadBalancer.AddServerTarget(ctx, loadBalancer, opts)
 				if err != nil {
 					if resourceLoadBalancerIsNotFound(err, d) {
 						return nil
 					}
 					return diag.FromErr(err)
 				}
-				if err := waitForLoadBalancerAction(ctx, client, action, loadBalancer); err != nil {
+				if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
 					return diag.FromErr(err)
 				}
 			}
@@ -369,16 +370,6 @@ func setLoadBalancerSchema(d *schema.ResourceData, lb *hcloud.LoadBalancer) {
 		d.Set("network_id", lb.PrivateNet[0].Network.ID)
 		d.Set("network_ip", lb.PrivateNet[0].IP.String())
 	}
-}
-
-func waitForLoadBalancerAction(ctx context.Context, client *hcloud.Client, action *hcloud.Action, loadBalancer *hcloud.LoadBalancer) error {
-	log.Printf("[INFO] LoadBalancer (%d) waiting for %q action to complete...", loadBalancer.ID, action.Command)
-	_, errCh := client.Action.WatchProgress(ctx, action)
-	if err := <-errCh; err != nil {
-		return err
-	}
-	log.Printf("[INFO] LoadBalancer (%d) %q action succeeded", loadBalancer.ID, action.Command)
-	return nil
 }
 
 func parseTerraformTarget(tfTargets *schema.Set) (opts []hcloud.LoadBalancerCreateOptsTarget) {
