@@ -17,9 +17,9 @@ import (
 // attachment resource.
 const AttachmentResourceType = "hcloud_volume_attachment"
 
-// ResourceVolumeAttachment creates a Terraform schema for the
+// VolumeAttachmentResource creates a Terraform schema for the
 // hcloud_volume_attachmetn resource.
-func ResourceVolumeAttachment() *schema.Resource {
+func VolumeAttachmentResource() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceVolumeAttachmentCreate,
 		ReadContext:   resourceVolumeAttachmentRead,

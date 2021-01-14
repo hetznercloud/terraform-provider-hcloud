@@ -20,9 +20,9 @@ import (
 // RouteResourceType is the type name of the Hetzner Cloud Network Route resource.
 const RouteResourceType = "hcloud_network_route"
 
-// ResourceRoute creates a Terraform schema for the hcloud_network_route
+// RouteResource creates a Terraform schema for the hcloud_network_route
 // resource.
-func ResourceRoute() *schema.Resource {
+func RouteResource() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceNetworkRouteCreate,
 		ReadContext:   resourceNetworkRouteRead,

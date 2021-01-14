@@ -108,9 +108,9 @@ func setServerTypeSchema(data *schema.ResourceData, d *hcloud.ServerType) {
 
 }
 
-// DataSourceServerTypes creates a new Terraform schema for the
+// ServerTypesDataSource creates a new Terraform schema for the
 // hcloud_server_types data source.
-func DataSourceServerTypes() *schema.Resource {
+func ServerTypesDataSource() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceHcloudServerTypesRead,
 		Schema: map[string]*schema.Schema{

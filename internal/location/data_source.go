@@ -100,9 +100,9 @@ func setLocationSchema(d *schema.ResourceData, l *hcloud.Location) {
 	d.Set("longitude", l.Longitude)
 }
 
-// DataSourceLocations creates a new Terraform schema for the hcloud_locations
+// LocationsDataSource creates a new Terraform schema for the hcloud_locations
 // datasource.
-func DataSourceLocations() *schema.Resource {
+func LocationsDataSource() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceHcloudLocationsRead,
 		Schema: map[string]*schema.Schema{

@@ -117,9 +117,9 @@ func setDatacenterSchema(d *schema.ResourceData, dc *hcloud.Datacenter) {
 	d.Set("available_server_type_ids", available)
 }
 
-// DataSourceDatacenters creates a new Terraform schema for the Hetzner Cloud
+// DatacentersDataSource creates a new Terraform schema for the Hetzner Cloud
 // Datacenters data source.
-func DataSourceDatacenters() *schema.Resource {
+func DatacentersDataSource() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceHcloudDatacentersRead,
 		Schema: map[string]*schema.Schema{
