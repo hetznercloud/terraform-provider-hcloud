@@ -23,8 +23,11 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/volume"
 )
 
-var Version = "not build yet"
-var Commit = "not build yet"
+// Build coordinates..
+var (
+	Version = "not build yet"
+	Commit  = "not build yet"
+)
 
 // Provider returns the hcloud terraform provider.
 func Provider() *schema.Provider {
@@ -50,39 +53,39 @@ func Provider() *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"hcloud_server":                 server.Resource(),
-			"hcloud_floating_ip":            floatingip.Resource(),
-			"hcloud_floating_ip_assignment": floatingip.AssignmentResource(),
-			"hcloud_ssh_key":                sshkey.Resource(),
-			"hcloud_rdns":                   rdns.Resource(),
-			"hcloud_volume":                 volume.Resource(),
-			"hcloud_volume_attachment":      volume.ResourceVolumeAttachment(),
-			"hcloud_network":                network.Resource(),
-			"hcloud_network_subnet":         network.SubnetResource(),
-			"hcloud_network_route":          network.ResourceRoute(),
-			"hcloud_server_network":         server.ResourceNetwork(),
-			"hcloud_load_balancer":          loadbalancer.Resource(),
-			"hcloud_load_balancer_service":  loadbalancer.ServiceResource(),
-			"hcloud_load_balancer_network":  loadbalancer.NetworkResource(),
-			"hcloud_load_balancer_target":   loadbalancer.TargetResource(),
-			"hcloud_certificate":            certificate.Resource(),
+			certificate.ResourceType:          certificate.Resource(),
+			floatingip.AssignmentResourceType: floatingip.AssignmentResource(),
+			floatingip.ResourceType:           floatingip.Resource(),
+			loadbalancer.NetworkResourceType:  loadbalancer.NetworkResource(),
+			loadbalancer.ResourceType:         loadbalancer.Resource(),
+			loadbalancer.ServiceResourceType:  loadbalancer.ServiceResource(),
+			loadbalancer.TargetResourceType:   loadbalancer.TargetResource(),
+			network.ResourceType:              network.Resource(),
+			network.RouteResourceType:         network.RouteResource(),
+			network.SubnetResourceType:        network.SubnetResource(),
+			rdns.ResourceType:                 rdns.Resource(),
+			server.NetworkResourceType:        server.NetworkResource(),
+			server.ResourceType:               server.Resource(),
+			sshkey.ResourceType:               sshkey.Resource(),
+			volume.AttachmentResourceType:     volume.VolumeAttachmentResource(),
+			volume.ResourceType:               volume.Resource(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"hcloud_datacenter":    datacenter.DataSource(),
-			"hcloud_datacenters":   datacenter.DataSourceDatacenters(),
-			"hcloud_floating_ip":   floatingip.DataSource(),
-			"hcloud_image":         image.DataSource(),
-			"hcloud_location":      location.DataSource(),
-			"hcloud_locations":     location.DataSourceLocations(),
-			"hcloud_server":        server.DataSource(),
-			"hcloud_server_type":   servertype.DataSource(),
-			"hcloud_server_types":  servertype.DataSourceServerTypes(),
-			"hcloud_ssh_key":       sshkey.DataSource(),
-			"hcloud_ssh_keys":      sshkey.DataSourceSSHKeys(),
-			"hcloud_volume":        volume.DataSource(),
-			"hcloud_network":       network.DataSource(),
-			"hcloud_load_balancer": loadbalancer.DataSource(),
-			"hcloud_certificate":   certificate.DataSource(),
+			certificate.DataSourceType:           certificate.DataSource(),
+			datacenter.DatacentersDataSourceType: datacenter.DatacentersDataSource(),
+			datacenter.DataSourceType:            datacenter.DataSource(),
+			floatingip.DataSourceType:            floatingip.DataSource(),
+			image.DataSourceType:                 image.DataSource(),
+			loadbalancer.DataSourceType:          loadbalancer.DataSource(),
+			location.DataSourceType:              location.DataSource(),
+			location.LocationsDataSourceType:     location.LocationsDataSource(),
+			network.DataSourceType:               network.DataSource(),
+			server.DataSourceType:                server.DataSource(),
+			servertype.DataSourceType:            servertype.DataSource(),
+			servertype.ServerTypesDataSourceType: servertype.ServerTypesDataSource(),
+			sshkey.DataSourceType:                sshkey.DataSource(),
+			sshkey.SSHKeysDataSourceType:         sshkey.SSHKeysDataSource(),
+			volume.DataSourceType:                volume.DataSource(),
 		},
 		ConfigureFunc: providerConfigure,
 	}

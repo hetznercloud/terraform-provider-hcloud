@@ -127,9 +127,9 @@ func dataSourceHcloudSSHKeyRead(ctx context.Context, d *schema.ResourceData, m i
 	return diag.Errorf("please specify a id, a name, a fingerprint or a selector to lookup the sshkey")
 }
 
-// DataSourceSSHKeys creates a new Terraform schema for the hcloud_ssh_keys data
+// SSHKeysDataSource creates a new Terraform schema for the hcloud_ssh_keys data
 // source.
-func DataSourceSSHKeys() *schema.Resource {
+func SSHKeysDataSource() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceHcloudSSHKeysRead,
 		Schema: map[string]*schema.Schema{

@@ -23,9 +23,9 @@ import (
 // network resource.
 const NetworkResourceType = "hcloud_server_network"
 
-// ResourceNetwork creates a Terraform schema for the hcloud_server_network
+// NetworkResource creates a Terraform schema for the hcloud_server_network
 // resource.
-func ResourceNetwork() *schema.Resource {
+func NetworkResource() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceServerNetworkCreate,
 		ReadContext:   resourceServerNetworkRead,
