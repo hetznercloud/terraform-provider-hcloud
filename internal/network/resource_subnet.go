@@ -104,6 +104,9 @@ func resourceNetworkSubnetCreate(ctx context.Context, d *schema.ResourceData, m 
 		if hcloud.IsError(err, hcloud.ErrorCodeConflict) {
 			return err
 		}
+		if hcloud.IsError(err, hcloud.ErrorCodeVSwitchAlreadyUsed) {
+			return err
+		}
 		return control.AbortRetry(err)
 	})
 	if err != nil {
