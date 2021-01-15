@@ -1,7 +1,9 @@
 package hcloud
 
 import (
+	"context"
 	"errors"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"log"
 	"time"
 
@@ -87,11 +89,11 @@ func Provider() *schema.Provider {
 			sshkey.SSHKeysDataSourceType:         sshkey.SSHKeysDataSource(),
 			volume.DataSourceType:                volume.DataSource(),
 		},
-		ConfigureFunc: providerConfigure,
+		ConfigureContextFunc: providerConfigure,
 	}
 }
 
-func providerConfigure(d *schema.ResourceData) (interface{}, error) {
+func providerConfigure(_ context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 	opts := []hcloud.ClientOption{
 		hcloud.WithToken(d.Get("token").(string)),
 		hcloud.WithApplication("hcloud-terraform", Version),
@@ -102,7 +104,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	if pollInterval, ok := d.GetOk("poll_interval"); ok {
 		pollInterval, err := time.ParseDuration(pollInterval.(string))
 		if err != nil {
-			return nil, err
+			return nil, diag.FromErr(err)
 		}
 		opts = append(opts, hcloud.WithPollInterval(pollInterval))
 	}
