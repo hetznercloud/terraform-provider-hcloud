@@ -97,6 +97,11 @@ func DataSource() *schema.Resource {
 				},
 				Optional: true,
 			},
+			"firewall_ids": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem:     &schema.Schema{Type: schema.TypeInt},
+			},
 		},
 	}
 }

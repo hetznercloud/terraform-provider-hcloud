@@ -90,6 +90,7 @@ type RData struct {
 	Labels       map[string]string
 	UserData     string
 	Network      RDataInlineNetwork
+	FirewallIDs  []string
 	DependsOn    []string
 }
 

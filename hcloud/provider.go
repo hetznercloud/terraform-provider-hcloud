@@ -3,6 +3,7 @@ package hcloud
 import (
 	"context"
 	"errors"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/firewall"
 	"log"
 	"time"
 
@@ -59,6 +60,7 @@ func Provider() *schema.Provider {
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			certificate.ResourceType:          certificate.Resource(),
+			firewall.ResourceType:             firewall.Resource(),
 			floatingip.AssignmentResourceType: floatingip.AssignmentResource(),
 			floatingip.ResourceType:           floatingip.Resource(),
 			loadbalancer.NetworkResourceType:  loadbalancer.NetworkResource(),
@@ -80,6 +82,7 @@ func Provider() *schema.Provider {
 			certificate.DataSourceType:           certificate.DataSource(),
 			datacenter.DatacentersDataSourceType: datacenter.DatacentersDataSource(),
 			datacenter.DataSourceType:            datacenter.DataSource(),
+			firewall.DataSourceType:              firewall.DataSource(),
 			floatingip.DataSourceType:            floatingip.DataSource(),
 			image.DataSourceType:                 image.DataSource(),
 			loadbalancer.DataSourceType:          loadbalancer.DataSource(),
