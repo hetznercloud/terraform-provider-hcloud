@@ -1,0 +1,30 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+resource "hcloud_firewall" "{{ .RName }}" {
+    name        = "{{ .Name }}--{{ .RInt }}"
+{{- if .Rules }}
+{{- range $v := .Rules }}
+    rule {
+        direction = "{{ $v.Direction }}"
+        protocol = "{{ $v.Protocol }}"
+{{- if $v.Port }}
+        port = "{{ $v.Port }}"
+{{- end }}
+{{ if $v.SourceIPs -}}
+        source_ips = [
+{{- range $v := $v.SourceIPs }}
+            "{{ $v }}",
+{{- end }}
+        ]
+{{ end }}
+    }
+{{- end }}
+{{- end }}
+{{- if .Labels }}
+    labels = {
+    {{- range $k,$v := .Labels }}
+      {{ $k }} = "{{ $v }}"
+    {{- end }}
+  }
+  {{- end }}
+}

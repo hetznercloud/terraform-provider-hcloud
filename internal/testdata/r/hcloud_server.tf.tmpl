@@ -52,6 +52,15 @@ resource "hcloud_server" "{{ .RName }}" {
   {{- if .UserData }}
   user_data   = "{{ .UserData }}"
   {{ end }}
+
+  {{ if .FirewallIDs }}
+  firewall_ids = [
+  {{- range $k,$v := .FirewallIDs }}
+     {{ $v }},
+  {{- end }}
+  ]
+  {{ end }}
+
   {{- if .DependsOn }}
   depends_on               = [{{ StringsJoin .DependsOn ", " }}]
   {{ end }}

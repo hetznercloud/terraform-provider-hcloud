@@ -5,6 +5,7 @@ import (
 
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/certificate"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/datacenter"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/firewall"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/floatingip"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/image"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancer"
@@ -29,6 +30,7 @@ func TestProvider_Resources(t *testing.T) {
 	var provider = Provider()
 	expectedResources := []string{
 		certificate.ResourceType,
+		firewall.ResourceType,
 		floatingip.AssignmentResourceType,
 		floatingip.ResourceType,
 		loadbalancer.NetworkResourceType,
@@ -61,6 +63,7 @@ func TestProvider_DataSources(t *testing.T) {
 		certificate.DataSourceType,
 		datacenter.DatacentersDataSourceType,
 		datacenter.DataSourceType,
+		firewall.DataSourceType,
 		floatingip.DataSourceType,
 		image.DataSourceType,
 		loadbalancer.DataSourceType,

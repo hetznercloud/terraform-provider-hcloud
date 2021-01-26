@@ -1,0 +1,7 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+data "hcloud_firewall" "{{ .RName }}" {
+  {{ if .FirewallID -}}    id            = {{ .FirewallID }}{{ end -}}
+  {{ if .FirewallName -}}  name          =  {{ .FirewallName }}{{ end -}}
+  {{ if .LabelSelector -}}    with_selector = "{{ .LabelSelector }}"{{ end }}
+}

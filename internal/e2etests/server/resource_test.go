@@ -7,8 +7,10 @@ import (
 	"testing"
 
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/e2etests"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/firewall"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/network"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
+
 	"github.com/stretchr/testify/assert"
 
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
@@ -344,6 +346,50 @@ func TestServerResource_DirectAttachToNetwork(t *testing.T) {
 						assert.Empty(t, s.PrivateNet)
 						return nil
 					}),
+				),
+			},
+		},
+	})
+}
+
+func TestServerResource_Firewalls(t *testing.T) {
+	var s hcloud.Server
+
+	fw := firewall.NewRData(t, "server-test", []firewall.RDataRule{
+		{
+			Direction: "in",
+			Protocol:  "icmp",
+			SourceIPs: []string{"0.0.0.0/0", "::/0"},
+		},
+	})
+	res := &server.RData{
+		Name:        "server-firewall",
+		Type:        e2etests.TestServerType,
+		Image:       e2etests.TestImage,
+		FirewallIDs: []string{fw.TFID() + ".id"},
+		Labels:      map[string]string{"HC-Feature-Firewalls": "enabled"}, // TODO: Remove before release
+	}
+	res.SetRName("server-firewall")
+	tmplMan := testtemplate.Manager{}
+	resource.Test(t, resource.TestCase{
+		PreCheck:     e2etests.PreCheck(t),
+		Providers:    e2etests.Providers(),
+		CheckDestroy: testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
+		Steps: []resource.TestStep{
+			{
+				// Create a new Server using the required values
+				// only.
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_firewall", fw,
+					"testdata/r/hcloud_server", res,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s)),
+					resource.TestCheckResourceAttr(res.TFID(), "name",
+						fmt.Sprintf("server-firewall--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(res.TFID(), "server_type", res.Type),
+					resource.TestCheckResourceAttr(res.TFID(), "image", res.Image),
+					resource.TestCheckResourceAttr(res.TFID(), "firewall_ids.#", "1"), // won't work because atm we dont show the firewall_ids within the api response
 				),
 			},
 		},

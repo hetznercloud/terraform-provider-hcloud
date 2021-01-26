@@ -154,6 +154,11 @@ func Resource() *schema.Resource {
 					},
 				},
 			},
+			"firewall_ids": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem:     &schema.Schema{Type: schema.TypeInt},
+			},
 		},
 	}
 }
@@ -209,6 +214,12 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 			tmpLabels[k] = v.(string)
 		}
 		opts.Labels = tmpLabels
+	}
+
+	if firewallIDs, ok := d.GetOk("firewall_ids"); ok {
+		for _, firewallId := range firewallIDs.([]interface{}) {
+			opts.Firewalls = append(opts.Firewalls, &hcloud.ServerCreateFirewall{Firewall: hcloud.Firewall{ID: firewallId.(int)}})
+		}
 	}
 
 	res, _, err := c.Server.Create(ctx, opts)
@@ -639,4 +650,10 @@ func setServerSchema(d *schema.ResourceData, s *hcloud.Server) {
 			d.Set("image", fmt.Sprintf("%d", s.Image.ID))
 		}
 	}
+
+	var firewallIds []int
+	for _, firewall := range s.PublicNet.Firewalls {
+		firewallIds = append(firewallIds, firewall.Firewall.ID)
+	}
+	d.Set("firewall_ids", firewallIds)
 }
