@@ -1,11 +1,12 @@
 ## unreleased
 
 BUG FIXES:
-* `hcloud_volume` datasource: id is now marked as computed to allow more setups where the id is unkown
-* `hcloud_ssh_key` datasource: id is now marked as computed to allow more setups where the id is unkown
-* `hcloud_network` datasource: id is now marked as computed to allow more setups where the id is unkown
-* `hcloud_image` datasource: id is now marked as computed to allow more setups where the id is unkown
-* `hcloud_certificate` datasource: id is now marked as computed to allow more setups where the id is unkown
+* `hcloud_volume` datasource: id is now marked as computed to allow more setups where the id is unknown
+* `hcloud_ssh_key` datasource: id is now marked as computed to allow more setups where the id is unknown
+* `hcloud_network` datasource: id is now marked as computed to allow more setups where the id is unknown
+* `hcloud_image` datasource: id is now marked as computed to allow more setups where the id is unknown
+* `hcloud_certificate` datasource: id is now marked as computed to allow more setups where the id is unknown
+* `hcloud_volume` resource: Automount is now working when you attach an already existing volume to a server.
 
 ## 1.24.0 (January 12, 2021)
 
