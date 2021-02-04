@@ -99,6 +99,9 @@ func resourceVolumeCreate(ctx context.Context, d *schema.ResourceData, m interfa
 
 	result, _, err := c.Volume.Create(ctx, opts)
 	if err != nil {
+		if hcloud.IsError(err, hcloud.ErrorCodeLocked) {
+			return resourceVolumeCreate(ctx, d, m)
+		}
 		return diag.FromErr(err)
 	}
 	if err := hcclient.WaitForAction(ctx, &c.Action, result.Action); err != nil {
@@ -128,7 +131,11 @@ func resourceVolumeCreate(ctx context.Context, d *schema.ResourceData, m interfa
 			for _, resource := range nextAction.Resources {
 				if resource.Type == hcloud.ActionResourceTypeServer {
 					err := control.Retry(control.DefaultRetries, func() error {
-						a, _, err := c.Volume.Attach(ctx, result.Volume, &hcloud.Server{ID: resource.ID})
+						o := hcloud.VolumeAttachOpts{Server: opts.Server}
+						if automount, ok := d.GetOk("automount"); ok {
+							opts.Automount = hcloud.Bool(automount.(bool))
+						}
+						a, _, err := c.Volume.AttachWithOpts(ctx, result.Volume, o)
 						if err != nil {
 							return err
 						}
@@ -277,7 +284,6 @@ func resourceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
 			return diag.FromErr(err)
 		}
-
 	}
 
 	if d.HasChange("labels") {
@@ -334,11 +340,16 @@ func resourceVolumeDelete(ctx context.Context, d *schema.ResourceData, m interfa
 			return diag.FromErr(err)
 		}
 	}
-	if _, err := c.Volume.Delete(ctx, volume); err != nil {
-		if hcerr, ok := err.(hcloud.Error); ok && hcerr.Code == hcloud.ErrorCodeNotFound {
-			// volume has already been deleted
-			return nil
+	err = control.Retry(control.DefaultRetries, func() error {
+		if _, err := c.Volume.Delete(ctx, volume); err != nil {
+			if resourceVolumeIsNotFound(err, d) {
+				return nil
+			}
+			return err
 		}
+		return nil
+	})
+	if err != nil {
 		return diag.FromErr(err)
 	}
 

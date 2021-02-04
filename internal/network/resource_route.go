@@ -115,7 +115,6 @@ func resourceNetworkRouteRead(ctx context.Context, d *schema.ResourceData, m int
 	d.SetId(generateNetworkRouteID(network, route.Destination.String()))
 	setNetworkRouteSchema(d, network, route)
 	return nil
-
 }
 
 func resourceNetworkRouteDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {

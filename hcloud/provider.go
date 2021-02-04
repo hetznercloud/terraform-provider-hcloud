@@ -70,7 +70,7 @@ func Provider() *schema.Provider {
 			server.NetworkResourceType:        server.NetworkResource(),
 			server.ResourceType:               server.Resource(),
 			sshkey.ResourceType:               sshkey.Resource(),
-			volume.AttachmentResourceType:     volume.VolumeAttachmentResource(),
+			volume.AttachmentResourceType:     volume.AttachmentResource(),
 			volume.ResourceType:               volume.Resource(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{

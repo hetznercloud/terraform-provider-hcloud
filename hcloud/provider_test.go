@@ -1,6 +1,8 @@
 package hcloud
 
 import (
+	"testing"
+
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/certificate"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/datacenter"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/floatingip"
@@ -14,7 +16,6 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/volume"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestProvider(t *testing.T) {

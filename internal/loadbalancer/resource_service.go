@@ -327,7 +327,7 @@ func resourceLoadBalancerServiceRead(ctx context.Context, d *schema.ResourceData
 		return nil
 	}
 
-	if err := setLoadBalancerServiceSchema(d, lb, &service); err != nil {
+	if setLoadBalancerServiceSchema(d, lb, &service); err != nil {
 		return diag.FromErr(err)
 	}
 	return nil
@@ -362,7 +362,7 @@ func resourceLoadBalancerServiceDelete(ctx context.Context, d *schema.ResourceDa
 	return nil
 }
 
-func setLoadBalancerServiceSchema(d *schema.ResourceData, lb *hcloud.LoadBalancer, svc *hcloud.LoadBalancerService) error {
+func setLoadBalancerServiceSchema(d *schema.ResourceData, lb *hcloud.LoadBalancer, svc *hcloud.LoadBalancerService) {
 	svcID := fmt.Sprintf("%d__%d", lb.ID, svc.ListenPort)
 
 	d.SetId(svcID)
@@ -400,8 +400,6 @@ func setLoadBalancerServiceSchema(d *schema.ResourceData, lb *hcloud.LoadBalance
 	if len(healthCheck) > 0 {
 		d.Set("health_check", []interface{}{healthCheck})
 	}
-
-	return nil
 }
 
 var errInvalidLoadBalancerServiceID = errors.New("invalid load balancer service id")
@@ -446,6 +444,7 @@ func lookupLoadBalancerServiceID(ctx context.Context, terraformID string, client
 
 	for _, svc := range loadBalancer.Services {
 		if svc.ListenPort == serviceListenPort {
+			svc := svc
 			loadBalancerService = &svc
 			return
 		}

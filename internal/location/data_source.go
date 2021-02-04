@@ -132,11 +132,13 @@ func dataSourceHcloudLocationsRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	var names, descriptions, ids []string
-	for _, v := range ls {
-		ids = append(ids, strconv.Itoa(v.ID))
-		descriptions = append(descriptions, v.Description)
-		names = append(names, v.Name)
+	names := make([]string, len(ls))
+	descriptions := make([]string, len(ls))
+	ids := make([]string, len(ls))
+	for i, v := range ls {
+		ids[i] = strconv.Itoa(v.ID)
+		descriptions[i] = v.Description
+		names[i] = v.Name
 	}
 
 	d.SetId(fmt.Sprintf("%x", sha1.Sum([]byte(strings.Join(ids, "")))))

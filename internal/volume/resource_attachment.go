@@ -17,9 +17,9 @@ import (
 // attachment resource.
 const AttachmentResourceType = "hcloud_volume_attachment"
 
-// VolumeAttachmentResource creates a Terraform schema for the
+// AttachmentResource creates a Terraform schema for the
 // hcloud_volume_attachmetn resource.
-func VolumeAttachmentResource() *schema.Resource {
+func AttachmentResource() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceVolumeAttachmentCreate,
 		ReadContext:   resourceVolumeAttachmentRead,
@@ -150,6 +150,11 @@ func resourceVolumeAttachmentDelete(ctx context.Context, d *schema.ResourceData,
 	}
 
 	volume, _, err := c.Volume.GetByID(ctx, volumeID)
+	if err != nil {
+		log.Printf("[WARN] Volume ID (%v) not found, removing volume attachment from state", d.Get("volume_id"))
+		d.SetId("")
+		return nil
+	}
 	if volume == nil {
 		log.Printf("[WARN] Volume ID (%v) not found, removing volume attachment from state", d.Get("volume_id"))
 		d.SetId("")

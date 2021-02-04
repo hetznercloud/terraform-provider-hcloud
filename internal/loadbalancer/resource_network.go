@@ -120,7 +120,7 @@ func resourceLoadBalancerNetworkCreate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	enablePublicInterface := d.Get("enable_public_interface").(bool)
-	err = resourceLoadBalancerNetworkUpdatePublicInterface(ctx, enablePublicInterface, lb, c, d)
+	err = resourceLoadBalancerNetworkUpdatePublicInterface(ctx, enablePublicInterface, lb, c)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -159,7 +159,6 @@ func resourceLoadBalancerNetworkRead(ctx context.Context, d *schema.ResourceData
 	d.SetId(generateLoadBalancerNetworkID(server, network))
 	setLoadBalancerNetworkSchema(d, server, network, privateNet)
 	return nil
-
 }
 
 func resourceLoadBalancerNetworkDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -271,6 +270,9 @@ func lookupLoadBalancerNetworkID(
 	}
 
 	network, _, err := c.Network.GetByID(ctx, networkID)
+	if err != nil {
+		return nil, nil, nil, errInvalidLoadBalancerNetworkID
+	}
 	if network == nil {
 		return nil, nil, nil, errInvalidLoadBalancerNetworkID
 	}
@@ -283,9 +285,7 @@ func lookupLoadBalancerNetworkID(
 	return nil, nil, nil, errInvalidLoadBalancerNetworkID
 }
 
-func resourceLoadBalancerNetworkUpdatePublicInterface(
-	ctx context.Context, enable bool, lb *hcloud.LoadBalancer, client *hcloud.Client, d *schema.ResourceData,
-) error {
+func resourceLoadBalancerNetworkUpdatePublicInterface(ctx context.Context, enable bool, lb *hcloud.LoadBalancer, client *hcloud.Client) error {
 	var (
 		action *hcloud.Action
 		err    error

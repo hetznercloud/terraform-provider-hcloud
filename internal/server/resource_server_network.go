@@ -70,8 +70,6 @@ func NetworkResource() *schema.Resource {
 }
 
 func resourceServerNetworkCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	var aliasIPs []net.IP
-
 	client := m.(*hcloud.Client)
 	ip := net.ParseIP(d.Get("ip").(string))
 
@@ -90,18 +88,18 @@ func resourceServerNetworkCreate(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	server := &hcloud.Server{ID: d.Get("server_id").(int)}
-	network := &hcloud.Network{ID: networkID.(int)}
-
+	n := &hcloud.Network{ID: networkID.(int)}
+	aliasIPs := make([]net.IP, 0, d.Get("alias_ips").(*schema.Set).Len())
 	for _, aliasIP := range d.Get("alias_ips").(*schema.Set).List() {
 		ip := net.ParseIP(aliasIP.(string))
 		aliasIPs = append(aliasIPs, ip)
 	}
 
-	err := attachServerToNetwork(ctx, client, server, network, ip, aliasIPs)
+	err := attachServerToNetwork(ctx, client, server, n, ip, aliasIPs)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	d.SetId(generateServerNetworkID(server, network))
+	d.SetId(generateServerNetworkID(server, n))
 
 	return resourceServerNetworkRead(ctx, d, m)
 }
@@ -166,7 +164,6 @@ func resourceServerNetworkRead(ctx context.Context, d *schema.ResourceData, m in
 	d.SetId(generateServerNetworkID(server, network))
 	setServerNetworkSchema(d, server, network, privateNet)
 	return nil
-
 }
 
 func resourceServerNetworkDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -298,6 +295,7 @@ func lookupServerNetworkID(ctx context.Context, terraformID string, client *hclo
 
 	for _, pn := range server.PrivateNet {
 		if pn.Network.ID == network.ID {
+			pn := pn
 			serverPrivateNet = &pn
 			return
 		}
