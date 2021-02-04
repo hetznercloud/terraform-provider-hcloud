@@ -23,6 +23,7 @@ func DataSource() *schema.Resource {
 			"id": {
 				Type:     schema.TypeInt,
 				Optional: true,
+				Computed: true,
 			},
 			"type": {
 				Type:     schema.TypeString,
