@@ -1,5 +1,7 @@
 ## unreleased
 
+## 1.24.1 (February 04, 2021)
+
 BUG FIXES:
 * `hcloud_volume` datasource: id is now marked as computed to allow more setups where the id is unknown
 * `hcloud_ssh_key` datasource: id is now marked as computed to allow more setups where the id is unknown
