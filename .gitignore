@@ -9,3 +9,4 @@
 /*.yaml
 /*.log
 /_output
+!.golangci.yaml

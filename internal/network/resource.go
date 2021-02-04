@@ -92,7 +92,6 @@ func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interfac
 	}
 	setNetworkSchema(d, network)
 	return nil
-
 }
 
 func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {

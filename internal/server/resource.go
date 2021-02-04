@@ -536,10 +536,11 @@ func getSSHkeys(ctx context.Context, client *hcloud.Client, d *schema.ResourceDa
 
 func inlineAttachServerToNetwork(ctx context.Context, c *hcloud.Client, s *hcloud.Server, nwData map[string]interface{}) error {
 	const op = "hcloud/inlineAttachServerToNetwork"
-	var aliasIPs []net.IP
 
 	nw := &hcloud.Network{ID: nwData["network_id"].(int)}
 	ip := net.ParseIP(nwData["ip"].(string))
+
+	aliasIPs := make([]net.IP, 0, nwData["alias_ips"].(*schema.Set).Len())
 	for _, v := range nwData["alias_ips"].(*schema.Set).List() {
 		aliasIP := net.ParseIP(v.(string))
 		aliasIPs = append(aliasIPs, aliasIP)

@@ -93,11 +93,11 @@ func resourceFloatingIPAssignmentRead(ctx context.Context, d *schema.ResourceDat
 	// because only the terraform ID (Floating IP ID in this case)
 	// is available, so we need to get the ID from the volume
 	// instead of from the configuration
-	serverId := d.Get("server_id").(int)
-	if serverId == 0 {
-		serverId = floatingIP.Server.ID
+	serverID := d.Get("server_id").(int)
+	if serverID == 0 {
+		serverID = floatingIP.Server.ID
 	}
-	server, _, err := client.Server.GetByID(ctx, serverId)
+	server, _, err := client.Server.GetByID(ctx, serverID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -123,6 +123,11 @@ func resourceFloatingIPAssignmentDelete(ctx context.Context, d *schema.ResourceD
 	}
 
 	floatingIP, _, err := client.FloatingIP.GetByID(ctx, floatingIPID)
+	if err != nil {
+		log.Printf("[WARN] Invalid id (%s), removing from state: %v", d.Id(), err)
+		d.SetId("")
+		return nil
+	}
 	if floatingIP == nil {
 		log.Printf("[WARN] Floating IP ID (%v) not found, removing Floating IP Association from state", d.Get("floating_ip_id"))
 		d.SetId("")

@@ -13,7 +13,7 @@ import (
 )
 
 const TestImageName = e2etests.TestImage
-const TestImageId = "15512617"
+const TestImageID = "15512617"
 
 func TestAccHcloudDataSourceImageTest(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
@@ -23,7 +23,7 @@ func TestAccHcloudDataSourceImageTest(t *testing.T) {
 	}
 	imageByName.SetRName("image_by_name")
 	imageByID := &image.DData{
-		ImageID: TestImageId,
+		ImageID: TestImageID,
 	}
 	imageByID.SetRName("image_by_id")
 
@@ -41,11 +41,11 @@ func TestAccHcloudDataSourceImageTest(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(imageByName.TFID(),
 						"name", TestImageName),
-					resource.TestCheckResourceAttr(imageByName.TFID(), "id", TestImageId),
+					resource.TestCheckResourceAttr(imageByName.TFID(), "id", TestImageID),
 
 					resource.TestCheckResourceAttr(imageByID.TFID(),
 						"name", TestImageName),
-					resource.TestCheckResourceAttr(imageByID.TFID(), "id", TestImageId),
+					resource.TestCheckResourceAttr(imageByID.TFID(), "id", TestImageID),
 				),
 			},
 		},

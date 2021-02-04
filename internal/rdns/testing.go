@@ -47,8 +47,8 @@ type RData struct {
 
 	ServerID     string
 	FloatingIPID string
-	IpAddress    string
-	DnsPTR       string
+	IPAddress    string
+	DNSPTR       string
 }
 
 // TFID returns the resource identifier.
@@ -61,8 +61,8 @@ func NewRData(t *testing.T, rName string, serverID string, floatingIPID string, 
 	r := &RData{
 		ServerID:     serverID,
 		FloatingIPID: floatingIPID,
-		IpAddress:    ipAddress,
-		DnsPTR:       dnsPTR,
+		IPAddress:    ipAddress,
+		DNSPTR:       dnsPTR,
 	}
 	r.SetRName(rName)
 	return r

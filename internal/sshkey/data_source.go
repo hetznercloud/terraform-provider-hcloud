@@ -184,7 +184,7 @@ func dataSourceHcloudSSHKeysRead(ctx context.Context, d *schema.ResourceData, m 
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	var keyMaps []map[string]interface{}
+	keyMaps := make([]map[string]interface{}, 0, len(keys))
 	id := ""
 	for _, key := range keys {
 		if id != "" {

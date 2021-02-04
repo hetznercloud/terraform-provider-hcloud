@@ -104,12 +104,14 @@ func setDatacenterSchema(d *schema.ResourceData, dc *hcloud.Datacenter) {
 		"latitude":    fmt.Sprintf("%f", dc.Location.Latitude),
 		"longitude":   fmt.Sprintf("%f", dc.Location.Longitude),
 	})
-	var supported, available []int
-	for _, v := range dc.ServerTypes.Supported {
-		supported = append(supported, v.ID)
+	supported := make([]int, len(dc.ServerTypes.Supported))
+
+	for i, v := range dc.ServerTypes.Supported {
+		supported[i] = v.ID
 	}
-	for _, v := range dc.ServerTypes.Available {
-		available = append(available, v.ID)
+	available := make([]int, len(dc.ServerTypes.Available))
+	for i, v := range dc.ServerTypes.Available {
+		available[i] = v.ID
 	}
 	sort.Ints(available)
 	sort.Ints(supported)
@@ -149,7 +151,9 @@ func dataSourceHcloudDatacentersRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	var names, descriptions, ids []string
+	names := make([]string, 0, len(dcs))
+	descriptions := make([]string, 0, len(dcs))
+	ids := make([]string, 0, len(dcs))
 	for _, v := range dcs {
 		ids = append(ids, strconv.Itoa(v.ID))
 		descriptions = append(descriptions, v.Description)

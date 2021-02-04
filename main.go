@@ -3,9 +3,10 @@ package main
 import (
 	"context"
 	"flag"
+	"log"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 	"github.com/hetznercloud/terraform-provider-hcloud/hcloud"
-	"log"
 )
 
 func main() {

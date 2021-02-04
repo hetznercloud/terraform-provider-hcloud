@@ -141,7 +141,6 @@ func resourceNetworkSubnetRead(ctx context.Context, d *schema.ResourceData, m in
 	d.SetId(generateNetworkSubnetID(network, subnet.IPRange.String()))
 	setNetworkSubnetSchema(d, network, subnet)
 	return nil
-
 }
 
 func resourceNetworkSubnetDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {

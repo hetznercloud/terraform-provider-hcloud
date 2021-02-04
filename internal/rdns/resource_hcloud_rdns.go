@@ -206,7 +206,6 @@ func resourceReverseDNSUpdate(ctx context.Context, d *schema.ResourceData, m int
 			if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
 				return diag.FromErr(err)
 			}
-
 		}
 	}
 	return resourceReverseDNSRead(ctx, d, m)
