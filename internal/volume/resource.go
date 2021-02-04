@@ -242,7 +242,12 @@ func resourceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 				}
 			}
 			err := control.Retry(control.DefaultRetries, func() error {
-				action, _, err := c.Volume.Attach(ctx, volume, &hcloud.Server{ID: serverID})
+				opts := hcloud.VolumeAttachOpts{Server: &hcloud.Server{ID: serverID}}
+				if automount, ok := d.GetOk("automount"); ok {
+					opts.Automount = hcloud.Bool(automount.(bool))
+				}
+
+				action, _, err := c.Volume.AttachWithOpts(ctx, volume, opts)
 				if err != nil {
 					if resourceVolumeIsNotFound(err, d) {
 						return nil
