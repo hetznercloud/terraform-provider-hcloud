@@ -1,5 +1,8 @@
 ## unreleased
 
+BUG FIXES:
+* `hcloud_server` resource: image had a wrong type (int instead of string) when a server was created from a snapshot
+
 ## 1.24.1 (February 04, 2021)
 
 BUG FIXES:

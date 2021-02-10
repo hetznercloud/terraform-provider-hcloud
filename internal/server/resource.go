@@ -635,7 +635,7 @@ func setServerSchema(d *schema.ResourceData, s *hcloud.Server) {
 		if s.Image.Name != "" {
 			d.Set("image", s.Image.Name)
 		} else {
-			d.Set("image", s.Image.ID)
+			d.Set("image", fmt.Sprintf("%d", s.Image.ID))
 		}
 	}
 }
