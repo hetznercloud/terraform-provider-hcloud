@@ -1,0 +1,16 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+resource "hcloud_snapshot" "{{ .RName }}" {
+  {{/* Required properties */ -}}
+  server_id = {{ .ServerID }}
+  {{- if .Description }}
+  description       = "{{ .Description }}"
+  {{ end }}
+  {{- if .Labels }}
+  labels = {
+  {{- range $k,$v := .Labels }}
+    {{ $k }} = "{{ $v }}"
+  {{- end }}
+  }
+  {{ end }}
+}

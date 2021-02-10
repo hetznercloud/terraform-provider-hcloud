@@ -1,5 +1,8 @@
 ## unreleased
 
+FEATURES:
+* **New Resource**: `hcloud_snapshot`
+
 BUG FIXES:
 * `hcloud_server` resource: image had a wrong type (int instead of string) when a server was created from a snapshot
 

@@ -6,6 +6,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/snapshot"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
@@ -69,6 +71,7 @@ func Provider() *schema.Provider {
 			rdns.ResourceType:                 rdns.Resource(),
 			server.NetworkResourceType:        server.NetworkResource(),
 			server.ResourceType:               server.Resource(),
+			snapshot.ResourceType:             snapshot.Resource(),
 			sshkey.ResourceType:               sshkey.Resource(),
 			volume.AttachmentResourceType:     volume.VolumeAttachmentResource(),
 			volume.ResourceType:               volume.Resource(),
