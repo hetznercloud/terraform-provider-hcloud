@@ -3,7 +3,7 @@ stages:
 
 test:
   stage: test
-  image: golang:1.15
+  image: golang:1.16
   except:
     - tags
   script:

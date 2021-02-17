@@ -6,6 +6,9 @@ FEATURES:
 BUG FIXES:
 * `hcloud_server` resource: image had a wrong type (int instead of string) when a server was created from a snapshot
 
+NOTES:
+* The provider is now built with Go 1.16
+
 ## 1.24.1 (February 04, 2021)
 
 BUG FIXES:
