@@ -51,17 +51,20 @@ func TargetResource() *schema.Resource {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				ExactlyOneOf: targetProps,
+				ForceNew:     true,
 			},
 			"label_selector": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ExactlyOneOf: targetProps,
+				ForceNew:     true,
 			},
 			"ip": {
 				Type:          schema.TypeString,
 				Optional:      true,
 				ExactlyOneOf:  targetProps,
 				ConflictsWith: []string{"use_private_ip"},
+				ForceNew:      true,
 			},
 			"use_private_ip": {
 				Type:     schema.TypeBool,
