@@ -5,6 +5,7 @@ FEATURES:
 
 BUG FIXES:
 * `hcloud_server` resource: image had a wrong type (int instead of string) when a server was created from a snapshot
+* `hcloud_load_balancer_target` resource: force recreation when changing a target attribute (server_id, ip or label_selector)
 
 NOTES:
 * The provider is now built with Go 1.16
