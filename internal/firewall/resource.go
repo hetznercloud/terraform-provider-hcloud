@@ -2,14 +2,15 @@ package firewall
 
 import (
 	"context"
+	"log"
+	"net"
+	"strconv"
+
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
-	"log"
-	"net"
-	"strconv"
 )
 
 // ResourceType is the type name of the Hetzner Cloud Firewall resource.
@@ -46,6 +47,8 @@ func Resource() *schema.Resource {
 								direction := i.(string)
 								switch hcloud.FirewallRuleDirection(direction) {
 								case hcloud.FirewallRuleDirectionIn:
+									return nil
+								case hcloud.FirewallRuleDirectionOut:
 									return nil
 								default:
 									return diag.Errorf("%s is not a valid direction", direction)
@@ -85,7 +88,22 @@ func Resource() *schema.Resource {
 									return nil
 								},
 							},
-							Required: true,
+							Optional: true,
+						},
+						"destination_ips": &schema.Schema{
+							Type: schema.TypeList,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+								ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics {
+									sourceIP := i.(string)
+									_, _, err := net.ParseCIDR(sourceIP)
+									if err != nil {
+										return diag.FromErr(err)
+									}
+									return nil
+								},
+							},
+							Optional: true,
 						},
 					},
 				},
@@ -144,6 +162,11 @@ func toHcloudRule(tfRawRule interface{}) hcloud.FirewallRule {
 		_, source, _ := net.ParseCIDR(sourceIP.(string))
 		rule.SourceIPs = append(rule.SourceIPs, *source)
 	}
+	for _, destinationIP := range tfRule["destination_ips"].([]interface{}) {
+		// We ignore the error here, because it was already validated before
+		_, destination, _ := net.ParseCIDR(destinationIP.(string))
+		rule.DestinationIPs = append(rule.DestinationIPs, *destination)
+	}
 	return rule
 }
 
@@ -155,11 +178,16 @@ func toTFRule(hcloudRule hcloud.FirewallRule) map[string]interface{} {
 	if hcloudRule.Port != nil {
 		tfRule["port"] = hcloudRule.Port
 	}
-	var sourceIPs []string
-	for _, sourceIP := range hcloudRule.SourceIPs {
-		sourceIPs = append(sourceIPs, sourceIP.String())
+	sourceIPs := make([]string, len(hcloudRule.SourceIPs))
+	for i, sourceIP := range hcloudRule.SourceIPs {
+		sourceIPs[i] = sourceIP.String()
 	}
 	tfRule["source_ips"] = sourceIPs
+	destinationIPs := make([]string, len(hcloudRule.DestinationIPs))
+	for i, destinationIP := range hcloudRule.DestinationIPs {
+		destinationIPs[i] = destinationIP.String()
+	}
+	tfRule["destination_ips"] = destinationIPs
 	return tfRule
 }
 
@@ -317,11 +345,11 @@ func waitForFirewallAction(ctx context.Context, client *hcloud.Client, action *h
 }
 
 func waitForFirewallActions(ctx context.Context, client *hcloud.Client, actions []*hcloud.Action, firewall *hcloud.Firewall) error {
-	log.Printf("[INFO] firewall (%d) waiting for %q action to complete...", firewall.ID, len(actions))
+	log.Printf("[INFO] firewall (%d) waiting for %v actions to complete...", firewall.ID, len(actions))
 	_, errCh := client.Action.WatchOverallProgress(ctx, actions)
 	if err := <-errCh; err != nil {
 		return err
 	}
-	log.Printf("[INFO] firewall (%d) %q actions succeeded", firewall.ID, len(actions))
+	log.Printf("[INFO] firewall (%d) %v actions succeeded", firewall.ID, len(actions))
 	return nil
 }

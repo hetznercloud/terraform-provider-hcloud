@@ -2,11 +2,12 @@ package firewall
 
 import (
 	"context"
+	"log"
+	"sort"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
-	"log"
-	"sort"
 )
 
 // DataSourceType is the type name of the Hetzner Cloud Firewall resource.

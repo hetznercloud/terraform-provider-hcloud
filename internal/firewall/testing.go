@@ -88,10 +88,11 @@ type RData struct {
 // RData defines the fields for the "testdata/r/hcloud_firewall"
 // template.
 type RDataRule struct {
-	Direction string
-	Port      string
-	SourceIPs []string
-	Protocol  string
+	Direction      string
+	Port           string
+	SourceIPs      []string
+	DestinationIPs []string
+	Protocol       string
 }
 
 // TFID returns the resource identifier.

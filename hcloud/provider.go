@@ -3,9 +3,10 @@ package hcloud
 import (
 	"context"
 	"errors"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/firewall"
 	"log"
 	"time"
+
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/firewall"
 
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/snapshot"
 

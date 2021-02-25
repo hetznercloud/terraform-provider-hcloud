@@ -17,6 +17,13 @@ resource "hcloud_firewall" "{{ .RName }}" {
 {{- end }}
         ]
 {{ end }}
+{{ if $v.DestinationIPs -}}
+        destination_ips = [
+{{- range $v := $v.DestinationIPs }}
+            "{{ $v }}",
+{{- end }}
+        ]
+{{ end }}
     }
 {{- end }}
 {{- end }}

@@ -2,9 +2,10 @@ package firewall
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/e2etests"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/firewall"
-	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
