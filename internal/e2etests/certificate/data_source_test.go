@@ -15,7 +15,7 @@ import (
 func TestAccHcloudDataSourceCertificateTest(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
-	res := certificate.NewRData(t, "datasource-test", "TFtestAcc")
+	res := certificate.NewUploadedRData(t, "datasource-test", "TFtestAcc")
 	certificateByName := &certificate.DData{
 		CertificateName: res.TFID() + ".name",
 	}
@@ -36,12 +36,12 @@ func TestAccHcloudDataSourceCertificateTest(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_certificate", res,
+					"testdata/r/hcloud_uploaded_certificate", res,
 				),
 			},
 			{
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_certificate", res,
+					"testdata/r/hcloud_uploaded_certificate", res,
 					"testdata/d/hcloud_certificate", certificateByName,
 					"testdata/d/hcloud_certificate", certificateByID,
 					"testdata/d/hcloud_certificate", certificateBySel,

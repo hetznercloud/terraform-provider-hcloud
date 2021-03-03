@@ -1,3 +1,9 @@
+## Unreleased
+
+* **New Resource** `hcloud_managed_certificate`
+* **New Resource** `hcloud_uploaded_certificate`
+* **Deprecated Resource** `hcloud_certificate`
+
 ## 1.25.2 (March 16, 2021)
 
 BUG FIXES:

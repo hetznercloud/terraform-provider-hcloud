@@ -210,8 +210,7 @@ func TestAccHcloudLoadBalancerService_HTTPS(t *testing.T) {
 		cert hcloud.Certificate
 	)
 
-	certData := certificate.NewRData(t, "test-cert", "example.org")
-	certResName := fmt.Sprintf("%s.%s", certificate.ResourceType, certData.RName())
+	certData := certificate.NewUploadedRData(t, "test-cert", "example.org")
 
 	lbResName := fmt.Sprintf("%s.%s", loadbalancer.ResourceType, loadbalancer.Basic.Name)
 	svcName := "lb-https-service-test"
@@ -225,7 +224,7 @@ func TestAccHcloudLoadBalancerService_HTTPS(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_certificate", certData,
+					"testdata/r/hcloud_uploaded_certificate", certData,
 					"testdata/r/hcloud_load_balancer", loadbalancer.Basic,
 					"testdata/r/hcloud_load_balancer_service", &loadbalancer.RDataService{
 						Name:           svcName,
@@ -233,14 +232,14 @@ func TestAccHcloudLoadBalancerService_HTTPS(t *testing.T) {
 						Protocol:       "https",
 						AddHTTP:        true,
 						HTTP: loadbalancer.RDataServiceHTTP{
-							Certificates: []string{certResName + ".id"},
+							Certificates: []string{certData.TFID() + ".id"},
 							RedirectHTTP: true,
 						},
 					},
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckResourceExists(lbResName, loadbalancer.ByID(t, &lb)),
-					testsupport.CheckResourceExists(certResName, certificate.ByID(t, &cert)),
+					testsupport.CheckResourceExists(certData.TFID(), certificate.ByID(t, &cert)),
 					testsupport.LiftTCF(hasService(&lb, 443)),
 					testsupport.CheckResourceAttrFunc(svcResName, "http.0.certificates.0", func() string {
 						return strconv.Itoa(cert.ID)
@@ -255,8 +254,8 @@ func TestAccHcloudLoadBalancerService_HTTPS(t *testing.T) {
 }
 
 func TestAccHcloudLoadBalancerService_HTTPS_UpdateUnchangedCertificates(t *testing.T) {
-	certRes1 := certificate.NewRData(t, "cert-res1", "TFAccTests1")
-	certRes2 := certificate.NewRData(t, "cert-res2", "TFAccTests2")
+	certRes1 := certificate.NewUploadedRData(t, "cert-res1", "TFAccTests1")
+	certRes2 := certificate.NewUploadedRData(t, "cert-res2", "TFAccTests2")
 	lbRes := &loadbalancer.RData{
 		Name:         "load-balancer-certificates-unchanged",
 		LocationName: e2etests.TestLocationName,
@@ -281,8 +280,8 @@ func TestAccHcloudLoadBalancerService_HTTPS_UpdateUnchangedCertificates(t *testi
 			{
 				// Create a new Load Balancer using two certificates
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_certificate", certRes1,
-					"testdata/r/hcloud_certificate", certRes2,
+					"testdata/r/hcloud_uploaded_certificate", certRes1,
+					"testdata/r/hcloud_uploaded_certificate", certRes2,
 					"testdata/r/hcloud_load_balancer", lbRes,
 					"testdata/r/hcloud_load_balancer_service", svcRes,
 				),
@@ -319,7 +318,7 @@ func TestAccHcloudLoadBalancerService_CreateDelete_NoListenPort(t *testing.T) {
 		},
 	})
 
-	certData := certificate.NewRData(t, "test-cert", "example.org")
+	certData := certificate.NewUploadedRData(t, "test-cert", "example.org")
 	resource.Test(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
@@ -328,7 +327,7 @@ func TestAccHcloudLoadBalancerService_CreateDelete_NoListenPort(t *testing.T) {
 			{
 				// Create a HTTPS service without setting a listen port.
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_certificate", certData,
+					"testdata/r/hcloud_uploaded_certificate", certData,
 					"testdata/r/hcloud_load_balancer", loadbalancer.Basic,
 					"testdata/r/hcloud_load_balancer_service", &loadbalancer.RDataService{
 						Name:           svcName,
@@ -336,7 +335,7 @@ func TestAccHcloudLoadBalancerService_CreateDelete_NoListenPort(t *testing.T) {
 						LoadBalancerID: fmt.Sprintf("%s.%s.id", loadbalancer.ResourceType, loadbalancer.Basic.Name),
 						AddHTTP:        true,
 						HTTP: loadbalancer.RDataServiceHTTP{
-							Certificates: []string{fmt.Sprintf("hcloud_certificate.%s.id", certData.Name)},
+							Certificates: []string{fmt.Sprintf("hcloud_uploaded_certificate.%s.id", certData.Name)},
 						},
 					},
 				),

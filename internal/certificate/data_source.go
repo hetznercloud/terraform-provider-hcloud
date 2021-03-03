@@ -26,6 +26,10 @@ func DataSource() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"type": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"with_selector": {
 				Type:     schema.TypeString,
 				Optional: true,

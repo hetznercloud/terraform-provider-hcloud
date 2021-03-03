@@ -1,13 +1,8 @@
 {{- /* vim: set ft=terraform: */ -}}
 
-resource "hcloud_certificate" "{{ .RName }}" {
+resource "hcloud_managed_certificate" "{{ .RName }}" {
   name        = "{{ .Name }}--{{ .RInt }}"
-  private_key =<<EOT
-{{ StringsTrimSpace .PrivateKey }}
-  EOT
-  certificate =<<EOT
-{{ StringsTrimSpace .Certificate }}
-  EOT
+  domain_names = {{ with DQuoteS .DomainNames }}[{{ StringsJoin . ","}}]{{ end }}
   {{- if .Labels }}
     labels = {
     {{- range $k,$v := .Labels }}
