@@ -15,8 +15,8 @@ import (
 )
 
 func init() {
-	resource.AddTestSweepers(ResourceType, &resource.Sweeper{
-		Name:         ResourceType,
+	resource.AddTestSweepers(UploadedResourceType, &resource.Sweeper{
+		Name:         UploadedResourceType,
 		Dependencies: []string{},
 		F:            Sweep,
 	})
@@ -61,7 +61,7 @@ func ByID(t *testing.T, cert *hcloud.Certificate) func(*hcloud.Client, int) bool
 	}
 }
 
-// DData defines the fields for the "testdata/d/hcloud_certificate"
+// DData defines the fields for the "testdata/d/hcloud_uploaded_certificate"
 // template.
 type DData struct {
 	testtemplate.DataCommon
@@ -76,9 +76,9 @@ func (d *DData) TFID() string {
 	return fmt.Sprintf("data.%s.%s", DataSourceType, d.RName())
 }
 
-// RData defines the fields for the "testdata/r/hcloud_certificate"
+// RDataUploaded defines the fields for the "testdata/r/hcloud_uploaded_certificate"
 // template.
-type RData struct {
+type RDataUploaded struct {
 	testtemplate.DataCommon
 
 	Name        string
@@ -87,19 +87,14 @@ type RData struct {
 	Labels      map[string]string
 }
 
-// TFID returns the resource identifier.
-func (d *RData) TFID() string {
-	return fmt.Sprintf("%s.%s", ResourceType, d.RName())
-}
-
-// NewRData creates data for a new certificate resource.
-func NewRData(t *testing.T, name, org string) *RData {
-	rCert, rKey, err := testsupport.RandTLSCert(org)
+// NewUploadedRData creates data for a new certificate resource.
+func NewUploadedRData(t *testing.T, name, org string) *RDataUploaded {
 	rInt := acctest.RandInt()
+	rCert, rKey, err := testsupport.RandTLSCert(org)
 	if err != nil {
 		t.Fatal(err)
 	}
-	r := &RData{
+	r := &RDataUploaded{
 		Name:        name,
 		PrivateKey:  rKey,
 		Certificate: rCert,
@@ -107,4 +102,42 @@ func NewRData(t *testing.T, name, org string) *RData {
 	}
 	r.SetRName(name)
 	return r
+}
+
+// TFID returns the resource identifier.
+func (d *RDataUploaded) TFID() string {
+	return fmt.Sprintf("%s.%s", UploadedResourceType, d.RName())
+}
+
+// RDataManaged defines the fields for the "testdata/r/hcloud_managed_certificate"
+// template.
+type RDataManaged struct {
+	testtemplate.DataCommon
+
+	Name        string
+	DomainNames []string
+	Labels      map[string]string
+}
+
+// NewManagedRData creates data for a new certificate resource.
+func NewManagedRData(t *testing.T, name string, domainNames []string) *RDataManaged {
+	r := &RDataManaged{
+		Name:        name,
+		DomainNames: domainNames,
+
+		Labels: map[string]string{
+			// Required for internal testing purposes.
+			// DO NOT USE THIS LABEL OUTSIDE OF HETZNER CLOUD TESTS!
+			//
+			// Support for it may vanish any time we see fit.
+			"HC-Use-Staging-CA": "true",
+		},
+	}
+	r.SetRName(name)
+	return r
+}
+
+// TFID returns the resource identifier.
+func (d *RDataManaged) TFID() string {
+	return fmt.Sprintf("%s.%s", ManagedResourceType, d.RName())
 }

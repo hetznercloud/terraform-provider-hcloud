@@ -60,7 +60,9 @@ func Provider() *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			certificate.ResourceType:          certificate.Resource(),
+			certificate.UploadedResourceType:  certificate.UploadedResource(),
+			certificate.ResourceType:          certificate.UploadedResource(), // Alias for backwards compatibility.
+			certificate.ManagedResourceType:   certificate.ManagedResource(),
 			firewall.ResourceType:             firewall.Resource(),
 			floatingip.AssignmentResourceType: floatingip.AssignmentResource(),
 			floatingip.ResourceType:           floatingip.Resource(),
