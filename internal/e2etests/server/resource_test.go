@@ -362,14 +362,28 @@ func TestServerResource_Firewalls(t *testing.T) {
 			SourceIPs: []string{"0.0.0.0/0", "::/0"},
 		},
 	})
+	fw2 := firewall.NewRData(t, "server-test-2", []firewall.RDataRule{
+		{
+			Direction: "in",
+			Protocol:  "tcp",
+			SourceIPs: []string{"0.0.0.0/0", "::/0"},
+			Port:      "1-65535",
+		},
+	})
 	res := &server.RData{
 		Name:        "server-firewall",
 		Type:        e2etests.TestServerType,
 		Image:       e2etests.TestImage,
 		FirewallIDs: []string{fw.TFID() + ".id"},
-		Labels:      map[string]string{"HC-Feature-Firewalls": "enabled"}, // TODO: Remove before release
 	}
 	res.SetRName("server-firewall")
+	res2 := &server.RData{
+		Name:        "server-firewall",
+		Type:        e2etests.TestServerType,
+		Image:       e2etests.TestImage,
+		FirewallIDs: []string{fw2.TFID() + ".id"},
+	}
+	res2.SetRName(res.RName())
 	tmplMan := testtemplate.Manager{}
 	resource.Test(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
@@ -389,7 +403,24 @@ func TestServerResource_Firewalls(t *testing.T) {
 						fmt.Sprintf("server-firewall--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(res.TFID(), "server_type", res.Type),
 					resource.TestCheckResourceAttr(res.TFID(), "image", res.Image),
-					resource.TestCheckResourceAttr(res.TFID(), "firewall_ids.#", "1"), // won't work because atm we dont show the firewall_ids within the api response
+					resource.TestCheckResourceAttr(res.TFID(), "firewall_ids.#", "1"),
+				),
+			},
+			{
+				// Create a new Server using the required values
+				// only.
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_firewall", fw,
+					"testdata/r/hcloud_firewall", fw2,
+					"testdata/r/hcloud_server", res2,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s)),
+					resource.TestCheckResourceAttr(res.TFID(), "name",
+						fmt.Sprintf("server-firewall--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(res.TFID(), "server_type", res.Type),
+					resource.TestCheckResourceAttr(res.TFID(), "image", res.Image),
+					resource.TestCheckResourceAttr(res.TFID(), "firewall_ids.#", "1"),
 				),
 			},
 		},

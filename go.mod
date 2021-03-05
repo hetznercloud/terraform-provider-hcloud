@@ -11,4 +11,4 @@ require (
 
 go 1.16
 
-replace github.com/hetznercloud/hcloud-go => hetzner.cloud/integrations/hcloud-go v1.24.0-rc.6 // TODO: Remove before release
+replace github.com/hetznercloud/hcloud-go => hetzner.cloud/integrations/hcloud-go v1.24.0-rc.14 // TODO: Remove before release
