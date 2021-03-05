@@ -155,7 +155,7 @@ func Resource() *schema.Resource {
 				},
 			},
 			"firewall_ids": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeInt},
 			},
@@ -217,7 +217,7 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 
 	if firewallIDs, ok := d.GetOk("firewall_ids"); ok {
-		for _, firewallId := range firewallIDs.([]interface{}) {
+		for _, firewallId := range firewallIDs.(*schema.Set).List() {
 			opts.Firewalls = append(opts.Firewalls, &hcloud.ServerCreateFirewall{Firewall: hcloud.Firewall{ID: firewallId.(int)}})
 		}
 	}
@@ -386,6 +386,71 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		data := d.Get("network").(*schema.Set)
 		if err := updateServerInlineNetworkAttachments(ctx, c, data, server); err != nil {
 			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChange("firewall_ids") {
+		firewallIds := d.Get("firewall_ids").(*schema.Set).List()
+		for _, f := range server.PublicNet.Firewalls {
+			found := false
+			for _, i := range firewallIds {
+				fID := i.(int)
+				if f.Firewall.ID == fID {
+					found = true
+
+					break
+				}
+			}
+
+			if !found {
+				a, _, err := c.Firewall.RemoveResources(ctx,
+					&f.Firewall,
+					[]hcloud.FirewallResource{
+						{
+							Type:   hcloud.FirewallResourceTypeServer,
+							Server: &hcloud.FirewallResourceServer{ID: server.ID},
+						},
+					},
+				)
+				if err != nil {
+					return diag.FromErr(err)
+				}
+				err = hcclient.WaitForActions(ctx, &c.Action, a)
+				if err != nil {
+					return diag.FromErr(err)
+				}
+			}
+		}
+
+		for _, i := range firewallIds {
+			fID := i.(int)
+			found := false
+			for _, f := range server.PublicNet.Firewalls {
+				if f.Firewall.ID == fID {
+					found = true
+
+					break
+				}
+			}
+
+			if !found {
+				a, _, err := c.Firewall.ApplyResources(ctx,
+					&hcloud.Firewall{ID: fID},
+					[]hcloud.FirewallResource{
+						{
+							Type:   hcloud.FirewallResourceTypeServer,
+							Server: &hcloud.FirewallResourceServer{ID: server.ID},
+						},
+					},
+				)
+				if err != nil {
+					return diag.FromErr(err)
+				}
+				err = hcclient.WaitForActions(ctx, &c.Action, a)
+				if err != nil {
+					return diag.FromErr(err)
+				}
+			}
 		}
 	}
 

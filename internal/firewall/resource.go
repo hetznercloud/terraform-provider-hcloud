@@ -76,7 +76,7 @@ func Resource() *schema.Resource {
 							Optional: true,
 						},
 						"source_ips": &schema.Schema{
-							Type: schema.TypeList,
+							Type: schema.TypeSet,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 								ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics {
@@ -91,7 +91,7 @@ func Resource() *schema.Resource {
 							Optional: true,
 						},
 						"destination_ips": &schema.Schema{
-							Type: schema.TypeList,
+							Type: schema.TypeSet,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 								ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics {
@@ -157,12 +157,12 @@ func toHcloudRule(tfRawRule interface{}) hcloud.FirewallRule {
 	if rawPort != "" {
 		rule.Port = hcloud.String(rawPort)
 	}
-	for _, sourceIP := range tfRule["source_ips"].([]interface{}) {
+	for _, sourceIP := range tfRule["source_ips"].(*schema.Set).List() {
 		// We ignore the error here, because it was already validated before
 		_, source, _ := net.ParseCIDR(sourceIP.(string))
 		rule.SourceIPs = append(rule.SourceIPs, *source)
 	}
-	for _, destinationIP := range tfRule["destination_ips"].([]interface{}) {
+	for _, destinationIP := range tfRule["destination_ips"].(*schema.Set).List() {
 		// We ignore the error here, because it was already validated before
 		_, destination, _ := net.ParseCIDR(destinationIP.(string))
 		rule.DestinationIPs = append(rule.DestinationIPs, *destination)
@@ -332,16 +332,6 @@ func setFirewallSchema(d *schema.ResourceData, v *hcloud.Firewall) {
 	}
 	d.Set("rule", rules)
 	d.Set("labels", v.Labels)
-}
-
-func waitForFirewallAction(ctx context.Context, client *hcloud.Client, action *hcloud.Action, firewall *hcloud.Firewall) error {
-	log.Printf("[INFO] firewall (%d) waiting for %q action to complete...", firewall.ID, action.Command)
-	_, errCh := client.Action.WatchProgress(ctx, action)
-	if err := <-errCh; err != nil {
-		return err
-	}
-	log.Printf("[INFO] firewall (%d) %q action succeeded", firewall.ID, action.Command)
-	return nil
 }
 
 func waitForFirewallActions(ctx context.Context, client *hcloud.Client, actions []*hcloud.Action, firewall *hcloud.Firewall) error {

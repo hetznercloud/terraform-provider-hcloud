@@ -55,7 +55,7 @@ func TestFirewallResource_Basic(t *testing.T) {
 		CheckDestroy: testsupport.CheckResourcesDestroyed(firewall.ResourceType, firewall.ByID(t, &f)),
 		Steps: []resource.TestStep{
 			{
-				// Create a new SSH Key using the required values
+				// Create a new Firewall using the required values
 				// only.
 				Config: tmplMan.Render(t, "testdata/r/hcloud_firewall", res),
 				Check: resource.ComposeTestCheckFunc(
@@ -68,13 +68,13 @@ func TestFirewallResource_Basic(t *testing.T) {
 				),
 			},
 			{
-				// Try to import the newly created SSH Key
+				// Try to import the newly created Firewall
 				ResourceName:      res.TFID(),
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
 			{
-				// Create a new SSH Key using the required values
+				// Create a new Firewall using the required values
 				// only.
 				Config: tmplMan.Render(t, "testdata/r/hcloud_firewall", updated),
 				Check: resource.ComposeTestCheckFunc(
