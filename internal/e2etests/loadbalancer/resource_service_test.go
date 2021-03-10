@@ -259,7 +259,7 @@ func TestAccHcloudLoadBalancerService_HTTPS_UpdateUnchangedCertificates(t *testi
 	certRes2 := certificate.NewRData(t, "cert-res2", "TFAccTests2")
 	lbRes := &loadbalancer.RData{
 		Name:         "load-balancer-certificates-unchanged",
-		LocationName: "nbg1",
+		LocationName: e2etests.TestLocationName,
 	}
 	svcRes := &loadbalancer.RDataService{
 		Name:           "service-with-two-certs",

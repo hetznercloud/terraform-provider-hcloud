@@ -49,7 +49,7 @@ func TestFloatingIPAssignmentResource_Basic(t *testing.T) {
 	resFloatingIP := &floatingip.RData{
 		Name:             "fip-assignment",
 		Type:             "ipv4",
-		HomeLocationName: "fsn1",
+		HomeLocationName: e2etests.TestLocationName,
 	}
 	resFloatingIP.SetRName("floating_ip_assignment")
 

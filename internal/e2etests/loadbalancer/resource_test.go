@@ -21,7 +21,7 @@ func TestLoadBalancerResource_Basic(t *testing.T) {
 	res := loadbalancer.Basic
 	resRenamed := &loadbalancer.RData{
 		Name:         res.Name + "-renamed",
-		LocationName: "nbg1",
+		LocationName: e2etests.TestLocationName,
 		Algorithm:    "least_connections",
 		Labels: map[string]string{
 			"key1": "value1",
@@ -44,7 +44,7 @@ func TestLoadBalancerResource_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(res.TFID(), "name",
 						fmt.Sprintf("basic-load-balancer--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(res.TFID(), "load_balancer_type", e2etests.TestLoadBalancerType),
-					resource.TestCheckResourceAttr(res.TFID(), "location", "nbg1"),
+					resource.TestCheckResourceAttr(res.TFID(), "location", res.LocationName),
 				),
 			},
 			{
@@ -64,7 +64,7 @@ func TestLoadBalancerResource_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resRenamed.TFID(), "name",
 						fmt.Sprintf("basic-load-balancer-renamed--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(resRenamed.TFID(), "load_balancer_type", e2etests.TestLoadBalancerType),
-					resource.TestCheckResourceAttr(resRenamed.TFID(), "location", "nbg1"),
+					resource.TestCheckResourceAttr(resRenamed.TFID(), "location", resRenamed.LocationName),
 					resource.TestCheckResourceAttr(resRenamed.TFID(), "algorithm.0.type", "least_connections"),
 					resource.TestCheckResourceAttr(resRenamed.TFID(), "labels.key1", "value1"),
 					resource.TestCheckResourceAttr(resRenamed.TFID(), "labels.key2", "value2"),
@@ -80,7 +80,7 @@ func TestLoadBalancerResource_Resize(t *testing.T) {
 	res := loadbalancer.Basic
 	resResized := &loadbalancer.RData{
 		Name:         res.Name,
-		LocationName: "nbg1",
+		LocationName: e2etests.TestLocationName,
 		Type:         "lb21",
 	}
 
@@ -99,7 +99,7 @@ func TestLoadBalancerResource_Resize(t *testing.T) {
 					resource.TestCheckResourceAttr(res.TFID(), "name",
 						fmt.Sprintf("basic-load-balancer--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(res.TFID(), "load_balancer_type", e2etests.TestLoadBalancerType),
-					resource.TestCheckResourceAttr(res.TFID(), "location", "nbg1"),
+					resource.TestCheckResourceAttr(res.TFID(), "location", res.LocationName),
 				),
 			},
 			{
@@ -112,7 +112,7 @@ func TestLoadBalancerResource_Resize(t *testing.T) {
 					resource.TestCheckResourceAttr(resResized.TFID(), "name",
 						fmt.Sprintf("basic-load-balancer--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(resResized.TFID(), "load_balancer_type", "lb21"),
-					resource.TestCheckResourceAttr(resResized.TFID(), "location", "nbg1"),
+					resource.TestCheckResourceAttr(resResized.TFID(), "location", resResized.LocationName),
 				),
 			},
 		},
@@ -137,7 +137,7 @@ func TestLoadBalancerResource_InlineTarget(t *testing.T) {
 	resServer2.SetRName("another-server")
 	res := &loadbalancer.RData{
 		Name:         "some-lb",
-		LocationName: "nbg1",
+		LocationName: e2etests.TestLocationName,
 		Algorithm:    "least_connections",
 		Labels: map[string]string{
 			"key1": "value1",
@@ -150,7 +150,7 @@ func TestLoadBalancerResource_InlineTarget(t *testing.T) {
 	}
 	resWithoutTargets := &loadbalancer.RData{
 		Name:         "some-lb",
-		LocationName: "nbg1",
+		LocationName: e2etests.TestLocationName,
 		Algorithm:    "least_connections",
 		Labels: map[string]string{
 			"key1": "value1",

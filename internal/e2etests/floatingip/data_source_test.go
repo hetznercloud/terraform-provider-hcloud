@@ -23,7 +23,7 @@ func TestAccHcloudDataSourceFloatingIPTest(t *testing.T) {
 		Labels: map[string]string{
 			"key": strconv.Itoa(acctest.RandInt()),
 		},
-		HomeLocationName: "nbg1",
+		HomeLocationName: e2etests.TestLocationName,
 	}
 	res.SetRName("floatingip-ds-test")
 	floatingipByName := &floatingip.DData{

@@ -20,7 +20,7 @@ func TestAccHcloudDataSourceVolumeTest(t *testing.T) {
 	res := &volume.RData{
 		Name:         "some-volume",
 		Size:         10,
-		LocationName: "nbg1",
+		LocationName: e2etests.TestLocationName,
 		Labels: map[string]string{
 			"key": strconv.Itoa(acctest.RandInt()),
 		},

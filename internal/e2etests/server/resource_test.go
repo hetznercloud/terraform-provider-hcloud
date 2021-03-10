@@ -262,7 +262,7 @@ func TestServerResource_DirectAttachToNetwork(t *testing.T) {
 	sRes := &server.RData{
 		Name:         "server-direct-attach",
 		Type:         e2etests.TestServerType,
-		LocationName: "nbg1",
+		LocationName: e2etests.TestLocationName,
 		Image:        e2etests.TestImage,
 		SSHKeys:      []string{sk.TFID() + ".id"},
 	}

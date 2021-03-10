@@ -19,6 +19,9 @@ const (
 
 	// TestLoadBalancerType is the default Load Balancer type used in all tests
 	TestLoadBalancerType = "lb11"
+
+	// TestLocationName is the default location where we execute our tests.
+	TestLocationName = "hel1"
 )
 
 func init() {

@@ -23,7 +23,7 @@ func TestFloatingIPResource_Basic(t *testing.T) {
 		Name:             "floatingip-test",
 		Type:             "ipv4",
 		Labels:           nil,
-		HomeLocationName: "nbg1",
+		HomeLocationName: e2etests.TestLocationName,
 	}
 	resRenamed := &floatingip.RData{Name: res.Name + "-renamed", Type: res.Type, HomeLocationName: res.HomeLocationName}
 	resRenamed.SetRName(res.Name)
