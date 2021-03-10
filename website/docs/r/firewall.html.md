@@ -29,7 +29,7 @@ resource "hcloud_server" "node1" {
   name = "node1"
   image = "debian-9"
   server_type = "cx11"
-  firewalls = [hcloud_firewall.myfirewall.id]
+  firewall_ids = [hcloud_firewall.myfirewall.id]
 }
 ```
 
