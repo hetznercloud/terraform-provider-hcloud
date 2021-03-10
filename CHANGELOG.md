@@ -1,3 +1,8 @@
+## 1.25.1 (March 10, 2021)
+
+BUG FIXES:
+* `hcloud_firewall` documentation: fix name of `firewall_ids` property.
+
 ## 1.25.0 (March 10, 2021)
 
 FEATURES:
