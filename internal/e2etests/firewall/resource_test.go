@@ -90,7 +90,15 @@ func TestFirewallResource_Basic(t *testing.T) {
 	})
 }
 
-func hasFirewallRule(t *testing.T, f *hcloud.Firewall, direction string, port string, protocol string, expectedSourceIps []string, expectedDestinationIps []string) func() error {
+func hasFirewallRule(
+	t *testing.T,
+	f *hcloud.Firewall,
+	direction string,
+	port string,
+	protocol string, // nolint:unparam
+	expectedSourceIps []string,
+	expectedDestinationIps []string,
+) func() error {
 	return func() error {
 		var firewallRule *hcloud.FirewallRule
 		for _, r := range f.Rules {

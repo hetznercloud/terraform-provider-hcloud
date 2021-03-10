@@ -16,8 +16,6 @@ type ProgressWatcher interface {
 
 // WaitForAction uses ProgressWatcher to wait for the completion of a.
 func WaitForAction(ctx context.Context, w ProgressWatcher, a *hcloud.Action) error {
-	const op = "hcclient/WaitForAction"
-
 	return WaitForActions(ctx, w, []*hcloud.Action{a})
 }
 

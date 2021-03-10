@@ -340,9 +340,9 @@ func setFirewallSchema(d *schema.ResourceData, v *hcloud.Firewall) {
 	d.SetId(strconv.Itoa(v.ID))
 	d.Set("name", v.Name)
 
-	var rules []map[string]interface{}
-	for _, rule := range v.Rules {
-		rules = append(rules, toTFRule(rule))
+	rules := make([]map[string]interface{}, len(v.Rules))
+	for i, rule := range v.Rules {
+		rules[i] = toTFRule(rule)
 	}
 	d.Set("rule", rules)
 	d.Set("labels", v.Labels)
