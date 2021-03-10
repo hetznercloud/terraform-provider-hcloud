@@ -1,7 +1,9 @@
-## unreleased
+## 1.25.0 (March 10, 2021)
 
 FEATURES:
 * **New Resource**: `hcloud_snapshot`
+* **New Resource**: `hcloud_firewall`
+* **New Data Source**: `hcloud_firewall`
 
 BUG FIXES:
 * `hcloud_server` resource: image had a wrong type (int instead of string) when a server was created from a snapshot
