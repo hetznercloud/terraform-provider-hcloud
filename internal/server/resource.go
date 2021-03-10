@@ -217,8 +217,8 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 
 	if firewallIDs, ok := d.GetOk("firewall_ids"); ok {
-		for _, firewallId := range firewallIDs.(*schema.Set).List() {
-			opts.Firewalls = append(opts.Firewalls, &hcloud.ServerCreateFirewall{Firewall: hcloud.Firewall{ID: firewallId.(int)}})
+		for _, firewallID := range firewallIDs.(*schema.Set).List() {
+			opts.Firewalls = append(opts.Firewalls, &hcloud.ServerCreateFirewall{Firewall: hcloud.Firewall{ID: firewallID.(int)}})
 		}
 	}
 
@@ -716,9 +716,9 @@ func setServerSchema(d *schema.ResourceData, s *hcloud.Server) {
 		}
 	}
 
-	var firewallIds []int
-	for _, firewall := range s.PublicNet.Firewalls {
-		firewallIds = append(firewallIds, firewall.Firewall.ID)
+	firewallIDs := make([]int, len(s.PublicNet.Firewalls))
+	for i, firewall := range s.PublicNet.Firewalls {
+		firewallIDs[i] = firewall.Firewall.ID
 	}
-	d.Set("firewall_ids", firewallIds)
+	d.Set("firewall_ids", firewallIDs)
 }
