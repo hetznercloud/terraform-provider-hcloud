@@ -31,8 +31,8 @@ func TestWaitForAction(t *testing.T) {
 
 			w := hcclient.NewMockProgressWatcher(t)
 			ctx := context.Background()
-			done := w.MockWatchProgress(ctx, &a, tt.err)
-			err := hcclient.WaitForAction(ctx, w, &a)
+			done := w.MockWatchOverallProgress(ctx, []*hcloud.Action{&a}, tt.err)
+			err := hcclient.WaitForActions(ctx, w, []*hcloud.Action{&a})
 			if !errors.Is(err, tt.err) {
 				t.Errorf("Expected error %v; got %v", tt.err, err)
 			}
