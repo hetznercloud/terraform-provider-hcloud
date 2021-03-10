@@ -20,7 +20,7 @@ func TestVolumeResource_Basic(t *testing.T) {
 	res := volume.Basic
 	resRenamed := &volume.RData{
 		Name:         res.Name + "-renamed",
-		LocationName: "nbg1",
+		LocationName: e2etests.TestLocationName,
 		Size:         10,
 		Labels: map[string]string{
 			"key1": "value1",
@@ -44,7 +44,7 @@ func TestVolumeResource_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(res.TFID(), "name",
 						fmt.Sprintf("basic-volume--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(res.TFID(), "size", "10"),
-					resource.TestCheckResourceAttr(res.TFID(), "location", "nbg1"),
+					resource.TestCheckResourceAttr(res.TFID(), "location", res.LocationName),
 				),
 			},
 			{
@@ -63,7 +63,7 @@ func TestVolumeResource_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resRenamed.TFID(), "name",
 						fmt.Sprintf("basic-volume-renamed--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(resRenamed.TFID(), "size", "10"),
-					resource.TestCheckResourceAttr(resRenamed.TFID(), "location", "nbg1"),
+					resource.TestCheckResourceAttr(resRenamed.TFID(), "location", resRenamed.LocationName),
 					resource.TestCheckResourceAttr(resRenamed.TFID(), "labels.key1", "value1"),
 					resource.TestCheckResourceAttr(resRenamed.TFID(), "labels.key2", "value2"),
 				),
@@ -79,7 +79,7 @@ func TestVolumeResource_Resize(t *testing.T) {
 	res.Name = "resized-volume"
 	resResized := &volume.RData{
 		Name:         res.Name,
-		LocationName: "nbg1",
+		LocationName: e2etests.TestLocationName,
 		Size:         25,
 		Labels: map[string]string{
 			"key1": "value1",
@@ -103,7 +103,7 @@ func TestVolumeResource_Resize(t *testing.T) {
 					resource.TestCheckResourceAttr(res.TFID(), "name",
 						fmt.Sprintf("resized-volume--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(res.TFID(), "size", "10"),
-					resource.TestCheckResourceAttr(res.TFID(), "location", "nbg1"),
+					resource.TestCheckResourceAttr(res.TFID(), "location", res.LocationName),
 				),
 			},
 			{
@@ -116,7 +116,7 @@ func TestVolumeResource_Resize(t *testing.T) {
 					resource.TestCheckResourceAttr(resResized.TFID(), "name",
 						fmt.Sprintf("resized-volume--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(resResized.TFID(), "size", "25"),
-					resource.TestCheckResourceAttr(resResized.TFID(), "location", "nbg1"),
+					resource.TestCheckResourceAttr(resResized.TFID(), "location", resResized.LocationName),
 					resource.TestCheckResourceAttr(resResized.TFID(), "labels.key1", "value1"),
 					resource.TestCheckResourceAttr(resResized.TFID(), "labels.key2", "value2"),
 				),
@@ -132,7 +132,7 @@ func TestVolumeResource_WithServer(t *testing.T) {
 		Name:         "some-server",
 		Type:         e2etests.TestServerType,
 		Image:        e2etests.TestImage,
-		LocationName: "nbg1",
+		LocationName: e2etests.TestLocationName,
 	}
 	resServer1.SetRName("some-server")
 
@@ -140,7 +140,7 @@ func TestVolumeResource_WithServer(t *testing.T) {
 		Name:         "another-server",
 		Type:         e2etests.TestServerType,
 		Image:        e2etests.TestImage,
-		LocationName: "nbg1",
+		LocationName: e2etests.TestLocationName,
 	}
 	resServer2.SetRName("another-server")
 
@@ -172,7 +172,7 @@ func TestVolumeResource_WithServer(t *testing.T) {
 					resource.TestCheckResourceAttr(res.TFID(), "name",
 						fmt.Sprintf("volume-with-server--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(res.TFID(), "size", "10"),
-					resource.TestCheckResourceAttr(res.TFID(), "location", "nbg1"),
+					resource.TestCheckResourceAttr(res.TFID(), "location", resServer1.LocationName),
 				),
 			},
 			{
@@ -193,7 +193,7 @@ func TestVolumeResource_WithServer(t *testing.T) {
 					resource.TestCheckResourceAttr(res.TFID(), "name",
 						fmt.Sprintf("volume-with-server--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(res.TFID(), "size", "10"),
-					resource.TestCheckResourceAttr(res.TFID(), "location", "nbg1"),
+					resource.TestCheckResourceAttr(res.TFID(), "location", resServer2.LocationName),
 				),
 			},
 		},
@@ -207,7 +207,7 @@ func TestVolumeResource_WithServerMultipleVolumes(t *testing.T) {
 		Name:         "some-server",
 		Type:         "cx11",
 		Image:        "ubuntu-20.04",
-		LocationName: "nbg1",
+		LocationName: e2etests.TestLocationName,
 	}
 	resServer1.SetRName("some-server")
 
@@ -243,7 +243,7 @@ func TestVolumeResource_WithServerMultipleVolumes(t *testing.T) {
 					resource.TestCheckResourceAttr(res.TFID(), "name",
 						fmt.Sprintf("volume-with-server--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(res.TFID(), "size", "10"),
-					resource.TestCheckResourceAttr(res.TFID(), "location", "nbg1"),
+					resource.TestCheckResourceAttr(res.TFID(), "location", resServer1.LocationName),
 				),
 			},
 		},

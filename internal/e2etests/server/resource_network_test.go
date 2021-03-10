@@ -39,7 +39,7 @@ func TestAccHcloudServerNetwork_NetworkID(t *testing.T) {
 	sRes := &server.RData{
 		Name:         "s-network-test",
 		Type:         e2etests.TestServerType,
-		LocationName: "nbg1",
+		LocationName: e2etests.TestLocationName,
 		Image:        e2etests.TestImage,
 		SSHKeys:      []string{sk.TFID() + ".id"},
 	}
@@ -108,7 +108,7 @@ func TestAccHcloudServerNetwork_SubNetID(t *testing.T) {
 	sRes := &server.RData{
 		Name:         "s-network-test",
 		Type:         e2etests.TestServerType,
-		LocationName: "nbg1",
+		LocationName: e2etests.TestLocationName,
 		Image:        e2etests.TestImage,
 		SSHKeys:      []string{sk.TFID() + ".id"},
 	}

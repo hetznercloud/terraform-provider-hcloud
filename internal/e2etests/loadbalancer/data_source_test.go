@@ -19,7 +19,7 @@ func TestAccHcloudDataSourceLoadBalancerTest(t *testing.T) {
 
 	res := &loadbalancer.RData{
 		Name:         "some-load-balancer",
-		LocationName: "nbg1",
+		LocationName: e2etests.TestLocationName,
 		Labels: map[string]string{
 			"key": strconv.Itoa(acctest.RandInt()),
 		},

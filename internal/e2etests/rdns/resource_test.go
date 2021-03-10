@@ -74,7 +74,7 @@ func TestRDNSResource_FloatingIP_IPv4(t *testing.T) {
 	restFloatingIP := &floatingip.RData{
 		Name:             "floating-ipv4-rdns",
 		Type:             "ipv4",
-		HomeLocationName: "fsn1",
+		HomeLocationName: e2etests.TestLocationName,
 	}
 	restFloatingIP.SetRName("floating_ips_rdns_v4")
 	resRDNS := rdns.NewRData(t, "floating_ips_rdns_v4", "", restFloatingIP.TFID()+".id", restFloatingIP.TFID()+".ip_address", "example.hetzner.cloud")
@@ -115,7 +115,7 @@ func TestRDNSResource_FloatingIP_IPv6(t *testing.T) {
 	restFloatingIP := &floatingip.RData{
 		Name:             "floating-ipv6-rdns",
 		Type:             "ipv6",
-		HomeLocationName: "fsn1",
+		HomeLocationName: e2etests.TestLocationName,
 	}
 	restFloatingIP.SetRName("floating_ips_rdns_v6")
 
