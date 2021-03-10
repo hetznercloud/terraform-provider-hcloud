@@ -2,6 +2,7 @@ package firewall
 
 import (
 	"context"
+	"errors"
 	"log"
 	"net"
 	"strconv"
@@ -10,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/control"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
 )
 
@@ -40,7 +42,7 @@ func Resource() *schema.Resource {
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"direction": &schema.Schema{
+						"direction": {
 							Type:     schema.TypeString,
 							Required: true,
 							ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics {
@@ -55,7 +57,7 @@ func Resource() *schema.Resource {
 								}
 							},
 						},
-						"protocol": &schema.Schema{
+						"protocol": {
 							Type:     schema.TypeString,
 							Required: true,
 							ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics {
@@ -71,11 +73,11 @@ func Resource() *schema.Resource {
 								return nil
 							},
 						},
-						"port": &schema.Schema{
+						"port": {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
-						"source_ips": &schema.Schema{
+						"source_ips": {
 							Type: schema.TypeSet,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
@@ -302,11 +304,23 @@ func resourceFirewallDelete(ctx context.Context, d *schema.ResourceData, m inter
 		return diag.FromErr(err)
 	}
 
-	if _, err := client.Firewall.Delete(ctx, firewall); err != nil {
-		if hcerr, ok := err.(hcloud.Error); ok && hcerr.Code == hcloud.ErrorCodeNotFound {
-			// firewall has already been deleted
-			return nil
+	err = control.Retry(control.DefaultRetries, func() error {
+		var hcerr hcloud.Error
+		_, err := client.Firewall.Delete(ctx, firewall)
+		if errors.As(err, &hcerr) {
+			switch hcerr.Code {
+			case hcloud.ErrorCodeNotFound:
+				// firewall has already been deleted
+				return nil
+			case hcloud.ErrorCodeConflict, hcloud.ErrorCodeResourceInUse:
+				return err
+			default:
+				return control.AbortRetry(err)
+			}
 		}
+		return nil
+	})
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
