@@ -3,12 +3,12 @@ layout: "hcloud"
 page_title: "Hetzner Cloud: hcloud_firewall"
 sidebar_current: "docs-hcloud-resource-firewall"
 description: |-
-Provides a Hetzner Cloud Firewall to represent a Load Balancer in the Hetzner Cloud.
+Provides a Hetzner Cloud Firewall to represent a Firewall in the Hetzner Cloud.
 ---
 
 # hcloud_firewall
 
-Provides a Hetzner Cloud Firewall to represent a Load Balancer in the Hetzner Cloud.
+Provides a Hetzner Cloud Firewall to represent a Firewall in the Hetzner Cloud.
 
 ## Example Usage
 
