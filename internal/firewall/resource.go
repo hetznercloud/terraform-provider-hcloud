@@ -80,30 +80,16 @@ func Resource() *schema.Resource {
 						"source_ips": {
 							Type: schema.TypeSet,
 							Elem: &schema.Schema{
-								Type: schema.TypeString,
-								ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics {
-									sourceIP := i.(string)
-									_, _, err := net.ParseCIDR(sourceIP)
-									if err != nil {
-										return diag.FromErr(err)
-									}
-									return nil
-								},
+								Type:             schema.TypeString,
+								ValidateDiagFunc: validateIPDiag,
 							},
 							Optional: true,
 						},
 						"destination_ips": &schema.Schema{
 							Type: schema.TypeSet,
 							Elem: &schema.Schema{
-								Type: schema.TypeString,
-								ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics {
-									sourceIP := i.(string)
-									_, _, err := net.ParseCIDR(sourceIP)
-									if err != nil {
-										return diag.FromErr(err)
-									}
-									return nil
-								},
+								Type:             schema.TypeString,
+								ValidateDiagFunc: validateIPDiag,
 							},
 							Optional: true,
 						},

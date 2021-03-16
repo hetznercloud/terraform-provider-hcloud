@@ -1,3 +1,8 @@
+## unreleased
+
+BUG FIXES:
+* `hcloud_firewall` resource: plugin normalized CIDRs silently.
+
 ## 1.25.1 (March 10, 2021)
 
 BUG FIXES:
