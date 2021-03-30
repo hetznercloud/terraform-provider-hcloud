@@ -1,4 +1,4 @@
-## Unreleased
+## 1.26.0 (March 30, 2021)
 
 * **New Resource** `hcloud_managed_certificate`
 * **New Resource** `hcloud_uploaded_certificate`
