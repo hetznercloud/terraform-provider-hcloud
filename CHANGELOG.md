@@ -1,3 +1,8 @@
+## Unreleased
+
+BUG FIXES:
+* `hcloud_firewall` datasource: `destination_ips` missed in definition
+
 ## 1.26.0 (March 30, 2021)
 
 * **New Resource** `hcloud_managed_certificate`
