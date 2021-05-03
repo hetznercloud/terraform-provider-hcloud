@@ -48,14 +48,14 @@ func DataSource() *schema.Resource {
 							Optional: true,
 						},
 						"source_ips": &schema.Schema{
-							Type: schema.TypeList,
+							Type: schema.TypeSet,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
 							Optional: true,
 						},
 						"destination_ips": &schema.Schema{
-							Type: schema.TypeList,
+							Type: schema.TypeSet,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
