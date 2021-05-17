@@ -49,12 +49,12 @@ func Resource() *schema.Resource {
 								direction := i.(string)
 								switch hcloud.FirewallRuleDirection(direction) {
 								case hcloud.FirewallRuleDirectionIn:
-									return nil
 								case hcloud.FirewallRuleDirectionOut:
 									return nil
 								default:
 									return diag.Errorf("%s is not a valid direction", direction)
 								}
+								return nil
 							},
 						},
 						"protocol": {
@@ -66,6 +66,8 @@ func Resource() *schema.Resource {
 								case hcloud.FirewallRuleProtocolICMP:
 								case hcloud.FirewallRuleProtocolTCP:
 								case hcloud.FirewallRuleProtocolUDP:
+								case hcloud.FirewallRuleProtocolESP:
+								case hcloud.FirewallRuleProtocolGRE:
 									return nil
 								default:
 									return diag.Errorf("%s is not a valid protocol", protocol)
@@ -85,7 +87,7 @@ func Resource() *schema.Resource {
 							},
 							Optional: true,
 						},
-						"destination_ips": &schema.Schema{
+						"destination_ips": {
 							Type: schema.TypeSet,
 							Elem: &schema.Schema{
 								Type:             schema.TypeString,
