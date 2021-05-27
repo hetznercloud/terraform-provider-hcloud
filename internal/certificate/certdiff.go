@@ -61,6 +61,10 @@ func parseCertificates(cert string) ([]*x509.Certificate, error) {
 		var blk *pem.Block
 
 		blk, rest = pem.Decode(rest)
+		if blk == nil {
+			// No (further) PEM data found. We are done.
+			break
+		}
 		c, err := x509.ParseCertificate(blk.Bytes)
 		if err != nil {
 			return nil, fmt.Errorf("%s: %v", op, err)
