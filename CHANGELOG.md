@@ -1,7 +1,11 @@
 ## Unreleased
 
+## 1.26.1 (May 28, 2021)
+
 BUG FIXES:
 * `hcloud_firewall` datasource: `destination_ips` missed in definition
+* `hcloud_certificate` resource: panic when parsing certificate chains
+  (#359)
 
 ## 1.26.0 (March 30, 2021)
 
