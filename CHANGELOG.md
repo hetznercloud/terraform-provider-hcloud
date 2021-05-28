@@ -1,5 +1,11 @@
 ## Unreleased
 
+## 1.26.2 (May 28, 2021)
+
+BUG FIXES:
+
+* Fix invalid checksum for release 1.26.1
+
 ## 1.26.1 (May 28, 2021)
 
 BUG FIXES:
