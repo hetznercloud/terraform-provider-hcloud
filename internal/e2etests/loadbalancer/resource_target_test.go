@@ -233,6 +233,15 @@ func TestAccHcloudLoadBalancerTarget_LabelSelectorTarget_UsePrivateIP(t *testing
 		IPRange: "10.0.0.0/16",
 	}
 	resNetwork.SetRName("lb-target-test-network")
+
+	resSubNet := &network.RDataSubnet{
+		NetworkID:   "hcloud_network.lb-target-test-network.id",
+		Type:        "cloud",
+		NetworkZone: "eu-central",
+		IPRange:     "10.0.1.0/24",
+	}
+	resSubNet.SetRName("lb-target-test-sub-network")
+
 	selector := fmt.Sprintf("tf-test=tf-test-%d", tmplMan.RandInt)
 	resource.Test(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
@@ -242,12 +251,7 @@ func TestAccHcloudLoadBalancerTarget_LabelSelectorTarget_UsePrivateIP(t *testing
 			{
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_network", resNetwork,
-					"testdata/r/hcloud_network_subnet", &network.RDataSubnet{
-						NetworkID:   "hcloud_network.lb-target-test-network.id",
-						Type:        "cloud",
-						NetworkZone: "eu-central",
-						IPRange:     "10.0.1.0/24",
-					},
+					"testdata/r/hcloud_network_subnet", resSubNet,
 					"testdata/r/hcloud_ssh_key", resSSHKey,
 					"testdata/r/hcloud_server", resServer,
 					"testdata/r/hcloud_server_network", &server.RDataNetwork{
@@ -265,6 +269,9 @@ func TestAccHcloudLoadBalancerTarget_LabelSelectorTarget_UsePrivateIP(t *testing
 						LoadBalancerID:        "hcloud_load_balancer.target-test-lb.id",
 						NetworkID:             "hcloud_network.lb-target-test-network.id",
 						EnablePublicInterface: true,
+						DependsOn: []string{
+							resSubNet.TFID(),
+						},
 					},
 					"testdata/r/hcloud_load_balancer_target", &loadbalancer.RDataTarget{
 						Name:           "lb-test-target",
