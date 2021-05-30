@@ -18,7 +18,7 @@ data "hcloud_server" "s_2" {
   id = "123"
 }
 data "hcloud_server" "s_3" {
-  with_selector =  "key=value"
+  with_selector = "key=value"
 }
 ```
 

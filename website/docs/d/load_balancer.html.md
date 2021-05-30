@@ -20,7 +20,7 @@ data "hcloud_load_balancer" "lb_2" {
   id = "123"
 }
 data "hcloud_load_balancer" "lb_3" {
-  with_selector =  "key=value"
+  with_selector = "key=value"
 }
 ```
 
