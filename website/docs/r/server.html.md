@@ -17,15 +17,15 @@ Provides an Hetzner Cloud server resource. This can be used to create, modify, a
 ```hcl
 # Create a new server running debian
 resource "hcloud_server" "node1" {
-  name = "node1"
-  image = "debian-9"
+  name        = "node1"
+  image       = "debian-9"
   server_type = "cx11"
 }
 ```
 
 ### Server creation with network
 
-```
+```hcl
 resource "hcloud_network" "network" {
   name     = "network"
   ip_range = "10.0.0.0/16"
@@ -45,12 +45,12 @@ resource "hcloud_server" "server" {
   location    = "nbg1"
 
   network {
-      network_id = hcloud_network.network.id
-      ip         = "10.0.1.5"
-      alias_ips  = [
-        "10.0.1.6",
-        "10.0.1.7"
-      ]
+    network_id = hcloud_network.network.id
+    ip         = "10.0.1.5"
+    alias_ips  = [
+      "10.0.1.6",
+      "10.0.1.7"
+    ]
   }
 
   # **Note**: the depends_on is important when directly attaching the

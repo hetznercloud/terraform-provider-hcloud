@@ -20,10 +20,10 @@ resource "hcloud_volume_attachment" "main" {
 }
 
 resource "hcloud_server" "node1" {
-  name = "node1"
-  image = "debian-9"
+  name        = "node1"
+  image       = "debian-9"
   server_type = "cx11"
-  datacenter = "nbg1-dc3"
+  datacenter  = "nbg1-dc3"
 }
 
 resource "hcloud_volume" "master" {

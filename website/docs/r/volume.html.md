@@ -14,17 +14,17 @@ Provides a Hetzner Cloud volume resource to manage volumes.
 
 ```hcl
 resource "hcloud_server" "node1" {
-  name = "node1"
-  image = "debian-9"
+  name        = "node1"
+  image       = "debian-9"
   server_type = "cx11"
 }
 
 resource "hcloud_volume" "master" {
-  name = "volume1"
-  size = 50
+  name      = "volume1"
+  size      = 50
   server_id = hcloud_server.node1.id
   automount = true
-  format = "ext4"
+  format    = "ext4"
 }
 ```
 
