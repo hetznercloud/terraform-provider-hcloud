@@ -12,11 +12,11 @@ Provides details about a specific Hetzner Cloud Certificate.
 
 ```hcl
 data "hcloud_certificate" "sample_certificate_1" {
-    name = "sample-certificate-1
+  name = "sample-certificate-1"
 }
 
 data "hcloud_certificate" "sample_certificate_2" {
-    id = "4711"
+  id = "4711"
 }
 ```
 
