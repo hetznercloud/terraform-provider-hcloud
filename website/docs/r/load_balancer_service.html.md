@@ -14,14 +14,14 @@ description: |-
 
 ```hcl
 resource "hcloud_load_balancer" "load_balancer" {
-  name       = "my-load-balancer"
+  name               = "my-load-balancer"
   load_balancer_type = "lb11"
-  location   = "nbg1"
+  location           = "nbg1"
 }
 
 resource "hcloud_load_balancer_service" "load_balancer_service" {
     load_balancer_id = hcloud_load_balancer.test_load_balancer.id
-    protocol = "http"
+    protocol         = "http"
 }
 ```
 

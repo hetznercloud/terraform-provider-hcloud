@@ -15,18 +15,18 @@ Provides a Hetzner Cloud Floating IP Assignment to assign a Floating IP to a Het
 ```hcl
 resource "hcloud_floating_ip_assignment" "main" {
   floating_ip_id = hcloud_floating_ip.master.id
-  server_id = hcloud_server.node1.id
+  server_id      = hcloud_server.node1.id
 }
 
 resource "hcloud_server" "node1" {
-  name = "node1"
-  image = "debian-9"
+  name        = "node1"
+  image       = "debian-9"
   server_type = "cx11"
-  datacenter = "fsn1-dc8"
+  datacenter  = "fsn1-dc8"
 }
 
 resource "hcloud_floating_ip" "master" {
-  type = "ipv4"
+  type          = "ipv4"
   home_location = "nbg1"
 }
 ```

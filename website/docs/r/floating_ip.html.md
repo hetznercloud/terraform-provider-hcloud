@@ -14,13 +14,13 @@ Provides a Hetzner Cloud Floating IP to represent a publicly-accessible static I
 
 ```hcl
 resource "hcloud_server" "node1" {
-  name = "node1"
-  image = "debian-9"
+  name        = "node1"
+  image       = "debian-9"
   server_type = "cx11"
 }
 
 resource "hcloud_floating_ip" "master" {
-  type = "ipv4"
+  type      = "ipv4"
   server_id = hcloud_server.node1.id
 }
 ```

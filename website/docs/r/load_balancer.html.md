@@ -14,17 +14,17 @@ description: |-
 
 ```hcl
 resource "hcloud_server" "myserver" {
-  name       = "server-%d"
+  name        = "server-%d"
   server_type = "cx11"
-  image = "ubuntu-18.04"
+  image       = "ubuntu-18.04"
 }
 
 resource "hcloud_load_balancer" "load_balancer" {
-  name       = "my-load-balancer"
+  name               = "my-load-balancer"
   load_balancer_type = "lb11"
-  location   = "nbg1"
+  location           = "nbg1"
   target {
-    type = "server"
+    type      = "server"
     server_id = hcloud_server.myserver.id
   }
 }

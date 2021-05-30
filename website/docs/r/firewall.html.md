@@ -17,7 +17,7 @@ resource "hcloud_firewall" "myfirewall" {
   name = "my-firewall"
   rule {
    direction = "in"
-   protocol = "icmp"
+   protocol  = "icmp"
    source_ips = [
       "0.0.0.0/0",
       "::/0"
@@ -26,9 +26,9 @@ resource "hcloud_firewall" "myfirewall" {
 }
 
 resource "hcloud_server" "node1" {
-  name = "node1"
-  image = "debian-9"
-  server_type = "cx11"
+  name         = "node1"
+  image        = "debian-9"
+  server_type  = "cx11"
   firewall_ids = [hcloud_firewall.myfirewall.id]
 }
 ```
