@@ -139,6 +139,7 @@ type RDataServiceHTTP struct {
 	CookieLifeTime int
 	Certificates   []string
 	RedirectHTTP   bool
+	StickySessions bool
 }
 
 // RDataServiceHealthCheck contains data for a load balancer service
