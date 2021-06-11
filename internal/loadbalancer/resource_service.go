@@ -93,6 +93,7 @@ func ServiceResource() *schema.Resource {
 							Elem: &schema.Schema{
 								Type: schema.TypeInt,
 							},
+							Computed: true,
 						},
 						"redirect_http": {
 							Type:     schema.TypeBool,
@@ -303,31 +304,7 @@ func resourceLoadBalancerServiceRead(ctx context.Context, d *schema.ResourceData
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	listenPort := d.Get("listen_port").(int)
-	// listenPort is a computed attribute. Since we are about to read the resource
-	// it may not have been set yet. If this is the case we derive it from the
-	// protocol
-	if listenPort == 0 {
-		listenPort = svc.ListenPort
-	}
-	var (
-		service hcloud.LoadBalancerService
-		found   bool
-	)
-	for _, svc := range lb.Services {
-		if svc.ListenPort == listenPort {
-			service = svc
-			found = true
-			break
-		}
-	}
-	if !found {
-		d.SetId("")
-		return nil
-	}
-
-	if setLoadBalancerServiceSchema(d, lb, &service); err != nil {
+	if setLoadBalancerServiceSchema(d, lb, svc); err != nil {
 		return diag.FromErr(err)
 	}
 	return nil
@@ -375,7 +352,7 @@ func setLoadBalancerServiceSchema(d *schema.ResourceData, lb *hcloud.LoadBalance
 	if svc.Protocol != hcloud.LoadBalancerServiceProtocolTCP {
 		httpMap := make(map[string]interface{})
 		if svc.HTTP.StickySessions {
-			d.Set("sticky_sessions", svc.HTTP.StickySessions)
+			httpMap["sticky_sessions"] = svc.HTTP.StickySessions
 		}
 		if svc.HTTP.CookieName != "" {
 			httpMap["cookie_name"] = svc.HTTP.CookieName
@@ -409,49 +386,41 @@ var errInvalidLoadBalancerServiceID = errors.New("invalid load balancer service 
 // id format: <load balancer id>__<listen-port>
 // Examples:
 // 123__80
-func lookupLoadBalancerServiceID(ctx context.Context, terraformID string, client *hcloud.Client) (loadBalancer *hcloud.LoadBalancer, loadBalancerService *hcloud.LoadBalancerService, err error) {
+func lookupLoadBalancerServiceID(
+	ctx context.Context,
+	terraformID string,
+	client *hcloud.Client,
+) (*hcloud.LoadBalancer, *hcloud.LoadBalancerService, error) {
 	if terraformID == "" {
-		err = errInvalidLoadBalancerServiceID
-		return
+		return nil, nil, errInvalidLoadBalancerServiceID
 	}
 	parts := strings.SplitN(terraformID, "__", 2)
 	if len(parts) != 2 {
-		err = errInvalidLoadBalancerServiceID
-		return
+		return nil, nil, errInvalidLoadBalancerServiceID
 	}
 
 	loadBalancerID, err := strconv.Atoi(parts[0])
 	if err != nil {
-		err = errInvalidLoadBalancerServiceID
-		return
+		return nil, nil, errInvalidLoadBalancerServiceID
 	}
 
-	loadBalancer, _, err = client.LoadBalancer.GetByID(ctx, loadBalancerID)
-	if err != nil {
-		err = errInvalidLoadBalancerServiceID
-		return
-	}
-	if loadBalancer == nil {
-		err = errInvalidLoadBalancerServiceID
-		return
+	loadBalancer, _, err := client.LoadBalancer.GetByID(ctx, loadBalancerID)
+	if loadBalancer == nil || err != nil {
+		return nil, nil, errInvalidLoadBalancerServiceID
 	}
 
 	serviceListenPort, err := strconv.Atoi(parts[1])
 	if err != nil {
-		err = errInvalidLoadBalancerServiceID
-		return
+		return nil, nil, errInvalidLoadBalancerServiceID
 	}
 
 	for _, svc := range loadBalancer.Services {
 		if svc.ListenPort == serviceListenPort {
 			svc := svc
-			loadBalancerService = &svc
-			return
+			return loadBalancer, &svc, nil
 		}
 	}
-
-	err = errInvalidLoadBalancerServiceID
-	return
+	return nil, nil, errInvalidLoadBalancerServiceID
 }
 
 func parseTFHTTP(tfHTTP []interface{}) *hcloud.LoadBalancerAddServiceOptsHTTP {
@@ -511,9 +480,12 @@ func parseUpdateTFHTTP(tfHTTP []interface{}) *hcloud.LoadBalancerUpdateServiceOp
 }
 
 func parseTFCertificates(tfCerts *schema.Set) []*hcloud.Certificate {
-	certs := make([]*hcloud.Certificate, 0, tfCerts.Len())
-	for _, c := range tfCerts.List() {
-		certs = append(certs, &hcloud.Certificate{ID: c.(int)})
+	if tfCerts.Len() == 0 {
+		return nil
+	}
+	certs := make([]*hcloud.Certificate, tfCerts.Len())
+	for i, c := range tfCerts.List() {
+		certs[i] = &hcloud.Certificate{ID: c.(int)}
 	}
 	return certs
 }

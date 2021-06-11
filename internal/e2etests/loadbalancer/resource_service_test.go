@@ -204,6 +204,49 @@ func TestAccHcloudLoadBalancerService_HTTP(t *testing.T) {
 	})
 }
 
+func TestAccHcloudLoadBalancerService_HTTP_StickySessions(t *testing.T) {
+	var lb hcloud.LoadBalancer
+
+	lbResName := fmt.Sprintf("%s.%s", loadbalancer.ResourceType, loadbalancer.Basic.Name)
+	svcName := "lb-http-sticky-sessions-test"
+	svcResName := fmt.Sprintf("%s.%s", loadbalancer.ServiceResourceType, svcName)
+
+	tmplMan := testtemplate.Manager{}
+	resource.Test(t, resource.TestCase{
+		PreCheck:     e2etests.PreCheck(t),
+		Providers:    e2etests.Providers(),
+		CheckDestroy: testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
+		Steps: []resource.TestStep{
+			{
+				// Create a HTTP service using defaults
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_load_balancer", loadbalancer.Basic,
+					"testdata/r/hcloud_load_balancer_service", &loadbalancer.RDataService{
+						Name:     svcName,
+						Protocol: "http",
+						AddHTTP:  true,
+						HTTP: loadbalancer.RDataServiceHTTP{
+							StickySessions: true,
+							CookieLifeTime: 1800,
+						},
+						LoadBalancerID: fmt.Sprintf("%s.%s.id", loadbalancer.ResourceType, loadbalancer.Basic.Name),
+					},
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(lbResName, loadbalancer.ByID(t, &lb)),
+					testsupport.LiftTCF(hasService(&lb, 80)),
+					testsupport.CheckResourceAttrFunc(svcResName, "load_balancer_id", func() string {
+						return strconv.Itoa(lb.ID)
+					}),
+					resource.TestCheckResourceAttr(svcResName, "protocol", "http"),
+					resource.TestCheckResourceAttr(svcResName, "http.0.cookie_lifetime", "1800"),
+					resource.TestCheckResourceAttr(svcResName, "http.0.sticky_sessions", "true"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccHcloudLoadBalancerService_HTTPS(t *testing.T) {
 	var (
 		lb   hcloud.LoadBalancer
