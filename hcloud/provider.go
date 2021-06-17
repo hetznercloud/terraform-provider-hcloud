@@ -58,6 +58,10 @@ func Provider() *schema.Provider {
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("HCLOUD_ENDPOINT", nil),
 			},
+			"poll_interval": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			certificate.UploadedResourceType:  certificate.UploadedResource(),
