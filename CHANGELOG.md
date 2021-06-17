@@ -1,4 +1,9 @@
-## Unreleased
+Every new changelog can be found under the Github Release page: https://github.com/hetznercloud/terraform-provider-hcloud/releases
+
+## 1.27.0 (June 17, 2021)
+
+FEATURES:
+* `hcloud_firewall` resource & datasource: Support GRE & ESP protocol in firewall rules
 
 ## 1.26.2 (May 28, 2021)
 

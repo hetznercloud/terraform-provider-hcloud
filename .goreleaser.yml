@@ -46,4 +46,7 @@ signs:
 release:
   draft: false
 changelog:
-  skip: true
+  sort: asc
+  filters:
+    exclude:
+      - '^test:'
