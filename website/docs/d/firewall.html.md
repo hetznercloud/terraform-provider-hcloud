@@ -35,7 +35,7 @@ data "hcloud_firewall" "sample_firewall_2" {
 
 `rule` support the following fields:
 - `direction` - (Required, string) Direction of the Firewall Rule. `in`, `out`
-- `protocol` - (Required, string) Protocol of the Firewall Rule. `tcp`, `icmp`, `udp`
+- `protocol` - (Required, string) Protocol of the Firewall Rule. `tcp`, `icmp`, `udp`, `gre`, `esp`
 - `port` - (Required, string) Port of the Firewall Rule. Required when `protocol` is `tcp` or `udp`
 - `source_ips` - (Required, List) List of CIDRs that are allowed within this Firewall Rule (when `direction` is `in`)
 - `destination_ips` - (Required, List) List of CIDRs that are allowed within this Firewall Rule (when `direction` is `out`)
