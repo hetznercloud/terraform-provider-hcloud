@@ -43,3 +43,4 @@ data "hcloud_server" "s_3" {
 - `ipv6_network` - (string) The IPv6 network.
 - `status` - (string) The status of the server.
 - `labels` - (map) User-defined labels (key-value pairs)
+- `firewall_ids` - (Optional, list) Firewall IDs the server is attached to.

@@ -79,6 +79,7 @@ The following arguments are supported:
 - `rescue` - (Optional, string) Enable and boot in to the specified rescue system. This enables simple installation of custom operating systems. `linux64` `linux32` or `freebsd64`
 - `labels` - (Optional, map) User-defined labels (key-value pairs) should be created with.
 - `backups` - (Optional, boolean) Enable or disable backups.
+- `firewall_ids` - (Optional, list) Firewall IDs the server should be attached to on creation.
 
 ## Attributes Reference
 
@@ -105,6 +106,7 @@ The following attributes are exported:
   subnetwork in parallel to the server. This leads to a concurrency
   issue. It is therefore necessary to use `depends_on` to link the server
   to the respective subnetwork. See examples.
+- `firewall_ids` - (Optional, list) Firewall IDs the server is attached to.
 
 ## Import
 
