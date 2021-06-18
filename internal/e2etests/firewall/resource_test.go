@@ -31,6 +31,12 @@ func TestFirewallResource_Basic(t *testing.T) {
 			DestinationIPs: []string{"0.0.0.0/0", "::/0"},
 			Port:           "80",
 		},
+		{
+			Direction:      "in",
+			Protocol:       "udp",
+			DestinationIPs: []string{"0.0.0.0/0", "::/0"},
+			Port:           "any",
+		},
 	})
 
 	updated := firewall.NewRData(t, "basic-firewall", []firewall.RDataRule{
@@ -45,6 +51,12 @@ func TestFirewallResource_Basic(t *testing.T) {
 			Protocol:       "tcp",
 			DestinationIPs: []string{"0.0.0.0/0", "::/0"},
 			Port:           "443",
+		},
+		{
+			Direction:      "in",
+			Protocol:       "udp",
+			DestinationIPs: []string{"0.0.0.0/0", "::/0"},
+			Port:           "any",
 		},
 	})
 	updated.SetRName(res.RName())
