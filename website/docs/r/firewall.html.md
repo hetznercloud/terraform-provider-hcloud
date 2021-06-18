@@ -42,7 +42,7 @@ resource "hcloud_server" "node1" {
 `rule` support the following fields:
 - `direction` - (Required, string) Direction of the Firewall Rule. `in`
 - `protocol` - (Required, string) Protocol of the Firewall Rule. `tcp`, `icmp`, `udp`, `gre`, `esp`
-- `port` - (Required, string) Port of the Firewall Rule. Required when `protocol` is `tcp` or `udp`
+- `port` - (Required, string) Port of the Firewall Rule. Required when `protocol` is `tcp` or `udp`. You can use `any` to allow all ports for the specific protocol. Port ranges are also possible: `80:85` allows all ports between 80 and 85.
 - `source_ips` - (Required, List) List of CIDRs that are allowed within this Firewall Rule
 
 ## Attributes Reference
