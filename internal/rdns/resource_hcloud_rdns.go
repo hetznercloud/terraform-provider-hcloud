@@ -115,16 +115,21 @@ func resourceReverseDNSCreate(ctx context.Context, d *schema.ResourceData, m int
 	ip := d.Get("ip_address").(string)
 	ptr := d.Get("dns_ptr").(string)
 
-	id, ok := d.GetOk("server_id")
-	if !ok {
-		id, ok = d.GetOk("floating_ip_id")
-		if !ok {
-			log.Printf("[WARN] Invalid id (%s), removing from state: %v", d.Id(), ok)
+	serverID, serverOK := d.GetOk("server_id")
+	floatingIPID, floatingIPOK := d.GetOk("floating_ip_id")
+	if serverOK && floatingIPOK {
+		log.Printf("[ERR] server_id and floating_ip_id are mutually exclusive, resource %s", d.Id())
+		d.SetId("")
+		return nil
+	}
+	if !serverOK {
+		if !floatingIPOK {
+			log.Printf("[WARN] Invalid floating_ip_id (%s), removing from state: %v", d.Id(), floatingIPOK)
 			d.SetId("")
 			return nil
 		}
 
-		floatingIP, _, err := c.FloatingIP.GetByID(ctx, id.(int))
+		floatingIP, _, err := c.FloatingIP.GetByID(ctx, floatingIPID.(int))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -146,7 +151,7 @@ func resourceReverseDNSCreate(ctx context.Context, d *schema.ResourceData, m int
 		return resourceReverseDNSRead(ctx, d, m)
 	}
 
-	server, _, err := c.Server.GetByID(ctx, id.(int))
+	server, _, err := c.Server.GetByID(ctx, serverID.(int))
 	if err != nil {
 		return diag.FromErr(err)
 	}
