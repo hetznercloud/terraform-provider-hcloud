@@ -32,10 +32,10 @@ func TestFirewallResource_Basic(t *testing.T) {
 			Port:           "80",
 		},
 		{
-			Direction:      "in",
-			Protocol:       "udp",
-			DestinationIPs: []string{"0.0.0.0/0", "::/0"},
-			Port:           "any",
+			Direction: "in",
+			Protocol:  "udp",
+			SourceIPs: []string{"0.0.0.0/0", "::/0"},
+			Port:      "any",
 		},
 	})
 
@@ -53,10 +53,10 @@ func TestFirewallResource_Basic(t *testing.T) {
 			Port:           "443",
 		},
 		{
-			Direction:      "in",
-			Protocol:       "udp",
-			DestinationIPs: []string{"0.0.0.0/0", "::/0"},
-			Port:           "any",
+			Direction: "in",
+			Protocol:  "udp",
+			SourceIPs: []string{"0.0.0.0/0", "::/0"},
+			Port:      "any",
 		},
 	})
 	updated.SetRName(res.RName())
@@ -74,7 +74,7 @@ func TestFirewallResource_Basic(t *testing.T) {
 					testsupport.CheckResourceExists(res.TFID(), firewall.ByID(t, &f)),
 					resource.TestCheckResourceAttr(res.TFID(), "name",
 						fmt.Sprintf("basic-firewall--%d", tmplMan.RandInt)),
-					resource.TestCheckResourceAttr(res.TFID(), "rule.#", "2"),
+					resource.TestCheckResourceAttr(res.TFID(), "rule.#", "3"),
 					testsupport.LiftTCF(hasFirewallRule(t, &f, "in", "80", "tcp", []string{"0.0.0.0/0", "::/0"}, []string{})),
 					testsupport.LiftTCF(hasFirewallRule(t, &f, "out", "80", "tcp", []string{}, []string{"0.0.0.0/0", "::/0"})),
 				),
@@ -93,7 +93,7 @@ func TestFirewallResource_Basic(t *testing.T) {
 					testsupport.CheckResourceExists(res.TFID(), firewall.ByID(t, &f)),
 					resource.TestCheckResourceAttr(res.TFID(), "name",
 						fmt.Sprintf("basic-firewall--%d", tmplMan.RandInt)),
-					resource.TestCheckResourceAttr(res.TFID(), "rule.#", "2"),
+					resource.TestCheckResourceAttr(res.TFID(), "rule.#", "3"),
 					testsupport.LiftTCF(hasFirewallRule(t, &f, "in", "443", "tcp", []string{"0.0.0.0/0", "::/0"}, []string{})),
 					testsupport.LiftTCF(hasFirewallRule(t, &f, "out", "443", "tcp", []string{}, []string{"0.0.0.0/0", "::/0"})),
 				),
