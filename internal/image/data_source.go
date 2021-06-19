@@ -5,6 +5,7 @@ import (
 	"log"
 	"sort"
 	"strconv"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
@@ -157,13 +158,13 @@ func setImageSchema(d *schema.ResourceData, i *hcloud.Image) {
 	d.SetId(strconv.Itoa(i.ID))
 	d.Set("type", i.Type)
 	d.Set("name", i.Name)
-	d.Set("created", i.Created.String())
+	d.Set("created", i.Created.Format(time.RFC3339))
 	d.Set("description", i.Description)
 	d.Set("os_flavor", i.OSFlavor)
 	d.Set("os_version", i.OSVersion)
 	d.Set("rapid_deploy", i.RapidDeploy)
 	if !i.Deprecated.IsZero() {
-		d.Set("deprecated", i.Deprecated.String())
+		d.Set("deprecated", i.Deprecated.Format(time.RFC3339))
 	}
 	d.Set("labels", i.Labels)
 }
