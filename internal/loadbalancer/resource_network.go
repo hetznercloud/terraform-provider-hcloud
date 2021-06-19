@@ -80,7 +80,7 @@ func resourceLoadBalancerNetworkCreate(ctx context.Context, d *schema.ResourceDa
 	if snIDSet {
 		nwID, _, err := network.ParseSubnetID(subNetID.(string))
 		if err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 		networkID = nwID
 	}
@@ -112,17 +112,17 @@ func resourceLoadBalancerNetworkCreate(ctx context.Context, d *schema.ResourceDa
 		return nil
 	}
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 
 	if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 
 	enablePublicInterface := d.Get("enable_public_interface").(bool)
 	err = resourceLoadBalancerNetworkUpdatePublicInterface(ctx, enablePublicInterface, lb, c)
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	d.SetId(generateLoadBalancerNetworkID(lb, nw))
 
@@ -139,7 +139,7 @@ func resourceLoadBalancerNetworkRead(ctx context.Context, d *schema.ResourceData
 		return nil
 	}
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	if server == nil {
 		log.Printf("[WARN] LoadBalancer (%s) not found, removing from state", d.Id())
@@ -191,10 +191,10 @@ func resourceLoadBalancerNetworkDelete(ctx context.Context, d *schema.ResourceDa
 		return nil
 	}
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	if err := hcclient.WaitForAction(ctx, &client.Action, action); err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 
 	return nil

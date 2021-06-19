@@ -64,7 +64,7 @@ func resourceReverseDNSRead(ctx context.Context, d *schema.ResourceData, m inter
 		return nil
 	}
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	if server == nil && floatingIP == nil {
 		log.Printf("[WARN] RDNS entry (%s) not found, removing from state", d.Id())
@@ -125,7 +125,7 @@ func resourceReverseDNSCreate(ctx context.Context, d *schema.ResourceData, m int
 	if serverOK {
 		server, _, err := c.Server.GetByID(ctx, serverID.(int))
 		if err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 		if server == nil {
 			log.Printf("[WARN] Server (%s) not found, removing from state", d.Id())
@@ -136,10 +136,10 @@ func resourceReverseDNSCreate(ctx context.Context, d *schema.ResourceData, m int
 		d.SetId(generateRDNSID(server, nil, ip))
 		action, _, err := c.Server.ChangeDNSPtr(ctx, server, ip, &ptr)
 		if err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 		if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 
 		return resourceReverseDNSRead(ctx, d, m)
@@ -152,7 +152,7 @@ func resourceReverseDNSCreate(ctx context.Context, d *schema.ResourceData, m int
 
 	floatingIP, _, err := c.FloatingIP.GetByID(ctx, floatingIPID.(int))
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	if floatingIP == nil {
 		log.Printf("[WARN] Floating IP (%s) not found, removing from state", d.Id())
@@ -163,11 +163,11 @@ func resourceReverseDNSCreate(ctx context.Context, d *schema.ResourceData, m int
 	d.SetId(generateRDNSID(nil, floatingIP, ip))
 	action, _, err := c.FloatingIP.ChangeDNSPtr(ctx, floatingIP, ip, &ptr)
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 
 	if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	return resourceReverseDNSRead(ctx, d, m)
 }
@@ -182,7 +182,7 @@ func resourceReverseDNSUpdate(ctx context.Context, d *schema.ResourceData, m int
 		return nil
 	}
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	if server == nil && floatingIP == nil {
 		log.Printf("[WARN] RDNS entry (%s) not found, removing from state", d.Id())
@@ -197,18 +197,18 @@ func resourceReverseDNSUpdate(ctx context.Context, d *schema.ResourceData, m int
 		if floatingIP != nil {
 			action, _, err := c.FloatingIP.ChangeDNSPtr(ctx, floatingIP, ip, &ptr)
 			if err != nil {
-				return diag.FromErr(err)
+				return hcclient.ErrorToDiag(err)
 			}
 			if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
-				return diag.FromErr(err)
+				return hcclient.ErrorToDiag(err)
 			}
 		} else if server != nil {
 			action, _, err := c.Server.ChangeDNSPtr(ctx, server, ip, &ptr)
 			if err != nil {
-				return diag.FromErr(err)
+				return hcclient.ErrorToDiag(err)
 			}
 			if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
-				return diag.FromErr(err)
+				return hcclient.ErrorToDiag(err)
 			}
 		}
 	}
@@ -225,7 +225,7 @@ func resourceReverseDNSDelete(ctx context.Context, d *schema.ResourceData, m int
 		return nil
 	}
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	if server == nil && floatingIP == nil {
 		log.Printf("[WARN] RDNS entry (%s) not found, removing from state", d.Id())
@@ -240,10 +240,10 @@ func resourceReverseDNSDelete(ctx context.Context, d *schema.ResourceData, m int
 				// floating ip has already been deleted
 				return nil
 			}
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 		if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 		return nil
 	}
@@ -254,10 +254,10 @@ func resourceReverseDNSDelete(ctx context.Context, d *schema.ResourceData, m int
 			// server has already been deleted
 			return nil
 		}
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 
 	return nil

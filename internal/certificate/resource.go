@@ -175,7 +175,7 @@ func createUploadedResource(ctx context.Context, d *schema.ResourceData, m inter
 
 	res, _, err := client.Certificate.Create(ctx, opts)
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	d.SetId(strconv.Itoa(res.ID))
 	return readResource(ctx, d, m)
@@ -204,10 +204,10 @@ func createManagedResource(ctx context.Context, d *schema.ResourceData, m interf
 
 	res, _, err := c.Certificate.CreateCertificate(ctx, opts)
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	if err := hcclient.WaitForAction(ctx, &c.Action, res.Action); err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	d.SetId(strconv.Itoa(res.Certificate.ID))
 
@@ -222,7 +222,7 @@ func readResource(ctx context.Context, d *schema.ResourceData, m interface{}) di
 		if resourceCertificateNotFound(err, d) {
 			return nil
 		}
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	if cert == nil {
 		d.SetId("")
@@ -261,7 +261,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, m interface{}) 
 
 	cert, _, err := client.Certificate.Get(ctx, d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	if cert == nil {
 		d.SetId("")
@@ -274,7 +274,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, m interface{}) 
 			Name: d.Get("name").(string),
 		}
 		if _, _, err := client.Certificate.Update(ctx, cert, opts); err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 	}
 	if d.HasChange("labels") {
@@ -285,7 +285,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, m interface{}) 
 			opts.Labels[k] = v.(string)
 		}
 		if _, _, err := client.Certificate.Update(ctx, cert, opts); err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 	}
 	d.Partial(false)
@@ -306,7 +306,7 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, m interface{}) 
 			// certificate has already been deleted
 			return nil
 		}
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	d.SetId("")
 	return nil

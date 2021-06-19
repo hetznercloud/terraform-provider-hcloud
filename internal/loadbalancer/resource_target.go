@@ -106,7 +106,7 @@ func resourceLoadBalancerTargetCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.Errorf("unsupported target type: %s", tgtType)
 	}
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	if a != nil {
 		if err := hcclient.WaitForAction(ctx, &c.Action, a); err != nil {
@@ -258,7 +258,7 @@ func resourceLoadBalancerTargetRead(ctx context.Context, d *schema.ResourceData,
 
 	_, tgt, err := findLoadBalancerTarget(ctx, client, lbID, tgtType, d)
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 
 	setLoadBalancerTarget(d, lbID, tgt)
@@ -275,10 +275,10 @@ func resourceLoadBalancerTargetUpdate(ctx context.Context, d *schema.ResourceDat
 		return resourceLoadBalancerTargetCreate(ctx, d, m)
 	}
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	if err := removeLoadBalancerTarget(ctx, client, lb, tgt); err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	return resourceLoadBalancerTargetCreate(ctx, d, m)
 }
@@ -293,10 +293,10 @@ func resourceLoadBalancerTargetDelete(ctx context.Context, d *schema.ResourceDat
 		return nil
 	}
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	if err := removeLoadBalancerTarget(ctx, client, lb, tgt); err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	return nil
 }

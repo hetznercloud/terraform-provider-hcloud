@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
 )
 
 // DataSourceType is the type name of the Hetzner Cloud Volume data source.
@@ -75,7 +76,7 @@ func dataSourceHcloudVolumeRead(ctx context.Context, d *schema.ResourceData, m i
 	if id, ok := d.GetOk("id"); ok {
 		v, _, err := client.Volume.GetByID(ctx, id.(int))
 		if err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 		if v == nil {
 			return diag.Errorf("no volume found with id %d", id)
@@ -86,7 +87,7 @@ func dataSourceHcloudVolumeRead(ctx context.Context, d *schema.ResourceData, m i
 	if name, ok := d.GetOk("name"); ok {
 		v, _, err := client.Volume.GetByName(ctx, name.(string))
 		if err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 		if v == nil {
 			return diag.Errorf("no volume found with name %v", name)
@@ -117,7 +118,7 @@ func dataSourceHcloudVolumeRead(ctx context.Context, d *schema.ResourceData, m i
 		}
 		allVolumes, err := client.Volume.AllWithOpts(ctx, opts)
 		if err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 		if len(allVolumes) == 0 {
 			return diag.Errorf("no volume found for selector %q", selector)

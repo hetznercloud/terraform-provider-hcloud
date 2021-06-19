@@ -76,10 +76,10 @@ func resourceVolumeAttachmentCreate(ctx context.Context, d *schema.ResourceData,
 		return control.AbortRetry(err)
 	})
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	if err := hcclient.WaitForAction(ctx, &c.Action, a); err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	// Since a volume can only be attached to one server
 	// we can use the volume id as volume attachment id.
@@ -101,7 +101,7 @@ func resourceVolumeAttachmentRead(ctx context.Context, d *schema.ResourceData, m
 	// therefore the cast should always work
 	volume, _, err := client.Volume.GetByID(ctx, volumeID)
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	if volume == nil {
 		log.Printf("[WARN] Volume ID (%v) not found, removing volume attachment from state", d.Get("volume_id"))
@@ -126,7 +126,7 @@ func resourceVolumeAttachmentRead(ctx context.Context, d *schema.ResourceData, m
 
 	server, _, err := client.Server.GetByID(ctx, serverID)
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	if server == nil {
 		log.Printf("[WARN] Server ID (%v) not found, removing volume attachment from state", d.Get("server_id"))
@@ -173,11 +173,11 @@ func resourceVolumeAttachmentDelete(ctx context.Context, d *schema.ResourceData,
 			return control.AbortRetry(err)
 		})
 		if err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 
 		if err := hcclient.WaitForAction(ctx, &c.Action, a); err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 	}
 	return nil

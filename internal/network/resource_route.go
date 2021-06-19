@@ -57,7 +57,7 @@ func resourceNetworkRouteCreate(ctx context.Context, d *schema.ResourceData, m i
 
 	_, destination, err := net.ParseCIDR(d.Get("destination").(string))
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 
 	gateway := net.ParseIP(d.Get("gateway").(string))
@@ -85,10 +85,10 @@ func resourceNetworkRouteCreate(ctx context.Context, d *schema.ResourceData, m i
 		return control.AbortRetry(err)
 	})
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	if err := hcclient.WaitForAction(ctx, &c.Action, a); err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	d.SetId(generateNetworkRouteID(network, destination.String()))
 
@@ -105,7 +105,7 @@ func resourceNetworkRouteRead(ctx context.Context, d *schema.ResourceData, m int
 		return nil
 	}
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	if network == nil {
 		log.Printf("[WARN] Network Route (%s) not found, removing from state", d.Id())
@@ -144,11 +144,11 @@ func resourceNetworkRouteDelete(ctx context.Context, d *schema.ResourceData, m i
 		return nil
 	}
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 
 	if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	return nil
 }

@@ -11,6 +11,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
 )
 
 // ResourceType is the type name of the Hetzner Cloud Network resource.
@@ -51,7 +52,7 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 
 	_, ipRange, err := net.ParseCIDR(d.Get("ip_range").(string))
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 
 	opts := hcloud.NetworkCreateOpts{
@@ -68,7 +69,7 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 
 	network, _, err := client.Network.Create(ctx, opts)
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 
 	d.SetId(strconv.Itoa(network.ID))
@@ -84,7 +85,7 @@ func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interfac
 		if resourceNetworkIsNotFound(err, d) {
 			return nil
 		}
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	if network == nil {
 		d.SetId("")
@@ -99,7 +100,7 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interf
 
 	network, _, err := client.Network.Get(ctx, d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	if network == nil {
 		d.SetId("")
@@ -116,7 +117,7 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interf
 			if resourceNetworkIsNotFound(err, d) {
 				return nil
 			}
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 	}
 	if d.HasChange("labels") {
@@ -132,7 +133,7 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interf
 			if resourceNetworkIsNotFound(err, d) {
 				return nil
 			}
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 	}
 	d.Partial(false)
@@ -155,7 +156,7 @@ func resourceNetworkDelete(ctx context.Context, d *schema.ResourceData, m interf
 			// network has already been deleted
 			return nil
 		}
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 
 	return nil
