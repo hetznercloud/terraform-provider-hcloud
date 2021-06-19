@@ -148,12 +148,12 @@ func resourceLoadBalancerCreate(ctx context.Context, d *schema.ResourceData, m i
 
 	res, _, err := c.LoadBalancer.Create(ctx, opts)
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 
 	d.SetId(strconv.Itoa(res.LoadBalancer.ID))
 	if err := hcclient.WaitForAction(ctx, &c.Action, res.Action); err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 
 	return resourceLoadBalancerRead(ctx, d, m)
@@ -167,7 +167,7 @@ func resourceLoadBalancerRead(ctx context.Context, d *schema.ResourceData, m int
 		if resourceLoadBalancerIsNotFound(err, d) {
 			return nil
 		}
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	if loadBalancer == nil {
 		d.SetId("")
@@ -181,7 +181,7 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, m i
 	c := m.(*hcloud.Client)
 	loadBalancer, _, err := c.LoadBalancer.Get(ctx, d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	if loadBalancer == nil {
 		d.SetId("")
@@ -198,7 +198,7 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, m i
 			if resourceLoadBalancerIsNotFound(err, d) {
 				return nil
 			}
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 	}
 
@@ -211,10 +211,10 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, m i
 			if resourceLoadBalancerIsNotFound(err, d) {
 				return nil
 			}
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 		if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 	}
 
@@ -230,10 +230,10 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, m i
 			if resourceLoadBalancerIsNotFound(err, d) {
 				return nil
 			}
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 		if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 	}
 
@@ -250,7 +250,7 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, m i
 			if resourceLoadBalancerIsNotFound(err, d) {
 				return nil
 			}
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 	}
 
@@ -274,10 +274,10 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, m i
 					if resourceLoadBalancerIsNotFound(err, d) {
 						return nil
 					}
-					return diag.FromErr(err)
+					return hcclient.ErrorToDiag(err)
 				}
 				if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
-					return diag.FromErr(err)
+					return hcclient.ErrorToDiag(err)
 				}
 			}
 		}
@@ -285,7 +285,7 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, m i
 		// now we get the loadbalancer again
 		loadBalancer, _, err := c.LoadBalancer.Get(ctx, d.Id())
 		if err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 		if loadBalancer == nil {
 			d.SetId("")
@@ -311,10 +311,10 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, m i
 					if resourceLoadBalancerIsNotFound(err, d) {
 						return nil
 					}
-					return diag.FromErr(err)
+					return hcclient.ErrorToDiag(err)
 				}
 				if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
-					return diag.FromErr(err)
+					return hcclient.ErrorToDiag(err)
 				}
 			}
 		}
@@ -328,7 +328,7 @@ func resourceLoadBalancerDelete(ctx context.Context, d *schema.ResourceData, m i
 
 	loadBalancer, _, err := client.LoadBalancer.Get(ctx, d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	if loadBalancer == nil {
 		d.SetId("")
@@ -340,7 +340,7 @@ func resourceLoadBalancerDelete(ctx context.Context, d *schema.ResourceData, m i
 			// loadBalancer has already been deleted
 			return nil
 		}
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 
 	return nil

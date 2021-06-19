@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
 )
 
 // AssignmentResourceType is the type name of the Hetzner Cloud FloatingIP resource.
@@ -51,7 +52,7 @@ func resourceFloatingIPAssignmentCreate(ctx context.Context, d *schema.ResourceD
 
 	_, _, err := client.FloatingIP.Assign(ctx, floatingIP, server)
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 
 	// Since a floating ip can only be assigned to one server
@@ -74,7 +75,7 @@ func resourceFloatingIPAssignmentRead(ctx context.Context, d *schema.ResourceDat
 	// therefore the cast should always work
 	floatingIP, _, err := client.FloatingIP.GetByID(ctx, floatingIPID)
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	if floatingIP == nil {
 		log.Printf("[WARN] Floating IP ID (%v) not found, removing Floating IP Association from state", d.Get("floating_ip_id"))
@@ -99,7 +100,7 @@ func resourceFloatingIPAssignmentRead(ctx context.Context, d *schema.ResourceDat
 	}
 	server, _, err := client.Server.GetByID(ctx, serverID)
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	if server == nil {
 		log.Printf("[WARN] Server ID (%v) not found, removing Floating IP Association from state", d.Get("server_id"))
@@ -136,7 +137,7 @@ func resourceFloatingIPAssignmentDelete(ctx context.Context, d *schema.ResourceD
 	if floatingIP.Server != nil {
 		_, _, err = client.FloatingIP.Unassign(ctx, floatingIP)
 		if err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 	}
 	return nil

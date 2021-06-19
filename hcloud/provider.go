@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/firewall"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
 
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/snapshot"
 
@@ -118,7 +119,7 @@ func providerConfigure(_ context.Context, d *schema.ResourceData) (interface{}, 
 	if pollInterval, ok := d.GetOk("poll_interval"); ok {
 		pollInterval, err := time.ParseDuration(pollInterval.(string))
 		if err != nil {
-			return nil, diag.FromErr(err)
+			return nil, hcclient.ErrorToDiag(err)
 		}
 		opts = append(opts, hcloud.WithPollInterval(pollInterval))
 	}

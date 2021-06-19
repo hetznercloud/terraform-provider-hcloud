@@ -93,14 +93,14 @@ func resourceFloatingIPCreate(ctx context.Context, d *schema.ResourceData, m int
 
 	res, _, err := client.FloatingIP.Create(ctx, opts)
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 
 	d.SetId(strconv.Itoa(res.FloatingIP.ID))
 	if res.Action != nil {
 		_, errCh := client.Action.WatchProgress(ctx, res.Action)
 		if err := <-errCh; err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 	}
 
@@ -119,7 +119,7 @@ func resourceFloatingIPRead(ctx context.Context, d *schema.ResourceData, m inter
 
 	floatingIP, _, err := client.FloatingIP.GetByID(ctx, id)
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	if floatingIP == nil {
 		log.Printf("[WARN] Floating IP (%s) not found, removing from state", d.Id())
@@ -153,7 +153,7 @@ func resourceFloatingIPUpdate(ctx context.Context, d *schema.ResourceData, m int
 			if resourceFloatingIPIsNotFound(err, d) {
 				return nil
 			}
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 	}
 
@@ -166,7 +166,7 @@ func resourceFloatingIPUpdate(ctx context.Context, d *schema.ResourceData, m int
 			if resourceFloatingIPIsNotFound(err, d) {
 				return nil
 			}
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 	}
 
@@ -178,10 +178,10 @@ func resourceFloatingIPUpdate(ctx context.Context, d *schema.ResourceData, m int
 				if resourceFloatingIPIsNotFound(err, d) {
 					return nil
 				}
-				return diag.FromErr(err)
+				return hcclient.ErrorToDiag(err)
 			}
 			if err := hcclient.WaitForAction(ctx, &client.Action, action); err != nil {
-				return diag.FromErr(err)
+				return hcclient.ErrorToDiag(err)
 			}
 		} else {
 			a, _, err := client.FloatingIP.Assign(ctx, floatingIP, &hcloud.Server{ID: serverID})
@@ -189,10 +189,10 @@ func resourceFloatingIPUpdate(ctx context.Context, d *schema.ResourceData, m int
 				if resourceFloatingIPIsNotFound(err, d) {
 					return nil
 				}
-				return diag.FromErr(err)
+				return hcclient.ErrorToDiag(err)
 			}
 			if err := hcclient.WaitForAction(ctx, &client.Action, a); err != nil {
-				return diag.FromErr(err)
+				return hcclient.ErrorToDiag(err)
 			}
 		}
 	}
@@ -209,7 +209,7 @@ func resourceFloatingIPUpdate(ctx context.Context, d *schema.ResourceData, m int
 			if resourceFloatingIPIsNotFound(err, d) {
 				return nil
 			}
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 	}
 	d.Partial(false)
@@ -231,7 +231,7 @@ func resourceFloatingIPDelete(ctx context.Context, d *schema.ResourceData, m int
 			// server has already been deleted
 			return nil
 		}
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 
 	return nil

@@ -11,6 +11,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
 )
 
 const (
@@ -67,7 +68,7 @@ func dataSourceHcloudLocationRead(ctx context.Context, d *schema.ResourceData, m
 	if id, ok := d.GetOk("id"); ok {
 		l, _, err := client.Location.GetByID(ctx, id.(int))
 		if err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 		if l == nil {
 			return diag.Errorf("no location found with id %d", id)
@@ -78,7 +79,7 @@ func dataSourceHcloudLocationRead(ctx context.Context, d *schema.ResourceData, m
 	if name, ok := d.GetOk("name"); ok {
 		l, _, err := client.Location.GetByName(ctx, name.(string))
 		if err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 		if l == nil {
 			return diag.Errorf("no location found with name %v", name)
@@ -129,7 +130,7 @@ func dataSourceHcloudLocationsRead(ctx context.Context, d *schema.ResourceData, 
 	client := m.(*hcloud.Client)
 	ls, err := client.Location.All(ctx)
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 
 	names := make([]string, len(ls))

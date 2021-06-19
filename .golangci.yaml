@@ -21,7 +21,7 @@ linters:
     - misspell
     - prealloc
     - rowserrcheck
-    - scopelint
+    - exportloopref
     - staticcheck
     - structcheck
     - typecheck
@@ -35,7 +35,7 @@ issues:
     - path: _test\.go
       linters:
         - gosec
-        - scopelint
+        - exportloopref
         - errcheck
     - linters:
         - gosec

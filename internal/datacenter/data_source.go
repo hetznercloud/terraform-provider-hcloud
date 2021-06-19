@@ -12,6 +12,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
 )
 
 const (
@@ -68,7 +69,7 @@ func dataSourceHcloudDatacenterRead(ctx context.Context, data *schema.ResourceDa
 	if id, ok := data.GetOk("id"); ok {
 		d, _, err := client.Datacenter.GetByID(ctx, id.(int))
 		if err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 		if d == nil {
 			return diag.Errorf("no datacenter found with id %d", id)
@@ -79,7 +80,7 @@ func dataSourceHcloudDatacenterRead(ctx context.Context, data *schema.ResourceDa
 	if name, ok := data.GetOk("name"); ok {
 		d, _, err := client.Datacenter.GetByName(ctx, name.(string))
 		if err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 		if d == nil {
 			return diag.Errorf("no datacenter found with name %v", name)
@@ -148,7 +149,7 @@ func dataSourceHcloudDatacentersRead(ctx context.Context, d *schema.ResourceData
 	client := m.(*hcloud.Client)
 	dcs, err := client.Datacenter.All(ctx)
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 
 	names := make([]string, 0, len(dcs))

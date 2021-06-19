@@ -102,23 +102,23 @@ func resourceVolumeCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		if hcloud.IsError(err, hcloud.ErrorCodeLocked) {
 			return resourceVolumeCreate(ctx, d, m)
 		}
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	if err := hcclient.WaitForAction(ctx, &c.Action, result.Action); err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	for _, nextAction := range result.NextActions {
 		if err := hcclient.WaitForAction(ctx, &c.Action, nextAction); err != nil {
 			var aerr hcloud.ActionError
 
 			if nextAction.Command != "attach_volume" {
-				return diag.FromErr(err)
+				return hcclient.ErrorToDiag(err)
 			}
 			if !errors.As(err, &aerr) {
-				return diag.FromErr(err)
+				return hcclient.ErrorToDiag(err)
 			}
 			if !strings.Contains(aerr.Message, string(hcloud.ErrorCodeLocked)) {
-				return diag.FromErr(err)
+				return hcclient.ErrorToDiag(err)
 			}
 
 			// Sometimes, when multiple volumes are created (for the same server)
@@ -142,7 +142,7 @@ func resourceVolumeCreate(ctx context.Context, d *schema.ResourceData, m interfa
 						return hcclient.WaitForAction(ctx, &c.Action, a)
 					})
 					if err != nil {
-						return diag.FromErr(err)
+						return hcclient.ErrorToDiag(err)
 					}
 				}
 			}
@@ -165,7 +165,7 @@ func resourceVolumeRead(ctx context.Context, d *schema.ResourceData, m interface
 
 	volume, _, err := client.Volume.GetByID(ctx, id)
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	if volume == nil {
 		log.Printf("[WARN] volume (%s) not found, removing from state", d.Id())
@@ -191,7 +191,7 @@ func resourceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		if resourceVolumeIsNotFound(err, d) {
 			return nil
 		}
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 
 	d.Partial(true)
@@ -205,7 +205,7 @@ func resourceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 			if resourceVolumeIsNotFound(err, d) {
 				return nil
 			}
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 	}
 
@@ -227,7 +227,7 @@ func resourceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 				return nil
 			})
 			if err != nil {
-				return diag.FromErr(err)
+				return hcclient.ErrorToDiag(err)
 			}
 		} else {
 			if volume.Server != nil {
@@ -245,7 +245,7 @@ func resourceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 					return nil
 				})
 				if err != nil {
-					return diag.FromErr(err)
+					return hcclient.ErrorToDiag(err)
 				}
 			}
 			err := control.Retry(control.DefaultRetries, func() error {
@@ -267,7 +267,7 @@ func resourceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 				return nil
 			})
 			if err != nil {
-				return diag.FromErr(err)
+				return hcclient.ErrorToDiag(err)
 			}
 		}
 	}
@@ -279,10 +279,10 @@ func resourceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 			if resourceVolumeIsNotFound(err, d) {
 				return nil
 			}
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 		if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 	}
 
@@ -299,7 +299,7 @@ func resourceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 			if resourceVolumeIsNotFound(err, d) {
 				return nil
 			}
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 	}
 	d.Partial(false)
@@ -318,7 +318,7 @@ func resourceVolumeDelete(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 	volume, _, err := c.Volume.GetByID(ctx, volumeID)
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 
 	if volume.Server != nil {
@@ -337,7 +337,7 @@ func resourceVolumeDelete(ctx context.Context, d *schema.ResourceData, m interfa
 			return nil
 		})
 		if err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 	}
 	err = control.Retry(control.DefaultRetries, func() error {
@@ -350,7 +350,7 @@ func resourceVolumeDelete(ctx context.Context, d *schema.ResourceData, m interfa
 		return nil
 	})
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 
 	return nil

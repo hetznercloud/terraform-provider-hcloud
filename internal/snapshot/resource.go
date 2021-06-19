@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
 )
 
 // ResourceType is the type name of the Hetzner Cloud Snapshot resource.
@@ -60,14 +61,14 @@ func resourceSnapshotCreate(ctx context.Context, d *schema.ResourceData, m inter
 
 	res, _, err := client.Server.CreateImage(ctx, &hcloud.Server{ID: serverID}, &opts)
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 
 	d.SetId(strconv.Itoa(res.Image.ID))
 	if res.Action != nil {
 		_, errCh := client.Action.WatchProgress(ctx, res.Action)
 		if err := <-errCh; err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 	}
 
@@ -86,7 +87,7 @@ func resourceSnapshotRead(ctx context.Context, d *schema.ResourceData, m interfa
 
 	snapshot, _, err := client.Image.GetByID(ctx, id)
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	if snapshot == nil {
 		log.Printf("[WARN] Snapshot (%s) not found, removing from state", d.Id())
@@ -125,7 +126,7 @@ func resourceSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m inter
 			if resourceSnapshotIsNotFound(err, d) {
 				return nil
 			}
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 	}
 
@@ -142,7 +143,7 @@ func resourceSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m inter
 			if resourceSnapshotIsNotFound(err, d) {
 				return nil
 			}
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 	}
 	d.Partial(false)
@@ -164,7 +165,7 @@ func resourceSnapshotDelete(ctx context.Context, d *schema.ResourceData, m inter
 			// server has already been deleted
 			return nil
 		}
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 
 	return nil

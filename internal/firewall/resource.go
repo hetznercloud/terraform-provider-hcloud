@@ -124,12 +124,12 @@ func resourceFirewallCreate(ctx context.Context, d *schema.ResourceData, m inter
 
 	res, _, err := client.Firewall.Create(ctx, opts)
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 
 	for _, nextAction := range res.Actions {
 		if err := hcclient.WaitForAction(ctx, &client.Action, nextAction); err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 	}
 	d.SetId(strconv.Itoa(res.Firewall.ID))
@@ -193,7 +193,7 @@ func resourceFirewallRead(ctx context.Context, d *schema.ResourceData, m interfa
 
 	firewall, _, err := client.Firewall.GetByID(ctx, id)
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	if firewall == nil {
 		log.Printf("[WARN] firewall (%s) not found, removing from state", d.Id())
@@ -219,7 +219,7 @@ func resourceFirewallUpdate(ctx context.Context, d *schema.ResourceData, m inter
 		if resourceFirewallIsNotFound(err, d) {
 			return nil
 		}
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 
 	d.Partial(true)
@@ -233,7 +233,7 @@ func resourceFirewallUpdate(ctx context.Context, d *schema.ResourceData, m inter
 			if resourceFirewallIsNotFound(err, d) {
 				return nil
 			}
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 	}
 
@@ -249,10 +249,10 @@ func resourceFirewallUpdate(ctx context.Context, d *schema.ResourceData, m inter
 				if resourceFirewallIsNotFound(err, d) {
 					return nil
 				}
-				return diag.FromErr(err)
+				return hcclient.ErrorToDiag(err)
 			}
 			if err := waitForFirewallActions(ctx, client, actions, firewall); err != nil {
-				return diag.FromErr(err)
+				return hcclient.ErrorToDiag(err)
 			}
 		}
 	}
@@ -270,7 +270,7 @@ func resourceFirewallUpdate(ctx context.Context, d *schema.ResourceData, m inter
 			if resourceFirewallIsNotFound(err, d) {
 				return nil
 			}
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 	}
 	d.Partial(false)
@@ -289,7 +289,7 @@ func resourceFirewallDelete(ctx context.Context, d *schema.ResourceData, m inter
 	}
 	firewall, _, err := client.Firewall.GetByID(ctx, firewallID)
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 
 	err = control.Retry(control.DefaultRetries, func() error {
@@ -309,7 +309,7 @@ func resourceFirewallDelete(ctx context.Context, d *schema.ResourceData, m inter
 		return nil
 	})
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 
 	return nil

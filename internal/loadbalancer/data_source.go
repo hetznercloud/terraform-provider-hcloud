@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
 )
 
 // DataSourceType is the type name of the Hetzner Cloud Load Balancer resource.
@@ -211,7 +212,7 @@ func dataSourceHcloudLoadBalancerRead(ctx context.Context, d *schema.ResourceDat
 	if id, ok := d.GetOk("id"); ok {
 		lb, _, err := client.LoadBalancer.GetByID(ctx, id.(int))
 		if err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 		if lb == nil {
 			return diag.Errorf("no Load Balancer found with id %d", id)
@@ -222,7 +223,7 @@ func dataSourceHcloudLoadBalancerRead(ctx context.Context, d *schema.ResourceDat
 	if name, ok := d.GetOk("name"); ok {
 		lb, _, err := client.LoadBalancer.GetByName(ctx, name.(string))
 		if err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 		if lb == nil {
 			return diag.Errorf("no Load Balancer found with name %s", name)
@@ -242,7 +243,7 @@ func dataSourceHcloudLoadBalancerRead(ctx context.Context, d *schema.ResourceDat
 		}
 		allLoadBalancers, err := client.LoadBalancer.AllWithOpts(ctx, opts)
 		if err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 		if len(allLoadBalancers) == 0 {
 			return diag.Errorf("no Load Balancer found for selector %q", selector)

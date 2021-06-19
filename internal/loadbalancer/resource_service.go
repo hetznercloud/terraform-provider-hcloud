@@ -183,7 +183,7 @@ func resourceLoadBalancerServiceCreate(ctx context.Context, d *schema.ResourceDa
 
 	lbID, err := strconv.Atoi(d.Get("load_balancer_id").(string))
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	lb := hcloud.LoadBalancer{ID: lbID}
 
@@ -236,10 +236,10 @@ func resourceLoadBalancerServiceCreate(ctx context.Context, d *schema.ResourceDa
 		return nil
 	}
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	if err := hcclient.WaitForAction(ctx, &c.Action, a); err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	svcID := fmt.Sprintf("%d__%d", lb.ID, listenPort)
 
@@ -258,7 +258,7 @@ func resourceLoadBalancerServiceUpdate(ctx context.Context, d *schema.ResourceDa
 		return nil
 	}
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	protocol := hcloud.LoadBalancerServiceProtocol(d.Get("protocol").(string))
 	opts := hcloud.LoadBalancerUpdateServiceOpts{
@@ -285,10 +285,10 @@ func resourceLoadBalancerServiceUpdate(ctx context.Context, d *schema.ResourceDa
 		if resourceLoadBalancerIsNotFound(err, d) {
 			return nil
 		}
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	return resourceLoadBalancerServiceRead(ctx, d, m)
 }
@@ -302,10 +302,10 @@ func resourceLoadBalancerServiceRead(ctx context.Context, d *schema.ResourceData
 		return nil
 	}
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	if setLoadBalancerServiceSchema(d, lb, svc); err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	return nil
 }
@@ -322,7 +322,7 @@ func resourceLoadBalancerServiceDelete(ctx context.Context, d *schema.ResourceDa
 		return nil
 	}
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 
 	a, _, err := c.LoadBalancer.DeleteService(ctx, lb, svc.ListenPort)

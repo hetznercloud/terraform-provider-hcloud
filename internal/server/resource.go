@@ -184,7 +184,7 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	var err error
 	image, _, err := c.Image.Get(ctx, d.Get("image").(string))
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 
 	opts := hcloud.ServerCreateOpts{
@@ -198,7 +198,7 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 
 	opts.SSHKeys, err = getSSHkeys(ctx, c, d)
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 
 	if datacenter, ok := d.GetOk("datacenter"); ok {
@@ -224,16 +224,16 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 
 	res, _, err := c.Server.Create(ctx, opts)
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	d.SetId(strconv.Itoa(res.Server.ID))
 
 	if err := hcclient.WaitForAction(ctx, &c.Action, res.Action); err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	for _, nextAction := range res.NextActions {
 		if err := hcclient.WaitForAction(ctx, &c.Action, nextAction); err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 	}
 
@@ -241,25 +241,25 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		for _, item := range nwSet.(*schema.Set).List() {
 			nwData := item.(map[string]interface{})
 			if err := inlineAttachServerToNetwork(ctx, c, res.Server, nwData); err != nil {
-				return diag.FromErr(err)
+				return hcclient.ErrorToDiag(err)
 			}
 		}
 	}
 
 	backups := d.Get("backups").(bool)
 	if err := setBackups(ctx, c, res.Server, backups); err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 
 	if iso, ok := d.GetOk("iso"); ok {
 		if err := setISO(ctx, c, res.Server, iso.(string)); err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 	}
 
 	if rescue, ok := d.GetOk("rescue"); ok {
 		if err := setRescue(ctx, c, res.Server, rescue.(string), opts.SSHKeys); err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 	}
 
@@ -274,7 +274,7 @@ func resourceServerRead(ctx context.Context, d *schema.ResourceData, m interface
 		if resourceServerIsNotFound(err, d) {
 			return nil
 		}
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	if server == nil {
 		d.SetId("")
@@ -295,7 +295,7 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 
 	server, _, err := c.Server.Get(ctx, d.Id())
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	if server == nil {
 		d.SetId("")
@@ -312,7 +312,7 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 			if resourceServerIsNotFound(err, d) {
 				return nil
 			}
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 	}
 	if d.HasChange("labels") {
@@ -328,7 +328,7 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 			if resourceServerIsNotFound(err, d) {
 				return nil
 			}
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 	}
 	if d.HasChange("server_type") {
@@ -338,10 +338,10 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		if server.Status == hcloud.ServerStatusRunning {
 			action, _, err := c.Server.Poweroff(ctx, server)
 			if err != nil {
-				return diag.FromErr(err)
+				return hcclient.ErrorToDiag(err)
 			}
 			if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
-				return diag.FromErr(err)
+				return hcclient.ErrorToDiag(err)
 			}
 		}
 
@@ -350,24 +350,24 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 			UpgradeDisk: !keepDisk,
 		})
 		if err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 		if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 	}
 
 	if d.HasChange("backups") {
 		backups := d.Get("backups").(bool)
 		if err := setBackups(ctx, c, server, backups); err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 	}
 
 	if d.HasChange("iso") {
 		iso := d.Get("iso").(string)
 		if err := setISO(ctx, c, server, iso); err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 	}
 
@@ -375,17 +375,17 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		rescue := d.Get("rescue").(string)
 		sshKeys, err := getSSHkeys(ctx, c, d)
 		if err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 		if err := setRescue(ctx, c, server, rescue, sshKeys); err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 	}
 
 	if d.HasChange("network") {
 		data := d.Get("network").(*schema.Set)
 		if err := updateServerInlineNetworkAttachments(ctx, c, data, server); err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 	}
 
@@ -413,11 +413,11 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 					},
 				)
 				if err != nil {
-					return diag.FromErr(err)
+					return hcclient.ErrorToDiag(err)
 				}
 				err = hcclient.WaitForActions(ctx, &c.Action, a)
 				if err != nil {
-					return diag.FromErr(err)
+					return hcclient.ErrorToDiag(err)
 				}
 			}
 		}
@@ -444,11 +444,11 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 					},
 				)
 				if err != nil {
-					return diag.FromErr(err)
+					return hcclient.ErrorToDiag(err)
 				}
 				err = hcclient.WaitForActions(ctx, &c.Action, a)
 				if err != nil {
-					return diag.FromErr(err)
+					return hcclient.ErrorToDiag(err)
 				}
 			}
 		}
@@ -468,7 +468,7 @@ func resourceServerDelete(ctx context.Context, d *schema.ResourceData, m interfa
 		return nil
 	}
 	if _, err := client.Server.Delete(ctx, &hcloud.Server{ID: serverID}); err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 
 	return nil

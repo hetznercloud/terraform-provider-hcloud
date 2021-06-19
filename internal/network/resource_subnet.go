@@ -78,7 +78,7 @@ func resourceNetworkSubnetCreate(ctx context.Context, d *schema.ResourceData, m 
 
 	_, ipRange, err := net.ParseCIDR(d.Get("ip_range").(string))
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	networkID := d.Get("network_id")
 	network := &hcloud.Network{ID: networkID.(int)}
@@ -110,11 +110,11 @@ func resourceNetworkSubnetCreate(ctx context.Context, d *schema.ResourceData, m 
 		return control.AbortRetry(err)
 	})
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 
 	if err := hcclient.WaitForAction(ctx, &c.Action, a); err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	d.SetId(generateNetworkSubnetID(network, ipRange.String()))
 
@@ -131,7 +131,7 @@ func resourceNetworkSubnetRead(ctx context.Context, d *schema.ResourceData, m in
 		return nil
 	}
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	if network == nil {
 		log.Printf("[WARN] Network Subnet (%s) not found, removing from state", d.Id())
@@ -178,10 +178,10 @@ func resourceNetworkSubnetDelete(ctx context.Context, d *schema.ResourceData, m 
 		return nil
 	}
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	if err := hcclient.WaitForAction(ctx, &c.Action, a); err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	return nil
 }

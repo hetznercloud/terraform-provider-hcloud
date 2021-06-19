@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
 )
 
 const (
@@ -72,7 +73,7 @@ func dataSourceHcloudServerTypeRead(ctx context.Context, data *schema.ResourceDa
 	if id, ok := data.GetOk("id"); ok {
 		d, _, err := client.ServerType.GetByID(ctx, id.(int))
 		if err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 		if d == nil {
 			return diag.Errorf("no server type found with id %d", id)
@@ -83,7 +84,7 @@ func dataSourceHcloudServerTypeRead(ctx context.Context, data *schema.ResourceDa
 	if name, ok := data.GetOk("name"); ok {
 		d, _, err := client.ServerType.GetByName(ctx, name.(string))
 		if err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 		if d == nil {
 			return diag.Errorf("no server type found with name %v", name)
@@ -136,7 +137,7 @@ func dataSourceHcloudServerTypesRead(ctx context.Context, d *schema.ResourceData
 	client := m.(*hcloud.Client)
 	sts, err := client.ServerType.All(ctx)
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 
 	names := make([]string, len(sts))

@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
 )
 
 // DataSourceType is the type name of the Hetzner Cloud Firewall resource.
@@ -81,7 +82,7 @@ func dataSourceHcloudFirewallRead(ctx context.Context, d *schema.ResourceData, m
 	if id, ok := d.GetOk("id"); ok {
 		i, _, err := client.Firewall.GetByID(ctx, id.(int))
 		if err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 		if i == nil {
 			return diag.Errorf("no firewall found with id %d", id)
@@ -92,7 +93,7 @@ func dataSourceHcloudFirewallRead(ctx context.Context, d *schema.ResourceData, m
 	if name, ok := d.GetOk("name"); ok {
 		i, _, err := client.Firewall.GetByName(ctx, name.(string))
 		if err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 		if i == nil {
 			return diag.Errorf("no firewall found with name %v", name)
@@ -107,7 +108,7 @@ func dataSourceHcloudFirewallRead(ctx context.Context, d *schema.ResourceData, m
 		opts := hcloud.FirewallListOpts{ListOpts: hcloud.ListOpts{LabelSelector: selector.(string)}}
 		allFirewalls, err := client.Firewall.AllWithOpts(ctx, opts)
 		if err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 		if len(allFirewalls) == 0 {
 			return diag.Errorf("no firewall found for selector %q", selector)

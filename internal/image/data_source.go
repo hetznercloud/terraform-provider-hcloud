@@ -11,6 +11,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
 )
 
 // DataSourceType is the type name of the Hetzner Cloud image resource.
@@ -94,7 +95,7 @@ func dataSourceHcloudImageRead(ctx context.Context, d *schema.ResourceData, m in
 	if id, ok := d.GetOk("id"); ok {
 		i, _, err := client.Image.GetByID(ctx, id.(int))
 		if err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 		if i == nil {
 			return diag.Errorf("no image found with id %d", id)
@@ -105,7 +106,7 @@ func dataSourceHcloudImageRead(ctx context.Context, d *schema.ResourceData, m in
 	if name, ok := d.GetOk("name"); ok {
 		i, _, err := client.Image.GetByName(ctx, name.(string))
 		if err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 		if i == nil {
 			return diag.Errorf("no image found with name %v", name)
@@ -130,7 +131,7 @@ func dataSourceHcloudImageRead(ctx context.Context, d *schema.ResourceData, m in
 		opts := hcloud.ImageListOpts{ListOpts: hcloud.ListOpts{LabelSelector: selector}, Status: statuses}
 		allImages, err := client.Image.AllWithOpts(ctx, opts)
 		if err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 		if len(allImages) == 0 {
 			return diag.Errorf("no image found for selector %q", selector)

@@ -82,7 +82,7 @@ func resourceServerNetworkCreate(ctx context.Context, d *schema.ResourceData, m 
 	if snIDSet {
 		nwID, _, err := network.ParseSubnetID(subNetID.(string))
 		if err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 		networkID = nwID
 	}
@@ -97,7 +97,7 @@ func resourceServerNetworkCreate(ctx context.Context, d *schema.ResourceData, m 
 
 	err := attachServerToNetwork(ctx, client, server, n, ip, aliasIPs)
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	d.SetId(generateServerNetworkID(server, n))
 
@@ -113,7 +113,7 @@ func resourceServerNetworkUpdate(ctx context.Context, d *schema.ResourceData, m 
 		return nil
 	}
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	if server == nil {
 		log.Printf("[WARN] Server (%s) not found, removing from state", d.Id())
@@ -128,7 +128,7 @@ func resourceServerNetworkUpdate(ctx context.Context, d *schema.ResourceData, m 
 
 	if d.HasChange("alias_ips") {
 		if err := updateServerAliasIPs(ctx, client, server, network, d.Get("alias_ips").(*schema.Set)); err != nil {
-			return diag.FromErr(err)
+			return hcclient.ErrorToDiag(err)
 		}
 	}
 	return resourceServerNetworkRead(ctx, d, m)
@@ -144,7 +144,7 @@ func resourceServerNetworkRead(ctx context.Context, d *schema.ResourceData, m in
 		return nil
 	}
 	if err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	if server == nil {
 		log.Printf("[WARN] Server (%s) not found, removing from state", d.Id())
@@ -176,7 +176,7 @@ func resourceServerNetworkDelete(ctx context.Context, d *schema.ResourceData, m 
 		return nil
 	}
 	if err := detachServerFromNetwork(ctx, client, server, network); err != nil {
-		return diag.FromErr(err)
+		return hcclient.ErrorToDiag(err)
 	}
 	return nil
 }
