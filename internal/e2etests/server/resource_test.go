@@ -10,7 +10,6 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/firewall"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/network"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
-
 	"github.com/stretchr/testify/assert"
 
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
@@ -301,6 +300,9 @@ func TestServerResource_DirectAttachToNetwork(t *testing.T) {
 					testsupport.CheckResourceExists(nwRes.TFID(), network.ByID(t, &nw)),
 					testsupport.CheckResourceExists(sResWithNet.TFID(), server.ByID(t, &s)),
 					testsupport.LiftTCF(hasServerNetwork(t, &s, &nw, "10.0.1.5", "10.0.1.6", "10.0.1.7")),
+					resource.TestCheckResourceAttr(sResWithNet.TFID(), "network.#", "1"),
+					resource.TestCheckResourceAttr(sResWithNet.TFID(), "network.0.ip", "10.0.1.5"),
+					resource.TestCheckResourceAttr(sResWithNet.TFID(), "network.0.alias_ips.#", "2"),
 				),
 			},
 			{

@@ -80,6 +80,13 @@ The following arguments are supported:
 - `labels` - (Optional, map) User-defined labels (key-value pairs) should be created with.
 - `backups` - (Optional, boolean) Enable or disable backups.
 - `firewall_ids` - (Optional, list) Firewall IDs the server should be attached to on creation.
+- `network` - (Optional)  Network the server should be attached to on creation. (Can be specified multiple times)
+
+`network` support the following fields:
+- `network_id` - (Required, int) ID of the network
+- `ip` - (Optional, string) Specify the IP the server should get in the network
+- `alias_ips` - (Optional, list) Alias IPs the server should have in the Network.
+
 
 ## Attributes Reference
 
@@ -107,6 +114,14 @@ The following attributes are exported:
   issue. It is therefore necessary to use `depends_on` to link the server
   to the respective subnetwork. See examples.
 - `firewall_ids` - (Optional, list) Firewall IDs the server is attached to.
+- `network` - (Optional, list)  Network the server should be attached to on creation. (Can be specified multiple times)
+
+a single entry in `network` support the following fields:
+- `network_id` - (Required, int) ID of the network
+- `ip` - (Optional, string) Specify the IP the server should get in the network
+- `alias_ips` - (Optional, list) Alias IPs the server should have in the Network.
+- `mac_address` - (Optional, string) The MAC address the private interface of the server has
+
 
 ## Import
 
