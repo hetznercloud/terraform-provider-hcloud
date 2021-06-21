@@ -131,6 +131,12 @@ func Resource() *schema.Resource {
 			"network": {
 				Type:     schema.TypeSet,
 				Optional: true,
+				DiffSuppressFunc: func(_, _, _ string, d *schema.ResourceData) bool {
+					// Diff is only valid if "network" resource is set in
+					// terraform configuration.
+					_, ok := d.GetOk("network")
+					return !ok // Negate because we do **not** want to suppress the diff.
+				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"network_id": {
@@ -721,4 +727,33 @@ func setServerSchema(d *schema.ResourceData, s *hcloud.Server) {
 		firewallIDs[i] = firewall.Firewall.ID
 	}
 	d.Set("firewall_ids", firewallIDs)
+
+	// Only write the networks to the resource data if it already contains
+	// such an entry. This avoids setting the "network" property which is not
+	// marked as "computed" if the user uses the "server_network_subnet"
+	// resource. Setting the "network" property as computed is not possible
+	// because this would lead to loosing any updates.
+	//
+	// The easiest would be to use schema.ComputedWhen but this is marked
+	// as currently not working.
+	if _, ok := d.GetOk("network"); ok {
+		d.Set("network", networkToTerraformNetworks(s.PrivateNet))
+	}
+}
+
+func networkToTerraformNetworks(privateNetworks []hcloud.ServerPrivateNet) []map[string]interface{} {
+	tfPrivateNetworks := make([]map[string]interface{}, len(privateNetworks))
+	for i, privateNetwork := range privateNetworks {
+		tfPrivateNetwork := make(map[string]interface{})
+		tfPrivateNetwork["network_id"] = privateNetwork.Network.ID
+		tfPrivateNetwork["ip"] = privateNetwork.IP.String()
+		tfPrivateNetwork["mac_address"] = privateNetwork.MACAddress
+		aliasIPs := make([]string, len(privateNetwork.Aliases))
+		for in, ip := range privateNetwork.Aliases {
+			aliasIPs[in] = ip.String()
+		}
+		tfPrivateNetwork["alias_ips"] = aliasIPs
+		tfPrivateNetworks[i] = tfPrivateNetwork
+	}
+	return tfPrivateNetworks
 }
