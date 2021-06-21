@@ -1,6 +1,7 @@
 package hcclient
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -12,13 +13,16 @@ import (
 // Error() function from them with a few more details to make
 // them more understandable for users
 func ErrorToDiag(err error) diag.Diagnostics {
+	var hcloudErr hcloud.Error
+
+	if !errors.As(err, &hcloudErr) {
+		return diag.FromErr(err)
+	}
 	if hcloud.IsError(err, hcloud.ErrorCodeInvalidInput) {
-		err := err.(hcloud.Error)
-		return enrichInvalidInput(err)
+		return enrichInvalidInput(hcloudErr)
 	}
 	return diag.FromErr(err)
 }
-
 func enrichInvalidInput(err hcloud.Error) diag.Diagnostics {
 	ie := err.Details.(hcloud.ErrorDetailsInvalidInput)
 	invalidInputs := make([]string, len(ie.Fields))
