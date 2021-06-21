@@ -122,54 +122,53 @@ func resourceReverseDNSCreate(ctx context.Context, d *schema.ResourceData, m int
 		d.SetId("")
 		return nil
 	}
-	if !serverOK {
-		if !floatingIPOK {
-			log.Printf("[WARN] Invalid floating_ip_id (%s), removing from state: %v", d.Id(), floatingIPOK)
+	if serverOK {
+		server, _, err := c.Server.GetByID(ctx, serverID.(int))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if server == nil {
+			log.Printf("[WARN] Server (%s) not found, removing from state", d.Id())
 			d.SetId("")
 			return nil
 		}
 
-		floatingIP, _, err := c.FloatingIP.GetByID(ctx, floatingIPID.(int))
+		d.SetId(generateRDNSID(server, nil, ip))
+		action, _, err := c.Server.ChangeDNSPtr(ctx, server, ip, &ptr)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if floatingIP == nil {
-			log.Printf("[WARN] Floating IP (%s) not found, removing from state", d.Id())
-			d.SetId("")
-			return nil
-		}
-
-		d.SetId(generateRDNSID(nil, floatingIP, ip))
-		action, _, err := c.FloatingIP.ChangeDNSPtr(ctx, floatingIP, ip, &ptr)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
 		if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
 			return diag.FromErr(err)
 		}
+
 		return resourceReverseDNSRead(ctx, d, m)
 	}
-
-	server, _, err := c.Server.GetByID(ctx, serverID.(int))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if server == nil {
-		log.Printf("[WARN] Server (%s) not found, removing from state", d.Id())
+	if !floatingIPOK {
+		log.Printf("[WARN] Invalid floating_ip_id (%s), removing from state: %v", d.Id(), floatingIPOK)
 		d.SetId("")
 		return nil
 	}
 
-	d.SetId(generateRDNSID(server, nil, ip))
-	action, _, err := c.Server.ChangeDNSPtr(ctx, server, ip, &ptr)
+	floatingIP, _, err := c.FloatingIP.GetByID(ctx, floatingIPID.(int))
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
+	if floatingIP == nil {
+		log.Printf("[WARN] Floating IP (%s) not found, removing from state", d.Id())
+		d.SetId("")
+		return nil
+	}
+
+	d.SetId(generateRDNSID(nil, floatingIP, ip))
+	action, _, err := c.FloatingIP.ChangeDNSPtr(ctx, floatingIP, ip, &ptr)
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
+	if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
+		return diag.FromErr(err)
+	}
 	return resourceReverseDNSRead(ctx, d, m)
 }
 
