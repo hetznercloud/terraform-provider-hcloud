@@ -1,0 +1,43 @@
+# vim: set ft=yaml:
+---
+name: Bug Report
+description: File a bug report
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report.
+
+        Please use the form below to tell us what happended and what you
+        expected to happen instead. Please also take the time to provide
+        a minimal working example. This makes it easier for us to reproduce
+        and fix your issue. Issues without such a minimal working example may
+        get closed without being addressed.
+
+        When creating your minimal working example make sure that it contains
+        no sensitive information.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Tell us what happened
+      placeholder: Tell us what you see!
+    validations:
+      required: true
+  - type: textarea
+    id: what-did-you-expect
+    attributes:
+      label: What did you expect to happen?
+      description: Tell us what you expected to happen
+      placeholder: Tell us what you wanted to see!
+    validations:
+      required: true
+  - type: textarea
+    id: minimal-working-example
+    attributes:
+      label: Please provide a minimal working example
+      description: Paste your Terraform definition below
+    validations:
+      required: true
