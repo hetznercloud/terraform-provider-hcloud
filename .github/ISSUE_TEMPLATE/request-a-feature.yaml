@@ -1,0 +1,31 @@
+# vim: set ft=yaml:
+---
+name: Feature request
+description: Request a feature
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to request a new feature.
+
+        Please use the form below to tell us what you would like to see added
+        to the Hetzner Cloud Terraform provider. If you request a new resource
+        or data source, consider providing an example [HCL](https://www.terraform.io/docs/language/index.html).
+
+        We welcome your suggestions and comments about improving our selection
+        of features and hope that we can continue to meet and exceed your
+        expectations. However, please note that not all feature requests can be
+        implemented, or possibly not exactly as proposed. Feature requests that
+        require changes to the Hetzner Cloud API are especially unlikely to be
+        implemented.
+  - type: textarea
+    id: what-would-you-like-to-see
+    attributes:
+      label: What whould you like to see?
+      description: |
+        Tell us which feature you would like to see. Please add an
+        usage example if possible.
+    validations:
+      required: true
