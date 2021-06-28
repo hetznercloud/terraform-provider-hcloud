@@ -100,7 +100,8 @@ func resourceLoadBalancerNetworkCreate(ctx context.Context, d *schema.ResourceDa
 		action, _, err = c.LoadBalancer.AttachToNetwork(ctx, lb, opts)
 		if hcloud.IsError(err, hcloud.ErrorCodeConflict) ||
 			hcloud.IsError(err, hcloud.ErrorCodeLocked) ||
-			hcloud.IsError(err, hcloud.ErrorCodeServiceError) {
+			hcloud.IsError(err, hcloud.ErrorCodeServiceError) ||
+			hcloud.IsError(err, hcloud.ErrorCodeNoSubnetAvailable) {
 			// Retry on any of the above listed errors
 			return err
 		}
@@ -180,7 +181,9 @@ func resourceLoadBalancerNetworkDelete(ctx context.Context, d *schema.ResourceDa
 		action, _, err = client.LoadBalancer.DetachFromNetwork(ctx, server, hcloud.LoadBalancerDetachFromNetworkOpts{
 			Network: network,
 		})
-		if hcloud.IsError(err, hcloud.ErrorCodeConflict) || hcloud.IsError(err, hcloud.ErrorCodeLocked) {
+		if hcloud.IsError(err, hcloud.ErrorCodeConflict) ||
+			hcloud.IsError(err, hcloud.ErrorCodeLocked) ||
+			hcloud.IsError(err, hcloud.ErrorCodeServiceError) {
 			return err
 		}
 		return control.AbortRetry(err)

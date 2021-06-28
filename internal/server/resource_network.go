@@ -222,7 +222,10 @@ func attachServerToNetwork(ctx context.Context, c *hcloud.Client, srv *hcloud.Se
 		var err error
 
 		a, _, err = c.Server.AttachToNetwork(ctx, srv, opts)
-		if hcloud.IsError(err, hcloud.ErrorCodeConflict) || hcloud.IsError(err, hcloud.ErrorCodeLocked) {
+		if hcloud.IsError(err, hcloud.ErrorCodeConflict) ||
+			hcloud.IsError(err, hcloud.ErrorCodeLocked) ||
+			hcloud.IsError(err, hcloud.ErrorCodeServiceError) ||
+			hcloud.IsError(err, hcloud.ErrorCodeNoSubnetAvailable) {
 			return err
 		}
 		if err != nil {
@@ -331,7 +334,9 @@ func detachServerFromNetwork(ctx context.Context, c *hcloud.Client, s *hcloud.Se
 		var err error
 
 		a, _, err = c.Server.DetachFromNetwork(ctx, s, hcloud.ServerDetachFromNetworkOpts{Network: n})
-		if hcloud.IsError(err, hcloud.ErrorCodeConflict) || hcloud.IsError(err, hcloud.ErrorCodeLocked) {
+		if hcloud.IsError(err, hcloud.ErrorCodeConflict) ||
+			hcloud.IsError(err, hcloud.ErrorCodeLocked) ||
+			hcloud.IsError(err, hcloud.ErrorCodeServiceError) {
 			return err
 		}
 		return control.AbortRetry(err)
