@@ -10,14 +10,14 @@ body:
       value: |
         Thanks for taking the time to fill out this bug report.
 
-        Please use the form below to tell us what happended and what you
+        Please use the form below to tell us what happened and what you
         expected to happen instead. Please also take the time to provide
         a minimal working example. This makes it easier for us to reproduce
         and fix your issue. Issues without such a minimal working example may
         get closed without being addressed.
 
-        When creating your minimal working example make sure that it contains
-        no sensitive information.
+        When creating your minimal working example, make sure that it does not
+        contain sensitive information.
   - type: textarea
     id: what-happened
     attributes:
