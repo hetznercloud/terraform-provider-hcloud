@@ -3,12 +3,12 @@ layout: "hcloud"
 page_title: "Hetzner Cloud: hcloud_snapshot"
 sidebar_current: "docs-hcloud-resource-snapshot"
 description: |-
-  Provides a Hetzner Cloud snapshot to represent a image with type snapshot in the Hetzner Cloud.
+  Provides a Hetzner Cloud snapshot to represent an image with type snapshot in the Hetzner Cloud.
 ---
 
 # hcloud_snapshot
 
-Provides a Hetzner Cloud snapshot to represent a image with type snapshot in the Hetzner Cloud. This resource makes it easy to create 
+Provides a Hetzner Cloud snapshot to represent an image with type snapshot in the Hetzner Cloud. This resource makes it easy to create a snapshot of your server.
 
 ## Example Usage
 
@@ -27,7 +27,7 @@ resource "hcloud_snapshot" "my-snapshot" {
 ## Argument Reference
 
 - `server_id` - (Required, int) Server to the snapshot should be created from.
-- `description` - (Optional, string) Description of the Floating IP.
+- `description` - (Optional, string) Description of the snapshot.
 - `labels` - (Optional, map) User-defined labels (key-value pairs) should be created with.
 
 ## Attributes Reference
@@ -42,5 +42,5 @@ resource "hcloud_snapshot" "my-snapshot" {
 Snapshots can be imported using its image `id`:
 
 ```
-terraform import hcloud_snapshot.myip <id>
+terraform import hcloud_snapshot.myimage <id>
 ```
