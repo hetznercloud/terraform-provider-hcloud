@@ -31,6 +31,7 @@ data "hcloud_firewall" "sample_firewall_2" {
 - `id` - (int) Unique ID of the Firewall.
 - `name` - (string) Name of the Firewall.
 - `rule` - (string)  Configuration of a Rule from this Firewall.
+- `apply_to` - (map)  Configuration of an ApplyTo from this Firewall.
 - `labels` - (map) User-defined labels (key-value pairs)
 
 `rule` support the following fields:
@@ -39,3 +40,7 @@ data "hcloud_firewall" "sample_firewall_2" {
 - `port` - (Required, string) Port of the Firewall Rule. Required when `protocol` is `tcp` or `udp`
 - `source_ips` - (Required, List) List of CIDRs that are allowed within this Firewall Rule (when `direction` is `in`)
 - `destination_ips` - (Required, List) List of CIDRs that are allowed within this Firewall Rule (when `direction` is `out`)
+
+`apply_to` support the following fields:
+- `server` - (Optional, int) ID of the server to apply firewall to
+- `labelSelectors` - (Optional, string) Label selector of the firewall
