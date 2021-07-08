@@ -44,13 +44,15 @@ func Resource() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"servers": {
-							Type: schema.TypeList,
+							Type:     schema.TypeList,
+							Optional: true,
 							Elem: &schema.Schema{
 								Type: schema.TypeInt,
 							},
 						},
 						"labelSelectors": {
-							Type: schema.TypeList,
+							Type:     schema.TypeList,
+							Optional: true,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
