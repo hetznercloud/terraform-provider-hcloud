@@ -41,15 +41,6 @@ func Resource() *schema.Resource {
 				Type:     schema.TypeSet,
 				Optional: true,
 				ForceNew: true,
-				ValidateDiagFunc: func(tfApplyTo interface{}, path cty.Path) diag.Diagnostics {
-					applyTo := tfApplyTo.(map[string]interface{})
-					if _, ok := applyTo["server"]; ok {
-						if _, ok2 := applyTo["label_selector"]; ok2 {
-							return diag.Errorf("It is not allowed to combine 'server' and 'label_selector' in one 'apply_to'. Create 'apply_to' for each 'server' and 'label_selector'.")
-						}
-					}
-					return nil
-				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"server": {
@@ -142,6 +133,9 @@ func resourceFirewallCreate(ctx context.Context, d *schema.ResourceData, m inter
 	}
 	if applyTos, ok := d.GetOk("apply_to"); ok {
 		for _, tfRawApplyTo := range applyTos.(*schema.Set).List() {
+			if err := validateApplyTo(tfRawApplyTo); err != nil {
+				return err
+			}
 			applyTo := toHcloudApplyTo(tfRawApplyTo)
 			opts.ApplyTo = append(opts.ApplyTo, applyTo)
 		}
@@ -167,6 +161,16 @@ func resourceFirewallCreate(ctx context.Context, d *schema.ResourceData, m inter
 	d.SetId(strconv.Itoa(res.Firewall.ID))
 
 	return resourceFirewallRead(ctx, d, m)
+}
+
+func validateApplyTo(tfRawApplyTo interface{}) diag.Diagnostics {
+	tfApplyTo := tfRawApplyTo.(map[string]interface{})
+	if _, ok := tfApplyTo["server"]; ok {
+		if _, ok2 := tfApplyTo["label_selector"]; ok2 {
+			return diag.Errorf("It is not allowed to combine 'server' and 'label_selector' in one 'apply_to'. Create 'apply_to' for each 'server' and 'label_selector'.")
+		}
+	}
+	return nil
 }
 
 func toHcloudApplyTo(tfRawApplyTo interface{}) hcloud.FirewallResource {
