@@ -2,38 +2,6 @@ name: test
 on:
   push:
 jobs:
-  integration_tests:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        terraform_version: [ "0.13.x", "0.14.x", "0.15.x", "1.0.x" ]
-    name: integration-${{ matrix.terraform_version }}
-    steps:
-      -
-        name: Checkout
-        uses: actions/checkout@v2
-      -
-        name: Unshallow
-        run: git fetch --prune --unshallow
-      - uses: hashicorp/setup-terraform@v1
-        with:
-          terraform_version: ${{ matrix.terraform_version }}
-          terraform_wrapper: false
-      -
-        name: Set up Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.16
-      -
-        name: Run tests
-        env:
-          TTS_TOKEN: ${{ secrets.TTS_TOKEN }}
-        run: |
-          export HCLOUD_TOKEN=$(./scripts/get-token.sh)
-          cat resp.json
-          make testacc
-          make
-          ./scripts/delete-token.sh $HCLOUD_TOKEN
   unit_tests:
     runs-on: ubuntu-latest
     steps:
