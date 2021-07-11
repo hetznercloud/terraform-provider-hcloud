@@ -43,4 +43,4 @@ data "hcloud_firewall" "sample_firewall_2" {
 
 `apply_to` support the following fields:
 - `server` - (Optional, int) ID of the server to apply firewall to
-- `labelSelectors` - (Optional, string) Label selector of the firewall
+- `labelSelector` - (Optional, string) Label selector of the firewall
