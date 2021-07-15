@@ -53,6 +53,13 @@ resource "hcloud_server" "server" {
     ]
   }
 
+   # cloud-init example: add 'hcloud' user
+   user_data = <<EOT
+#cloud-config
+users:
+  - name: "hcloud"
+EOT
+
   # **Note**: the depends_on is important when directly attaching the
   # server to a network. Otherwise Terraform will attempt to create
   # server and sub-network in parallel. This may result in the server
