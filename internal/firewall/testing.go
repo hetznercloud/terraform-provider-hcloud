@@ -93,6 +93,7 @@ type RDataRule struct {
 	SourceIPs      []string
 	DestinationIPs []string
 	Protocol       string
+	Description    string
 }
 
 // TFID returns the resource identifier.
