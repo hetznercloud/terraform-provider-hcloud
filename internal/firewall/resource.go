@@ -95,6 +95,10 @@ func Resource() *schema.Resource {
 							},
 							Optional: true,
 						},
+						"description": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
 					},
 				},
 			},
@@ -147,6 +151,10 @@ func toHcloudRule(tfRawRule interface{}) hcloud.FirewallRule {
 	if rawPort != "" {
 		rule.Port = hcloud.String(rawPort)
 	}
+	rawDescription := tfRule["description"].(string)
+	if rawDescription != "" {
+		rule.Description = hcloud.String(rawDescription)
+	}
 	for _, sourceIP := range tfRule["source_ips"].(*schema.Set).List() {
 		// We ignore the error here, because it was already validated before
 		_, source, _ := net.ParseCIDR(sourceIP.(string))
@@ -167,6 +175,9 @@ func toTFRule(hcloudRule hcloud.FirewallRule) map[string]interface{} {
 
 	if hcloudRule.Port != nil {
 		tfRule["port"] = hcloudRule.Port
+	}
+	if hcloudRule.Description != nil {
+		tfRule["description"] = hcloudRule.Description
 	}
 	sourceIPs := make([]string, len(hcloudRule.SourceIPs))
 	for i, sourceIP := range hcloudRule.SourceIPs {

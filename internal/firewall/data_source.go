@@ -62,6 +62,10 @@ func DataSource() *schema.Resource {
 							},
 							Optional: true,
 						},
+						"description": &schema.Schema{
+							Type:     schema.TypeString,
+							Optional: true,
+						},
 					},
 				},
 			},
