@@ -165,8 +165,8 @@ func resourceFirewallCreate(ctx context.Context, d *schema.ResourceData, m inter
 
 func validateApplyTo(tfRawApplyTo interface{}) diag.Diagnostics {
 	tfApplyTo := tfRawApplyTo.(map[string]interface{})
-	if _, ok := tfApplyTo["server"]; ok {
-		if _, ok2 := tfApplyTo["label_selector"]; ok2 {
+	if server, ok := tfApplyTo["server"]; ok && len(server.(string)) > 0 {
+		if labelSelector, ok2 := tfApplyTo["label_selector"]; ok2 && len(labelSelector.(string)) > 0 {
 			return diag.Errorf("It is not allowed to combine 'server' and 'label_selector' in one 'apply_to'. Create 'apply_to' for each 'server' and 'label_selector'.")
 		}
 	}
@@ -176,11 +176,11 @@ func validateApplyTo(tfRawApplyTo interface{}) diag.Diagnostics {
 func toHcloudApplyTo(tfRawApplyTo interface{}) hcloud.FirewallResource {
 	tfApplyTo := tfRawApplyTo.(map[string]interface{})
 	applyTo := hcloud.FirewallResource{}
-	if server, ok := tfApplyTo["server"]; ok {
+	if server, ok := tfApplyTo["server"]; ok && len(server.(string)) > 0 {
 		applyTo.Type = hcloud.FirewallResourceTypeServer
 		applyTo.Server = &hcloud.FirewallResourceServer{ID: server.(int)}
 	}
-	if labelSelector, ok := tfApplyTo["label_selector"]; ok {
+	if labelSelector, ok := tfApplyTo["label_selector"]; ok && len(labelSelector.(string)) > 0 {
 		applyTo.Type = hcloud.FirewallResourceTypeLabelSelector
 		applyTo.LabelSelector = &hcloud.FirewallResourceLabelSelector{Selector: labelSelector.(string)}
 	}
