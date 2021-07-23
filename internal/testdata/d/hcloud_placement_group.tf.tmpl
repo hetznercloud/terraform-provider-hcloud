@@ -1,0 +1,7 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+data "hcloud_placement_group" "{{ .RName }}" {
+  {{ if .PlacementGroupID -}}    id            = {{ .PlacementGroupID }}{{ end -}}
+  {{ if .PlacementGroupName -}}  name          =  {{ .PlacementGroupName }}{{ end -}}
+  {{ if .LabelSelector -}}    with_selector = "{{ .LabelSelector }}"{{ end }}
+}

@@ -1,0 +1,16 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+resource "hcloud_placement_group" "{{ .RName }}" {
+    name        = "{{ .Name }}--{{ .RInt }}"
+    type        = "{{ .Type }}"
+  {{- if .Labels }}
+    labels = {
+    {{- range $k,$v := .Labels }}
+      {{ $k }} = "{{ $v }}"
+    {{- end }}
+    }
+  {{- end }}
+  {{- if .Servers }}
+    servers = [{{- range $i,$s := .Servers }}{{- if $i }}, {{- end}} {{ $s }}{{- end }} ]
+  {{- end }}
+}

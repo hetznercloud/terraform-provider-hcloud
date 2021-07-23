@@ -8,6 +8,7 @@ import (
 
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/firewall"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/placementgroup"
 
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/snapshot"
 
@@ -85,6 +86,7 @@ func Provider() *schema.Provider {
 			sshkey.ResourceType:               sshkey.Resource(),
 			volume.AttachmentResourceType:     volume.AttachmentResource(),
 			volume.ResourceType:               volume.Resource(),
+			placementgroup.ResourceType:       placementgroup.Resource(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			certificate.DataSourceType:           certificate.DataSource(),
@@ -103,6 +105,7 @@ func Provider() *schema.Provider {
 			sshkey.DataSourceType:                sshkey.DataSource(),
 			sshkey.SSHKeysDataSourceType:         sshkey.SSHKeysDataSource(),
 			volume.DataSourceType:                volume.DataSource(),
+			placementgroup.DataSourceType:        placementgroup.DataSource(),
 		},
 		ConfigureContextFunc: providerConfigure,
 	}

@@ -11,6 +11,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancer"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/location"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/network"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/placementgroup"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/rdns"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/servertype"
@@ -49,6 +50,7 @@ func TestProvider_Resources(t *testing.T) {
 		sshkey.ResourceType,
 		volume.AttachmentResourceType,
 		volume.ResourceType,
+		placementgroup.ResourceType,
 	}
 
 	resources := provider.Resources()
@@ -78,6 +80,7 @@ func TestProvider_DataSources(t *testing.T) {
 		sshkey.DataSourceType,
 		sshkey.SSHKeysDataSourceType,
 		volume.DataSourceType,
+		placementgroup.DataSourceType,
 	}
 
 	datasources := provider.DataSources()
