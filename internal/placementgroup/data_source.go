@@ -55,7 +55,7 @@ func dataSourceHcloudPlacementGroupRead(ctx context.Context, d *schema.ResourceD
 		if i == nil {
 			return diag.Errorf("no placement group found with id %d", id)
 		}
-		setPlacementGroupSchema(d, i)
+		setSchema(d, i)
 		return nil
 	}
 	if name, ok := d.GetOk("name"); ok {
@@ -66,7 +66,7 @@ func dataSourceHcloudPlacementGroupRead(ctx context.Context, d *schema.ResourceD
 		if i == nil {
 			return diag.Errorf("no placement group found with name %v", name)
 		}
-		setPlacementGroupSchema(d, i)
+		setSchema(d, i)
 		return nil
 	}
 	if selector, ok := d.GetOk("with_selector"); ok {
@@ -87,7 +87,7 @@ func dataSourceHcloudPlacementGroupRead(ctx context.Context, d *schema.ResourceD
 			sortPlacementGroupListByCreated(allPlacementGroups)
 			log.Printf("[INFO] %d placement groups found for selector %q, using %d as the most recent one", len(allPlacementGroups), selector, allPlacementGroups[0].ID)
 		}
-		setPlacementGroupSchema(d, allPlacementGroups[0])
+		setSchema(d, allPlacementGroups[0])
 		return nil
 	}
 	return diag.Errorf("please specify an id, a name or a selector to lookup the placement group")

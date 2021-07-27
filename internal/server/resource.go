@@ -168,6 +168,10 @@ func Resource() *schema.Resource {
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeInt},
 			},
+			"placement_group": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -463,6 +467,13 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		}
 	}
 
+	if d.HasChange("placement_group") {
+		placementGroup := d.Get("placement_group").(string)
+		if err := setPlacementGroup(ctx, c, server, placementGroup); err != nil {
+			return hcclient.ErrorToDiag(err)
+		}
+	}
+
 	d.Partial(false)
 	return resourceServerRead(ctx, d, m)
 }
@@ -742,6 +753,8 @@ func setServerSchema(d *schema.ResourceData, s *hcloud.Server) {
 	if _, ok := d.GetOk("network"); ok {
 		d.Set("network", networkToTerraformNetworks(s.PrivateNet))
 	}
+
+	d.Set("placement_group_id", s.PlacementGroup.ID)
 }
 
 func networkToTerraformNetworks(privateNetworks []hcloud.ServerPrivateNet) []map[string]interface{} {
@@ -759,4 +772,37 @@ func networkToTerraformNetworks(privateNetworks []hcloud.ServerPrivateNet) []map
 		tfPrivateNetworks[i] = tfPrivateNetwork
 	}
 	return tfPrivateNetworks
+}
+
+func setPlacementGroup(ctx context.Context, c *hcloud.Client, server *hcloud.Server, placementGroupIDOrName string) error {
+	if server.PlacementGroup != nil {
+		action, _, err := c.Server.RemoveFromPlacementGroup(ctx, server)
+		if err != nil {
+			return err
+		}
+		if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
+			return err
+		}
+	}
+
+	if placementGroupIDOrName != "" {
+		placementGroup, _, err := c.PlacementGroup.Get(ctx, placementGroupIDOrName)
+		if err != nil {
+			return err
+		}
+
+		if placementGroup == nil {
+			return fmt.Errorf("placement group not found: %s", placementGroupIDOrName)
+		}
+
+		action, _, err := c.Server.AddToPlacementGroup(ctx, server, placementGroup)
+		if err != nil {
+			return err
+		}
+		if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

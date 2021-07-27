@@ -18,9 +18,10 @@ const ResourceType = "hcloud_placement_group"
 
 func Resource() *schema.Resource {
 	return &schema.Resource{
-		ReadContext:   resourcePlacementGroupRead,
-		UpdateContext: resourcePlacementGroupUpdate,
-		DeleteContext: resourcePlacementGroupDelete,
+		CreateContext: create,
+		ReadContext:   read,
+		UpdateContext: update,
+		DeleteContext: delete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -35,7 +36,7 @@ func Resource() *schema.Resource {
 				Optional: true,
 			},
 			"servers": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Optional: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeInt,
@@ -58,7 +59,37 @@ func Resource() *schema.Resource {
 	}
 }
 
-func resourcePlacementGroupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func create(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	client := m.(*hcloud.Client)
+
+	opts := hcloud.PlacementGroupCreateOpts{
+		Name: d.Get("name").(string),
+		Type: hcloud.PlacementGroupType(d.Get("type").(string)),
+	}
+	if labels, ok := d.GetOk("labels"); ok {
+		tmpLabels := make(map[string]string)
+		for k, v := range labels.(map[string]interface{}) {
+			tmpLabels[k] = v.(string)
+		}
+		opts.Labels = tmpLabels
+	}
+
+	res, _, err := client.PlacementGroup.Create(ctx, opts)
+	if err != nil {
+		return hcclient.ErrorToDiag(err)
+	}
+	if res.Action != nil {
+		if err := hcclient.WaitForAction(ctx, &client.Action, res.Action); err != nil {
+			return hcclient.ErrorToDiag(err)
+		}
+	}
+
+	d.SetId(strconv.Itoa(res.PlacementGroup.ID))
+
+	return read(ctx, d, m)
+}
+
+func read(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	id, err := strconv.Atoi(d.Id())
@@ -78,11 +109,11 @@ func resourcePlacementGroupRead(ctx context.Context, d *schema.ResourceData, m i
 		return nil
 	}
 
-	setPlacementGroupSchema(d, placementGroup)
+	setSchema(d, placementGroup)
 	return nil
 }
 
-func resourcePlacementGroupUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func update(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	id, err := strconv.Atoi(d.Id())
@@ -94,7 +125,7 @@ func resourcePlacementGroupUpdate(ctx context.Context, d *schema.ResourceData, m
 
 	placementGroup, _, err := client.PlacementGroup.GetByID(ctx, id)
 	if err != nil {
-		if resourcePlacementGroupIsNotFound(err, d) {
+		if handleNotFound(err, d) {
 			return nil
 		}
 		return hcclient.ErrorToDiag(err)
@@ -108,7 +139,7 @@ func resourcePlacementGroupUpdate(ctx context.Context, d *schema.ResourceData, m
 			Name: description,
 		})
 		if err != nil {
-			if resourcePlacementGroupIsNotFound(err, d) {
+			if handleNotFound(err, d) {
 				return nil
 			}
 			return hcclient.ErrorToDiag(err)
@@ -125,7 +156,7 @@ func resourcePlacementGroupUpdate(ctx context.Context, d *schema.ResourceData, m
 			Labels: tmpLabels,
 		})
 		if err != nil {
-			if resourcePlacementGroupIsNotFound(err, d) {
+			if handleNotFound(err, d) {
 				return nil
 			}
 			return hcclient.ErrorToDiag(err)
@@ -133,10 +164,10 @@ func resourcePlacementGroupUpdate(ctx context.Context, d *schema.ResourceData, m
 	}
 	d.Partial(false)
 
-	return resourcePlacementGroupRead(ctx, d, m)
+	return read(ctx, d, m)
 }
 
-func resourcePlacementGroupDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func delete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	id, err := strconv.Atoi(d.Id())
@@ -174,8 +205,8 @@ func resourcePlacementGroupDelete(ctx context.Context, d *schema.ResourceData, m
 	return nil
 }
 
-func resourcePlacementGroupIsNotFound(err error, d *schema.ResourceData) bool {
-	if hcerr, ok := err.(hcloud.Error); ok && hcerr.Code == hcloud.ErrorCodeNotFound {
+func handleNotFound(err error, d *schema.ResourceData) bool {
+	if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
 		log.Printf("[WARN] placement group (%s) not found, removing from state", d.Id())
 		d.SetId("")
 		return true
@@ -183,7 +214,7 @@ func resourcePlacementGroupIsNotFound(err error, d *schema.ResourceData) bool {
 	return false
 }
 
-func setPlacementGroupSchema(d *schema.ResourceData, v *hcloud.PlacementGroup) {
+func setSchema(d *schema.ResourceData, v *hcloud.PlacementGroup) {
 	d.SetId(strconv.Itoa(v.ID))
 	d.Set("name", v.Name)
 	d.Set("labels", v.Labels)
