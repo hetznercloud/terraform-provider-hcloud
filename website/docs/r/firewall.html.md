@@ -16,13 +16,24 @@ Provides a Hetzner Cloud Firewall to represent a Firewall in the Hetzner Cloud.
 resource "hcloud_firewall" "myfirewall" {
   name = "my-firewall"
   rule {
-   direction = "in"
-   protocol  = "icmp"
-   source_ips = [
+    direction = "in"
+    protocol  = "icmp"
+    source_ips = [
       "0.0.0.0/0",
       "::/0"
-   ]
+    ]
   }
+
+  rule {
+    direction = "in"
+    protocol  = "tcp"
+    port      = "80-85"
+    source_ips = [
+      "0.0.0.0/0",
+      "::/0"
+    ]
+  }
+
 }
 
 resource "hcloud_server" "node1" {
@@ -42,7 +53,7 @@ resource "hcloud_server" "node1" {
 `rule` support the following fields:
 - `direction` - (Required, string) Direction of the Firewall Rule. `in`
 - `protocol` - (Required, string) Protocol of the Firewall Rule. `tcp`, `icmp`, `udp`, `gre`, `esp`
-- `port` - (Required, string) Port of the Firewall Rule. Required when `protocol` is `tcp` or `udp`. You can use `any` to allow all ports for the specific protocol. Port ranges are also possible: `80:85` allows all ports between 80 and 85.
+- `port` - (Required, string) Port of the Firewall Rule. Required when `protocol` is `tcp` or `udp`. You can use `any` to allow all ports for the specific protocol. Port ranges are also possible: `80-85` allows all ports between 80 and 85.
 - `source_ips` - (Required, List) List of CIDRs that are allowed within this Firewall Rule
 
 ## Attributes Reference
@@ -64,5 +75,5 @@ resource "hcloud_server" "node1" {
 Firewalls can be imported using its `id`:
 
 ```
-terraform import hcloud_firewall.myfw <id>
+terraform import hcloud_firewall.myfirewall <id>
 ```
