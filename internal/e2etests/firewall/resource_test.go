@@ -178,6 +178,70 @@ func TestFirewallResource_ApplyTo(t *testing.T) {
 	})
 }
 
+func TestFirewallResource_SourceIPs_IPv6Comparison(t *testing.T) {
+	var f hcloud.Firewall
+
+	res := firewall.NewRData(t, "ipv6-firewall", []firewall.RDataRule{
+		{
+			Direction: "in",
+			Protocol:  "tcp",
+			SourceIPs: []string{"Aaaa:aaaa:aaaa:aaaa::/64"},
+			Port:      "22",
+		},
+	}, nil)
+	tmplMan := testtemplate.Manager{}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     e2etests.PreCheck(t),
+		Providers:    e2etests.Providers(),
+		CheckDestroy: testsupport.CheckResourcesDestroyed(firewall.ResourceType, firewall.ByID(t, &f)),
+		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t, "testdata/r/hcloud_firewall", res),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(res.TFID(), firewall.ByID(t, &f)),
+				),
+			},
+			{
+				Config:   tmplMan.Render(t, "testdata/r/hcloud_firewall", res),
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
+func TestFirewallResource_DestinationIPs_IPv6Comparison(t *testing.T) {
+	var f hcloud.Firewall
+
+	res := firewall.NewRData(t, "ipv6-firewall", []firewall.RDataRule{
+		{
+			Direction:      "out",
+			Protocol:       "tcp",
+			DestinationIPs: []string{"Aaaa:aaaa:aaaa:aaaa::/64"},
+			Port:           "22",
+		},
+	}, nil)
+	tmplMan := testtemplate.Manager{}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     e2etests.PreCheck(t),
+		Providers:    e2etests.Providers(),
+		CheckDestroy: testsupport.CheckResourcesDestroyed(firewall.ResourceType, firewall.ByID(t, &f)),
+		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t, "testdata/r/hcloud_firewall", res),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(res.TFID(), firewall.ByID(t, &f)),
+				),
+			},
+			{
+				Config:   tmplMan.Render(t, "testdata/r/hcloud_firewall", res),
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
 func hasFirewallRule(
 	t *testing.T,
 	f *hcloud.Firewall,

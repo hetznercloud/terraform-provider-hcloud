@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -77,7 +78,6 @@ func Resource() *schema.Resource {
 								switch hcloud.FirewallRuleDirection(direction) {
 								case hcloud.FirewallRuleDirectionIn:
 								case hcloud.FirewallRuleDirectionOut:
-									return nil
 								default:
 									return diag.Errorf("%s is not a valid direction", direction)
 								}
@@ -95,7 +95,6 @@ func Resource() *schema.Resource {
 								case hcloud.FirewallRuleProtocolUDP:
 								case hcloud.FirewallRuleProtocolESP:
 								case hcloud.FirewallRuleProtocolGRE:
-									return nil
 								default:
 									return diag.Errorf("%s is not a valid protocol", protocol)
 								}
@@ -111,6 +110,9 @@ func Resource() *schema.Resource {
 							Elem: &schema.Schema{
 								Type:             schema.TypeString,
 								ValidateDiagFunc: validateIPDiag,
+								StateFunc: func(i interface{}) string {
+									return strings.ToLower(i.(string))
+								},
 							},
 							Optional: true,
 						},
@@ -119,6 +121,9 @@ func Resource() *schema.Resource {
 							Elem: &schema.Schema{
 								Type:             schema.TypeString,
 								ValidateDiagFunc: validateIPDiag,
+								StateFunc: func(i interface{}) string {
+									return strings.ToLower(i.(string))
+								},
 							},
 							Optional: true,
 						},
@@ -141,8 +146,9 @@ func resourceFirewallCreate(ctx context.Context, d *schema.ResourceData, m inter
 	}
 	if rules, ok := d.GetOk("rule"); ok {
 		for _, tfRawRule := range rules.(*schema.Set).List() {
-			rule := toHcloudRule(tfRawRule)
-			opts.Rules = append(opts.Rules, rule)
+			if rule, ok := toHcloudRule(tfRawRule); ok {
+				opts.Rules = append(opts.Rules, rule)
+			}
 		}
 	}
 	if labels, ok := d.GetOk("labels"); ok {
@@ -176,11 +182,26 @@ func resourceFirewallCreate(ctx context.Context, d *schema.ResourceData, m inter
 	return resourceFirewallRead(ctx, d, m)
 }
 
-func toHcloudRule(tfRawRule interface{}) hcloud.FirewallRule {
+func toHcloudRule(tfRawRule interface{}) (hcloud.FirewallRule, bool) {
 	tfRule := tfRawRule.(map[string]interface{})
+	direction := tfRule["direction"].(string)
+	protocol := tfRule["protocol"].(string)
+
+	if direction == "" || protocol == "" {
+		// We need to use state funcs in the schema above in order to normalize
+		// the values for source and destination IPs. However, this triggers
+		// Terraform SDK bug #160
+		// (https://github.com/hashicorp/terraform-plugin-sdk/issues/160):
+		// we get a defunct entry in the rules set. Since we always require
+		// protocol and direction to be set, we can just check if they are
+		// empty. In this case we can ignore the entry when talking to our API
+		// (https://github.com/hashicorp/terraform-plugin-sdk/issues/160#issuecomment-522935697).
+		return hcloud.FirewallRule{}, false
+	}
+
 	rule := hcloud.FirewallRule{
-		Direction: hcloud.FirewallRuleDirection(tfRule["direction"].(string)),
-		Protocol:  hcloud.FirewallRuleProtocol(tfRule["protocol"].(string)),
+		Direction: hcloud.FirewallRuleDirection(direction),
+		Protocol:  hcloud.FirewallRuleProtocol(protocol),
 	}
 	rawPort := tfRule["port"].(string)
 	if rawPort != "" {
@@ -200,7 +221,7 @@ func toHcloudRule(tfRawRule interface{}) hcloud.FirewallRule {
 		_, destination, _ := net.ParseCIDR(destinationIP.(string))
 		rule.DestinationIPs = append(rule.DestinationIPs, *destination)
 	}
-	return rule
+	return rule, true
 }
 
 func toTFRule(hcloudRule hcloud.FirewallRule) map[string]interface{} {
@@ -287,8 +308,9 @@ func resourceFirewallUpdate(ctx context.Context, d *schema.ResourceData, m inter
 		if tfRules, ok := d.GetOk("rule"); ok {
 			var rules []hcloud.FirewallRule
 			for _, tfRawRule := range tfRules.(*schema.Set).List() {
-				rule := toHcloudRule(tfRawRule)
-				rules = append(rules, rule)
+				if rule, ok := toHcloudRule(tfRawRule); ok {
+					rules = append(rules, rule)
+				}
 			}
 			actions, _, err := client.Firewall.SetRules(ctx, firewall, hcloud.FirewallSetRulesOpts{Rules: rules})
 			if err != nil {
