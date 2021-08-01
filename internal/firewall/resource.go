@@ -354,6 +354,29 @@ func resourceFirewallDelete(ctx context.Context, d *schema.ResourceData, m inter
 		return hcclient.ErrorToDiag(err)
 	}
 
+	// If firewall is applied, we need to remove all of it's resources
+	// before removal of the firewall itself
+	if len(firewall.AppliedTo) != 0 {
+		err = control.Retry(2*control.DefaultRetries, func() error {
+			var hcerr hcloud.Error
+			_, _, err := client.Firewall.RemoveResources(ctx, firewall, firewall.AppliedTo)
+			if errors.As(err, &hcerr) {
+				switch hcerr.Code {
+				case hcloud.ErrorCodeNotFound:
+					// firewall has already been deleted
+					return nil
+				case hcloud.ErrorCodeConflict, hcloud.ErrorCodeResourceInUse:
+					return err
+				default:
+					return control.AbortRetry(err)
+				}
+			}
+			return nil
+		})
+		if err != nil {
+			return hcclient.ErrorToDiag(err)
+		}
+	}
 	// Removing resources from the firewall can sometimes take longer. We
 	// thus retry two times the number of DefaultRetries.
 	err = control.Retry(2*control.DefaultRetries, func() error {
