@@ -15,7 +15,7 @@ import (
 func TestAccHcloudDataSourcePlacementGroupTest(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
-	res := placementgroup.NewRData(t, "basic-placement-group", []int{4711}, "spread")
+	res := placementgroup.NewRData(t, "basic-placement-group", "spread")
 	res.SetRName("placement-group-ds-test")
 
 	placementGroupByName := &placementgroup.DData{

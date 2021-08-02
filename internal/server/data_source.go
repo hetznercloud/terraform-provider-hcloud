@@ -105,7 +105,7 @@ func DataSource() *schema.Resource {
 			},
 			"placement_group": {
 				Type:     schema.TypeString,
-				Computed: true,
+				Optional: true,
 			},
 		},
 	}

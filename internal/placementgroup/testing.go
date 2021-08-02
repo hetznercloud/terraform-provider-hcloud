@@ -48,10 +48,9 @@ func (d *DData) TFID() string {
 type RData struct {
 	testtemplate.DataCommon
 
-	Name    string
-	Labels  map[string]string
-	Servers []int
-	Type    string
+	Name   string
+	Labels map[string]string
+	Type   string
 }
 
 // TFID returns the resource identifier.
@@ -59,13 +58,12 @@ func (d *RData) TFID() string {
 	return fmt.Sprintf("%s.%s", ResourceType, d.RName())
 }
 
-func NewRData(t *testing.T, name string, servers []int, groupType string) *RData {
+func NewRData(t *testing.T, name string, groupType string) *RData {
 	rInt := acctest.RandInt()
 	r := &RData{
-		Name:    name,
-		Servers: servers,
-		Type:    groupType,
-		Labels:  map[string]string{"key": strconv.Itoa(rInt)},
+		Name:   name,
+		Type:   groupType,
+		Labels: map[string]string{"key": strconv.Itoa(rInt)},
 	}
 	r.SetRName(name)
 	return r

@@ -10,7 +10,4 @@ resource "hcloud_placement_group" "{{ .RName }}" {
     {{- end }}
     }
   {{- end }}
-  {{- if .Servers }}
-    servers = [{{- range $i,$s := .Servers }}{{- if $i }}, {{- end}} {{ $s }}{{- end }} ]
-  {{- end }}
 }

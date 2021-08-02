@@ -4,11 +4,13 @@ import (
 	"crypto/sha1"
 	"encoding/base64"
 	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/e2etests"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/firewall"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/network"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/placementgroup"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
 	"github.com/stretchr/testify/assert"
 
@@ -423,6 +425,52 @@ func TestServerResource_Firewalls(t *testing.T) {
 					resource.TestCheckResourceAttr(res.TFID(), "server_type", res.Type),
 					resource.TestCheckResourceAttr(res.TFID(), "image", res.Image),
 					resource.TestCheckResourceAttr(res.TFID(), "firewall_ids.#", "1"),
+				),
+			},
+		},
+	})
+}
+
+func TestServerResource_PlacementGroup(t *testing.T) {
+	var (
+		pg  hcloud.PlacementGroup
+		srv hcloud.Server
+	)
+
+	pgRes := placementgroup.NewRData(t, "server-test", "spread")
+
+	srvRes := &server.RData{
+		Name:             "server-placement-group",
+		Type:             e2etests.TestServerType,
+		Image:            e2etests.TestImage,
+		PlacementGroupID: pgRes.TFID() + ".id",
+	}
+	srvRes.SetRName("server-placement-group")
+
+	tmplMan := testtemplate.Manager{}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     e2etests.PreCheck(t),
+		Providers:    e2etests.Providers(),
+		CheckDestroy: testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &srv)),
+		Steps: []resource.TestStep{
+			{
+				// Create a new Server using the required values
+				// only.
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_placement_group", pgRes,
+					"testdata/r/hcloud_server", srvRes,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(srvRes.TFID(), server.ByID(t, &srv)),
+					testsupport.CheckResourceExists(pgRes.TFID(), placementgroup.ByID(t, &pg)),
+					resource.TestCheckResourceAttr(srvRes.TFID(), "name",
+						fmt.Sprintf("server-placement-group--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(srvRes.TFID(), "server_type", srvRes.Type),
+					resource.TestCheckResourceAttr(srvRes.TFID(), "image", srvRes.Image),
+					testsupport.CheckResourceAttrFunc(srvRes.TFID(), "placement_group_id", func() string {
+						return strconv.Itoa(pg.ID)
+					}),
 				),
 			},
 		},

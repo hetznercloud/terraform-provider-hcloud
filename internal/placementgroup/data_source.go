@@ -32,12 +32,20 @@ func DataSource() *schema.Resource {
 			},
 			"servers": {
 				Type:     schema.TypeList,
-				Optional: true,
+				Computed: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeInt,
 				},
 			},
 			"type": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"most_recent": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
+			"with_selector": {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
@@ -80,7 +88,7 @@ func dataSourceHcloudPlacementGroupRead(ctx context.Context, d *schema.ResourceD
 		if len(allPlacementGroups) == 0 {
 			return diag.Errorf("no placement group found for selector %q", selector)
 		}
-		if len(allPlacementGroups) == 1 {
+		if len(allPlacementGroups) > 1 {
 			if _, ok := d.GetOk("most_recent"); !ok {
 				return diag.Errorf("more than one placement group found for selector %q", selector)
 			}

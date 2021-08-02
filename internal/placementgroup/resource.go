@@ -2,7 +2,6 @@ package placementgroup
 
 import (
 	"context"
-	"errors"
 	"log"
 	"strconv"
 
@@ -10,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/control"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
 )
 
@@ -37,7 +35,7 @@ func Resource() *schema.Resource {
 			},
 			"servers": {
 				Type:     schema.TypeSet,
-				Optional: true,
+				Computed: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeInt,
 				},
@@ -176,29 +174,7 @@ func delete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Dia
 		d.SetId("")
 		return nil
 	}
-
-	placementGroup, _, err := client.PlacementGroup.GetByID(ctx, id)
-	if err != nil {
-		return hcclient.ErrorToDiag(err)
-	}
-
-	err = control.Retry(control.DefaultRetries, func() error {
-		var hcerr hcloud.Error
-		_, err := client.PlacementGroup.Delete(ctx, placementGroup)
-		if errors.As(err, &hcerr) {
-			switch hcerr.Code {
-			case hcloud.ErrorCodeNotFound:
-				// placement group has already been deleted
-				return nil
-			case hcloud.ErrorCodeConflict, hcloud.ErrorCodeResourceInUse:
-				return err
-			default:
-				return control.AbortRetry(err)
-			}
-		}
-		return nil
-	})
-	if err != nil {
+	if _, err := client.PlacementGroup.Delete(ctx, &hcloud.PlacementGroup{ID: id}); err != nil {
 		return hcclient.ErrorToDiag(err)
 	}
 
@@ -219,6 +195,6 @@ func setSchema(d *schema.ResourceData, v *hcloud.PlacementGroup) {
 	d.Set("name", v.Name)
 	d.Set("labels", v.Labels)
 
-	d.Set("servers", v.Servers)
 	d.Set("type", v.Type)
+	d.Set("servers", v.Servers)
 }

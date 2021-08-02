@@ -15,9 +15,10 @@ import (
 func TestPlacementGroupResource_Basic(t *testing.T) {
 	var g hcloud.PlacementGroup
 
-	res := placementgroup.NewRData(t, "basic-placement-group", []int{4711, 4712}, "spread")
+	res := placementgroup.NewRData(t, "basic-placement-group", "spread")
 	resRenamed := &placementgroup.RData{
 		Name: res.Name + "-renamed",
+		Type: "spread",
 		Labels: map[string]string{
 			"key1": "value1",
 			"key2": "value2",
@@ -25,7 +26,7 @@ func TestPlacementGroupResource_Basic(t *testing.T) {
 	}
 	resRenamed.SetRName(res.RName())
 
-	updated := placementgroup.NewRData(t, "basic-placement-group", []int{}, "spread")
+	updated := placementgroup.NewRData(t, "basic-placement-group", "spread")
 	updated.SetRName(res.RName())
 	tmplMan := testtemplate.Manager{}
 	resource.Test(t, resource.TestCase{
@@ -41,7 +42,6 @@ func TestPlacementGroupResource_Basic(t *testing.T) {
 					testsupport.CheckResourceExists(res.TFID(), placementgroup.ByID(t, &g)),
 					resource.TestCheckResourceAttr(res.TFID(), "name",
 						fmt.Sprintf("basic-placement-group--%d", tmplMan.RandInt)),
-					resource.TestCheckResourceAttr(res.TFID(), "servers.#", "2"),
 					resource.TestCheckResourceAttr(res.TFID(), "type", "spread"),
 				),
 			},
@@ -59,7 +59,7 @@ func TestPlacementGroupResource_Basic(t *testing.T) {
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resRenamed.TFID(), "name",
-						fmt.Sprintf("basic-placement-group--%d", tmplMan.RandInt)),
+						fmt.Sprintf("basic-placement-group-renamed--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(resRenamed.TFID(), "labels.key1", "value1"),
 					resource.TestCheckResourceAttr(resRenamed.TFID(), "labels.key2", "value2"),
 				),
