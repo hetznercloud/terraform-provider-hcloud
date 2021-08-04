@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/timeutil"
 )
 
 const (
@@ -39,6 +40,14 @@ func UploadedResource() *schema.Resource {
 		DeleteContext: deleteResource,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
+		},
+		SchemaVersion: 1,
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Type:    uploadedAndManagedResourceV0().CoreConfigSchema().ImpliedType(),
+				Upgrade: upgradeUploadedAndManagedResourceV0,
+				Version: 0,
+			},
 		},
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -110,6 +119,14 @@ func ManagedResource() *schema.Resource {
 		DeleteContext: deleteResource,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
+		},
+		SchemaVersion: 1,
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Type:    uploadedAndManagedResourceV0().CoreConfigSchema().ImpliedType(),
+				Upgrade: upgradeUploadedAndManagedResourceV0,
+				Version: 0,
+			},
 		},
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -251,7 +268,7 @@ func setCertificateSchema(d *schema.ResourceData, cert *hcloud.Certificate) {
 	d.Set("domain_names", cert.DomainNames)
 	d.Set("fingerprint", cert.Fingerprint)
 	d.Set("labels", cert.Labels)
-	d.Set("created", cert.Created.String())
+	d.Set("created", cert.Created.Format(time.RFC3339))
 	d.Set("not_valid_before", cert.NotValidBefore.Format(time.RFC3339))
 	d.Set("not_valid_after", cert.NotValidAfter.Format(time.RFC3339))
 }
@@ -310,4 +327,40 @@ func deleteResource(ctx context.Context, d *schema.ResourceData, m interface{}) 
 	}
 	d.SetId("")
 	return nil
+}
+
+func uploadedAndManagedResourceV0() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"created": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"not_valid_before": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"not_valid_after": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+		},
+	}
+}
+
+func upgradeUploadedAndManagedResourceV0(
+	_ context.Context, rawState map[string]interface{}, meta interface{},
+) (map[string]interface{}, error) {
+	fields := []string{"created", "not_valid_before", "not_valid_after"}
+	for _, field := range fields {
+		cur := rawState[field].(string)
+		changed, err := timeutil.ConvertFormat(cur, timeutil.TimeStringLayout, time.RFC3339)
+		if err != nil {
+			// We were not able to convert the format. Continue with the next
+			// field instead of failing
+			continue
+		}
+		rawState[field] = changed
+	}
+	return rawState, nil
 }
