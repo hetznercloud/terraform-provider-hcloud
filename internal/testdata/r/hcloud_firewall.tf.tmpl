@@ -24,6 +24,9 @@ resource "hcloud_firewall" "{{ .RName }}" {
 {{- end }}
         ]
 {{ end }}
+{{ if $v.Description -}}
+        description = "{{ $v.Description }}"
+{{ end}}
     }
 {{- end }}
 {{- end }}
