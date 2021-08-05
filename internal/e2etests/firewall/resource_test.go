@@ -20,43 +20,49 @@ func TestFirewallResource_Basic(t *testing.T) {
 
 	res := firewall.NewRData(t, "basic-firewall", []firewall.RDataRule{
 		{
-			Direction: "in",
-			Protocol:  "tcp",
-			SourceIPs: []string{"0.0.0.0/0", "::/0"},
-			Port:      "80",
+			Direction:   "in",
+			Protocol:    "tcp",
+			SourceIPs:   []string{"0.0.0.0/0", "::/0"},
+			Port:        "80",
+			Description: "allow http in",
 		},
 		{
 			Direction:      "out",
 			Protocol:       "tcp",
 			DestinationIPs: []string{"0.0.0.0/0", "::/0"},
 			Port:           "80",
+			Description:    "allow http out",
 		},
 		{
-			Direction: "in",
-			Protocol:  "udp",
-			SourceIPs: []string{"0.0.0.0/0", "::/0"},
-			Port:      "any",
+			Direction:   "in",
+			Protocol:    "udp",
+			SourceIPs:   []string{"0.0.0.0/0", "::/0"},
+			Port:        "any",
+			Description: "allow udp in all ports",
 		},
 	})
 
 	updated := firewall.NewRData(t, "basic-firewall", []firewall.RDataRule{
 		{
-			Direction: "in",
-			Protocol:  "tcp",
-			SourceIPs: []string{"0.0.0.0/0", "::/0"},
-			Port:      "443",
+			Direction:   "in",
+			Protocol:    "tcp",
+			SourceIPs:   []string{"0.0.0.0/0", "::/0"},
+			Port:        "443",
+			Description: "allow https in",
 		},
 		{
 			Direction:      "out",
 			Protocol:       "tcp",
 			DestinationIPs: []string{"0.0.0.0/0", "::/0"},
 			Port:           "443",
+			Description:    "allow https out",
 		},
 		{
-			Direction: "in",
-			Protocol:  "udp",
-			SourceIPs: []string{"0.0.0.0/0", "::/0"},
-			Port:      "any",
+			Direction:   "in",
+			Protocol:    "udp",
+			SourceIPs:   []string{"0.0.0.0/0", "::/0"},
+			Port:        "any",
+			Description: "allow udp in all ports",
 		},
 	})
 	updated.SetRName(res.RName())
@@ -75,9 +81,9 @@ func TestFirewallResource_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(res.TFID(), "name",
 						fmt.Sprintf("basic-firewall--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(res.TFID(), "rule.#", "3"),
-					testsupport.LiftTCF(hasFirewallRule(t, &f, "in", "80", "tcp", []string{"0.0.0.0/0", "::/0"}, []string{})),
-					testsupport.LiftTCF(hasFirewallRule(t, &f, "in", "any", "udp", []string{"0.0.0.0/0", "::/0"}, []string{})),
-					testsupport.LiftTCF(hasFirewallRule(t, &f, "out", "80", "tcp", []string{}, []string{"0.0.0.0/0", "::/0"})),
+					testsupport.LiftTCF(hasFirewallRule(t, &f, "in", "80", "tcp", []string{"0.0.0.0/0", "::/0"}, []string{}, "allow http in")),
+					testsupport.LiftTCF(hasFirewallRule(t, &f, "in", "any", "udp", []string{"0.0.0.0/0", "::/0"}, []string{}, "allow udp in all ports")),
+					testsupport.LiftTCF(hasFirewallRule(t, &f, "out", "80", "tcp", []string{}, []string{"0.0.0.0/0", "::/0"}, "allow http out")),
 				),
 			},
 			{
@@ -95,9 +101,9 @@ func TestFirewallResource_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(res.TFID(), "name",
 						fmt.Sprintf("basic-firewall--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(res.TFID(), "rule.#", "3"),
-					testsupport.LiftTCF(hasFirewallRule(t, &f, "in", "443", "tcp", []string{"0.0.0.0/0", "::/0"}, []string{})),
-					testsupport.LiftTCF(hasFirewallRule(t, &f, "in", "any", "udp", []string{"0.0.0.0/0", "::/0"}, []string{})),
-					testsupport.LiftTCF(hasFirewallRule(t, &f, "out", "443", "tcp", []string{}, []string{"0.0.0.0/0", "::/0"})),
+					testsupport.LiftTCF(hasFirewallRule(t, &f, "in", "443", "tcp", []string{"0.0.0.0/0", "::/0"}, []string{}, "allow https in")),
+					testsupport.LiftTCF(hasFirewallRule(t, &f, "in", "any", "udp", []string{"0.0.0.0/0", "::/0"}, []string{}, "allow udp in all ports")),
+					testsupport.LiftTCF(hasFirewallRule(t, &f, "out", "443", "tcp", []string{}, []string{"0.0.0.0/0", "::/0"}, "allow https out")),
 				),
 			},
 		},
@@ -112,11 +118,12 @@ func hasFirewallRule(
 	protocol string, // nolint:unparam
 	expectedSourceIps []string,
 	expectedDestinationIps []string,
+	description string,
 ) func() error {
 	return func() error {
 		var firewallRule *hcloud.FirewallRule
 		for _, r := range f.Rules {
-			if string(r.Direction) == direction && *r.Port == port && string(r.Protocol) == protocol {
+			if string(r.Direction) == direction && *r.Port == port && string(r.Protocol) == protocol && *r.Description == description {
 				firewallRule = &r
 				break
 			}
