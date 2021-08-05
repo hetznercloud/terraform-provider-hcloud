@@ -39,3 +39,4 @@ data "hcloud_firewall" "sample_firewall_2" {
 - `port` - (Required, string) Port of the Firewall Rule. Required when `protocol` is `tcp` or `udp`
 - `source_ips` - (Required, List) List of CIDRs that are allowed within this Firewall Rule (when `direction` is `in`)
 - `destination_ips` - (Required, List) List of CIDRs that are allowed within this Firewall Rule (when `direction` is `out`)
+- `description` - (Optional, string) Description of the firewall rule

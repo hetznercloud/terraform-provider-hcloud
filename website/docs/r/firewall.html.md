@@ -44,6 +44,7 @@ resource "hcloud_server" "node1" {
 - `protocol` - (Required, string) Protocol of the Firewall Rule. `tcp`, `icmp`, `udp`, `gre`, `esp`
 - `port` - (Required, string) Port of the Firewall Rule. Required when `protocol` is `tcp` or `udp`. You can use `any` to allow all ports for the specific protocol. Port ranges are also possible: `80:85` allows all ports between 80 and 85.
 - `source_ips` - (Required, List) List of CIDRs that are allowed within this Firewall Rule
+- `description` - (Optional, string) Description of the firewall rule
 
 ## Attributes Reference
 
@@ -58,6 +59,7 @@ resource "hcloud_server" "node1" {
 - `port` - (Required, string) Port of the Firewall Rule. Required when `protocol` is `tcp` or `udp`
 - `source_ips` - (Required, List) List of CIDRs that are allowed within this Firewall Rule (when `direction` is `in`)
 - `destination_ips` - (Required, List) List of CIDRs that are allowed within this Firewall Rule (when `direction` is `out`)
+- `description` - (Optional, string) Description of the firewall rule
 
 ## Import
 
