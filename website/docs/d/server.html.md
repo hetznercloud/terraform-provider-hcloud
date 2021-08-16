@@ -44,3 +44,4 @@ data "hcloud_server" "s_3" {
 - `status` - (string) The status of the server.
 - `labels` - (map) User-defined labels (key-value pairs)
 - `firewall_ids` - (Optional, list) Firewall IDs the server is attached to.
+- `placement_group_id` - (Optional, string) Placement Group ID the server is assigned to.
