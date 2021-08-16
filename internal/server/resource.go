@@ -168,6 +168,10 @@ func Resource() *schema.Resource {
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeInt},
 			},
+			"placement_group_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
 		},
 	}
 }
@@ -229,6 +233,15 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		for _, firewallID := range firewallIDs.(*schema.Set).List() {
 			opts.Firewalls = append(opts.Firewalls, &hcloud.ServerCreateFirewall{Firewall: hcloud.Firewall{ID: firewallID.(int)}})
 		}
+	}
+
+	if placementGroupID, ok := d.GetOk("placement_group_id"); ok {
+		placementGroup, err := getPlacementGroup(ctx, c, placementGroupID.(int))
+		if err != nil {
+			return hcclient.ErrorToDiag(err)
+		}
+
+		opts.PlacementGroup = placementGroup
 	}
 
 	res, _, err := c.Server.Create(ctx, opts)
@@ -460,6 +473,13 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 					return hcclient.ErrorToDiag(err)
 				}
 			}
+		}
+	}
+
+	if d.HasChange("placement_group") {
+		placementGroupID := d.Get("placement_group").(int)
+		if err := setPlacementGroup(ctx, c, server, placementGroupID); err != nil {
+			return hcclient.ErrorToDiag(err)
 		}
 	}
 
@@ -742,6 +762,10 @@ func setServerSchema(d *schema.ResourceData, s *hcloud.Server) {
 	if _, ok := d.GetOk("network"); ok {
 		d.Set("network", networkToTerraformNetworks(s.PrivateNet))
 	}
+
+	if s.PlacementGroup != nil {
+		d.Set("placement_group_id", s.PlacementGroup.ID)
+	}
 }
 
 func networkToTerraformNetworks(privateNetworks []hcloud.ServerPrivateNet) []map[string]interface{} {
@@ -759,4 +783,46 @@ func networkToTerraformNetworks(privateNetworks []hcloud.ServerPrivateNet) []map
 		tfPrivateNetworks[i] = tfPrivateNetwork
 	}
 	return tfPrivateNetworks
+}
+
+func getPlacementGroup(ctx context.Context, c *hcloud.Client, id int) (*hcloud.PlacementGroup, error) {
+	placementGroup, _, err := c.PlacementGroup.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if placementGroup == nil {
+		return nil, fmt.Errorf("placement group not found: %d", id)
+	}
+
+	return placementGroup, nil
+}
+
+func setPlacementGroup(ctx context.Context, c *hcloud.Client, server *hcloud.Server, id int) error {
+	if server.PlacementGroup != nil {
+		action, _, err := c.Server.RemoveFromPlacementGroup(ctx, server)
+		if err != nil {
+			return err
+		}
+		if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
+			return err
+		}
+	}
+
+	if id != 0 {
+		placementGroup, err := getPlacementGroup(ctx, c, id)
+		if err != nil {
+			return err
+		}
+
+		action, _, err := c.Server.AddToPlacementGroup(ctx, server, placementGroup)
+		if err != nil {
+			return err
+		}
+		if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

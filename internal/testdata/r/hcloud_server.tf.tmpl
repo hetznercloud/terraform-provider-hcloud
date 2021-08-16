@@ -64,4 +64,8 @@ resource "hcloud_server" "{{ .RName }}" {
   {{- if .DependsOn }}
   depends_on               = [{{ StringsJoin .DependsOn ", " }}]
   {{ end }}
+
+  {{- if .PlacementGroupID }}
+  placement_group_id = {{ .PlacementGroupID }}
+  {{ end }}
 }

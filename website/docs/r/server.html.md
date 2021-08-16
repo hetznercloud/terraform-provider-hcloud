@@ -81,6 +81,7 @@ The following arguments are supported:
 - `backups` - (Optional, boolean) Enable or disable backups.
 - `firewall_ids` - (Optional, list) Firewall IDs the server should be attached to on creation.
 - `network` - (Optional)  Network the server should be attached to on creation. (Can be specified multiple times)
+- `placement_group_id` - (Optional, string) Placement Group ID the server added to on creation.
 
 `network` support the following fields:
 - `network_id` - (Required, int) ID of the network
@@ -115,6 +116,7 @@ The following attributes are exported:
   to the respective subnetwork. See examples.
 - `firewall_ids` - (Optional, list) Firewall IDs the server is attached to.
 - `network` - (Optional, list)  Network the server should be attached to on creation. (Can be specified multiple times)
+- `placement_group_id` - (Optional, string) Placement Group ID the server is assigned to.
 
 a single entry in `network` support the following fields:
 - `network_id` - (Required, int) ID of the network
