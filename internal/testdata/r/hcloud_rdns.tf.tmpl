@@ -7,6 +7,9 @@ resource "hcloud_rdns" "{{ .RName }}" {
   {{- if .FloatingIPID }}
   floating_ip_id        = {{ .FloatingIPID }}
   {{ end }}
+  {{- if .LoadBalancerID }}
+  load_balancer_id = {{ .LoadBalancerID }}
+  {{ end }}
   ip_address = {{ .IPAddress }}
   dns_ptr = "{{ .DNSPTR }}"
 }
