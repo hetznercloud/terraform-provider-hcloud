@@ -41,8 +41,8 @@ func DataSource() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 			},
-			"server": {
-				Type:     schema.TypeString,
+			"server_id": {
+				Type:     schema.TypeInt,
 				Optional: true,
 			},
 			"linux_device": {
