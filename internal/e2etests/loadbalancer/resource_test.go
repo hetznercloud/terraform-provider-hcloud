@@ -197,3 +197,53 @@ func TestLoadBalancerResource_InlineTarget(t *testing.T) {
 		},
 	})
 }
+
+func TestLoadBalancerResource_Protection(t *testing.T) {
+	var (
+		lb hcloud.LoadBalancer
+
+		res = &loadbalancer.RData{
+			Name:             "load-balancer-protection",
+			LocationName:     "nbg1",
+			DeleteProtection: true,
+		}
+
+		updateProtection = func(d *loadbalancer.RData, protection bool) *loadbalancer.RData {
+			d.DeleteProtection = protection
+			return d
+		}
+	)
+
+	tmplMan := testtemplate.Manager{}
+	resource.Test(t, resource.TestCase{
+		PreCheck:     e2etests.PreCheck(t),
+		Providers:    e2etests.Providers(),
+		CheckDestroy: testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, &lb)),
+		Steps: []resource.TestStep{
+			{
+				// Create a new Load Balancer using the required values
+				// only.
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_load_balancer", res,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(res.TFID(), loadbalancer.ByID(t, &lb)),
+					resource.TestCheckResourceAttr(res.TFID(), "name",
+						fmt.Sprintf("load-balancer-protection--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(res.TFID(), "load_balancer_type", e2etests.TestLoadBalancerType),
+					resource.TestCheckResourceAttr(res.TFID(), "location", res.LocationName),
+					resource.TestCheckResourceAttr(res.TFID(), "delete_protection", fmt.Sprintf("%t", res.DeleteProtection)),
+				),
+			},
+			{
+				// Update delete protection
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_load_balancer", updateProtection(res, false),
+				),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(res.TFID(), "delete_protection", fmt.Sprintf("%t", res.DeleteProtection)),
+				),
+			},
+		},
+	})
+}
