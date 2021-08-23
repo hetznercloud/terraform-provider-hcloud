@@ -69,6 +69,10 @@ func DataSource() *schema.Resource {
 				Optional:      true,
 				ConflictsWith: []string{"selector"},
 			},
+			"delete_protection": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
 		},
 	}
 }

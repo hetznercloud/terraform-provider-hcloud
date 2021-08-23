@@ -18,4 +18,8 @@ resource "hcloud_floating_ip" "{{ .RName }}" {
   {{- end }}
   }
   {{ end }}
+
+  {{- if .DeleteProtection }}
+  delete_protection = {{ .DeleteProtection }}
+  {{ end }}
 }
