@@ -477,6 +477,63 @@ func TestServerResource_PlacementGroup(t *testing.T) {
 	})
 }
 
+func TestServerResource_Protection(t *testing.T) {
+	var (
+		srv hcloud.Server
+
+		updateProtection = func(d *server.RData, protection bool) *server.RData {
+			d.DeleteProtection = protection
+			d.RebuildProtection = protection
+			return d
+		}
+	)
+
+	srvRes := &server.RData{
+		Name:              "server-protection",
+		Type:              e2etests.TestServerType,
+		Image:             e2etests.TestImage,
+		DeleteProtection:  true,
+		RebuildProtection: true,
+	}
+	srvRes.SetRName("server-protection")
+
+	tmplMan := testtemplate.Manager{}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     e2etests.PreCheck(t),
+		Providers:    e2etests.Providers(),
+		CheckDestroy: testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &srv)),
+		Steps: []resource.TestStep{
+			{
+				// Create a new Server using the required values
+				// only.
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_server", srvRes,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(srvRes.TFID(), server.ByID(t, &srv)),
+					resource.TestCheckResourceAttr(srvRes.TFID(), "name",
+						fmt.Sprintf("server-protection--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(srvRes.TFID(), "server_type", srvRes.Type),
+					resource.TestCheckResourceAttr(srvRes.TFID(), "image", srvRes.Image),
+					resource.TestCheckResourceAttr(srvRes.TFID(), "delete_protection", fmt.Sprintf("%t", srvRes.DeleteProtection)),
+					resource.TestCheckResourceAttr(srvRes.TFID(), "rebuild_protection", fmt.Sprintf("%t", srvRes.RebuildProtection)),
+				),
+			},
+			{
+				// Update delete protection
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_server", updateProtection(srvRes, false),
+				),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(srvRes.TFID(), "delete_protection", fmt.Sprintf("%t", srvRes.DeleteProtection)),
+					resource.TestCheckResourceAttr(srvRes.TFID(), "rebuild_protection", fmt.Sprintf("%t", srvRes.RebuildProtection)),
+				),
+			},
+		},
+	})
+}
+
 func isRecreated(new, old *hcloud.Server) func() error {
 	return func() error {
 		if new.ID == old.ID {

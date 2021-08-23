@@ -68,4 +68,12 @@ resource "hcloud_server" "{{ .RName }}" {
   {{- if .PlacementGroupID }}
   placement_group_id = {{ .PlacementGroupID }}
   {{ end }}
+
+  {{- if .DeleteProtection }}
+  delete_protection = {{ .DeleteProtection }}
+  {{ end }}
+
+  {{- if .RebuildProtection }}
+  rebuild_protection = {{ .RebuildProtection }}
+  {{ end }}
 }
