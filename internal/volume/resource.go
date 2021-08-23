@@ -65,6 +65,11 @@ func Resource() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"delete_protection": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
 		},
 	}
 }
@@ -149,6 +154,13 @@ func resourceVolumeCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		}
 	}
 	d.SetId(strconv.Itoa(result.Volume.ID))
+
+	deleteProtection := d.Get("delete_protection").(bool)
+	if deleteProtection {
+		if err := setProtection(ctx, c, result.Volume, deleteProtection); err != nil {
+			return hcclient.ErrorToDiag(err)
+		}
+	}
 
 	return resourceVolumeRead(ctx, d, m)
 }
@@ -302,8 +314,15 @@ func resourceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 			return hcclient.ErrorToDiag(err)
 		}
 	}
-	d.Partial(false)
 
+	if d.HasChange("delete_protection") {
+		delete := d.Get("delete_protection").(bool)
+		if err := setProtection(ctx, c, volume, delete); err != nil {
+			return hcclient.ErrorToDiag(err)
+		}
+	}
+
+	d.Partial(false)
 	return resourceVolumeRead(ctx, d, m)
 }
 
@@ -375,4 +394,22 @@ func setVolumeSchema(d *schema.ResourceData, v *hcloud.Volume) {
 	}
 	d.Set("labels", v.Labels)
 	d.Set("linux_device", v.LinuxDevice)
+	d.Set("delete_protection", v.Protection.Delete)
+}
+
+func setProtection(ctx context.Context, c *hcloud.Client, v *hcloud.Volume, delete bool) error {
+	action, _, err := c.Volume.ChangeProtection(ctx, v,
+		hcloud.VolumeChangeProtectionOpts{
+			Delete: &delete,
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
+		return err
+	}
+
+	return nil
 }

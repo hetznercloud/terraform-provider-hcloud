@@ -249,3 +249,55 @@ func TestVolumeResource_WithServerMultipleVolumes(t *testing.T) {
 		},
 	})
 }
+
+func TestVolumeResource_Protection(t *testing.T) {
+	var (
+		vol hcloud.Volume
+
+		res = &volume.RData{
+			Name:             "basic-volume",
+			LocationName:     "nbg1",
+			Size:             10,
+			DeleteProtection: true,
+		}
+
+		updateProtection = func(d *volume.RData, protection bool) *volume.RData {
+			d.DeleteProtection = protection
+			return d
+		}
+	)
+
+	tmplMan := testtemplate.Manager{}
+	resource.Test(t, resource.TestCase{
+		PreCheck:     e2etests.PreCheck(t),
+		Providers:    e2etests.Providers(),
+		CheckDestroy: testsupport.CheckResourcesDestroyed(volume.ResourceType, volume.ByID(t, &vol)),
+		Steps: []resource.TestStep{
+			{
+				// Create a new Volume using the required values
+				// only.
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_volume", res,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(res.TFID(), volume.ByID(t, &vol)),
+					resource.TestCheckResourceAttr(res.TFID(), "name",
+						fmt.Sprintf("basic-volume--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(res.TFID(), "size", fmt.Sprintf("%d", res.Size)),
+					resource.TestCheckResourceAttr(res.TFID(), "location", res.LocationName),
+					resource.TestCheckResourceAttr(res.TFID(), "delete_protection", fmt.Sprintf("%t", res.DeleteProtection)),
+				),
+			},
+			{
+				// Update the Volume created in the previous step by
+				// setting all optional fields and renaming the volume.
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_volume", updateProtection(res, false),
+				),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(res.TFID(), "delete_protection", fmt.Sprintf("%t", res.DeleteProtection)),
+				),
+			},
+		},
+	})
+}
