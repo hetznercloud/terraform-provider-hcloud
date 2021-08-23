@@ -103,8 +103,8 @@ func DataSource() *schema.Resource {
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeInt},
 			},
-			"placement_group": {
-				Type:     schema.TypeString,
+			"placement_group_id": {
+				Type:     schema.TypeInt,
 				Optional: true,
 			},
 		},
