@@ -43,6 +43,11 @@ func Resource() *schema.Resource {
 				Type:     schema.TypeMap,
 				Optional: true,
 			},
+			"delete_protection": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
 		},
 	}
 }
@@ -73,6 +78,13 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 	}
 
 	d.SetId(strconv.Itoa(network.ID))
+
+	deleteProtection := d.Get("delete_protection").(bool)
+	if deleteProtection {
+		if err := setProtection(ctx, client, network, deleteProtection); err != nil {
+			return hcclient.ErrorToDiag(err)
+		}
+	}
 
 	return resourceNetworkRead(ctx, d, m)
 }
@@ -136,6 +148,14 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interf
 			return hcclient.ErrorToDiag(err)
 		}
 	}
+
+	if d.HasChange("delete_protection") {
+		delete := d.Get("delete_protection").(bool)
+		if err := setProtection(ctx, client, network, delete); err != nil {
+			return hcclient.ErrorToDiag(err)
+		}
+	}
+
 	d.Partial(false)
 
 	return resourceNetworkRead(ctx, d, m)
@@ -176,4 +196,22 @@ func setNetworkSchema(d *schema.ResourceData, n *hcloud.Network) {
 	d.Set("ip_range", n.IPRange.String())
 	d.Set("name", n.Name)
 	d.Set("labels", n.Labels)
+	d.Set("delete_protection", n.Protection.Delete)
+}
+
+func setProtection(ctx context.Context, c *hcloud.Client, n *hcloud.Network, delete bool) error {
+	action, _, err := c.Network.ChangeProtection(ctx, n,
+		hcloud.NetworkChangeProtectionOpts{
+			Delete: &delete,
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
+		return err
+	}
+
+	return nil
 }

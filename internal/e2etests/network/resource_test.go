@@ -110,3 +110,53 @@ func TestNetworkResource_IncreaseNetwork(t *testing.T) {
 		},
 	})
 }
+
+func TestNetworkResource_Protection(t *testing.T) {
+	var (
+		cert hcloud.Network
+
+		res = &network.RData{
+			Name:             "network-protection",
+			IPRange:          "10.0.0.0/8",
+			Labels:           nil,
+			DeleteProtection: true,
+		}
+
+		updateProtection = func(d *network.RData, protection bool) *network.RData {
+			d.DeleteProtection = protection
+			return d
+		}
+	)
+
+	tmplMan := testtemplate.Manager{}
+	resource.Test(t, resource.TestCase{
+		PreCheck:     e2etests.PreCheck(t),
+		Providers:    e2etests.Providers(),
+		CheckDestroy: testsupport.CheckResourcesDestroyed(network.ResourceType, network.ByID(t, &cert)),
+		Steps: []resource.TestStep{
+			{
+				// Create a new Network using the required values
+				// only.
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_network", res,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(res.TFID(), network.ByID(t, &cert)),
+					resource.TestCheckResourceAttr(res.TFID(), "name",
+						fmt.Sprintf("network-protection--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(res.TFID(), "ip_range", res.IPRange),
+					resource.TestCheckResourceAttr(res.TFID(), "delete_protection", fmt.Sprintf("%t", res.DeleteProtection)),
+				),
+			},
+			{
+				// Update delete protection
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_network", updateProtection(res, false),
+				),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(res.TFID(), "delete_protection", fmt.Sprintf("%t", res.DeleteProtection)),
+				),
+			},
+		},
+	})
+}

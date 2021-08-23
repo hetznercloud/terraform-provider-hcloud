@@ -39,6 +39,10 @@ func DataSource() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"delete_protection": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
 		},
 	}
 }
