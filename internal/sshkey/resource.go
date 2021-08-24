@@ -177,9 +177,21 @@ func resourceSSHKeyDelete(ctx context.Context, d *schema.ResourceData, m interfa
 }
 
 func setSSHKeySchema(d *schema.ResourceData, s *hcloud.SSHKey) {
-	d.SetId(strconv.Itoa(s.ID))
-	d.Set("name", s.Name)
-	d.Set("fingerprint", s.Fingerprint)
-	d.Set("public_key", s.PublicKey)
-	d.Set("labels", s.Labels)
+	for key, val := range getSSHKeyAttributes(s) {
+		if key == "id" {
+			d.SetId(strconv.Itoa(val.(int)))
+		} else {
+			d.Set(key, val)
+		}
+	}
+}
+
+func getSSHKeyAttributes(s *hcloud.SSHKey) map[string]interface{} {
+	return map[string]interface{}{
+		"id":          s.ID,
+		"name":        s.Name,
+		"fingerprint": s.Fingerprint,
+		"public_key":  s.PublicKey,
+		"labels":      s.Labels,
+	}
 }

@@ -104,7 +104,7 @@ func Provider() *schema.Provider {
 			servertype.DataSourceType:            servertype.DataSource(),
 			servertype.ServerTypesDataSourceType: servertype.ServerTypesDataSource(),
 			sshkey.DataSourceType:                sshkey.DataSource(),
-			sshkey.SSHKeysDataSourceType:         sshkey.SSHKeysDataSource(),
+			sshkey.DataSourceListType:            sshkey.DataSourceList(),
 			volume.DataSourceType:                volume.DataSource(),
 			placementgroup.DataSourceType:        placementgroup.DataSource(),
 		},

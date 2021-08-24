@@ -66,14 +66,17 @@ func TestAccHcloudDataSourceSSHKeyTest(t *testing.T) {
 }
 
 func TestAccHcloudDataSourceSSHKeysTest(t *testing.T) {
-	tmplMan := testtemplate.Manager{}
+	res := sshkey.NewRData(t, "ssh-key-ds-test")
 
-	res := sshkey.NewRData(t, "datasource-test")
-
-	sshKeysDS := &sshkey.SSHKeysDData{
+	keyBySel := &sshkey.DDataList{
 		LabelSelector: fmt.Sprintf("key=${%s.labels[\"key\"]}", res.TFID()),
 	}
-	sshKeysDS.SetRName("ds")
+	keyBySel.SetRName("key_by_sel")
+
+	allKeysSel := &sshkey.DDataList{}
+	allKeysSel.SetRName("all_keys_sel")
+
+	tmplMan := testtemplate.Manager{}
 	resource.Test(t, resource.TestCase{
 		PreCheck:  e2etests.PreCheck(t),
 		Providers: e2etests.Providers(),
@@ -86,12 +89,21 @@ func TestAccHcloudDataSourceSSHKeysTest(t *testing.T) {
 			{
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_ssh_key", res,
-					"testdata/d/hcloud_ssh_keys", sshKeysDS,
+					"testdata/d/hcloud_ssh_keys", keyBySel,
+					"testdata/d/hcloud_ssh_keys", allKeysSel,
 				),
 
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(sshKeysDS.TFID(), "ssh_keys.0.name", fmt.Sprintf("%s--%d", res.Name, tmplMan.RandInt)),
-					resource.TestCheckResourceAttr(sshKeysDS.TFID(), "ssh_keys.0.public_key", res.PublicKey),
+					resource.TestCheckResourceAttr(keyBySel.TFID(), "ssh_keys.#", "1"),
+					resource.TestCheckResourceAttr(keyBySel.TFID(), "ssh_keys.0.name", fmt.Sprintf("%s--%d", res.Name, tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(keyBySel.TFID(), "ssh_keys.0.public_key", res.PublicKey),
+
+					resource.TestCheckTypeSetElemNestedAttrs(allKeysSel.TFID(), "ssh_keys.*",
+						map[string]string{
+							"name":       fmt.Sprintf("%s--%d", res.Name, tmplMan.RandInt),
+							"public_key": res.PublicKey,
+						},
+					),
 				),
 			},
 		},
