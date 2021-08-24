@@ -751,33 +751,46 @@ func newIPSet(f schema.SchemaSetFunc, ips []net.IP) *schema.Set {
 }
 
 func setServerSchema(d *schema.ResourceData, s *hcloud.Server) {
-	d.SetId(strconv.Itoa(s.ID))
-	d.Set("name", s.Name)
-	d.Set("datacenter", s.Datacenter.Name)
-	d.Set("location", s.Datacenter.Location.Name)
-	d.Set("status", s.Status)
-	d.Set("server_type", s.ServerType.Name)
-	d.Set("ipv4_address", s.PublicNet.IPv4.IP.String())
-	d.Set("ipv6_address", s.PublicNet.IPv6.IP.String()+"1")
-	d.Set("ipv6_network", s.PublicNet.IPv6.Network.String())
-	d.Set("backup_window", s.BackupWindow)
-	d.Set("backups", s.BackupWindow != "")
-	d.Set("labels", s.Labels)
-	d.Set("delete_protection", s.Protection.Delete)
-	d.Set("rebuild_protection", s.Protection.Rebuild)
-	if s.Image != nil {
-		if s.Image.Name != "" {
-			d.Set("image", s.Image.Name)
+	for key, val := range getServerAttributes(d, s) {
+		if key == "id" {
+			d.SetId(strconv.Itoa(val.(int)))
 		} else {
-			d.Set("image", fmt.Sprintf("%d", s.Image.ID))
+			d.Set(key, val)
 		}
 	}
+}
 
+func getServerAttributes(d *schema.ResourceData, s *hcloud.Server) map[string]interface{} {
 	firewallIDs := make([]int, len(s.PublicNet.Firewalls))
 	for i, firewall := range s.PublicNet.Firewalls {
 		firewallIDs[i] = firewall.Firewall.ID
 	}
-	d.Set("firewall_ids", firewallIDs)
+
+	res := map[string]interface{}{
+		"id":                 s.ID,
+		"name":               s.Name,
+		"datacenter":         s.Datacenter.Name,
+		"location":           s.Datacenter.Location.Name,
+		"status":             s.Status,
+		"server_type":        s.ServerType.Name,
+		"ipv4_address":       s.PublicNet.IPv4.IP.String(),
+		"ipv6_address":       s.PublicNet.IPv6.IP.String() + "1",
+		"ipv6_network":       s.PublicNet.IPv6.Network.String(),
+		"backup_window":      s.BackupWindow,
+		"backups":            s.BackupWindow != "",
+		"labels":             s.Labels,
+		"delete_protection":  s.Protection.Delete,
+		"rebuild_protection": s.Protection.Rebuild,
+		"firewall_ids":       firewallIDs,
+	}
+
+	if s.Image != nil {
+		if s.Image.Name != "" {
+			res["image"] = s.Image.Name
+		} else {
+			res["image"] = fmt.Sprintf("%d", s.Image.ID)
+		}
+	}
 
 	// Only write the networks to the resource data if it already contains
 	// such an entry. This avoids setting the "network" property which is not
@@ -788,12 +801,14 @@ func setServerSchema(d *schema.ResourceData, s *hcloud.Server) {
 	// The easiest would be to use schema.ComputedWhen but this is marked
 	// as currently not working.
 	if _, ok := d.GetOk("network"); ok {
-		d.Set("network", networkToTerraformNetworks(s.PrivateNet))
+		res["network"] = networkToTerraformNetworks(s.PrivateNet)
 	}
 
 	if s.PlacementGroup != nil {
-		d.Set("placement_group_id", s.PlacementGroup.ID)
+		res["placement_group_id"] = s.PlacementGroup.ID
 	}
+
+	return res
 }
 
 func networkToTerraformNetworks(privateNetworks []hcloud.ServerPrivateNet) []map[string]interface{} {
