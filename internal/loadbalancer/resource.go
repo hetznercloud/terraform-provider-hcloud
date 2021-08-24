@@ -114,6 +114,11 @@ func Resource() *schema.Resource {
 					},
 				},
 			},
+			"delete_protection": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
 		},
 	}
 }
@@ -154,6 +159,13 @@ func resourceLoadBalancerCreate(ctx context.Context, d *schema.ResourceData, m i
 	d.SetId(strconv.Itoa(res.LoadBalancer.ID))
 	if err := hcclient.WaitForAction(ctx, &c.Action, res.Action); err != nil {
 		return hcclient.ErrorToDiag(err)
+	}
+
+	deleteProtection := d.Get("delete_protection").(bool)
+	if deleteProtection {
+		if err := setProtection(ctx, c, res.LoadBalancer, deleteProtection); err != nil {
+			return hcclient.ErrorToDiag(err)
+		}
 	}
 
 	return resourceLoadBalancerRead(ctx, d, m)
@@ -319,6 +331,14 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, m i
 			}
 		}
 	}
+
+	if d.HasChange("delete_protection") {
+		delete := d.Get("delete_protection").(bool)
+		if err := setProtection(ctx, c, loadBalancer, delete); err != nil {
+			return hcclient.ErrorToDiag(err)
+		}
+	}
+
 	d.Partial(false)
 	return resourceLoadBalancerRead(ctx, d, m)
 }
@@ -366,6 +386,7 @@ func setLoadBalancerSchema(d *schema.ResourceData, lb *hcloud.LoadBalancer) {
 	d.Set("network_zone", lb.Location.NetworkZone)
 	d.Set("labels", lb.Labels)
 	d.Set("target", targetToTerraformTargets(lb.Targets))
+	d.Set("delete_protection", lb.Protection.Delete)
 
 	if len(lb.PrivateNet) > 0 {
 		d.Set("network_id", lb.PrivateNet[0].Network.ID)
@@ -411,4 +432,21 @@ func algorithmToTerraformAlgorithm(algorithm hcloud.LoadBalancerAlgorithm) (tfAl
 	tfAlgorithm["type"] = string(algorithm.Type)
 	tfAlgorithms = append(tfAlgorithms, tfAlgorithm)
 	return
+}
+
+func setProtection(ctx context.Context, c *hcloud.Client, lb *hcloud.LoadBalancer, delete bool) error {
+	action, _, err := c.LoadBalancer.ChangeProtection(ctx, lb,
+		hcloud.LoadBalancerChangeProtectionOpts{
+			Delete: &delete,
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
+		return err
+	}
+
+	return nil
 }

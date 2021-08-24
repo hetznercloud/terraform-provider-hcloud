@@ -172,6 +172,16 @@ func Resource() *schema.Resource {
 				Type:     schema.TypeInt,
 				Optional: true,
 			},
+			"delete_protection": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
+			"rebuild_protection": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
 		},
 	}
 }
@@ -281,6 +291,14 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 
 	if rescue, ok := d.GetOk("rescue"); ok {
 		if err := setRescue(ctx, c, res.Server, rescue.(string), opts.SSHKeys); err != nil {
+			return hcclient.ErrorToDiag(err)
+		}
+	}
+
+	deleteProtection := d.Get("delete_protection").(bool)
+	rebuildProtection := d.Get("rebuild_protection").(bool)
+	if deleteProtection || rebuildProtection {
+		if err := setProtection(ctx, c, res.Server, deleteProtection, rebuildProtection); err != nil {
 			return hcclient.ErrorToDiag(err)
 		}
 	}
@@ -479,6 +497,14 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 	if d.HasChange("placement_group") {
 		placementGroupID := d.Get("placement_group").(int)
 		if err := setPlacementGroup(ctx, c, server, placementGroupID); err != nil {
+			return hcclient.ErrorToDiag(err)
+		}
+	}
+
+	if d.HasChange("delete_protection") || d.HasChange("rebuild_protection") {
+		delete := d.Get("delete_protection").(bool)
+		rebuild := d.Get("rebuild_protection").(bool)
+		if err := setProtection(ctx, c, server, delete, rebuild); err != nil {
 			return hcclient.ErrorToDiag(err)
 		}
 	}
@@ -737,6 +763,8 @@ func setServerSchema(d *schema.ResourceData, s *hcloud.Server) {
 	d.Set("backup_window", s.BackupWindow)
 	d.Set("backups", s.BackupWindow != "")
 	d.Set("labels", s.Labels)
+	d.Set("delete_protection", s.Protection.Delete)
+	d.Set("rebuild_protection", s.Protection.Rebuild)
 	if s.Image != nil {
 		if s.Image.Name != "" {
 			d.Set("image", s.Image.Name)
@@ -822,6 +850,24 @@ func setPlacementGroup(ctx context.Context, c *hcloud.Client, server *hcloud.Ser
 		if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func setProtection(ctx context.Context, c *hcloud.Client, server *hcloud.Server, delete bool, rebuild bool) error {
+	action, _, err := c.Server.ChangeProtection(ctx, server,
+		hcloud.ServerChangeProtectionOpts{
+			Delete:  &delete,
+			Rebuild: &rebuild,
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
+		return err
 	}
 
 	return nil

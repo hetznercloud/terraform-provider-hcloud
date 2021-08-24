@@ -63,6 +63,11 @@ func Resource() *schema.Resource {
 				Type:     schema.TypeMap,
 				Optional: true,
 			},
+			"delete_protection": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
 		},
 	}
 }
@@ -100,6 +105,13 @@ func resourceFloatingIPCreate(ctx context.Context, d *schema.ResourceData, m int
 	if res.Action != nil {
 		_, errCh := client.Action.WatchProgress(ctx, res.Action)
 		if err := <-errCh; err != nil {
+			return hcclient.ErrorToDiag(err)
+		}
+	}
+
+	deleteProtection := d.Get("delete_protection").(bool)
+	if deleteProtection {
+		if err := setProtection(ctx, client, res.FloatingIP, deleteProtection); err != nil {
 			return hcclient.ErrorToDiag(err)
 		}
 	}
@@ -212,6 +224,14 @@ func resourceFloatingIPUpdate(ctx context.Context, d *schema.ResourceData, m int
 			return hcclient.ErrorToDiag(err)
 		}
 	}
+
+	if d.HasChange("delete_protection") {
+		delete := d.Get("delete_protection").(bool)
+		if err := setProtection(ctx, client, floatingIP, delete); err != nil {
+			return hcclient.ErrorToDiag(err)
+		}
+	}
+
 	d.Partial(false)
 
 	return resourceFloatingIPRead(ctx, d, m)
@@ -260,4 +280,22 @@ func setFloatingIPSchema(d *schema.ResourceData, f *hcloud.FloatingIP) {
 	d.Set("home_location", f.HomeLocation.Name)
 	d.Set("description", f.Description)
 	d.Set("labels", f.Labels)
+	d.Set("delete_protection", f.Protection.Delete)
+}
+
+func setProtection(ctx context.Context, c *hcloud.Client, f *hcloud.FloatingIP, delete bool) error {
+	action, _, err := c.FloatingIP.ChangeProtection(ctx, f,
+		hcloud.FloatingIPChangeProtectionOpts{
+			Delete: &delete,
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
+		return err
+	}
+
+	return nil
 }

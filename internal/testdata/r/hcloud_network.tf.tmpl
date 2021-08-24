@@ -13,4 +13,8 @@ resource "hcloud_network" "{{ .RName }}" {
   {{- end }}
   }
   {{ end }}
+
+  {{- if .DeleteProtection }}
+  delete_protection = {{ .DeleteProtection }}
+  {{ end }}
 }

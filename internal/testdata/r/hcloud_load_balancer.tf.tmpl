@@ -30,4 +30,8 @@ resource "hcloud_load_balancer" "{{ .Name }}" {
   {{- end }}
   }
   {{- end }}
+
+  {{- if .DeleteProtection }}
+  delete_protection = {{ .DeleteProtection }}
+  {{ end }}
 }

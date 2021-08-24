@@ -33,6 +33,7 @@ resource "hcloud_floating_ip" "master" {
 - `home_location` - (Optional, string) Home location (routing is optimized for that location). Optional if server_id argument is passed.
 - `description` - (Optional, string) Description of the Floating IP.
 - `labels` - (Optional, map) User-defined labels (key-value pairs) should be created with.
+- `delete_protection` - (Optional, boolean) Enable or disable delete protection.
 
 ## Attributes Reference
 
@@ -45,6 +46,7 @@ resource "hcloud_floating_ip" "master" {
 - `ip_address` - (string) IP Address of the Floating IP.
 - `ip_network` - (string) IPv6 subnet. (Only set if `type` is `ipv6`)
 - `labels` - (map) User-defined labels (key-value pairs)
+- `delete_protection` - (boolean) Whether delete protection is enabled.
 
 ## Import
 

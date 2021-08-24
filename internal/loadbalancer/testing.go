@@ -94,13 +94,14 @@ func (d *DData) TFID() string {
 type RData struct {
 	testtemplate.DataCommon
 
-	Name          string
-	Type          string
-	LocationName  string
-	NetworkZone   string
-	Algorithm     string
-	ServerTargets []RDataInlineServerTarget
-	Labels        map[string]string
+	Name             string
+	Type             string
+	LocationName     string
+	NetworkZone      string
+	Algorithm        string
+	ServerTargets    []RDataInlineServerTarget
+	Labels           map[string]string
+	DeleteProtection bool
 }
 
 // TFID returns the resource identifier.

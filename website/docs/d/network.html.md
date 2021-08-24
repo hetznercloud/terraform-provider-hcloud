@@ -30,3 +30,4 @@ data "hcloud_network" "network_3" {
 - `id` - Unique ID of the Network.
 - `name` - Name of the Network.
 - `ip_range` - IPv4 prefix of the Network.
+- `delete_protection` - (boolean) Whether delete protection is enabled.

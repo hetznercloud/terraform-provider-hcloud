@@ -45,3 +45,5 @@ data "hcloud_server" "s_3" {
 - `labels` - (map) User-defined labels (key-value pairs)
 - `firewall_ids` - (Optional, list) Firewall IDs the server is attached to.
 - `placement_group_id` - (Optional, string) Placement Group ID the server is assigned to.
+- `delete_protection` - (boolean) Whether delete protection is enabled.
+- `rebuild_protection` - (boolean) Whether rebuild protection is enabled.

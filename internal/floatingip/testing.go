@@ -82,6 +82,7 @@ type RData struct {
 	HomeLocationName string
 	ServerID         string
 	Labels           map[string]string
+	DeleteProtection bool
 }
 
 // TFID returns the resource identifier.

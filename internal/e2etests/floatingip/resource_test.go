@@ -116,3 +116,54 @@ func TestFloatingIPResource_WithServer(t *testing.T) {
 		},
 	})
 }
+
+func TestFloatingIPResource_Protection(t *testing.T) {
+	var (
+		fip hcloud.FloatingIP
+
+		res = &floatingip.RData{
+			Name:             "floatingip-protection",
+			Type:             "ipv4",
+			Labels:           nil,
+			HomeLocationName: e2etests.TestLocationName,
+			DeleteProtection: true,
+		}
+
+		updateProtection = func(d *floatingip.RData, protection bool) *floatingip.RData {
+			d.DeleteProtection = protection
+			return d
+		}
+	)
+
+	tmplMan := testtemplate.Manager{}
+	resource.Test(t, resource.TestCase{
+		PreCheck:     e2etests.PreCheck(t),
+		Providers:    e2etests.Providers(),
+		CheckDestroy: testsupport.CheckResourcesDestroyed(floatingip.ResourceType, floatingip.ByID(t, &fip)),
+		Steps: []resource.TestStep{
+			{
+				// Create a new Floating IP using the required values
+				// only.
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_floating_ip", res,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(res.TFID(), floatingip.ByID(t, &fip)),
+					resource.TestCheckResourceAttr(res.TFID(), "name",
+						fmt.Sprintf("floatingip-protection--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(res.TFID(), "type", res.Type),
+					resource.TestCheckResourceAttr(res.TFID(), "delete_protection", fmt.Sprintf("%t", res.DeleteProtection)),
+				),
+			},
+			{
+				// Update delete protection
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_floating_ip", updateProtection(res, false),
+				),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(res.TFID(), "delete_protection", fmt.Sprintf("%t", res.DeleteProtection)),
+				),
+			},
+		},
+	})
+}
