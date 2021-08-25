@@ -48,7 +48,7 @@ func TestAccHcloudDataSourceLocationTest(t *testing.T) {
 func TestAccHcloudDataSourceLocationsTest(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
-	locationsDS := &location.LocationsDData{}
+	locationsDS := &location.DDataList{}
 	locationsDS.SetRName("ds")
 	resource.Test(t, resource.TestCase{
 		PreCheck:  e2etests.PreCheck(t),
@@ -69,6 +69,10 @@ func TestAccHcloudDataSourceLocationsTest(t *testing.T) {
 					resource.TestCheckResourceAttr(locationsDS.TFID(), "descriptions.0", "Falkenstein DC Park 1"),
 					resource.TestCheckResourceAttr(locationsDS.TFID(), "descriptions.1", "Nuremberg DC Park 1"),
 					resource.TestCheckResourceAttr(locationsDS.TFID(), "descriptions.2", "Helsinki DC Park 1"),
+					resource.TestCheckResourceAttr(locationsDS.TFID(), "locations.#", "3"),
+					resource.TestCheckResourceAttr(locationsDS.TFID(), "locations.0.name", "fsn1"),
+					resource.TestCheckResourceAttr(locationsDS.TFID(), "locations.1.name", "nbg1"),
+					resource.TestCheckResourceAttr(locationsDS.TFID(), "locations.2.name", "hel1"),
 				),
 			},
 		},

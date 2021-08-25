@@ -72,7 +72,7 @@ func TestProvider_DataSources(t *testing.T) {
 		image.DataSourceType,
 		loadbalancer.DataSourceType,
 		location.DataSourceType,
-		location.LocationsDataSourceType,
+		location.DataSourceListType,
 		network.DataSourceType,
 		server.DataSourceType,
 		server.DataSourceListType,
