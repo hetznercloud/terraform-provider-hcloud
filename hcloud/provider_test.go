@@ -68,6 +68,7 @@ func TestProvider_DataSources(t *testing.T) {
 		datacenter.DataSourceType,
 		datacenter.DataSourceListType,
 		firewall.DataSourceType,
+		firewall.DataSourceListType,
 		floatingip.DataSourceType,
 		image.DataSourceType,
 		loadbalancer.DataSourceType,
