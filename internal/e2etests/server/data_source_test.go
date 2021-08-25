@@ -71,3 +71,55 @@ func TestAccHcloudDataSourceServerTest(t *testing.T) {
 		},
 	})
 }
+
+func TestAccHcloudDataSourceServerListTest(t *testing.T) {
+	res := &server.RData{
+		Name:  "server-ds-test",
+		Type:  e2etests.TestServerType,
+		Image: e2etests.TestImage,
+		Labels: map[string]string{
+			"key": strconv.Itoa(acctest.RandInt()),
+		},
+	}
+	res.SetRName("server-ds-test")
+
+	serversBySel := &server.DDataList{
+		LabelSelector: fmt.Sprintf("key=${%s.labels[\"key\"]}", res.TFID()),
+	}
+	serversBySel.SetRName("server_by_sel")
+
+	allServersSel := &server.DDataList{}
+	allServersSel.SetRName("all_servers_sel")
+
+	tmplMan := testtemplate.Manager{}
+	resource.Test(t, resource.TestCase{
+		PreCheck:     e2etests.PreCheck(t),
+		Providers:    e2etests.Providers(),
+		CheckDestroy: testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, nil)),
+		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_server", res,
+				),
+			},
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_server", res,
+					"testdata/d/hcloud_servers", serversBySel,
+					"testdata/d/hcloud_servers", allServersSel,
+				),
+
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(serversBySel.TFID(), "servers.#", "1"),
+					resource.TestCheckResourceAttr(serversBySel.TFID(), "servers.0.name", fmt.Sprintf("%s--%d", res.Name, tmplMan.RandInt)),
+
+					resource.TestCheckTypeSetElemNestedAttrs(allServersSel.TFID(), "servers.*",
+						map[string]string{
+							"name": fmt.Sprintf("%s--%d", res.Name, tmplMan.RandInt),
+						},
+					),
+				),
+			},
+		},
+	})
+}

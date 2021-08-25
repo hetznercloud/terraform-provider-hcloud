@@ -1,0 +1,5 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+data "hcloud_servers" "{{ .RName }}" {
+  {{ if .LabelSelector -}}    with_selector = "{{ .LabelSelector }}"{{ end }}
+}
