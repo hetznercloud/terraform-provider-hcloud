@@ -28,3 +28,4 @@ resource "hcloud_server" "workers" {
 - `location_ids` - (list) List of unique location identifiers.
 - `names` - (list) List of location names.
 - `descriptions` - (list) List of all location descriptions.
+- `locations` - (list) List of all locations. See `data.hcloud_location` for schema.
