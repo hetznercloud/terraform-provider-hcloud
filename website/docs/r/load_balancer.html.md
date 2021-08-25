@@ -37,17 +37,11 @@ resource "hcloud_load_balancer" "load_balancer" {
 - `location` - (Optional, string) Location of the Load Balancer. Require when no network_zone is set.
 - `network_zone` - (Optional, string) Network Zone of the Load Balancer. Require when no location is set.
 - `algorithm` - (Optional) Configuration of the algorithm the Load Balancer use.
-- `target` - (Optional, list) List of targets of the Load Balancer.
 - `labels` - (Optional, map) User-defined labels (key-value pairs) should be created with.
 - `delete_protection` - (Optional, boolean) Enable or disable delete protection.
 
 `algorithm` support the following fields:
 - `type` - (Required, string) Type of the Load Balancer Algorithm. `round_robin` or `least_connections`
-
-`target` support the following fields:
-- `type` - (Required, string) Type of the target. `server`
-- `server_id` - (Optional, int) ID of the server which should be a target for this Load Balancer. Required if `type` is `server`
-
 
 ## Attributes Reference
 
@@ -58,18 +52,12 @@ resource "hcloud_load_balancer" "load_balancer" {
 - `ipv4` - (string) IPv4 Address of the Load Balancer.
 - `ipv6` - (string) IPv4 Address of the Load Balancer.
 - `algorithm` - (Optional) Configuration of the algorithm the Load Balancer use.
-- `target` - (list) List of targets of the Load Balancer.
 - `service` - (list) List of services a Load Balancer provides.
 - `labels` - (map) User-defined labels (key-value pairs).
 - `delete_protection` - (boolean) Whether delete protection is enabled.
 
 `algorithm` support the following fields:
 - `type` - (string) Type of the Load Balancer Algorithm. `round_robin` or `least_connections`
-
-`target` supports the following fields, which are a restricted sub-set
-of the fields supported by `hcloud_load_balancer_target`:
-- `type` - (string) Type of the target. `server`
-- `server_id` - (int) ID of the server which should be a target for this Load Balancer.
 
 ## Import
 
