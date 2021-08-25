@@ -28,6 +28,7 @@ func NetworkResource() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceLoadBalancerNetworkCreate,
 		ReadContext:   resourceLoadBalancerNetworkRead,
+		UpdateContext: resourceLoadBalancerNetworkUpdate,
 		DeleteContext: resourceLoadBalancerNetworkDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -57,7 +58,6 @@ func NetworkResource() *schema.Resource {
 			"enable_public_interface": {
 				Type:     schema.TypeBool,
 				Optional: true,
-				ForceNew: true,
 				Default:  true,
 			},
 		},
@@ -129,11 +129,10 @@ func resourceLoadBalancerNetworkCreate(ctx context.Context, d *schema.ResourceDa
 
 	return resourceLoadBalancerNetworkRead(ctx, d, m)
 }
+func resourceLoadBalancerNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	c := m.(*hcloud.Client)
 
-func resourceLoadBalancerNetworkRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*hcloud.Client)
-
-	server, network, privateNet, err := lookupLoadBalancerNetworkID(ctx, d.Id(), client)
+	loadBalancer, nw, privateNet, err := lookupLoadBalancerNetworkID(ctx, d.Id(), c)
 	if err == errInvalidLoadBalancerNetworkID {
 		log.Printf("[WARN] Invalid id (%s), removing from state: %s", d.Id(), err)
 		d.SetId("")
@@ -142,7 +141,42 @@ func resourceLoadBalancerNetworkRead(ctx context.Context, d *schema.ResourceData
 	if err != nil {
 		return hcclient.ErrorToDiag(err)
 	}
-	if server == nil {
+	if loadBalancer == nil {
+		log.Printf("[WARN] LoadBalancer (%s) not found, removing from state", d.Id())
+		d.SetId("")
+		return nil
+	}
+	if nw == nil {
+		log.Printf("[WARN] Network (%s) not found, removing from state", d.Id())
+		d.SetId("")
+		return nil
+	}
+	if privateNet == nil {
+		log.Printf("[WARN] LoadBalancer Attachment (%s) not found, removing from state", d.Id())
+		d.SetId("")
+		return nil
+	}
+	if d.HasChange("enable_public_interface") {
+		enablePublicInterface := d.Get("enable_public_interface").(bool)
+		if err := setEnablePublicInterface(ctx, c, loadBalancer, enablePublicInterface); err != nil {
+			return hcclient.ErrorToDiag(err)
+		}
+	}
+	return resourceLoadBalancerNetworkRead(ctx, d, m)
+}
+func resourceLoadBalancerNetworkRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	client := m.(*hcloud.Client)
+
+	loadBalancer, network, privateNet, err := lookupLoadBalancerNetworkID(ctx, d.Id(), client)
+	if err == errInvalidLoadBalancerNetworkID {
+		log.Printf("[WARN] Invalid id (%s), removing from state: %s", d.Id(), err)
+		d.SetId("")
+		return nil
+	}
+	if err != nil {
+		return hcclient.ErrorToDiag(err)
+	}
+	if loadBalancer == nil {
 		log.Printf("[WARN] LoadBalancer (%s) not found, removing from state", d.Id())
 		d.SetId("")
 		return nil
@@ -157,8 +191,8 @@ func resourceLoadBalancerNetworkRead(ctx context.Context, d *schema.ResourceData
 		d.SetId("")
 		return nil
 	}
-	d.SetId(generateLoadBalancerNetworkID(server, network))
-	setLoadBalancerNetworkSchema(d, server, network, privateNet)
+	d.SetId(generateLoadBalancerNetworkID(loadBalancer, network))
+	setLoadBalancerNetworkSchema(d, loadBalancer, network, privateNet)
 	return nil
 }
 
@@ -230,6 +264,29 @@ func isLoadBalancerAttachedToNetwork(
 		}
 	}
 	return false
+}
+
+func setEnablePublicInterface(ctx context.Context, c *hcloud.Client, loadBalancer *hcloud.LoadBalancer, enablePublicInterface bool) error {
+	if loadBalancer.PublicNet.Enabled && !enablePublicInterface {
+		action, _, err := c.LoadBalancer.DisablePublicInterface(ctx, loadBalancer)
+		if err != nil {
+			return err
+		}
+		if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
+			return err
+		}
+		return nil
+	}
+	if !loadBalancer.PublicNet.Enabled && enablePublicInterface {
+		action, _, err := c.LoadBalancer.EnablePublicInterface(ctx, loadBalancer)
+		if err != nil {
+			return err
+		}
+		if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func generateLoadBalancerNetworkID(server *hcloud.LoadBalancer, network *hcloud.Network) string {
