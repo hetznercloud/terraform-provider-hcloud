@@ -65,8 +65,8 @@ func TestProvider_DataSources(t *testing.T) {
 	var provider = Provider()
 	expectedDataSources := []string{
 		certificate.DataSourceType,
-		datacenter.DatacentersDataSourceType,
 		datacenter.DataSourceType,
+		datacenter.DataSourceListType,
 		firewall.DataSourceType,
 		floatingip.DataSourceType,
 		image.DataSourceType,

@@ -90,7 +90,7 @@ func Provider() *schema.Provider {
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			certificate.DataSourceType:           certificate.DataSource(),
-			datacenter.DatacentersDataSourceType: datacenter.DatacentersDataSource(),
+			datacenter.DataSourceListType:        datacenter.DataSourceList(),
 			datacenter.DataSourceType:            datacenter.DataSource(),
 			firewall.DataSourceType:              firewall.DataSource(),
 			floatingip.DataSourceType:            floatingip.DataSource(),
