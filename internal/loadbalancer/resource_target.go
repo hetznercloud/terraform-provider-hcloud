@@ -257,6 +257,10 @@ func resourceLoadBalancerTargetRead(ctx context.Context, d *schema.ResourceData,
 	tgtType := hcloud.LoadBalancerTargetType(d.Get("type").(string))
 
 	_, tgt, err := findLoadBalancerTarget(ctx, client, lbID, tgtType, d)
+	if errors.Is(err, errLoadBalancerTargetNotFound) {
+		d.SetId("")
+		return nil
+	}
 	if err != nil {
 		return hcclient.ErrorToDiag(err)
 	}
@@ -272,7 +276,8 @@ func resourceLoadBalancerTargetUpdate(ctx context.Context, d *schema.ResourceDat
 
 	lb, tgt, err := findLoadBalancerTarget(ctx, client, lbID, tgtType, d)
 	if errors.Is(err, errLoadBalancerTargetNotFound) {
-		return resourceLoadBalancerTargetCreate(ctx, d, m)
+		d.SetId("")
+		return nil
 	}
 	if err != nil {
 		return hcclient.ErrorToDiag(err)

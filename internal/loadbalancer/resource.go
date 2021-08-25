@@ -89,9 +89,10 @@ func Resource() *schema.Resource {
 				Computed: true,
 			},
 			"target": {
-				Type:     schema.TypeSet,
-				Optional: true,
-				Computed: true,
+				Type:       schema.TypeSet,
+				Optional:   true,
+				Computed:   true,
+				Deprecated: "Use hcloud_load_balancer_target resource instead. This allows the full control over the selected targets.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"type": {
