@@ -110,8 +110,11 @@ func TestAccHcloudDataSourceServerListTest(t *testing.T) {
 				),
 
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(serversBySel.TFID(), "servers.#", "1"),
-					resource.TestCheckResourceAttr(serversBySel.TFID(), "servers.0.name", fmt.Sprintf("%s--%d", res.Name, tmplMan.RandInt)),
+					resource.TestCheckTypeSetElemNestedAttrs(serversBySel.TFID(), "servers.*",
+						map[string]string{
+							"name": fmt.Sprintf("%s--%d", res.Name, tmplMan.RandInt),
+						},
+					),
 
 					resource.TestCheckTypeSetElemNestedAttrs(allServersSel.TFID(), "servers.*",
 						map[string]string{
