@@ -3,6 +3,7 @@ package rdns
 import (
 	"context"
 	"fmt"
+	"log"
 	"net"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -107,18 +108,27 @@ func resourceReverseDNSCreate(ctx context.Context, d *schema.ResourceData, m int
 
 	var rdns hcloud.RDNSSupporter
 	var err error
+	var resourceName string
 
 	switch {
 	case serverOK:
 		rdns, _, err = c.Server.GetByID(ctx, serverID.(int))
+		resourceName = "Server"
 	case floatingIPOK:
 		rdns, _, err = c.FloatingIP.GetByID(ctx, floatingIPID.(int))
+		resourceName = "Floating IP"
 	case loadBalancerOK:
 		rdns, _, err = c.LoadBalancer.GetByID(ctx, loadBalancerID.(int))
+		resourceName = "Load Balancer"
 	}
-
 	if err != nil {
 		return hcclient.ErrorToDiag(err)
+	}
+
+	if rdns == nil {
+		log.Printf("[WARN] %s (%s) not found, removing from state", resourceName, d.Id())
+		d.SetId("")
+		return nil
 	}
 
 	d.SetId(generateRDNSID(rdns, ip))
@@ -246,6 +256,9 @@ func lookupRDNSID(ctx context.Context, terraformID string, client *hcloud.Client
 		rdns, _, err = client.LoadBalancer.GetByID(ctx, id)
 	default:
 		err = InvalidRDNSIDError{terraformID}
+	}
+	if rdns == nil {
+		return nil, nil, InvalidRDNSIDError{terraformID}
 	}
 
 	return rdns, ip, err
