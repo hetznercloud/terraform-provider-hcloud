@@ -25,6 +25,7 @@ data "hcloud_firewall" "sample_firewall_2" {
 - `id` - ID of the firewall.
 - `name` - Name of the firewall.
 - `with_selector` - (Optional, string) [Label selector](https://docs.hetzner.cloud/#overview-label-selector)
+- `most_recent` - (Optional, bool) Return most recent firewall if multiple are found.
 
 ## Attribute Reference
 

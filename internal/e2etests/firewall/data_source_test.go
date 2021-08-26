@@ -62,3 +62,50 @@ func TestAccHcloudDataSourceFirewallTest(t *testing.T) {
 		},
 	})
 }
+
+func TestAccHcloudDataSourceFirewallListTest(t *testing.T) {
+	res := firewall.NewRData(t, "firewall-ds-test", []firewall.RDataRule{})
+
+	firewallBySel := &firewall.DDataList{
+		LabelSelector: fmt.Sprintf("key=${%s.labels[\"key\"]}", res.TFID()),
+	}
+	firewallBySel.SetRName("firewall_by_sel")
+
+	allFirewallsSel := &firewall.DDataList{}
+	allFirewallsSel.SetRName("all_firewalls_sel")
+
+	tmplMan := testtemplate.Manager{}
+	resource.Test(t, resource.TestCase{
+		PreCheck:     e2etests.PreCheck(t),
+		Providers:    e2etests.Providers(),
+		CheckDestroy: testsupport.CheckResourcesDestroyed(firewall.ResourceType, firewall.ByID(t, nil)),
+		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_firewall", res,
+				),
+			},
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_firewall", res,
+					"testdata/d/hcloud_firewalls", firewallBySel,
+					"testdata/d/hcloud_firewalls", allFirewallsSel,
+				),
+
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckTypeSetElemNestedAttrs(firewallBySel.TFID(), "firewalls.*",
+						map[string]string{
+							"name": fmt.Sprintf("%s--%d", res.Name, tmplMan.RandInt),
+						},
+					),
+
+					resource.TestCheckTypeSetElemNestedAttrs(allFirewallsSel.TFID(), "firewalls.*",
+						map[string]string{
+							"name": fmt.Sprintf("%s--%d", res.Name, tmplMan.RandInt),
+						},
+					),
+				),
+			},
+		},
+	})
+}

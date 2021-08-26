@@ -2,71 +2,113 @@ package firewall
 
 import (
 	"context"
+	"crypto/sha1"
+	"fmt"
 	"log"
 	"sort"
+	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/datasourceutil"
 )
 
-// DataSourceType is the type name of the Hetzner Cloud Firewall resource.
-const DataSourceType = "hcloud_firewall"
+const (
+	// DataSourceType is the type name of the Hetzner Cloud Firewall resource.
+	DataSourceType = "hcloud_firewall"
+
+	// DataSourceListType is the type name to receive a list of Hetzner Cloud Firewall resources.
+	DataSourceListType = "hcloud_firewalls"
+)
+
+// getCommonDataSchema returns a new common schema used by all server data sources.
+func getCommonDataSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"id": {
+			Type:     schema.TypeInt,
+			Optional: true,
+		},
+		"name": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Computed: true,
+		},
+		"labels": {
+			Type:     schema.TypeMap,
+			Optional: true,
+		},
+		"rule": {
+			Type:     schema.TypeSet,
+			Optional: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"direction": {
+						Type:     schema.TypeString,
+						Required: true,
+					},
+					"protocol": {
+						Type:     schema.TypeString,
+						Optional: true,
+					},
+					"port": {
+						Type:     schema.TypeString,
+						Optional: true,
+					},
+					"source_ips": {
+						Type: schema.TypeSet,
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
+						},
+						Optional: true,
+					},
+					"destination_ips": {
+						Type: schema.TypeSet,
+						Elem: &schema.Schema{
+							Type: schema.TypeString,
+						},
+						Optional: true,
+					},
+					"description": {
+						Type:     schema.TypeString,
+						Optional: true,
+					},
+				},
+			},
+		},
+	}
+}
 
 func DataSource() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceHcloudFirewallRead,
+		Schema: datasourceutil.MergeSchema(
+			getCommonDataSchema(),
+			map[string]*schema.Schema{
+				"most_recent": {
+					Type:     schema.TypeBool,
+					Optional: true,
+				},
+				"with_selector": {
+					Type:     schema.TypeString,
+					Optional: true,
+				},
+			},
+		),
+	}
+}
+
+func DataSourceList() *schema.Resource {
+	return &schema.Resource{
+		ReadContext: dataSourceHcloudFirewallListRead,
 		Schema: map[string]*schema.Schema{
-			"id": {
-				Type:     schema.TypeInt,
-				Optional: true,
-			},
-			"name": {
-				Type:     schema.TypeString,
-				Optional: true,
+			"firewalls": {
+				Type:     schema.TypeList,
 				Computed: true,
-			},
-			"labels": {
-				Type:     schema.TypeMap,
-				Optional: true,
-			},
-			"rule": {
-				Type:     schema.TypeSet,
-				Optional: true,
 				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"direction": &schema.Schema{
-							Type:     schema.TypeString,
-							Required: true,
-						},
-						"protocol": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-						"port": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-						"source_ips": &schema.Schema{
-							Type: schema.TypeSet,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Optional: true,
-						},
-						"destination_ips": &schema.Schema{
-							Type: schema.TypeSet,
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Optional: true,
-						},
-						"description": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-					},
+					Schema: getCommonDataSchema(),
 				},
 			},
 			"most_recent": {
@@ -128,6 +170,33 @@ func dataSourceHcloudFirewallRead(ctx context.Context, d *schema.ResourceData, m
 		return nil
 	}
 	return diag.Errorf("please specify an id, a name or a selector to lookup the firewall")
+}
+
+func dataSourceHcloudFirewallListRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	client := m.(*hcloud.Client)
+
+	selector := d.Get("with_selector").(string)
+
+	opts := hcloud.FirewallListOpts{ListOpts: hcloud.ListOpts{LabelSelector: selector}}
+	allFirewalls, err := client.Firewall.AllWithOpts(ctx, opts)
+	if err != nil {
+		return hcclient.ErrorToDiag(err)
+	}
+
+	if _, ok := d.GetOk("most_recent"); ok {
+		sortFirewallListByCreated(allFirewalls)
+	}
+
+	ids := make([]string, len(allFirewalls))
+	tfFirewalls := make([]map[string]interface{}, len(allFirewalls))
+	for i, firewall := range allFirewalls {
+		ids[i] = strconv.Itoa(firewall.ID)
+		tfFirewalls[i] = getFirewallAttributes(firewall)
+	}
+	d.Set("firewalls", tfFirewalls)
+	d.SetId(fmt.Sprintf("%x", sha1.Sum([]byte(strings.Join(ids, "")))))
+
+	return nil
 }
 
 func sortFirewallListByCreated(firewallList []*hcloud.Firewall) {

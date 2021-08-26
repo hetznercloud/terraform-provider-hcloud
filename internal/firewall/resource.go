@@ -337,16 +337,28 @@ func resourceFirewallIsNotFound(err error, d *schema.ResourceData) bool {
 	return false
 }
 
-func setFirewallSchema(d *schema.ResourceData, v *hcloud.Firewall) {
-	d.SetId(strconv.Itoa(v.ID))
-	d.Set("name", v.Name)
+func setFirewallSchema(d *schema.ResourceData, f *hcloud.Firewall) {
+	for key, val := range getFirewallAttributes(f) {
+		if key == "id" {
+			d.SetId(strconv.Itoa(val.(int)))
+		} else {
+			d.Set(key, val)
+		}
+	}
+}
 
-	rules := make([]map[string]interface{}, len(v.Rules))
-	for i, rule := range v.Rules {
+func getFirewallAttributes(f *hcloud.Firewall) map[string]interface{} {
+	rules := make([]map[string]interface{}, len(f.Rules))
+	for i, rule := range f.Rules {
 		rules[i] = toTFRule(rule)
 	}
-	d.Set("rule", rules)
-	d.Set("labels", v.Labels)
+
+	return map[string]interface{}{
+		"id":     f.ID,
+		"name":   f.Name,
+		"rule":   rules,
+		"labels": f.Labels,
+	}
 }
 
 func waitForFirewallActions(ctx context.Context, client *hcloud.Client, actions []*hcloud.Action, firewall *hcloud.Firewall) error {
