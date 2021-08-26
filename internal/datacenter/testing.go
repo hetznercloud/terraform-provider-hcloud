@@ -20,13 +20,12 @@ func (d *DData) TFID() string {
 	return fmt.Sprintf("data.%s.%s", DataSourceType, d.RName())
 }
 
-// DatacentersDData defines the fields for the "testdata/d/hcloud_datacenters"
-// template.
-type DatacentersDData struct {
+// DDataList defines the fields for the "testdata/d/hcloud_datacenters" template.
+type DDataList struct {
 	testtemplate.DataCommon
 }
 
 // TFID returns the data source identifier.
-func (d *DatacentersDData) TFID() string {
-	return fmt.Sprintf("data.%s.%s", DatacentersDataSourceType, d.RName())
+func (d *DDataList) TFID() string {
+	return fmt.Sprintf("data.%s.%s", DataSourceListType, d.RName())
 }

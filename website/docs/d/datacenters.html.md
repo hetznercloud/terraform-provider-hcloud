@@ -28,3 +28,4 @@ resource "hcloud_server" "workers" {
 - `datacenter_ids` - (list) List of unique datacenter identifiers.
 - `names` - (list) List of datacenter names.
 - `descriptions` - (list) List of all datacenter descriptions.
+- `datacenters` - (list) List of all datacenters. See `data.hcloud_datacenter` for schema.
