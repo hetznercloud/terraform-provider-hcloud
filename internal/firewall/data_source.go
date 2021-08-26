@@ -24,7 +24,7 @@ const (
 	DataSourceListType = "hcloud_firewalls"
 )
 
-// getCommonDataSchema returns a new common schema used by all server data sources.
+// getCommonDataSchema returns a new common schema used by all firewall data sources.
 func getCommonDataSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"id": {

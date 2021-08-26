@@ -90,6 +90,7 @@ func Provider() *schema.Provider {
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			certificate.DataSourceType:           certificate.DataSource(),
+			certificate.DataSourceListType:       certificate.DataSourceList(),
 			datacenter.DataSourceListType:        datacenter.DataSourceList(),
 			datacenter.DataSourceType:            datacenter.DataSource(),
 			firewall.DataSourceType:              firewall.DataSource(),
