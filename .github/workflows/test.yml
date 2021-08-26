@@ -7,7 +7,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        terraform_version: [ "0.13.x", "0.14.x", "0.15.x", "1.0.x" ]
+        terraform_version: [ "1.0.x" ]
     name: integration-${{ matrix.terraform_version }}
     steps:
       - name: Checkout
