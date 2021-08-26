@@ -267,20 +267,35 @@ func resourceFloatingIPIsNotFound(err error, d *schema.ResourceData) bool {
 }
 
 func setFloatingIPSchema(d *schema.ResourceData, f *hcloud.FloatingIP) {
-	d.SetId(strconv.Itoa(f.ID))
-	d.Set("ip_address", f.IP.String())
-	d.Set("name", f.Name)
+	for key, val := range getFloatingIPAttributes(f) {
+		if key == "id" {
+			d.SetId(strconv.Itoa(val.(int)))
+		} else {
+			d.Set(key, val)
+		}
+	}
+}
+
+func getFloatingIPAttributes(f *hcloud.FloatingIP) map[string]interface{} {
+	res := map[string]interface{}{
+		"id":                f.ID,
+		"ip_address":        f.IP.String(),
+		"name":              f.Name,
+		"type":              f.Type,
+		"home_location":     f.HomeLocation.Name,
+		"description":       f.Description,
+		"labels":            f.Labels,
+		"delete_protection": f.Protection.Delete,
+	}
+
 	if f.Type == hcloud.FloatingIPTypeIPv6 {
-		d.Set("ip_network", f.Network.String())
+		res["ip_network"] = f.Network.String()
 	}
 	if f.Server != nil {
-		d.Set("server_id", f.Server.ID)
+		res["server_id"] = f.Server.ID
 	}
-	d.Set("type", f.Type)
-	d.Set("home_location", f.HomeLocation.Name)
-	d.Set("description", f.Description)
-	d.Set("labels", f.Labels)
-	d.Set("delete_protection", f.Protection.Delete)
+
+	return res
 }
 
 func setProtection(ctx context.Context, c *hcloud.Client, f *hcloud.FloatingIP, delete bool) error {
