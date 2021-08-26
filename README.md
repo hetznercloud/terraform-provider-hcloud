@@ -10,7 +10,7 @@ Terraform Provider for the Hetzner Cloud
 Requirements
 ------------
 
--	[Terraform](https://www.terraform.io/downloads.html) 0.13.x, 0.14.x, 0.15.x, 1.0.x
+-	[Terraform](https://www.terraform.io/downloads.html) 1.0.x
 -	[Go](https://golang.org/doc/install) 1.17.x (to build the provider plugin)
 
 API Stability
