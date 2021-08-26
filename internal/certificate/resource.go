@@ -261,16 +261,28 @@ func resourceCertificateNotFound(err error, d *schema.ResourceData) bool {
 }
 
 func setCertificateSchema(d *schema.ResourceData, cert *hcloud.Certificate) {
-	d.SetId(strconv.Itoa(cert.ID))
-	d.Set("name", cert.Name)
-	d.Set("type", cert.Type)
-	d.Set("certificate", cert.Certificate)
-	d.Set("domain_names", cert.DomainNames)
-	d.Set("fingerprint", cert.Fingerprint)
-	d.Set("labels", cert.Labels)
-	d.Set("created", cert.Created.Format(time.RFC3339))
-	d.Set("not_valid_before", cert.NotValidBefore.Format(time.RFC3339))
-	d.Set("not_valid_after", cert.NotValidAfter.Format(time.RFC3339))
+	for key, val := range getCertificateAttributes(cert) {
+		if key == "id" {
+			d.SetId(strconv.Itoa(val.(int)))
+		} else {
+			d.Set(key, val)
+		}
+	}
+}
+
+func getCertificateAttributes(cert *hcloud.Certificate) map[string]interface{} {
+	return map[string]interface{}{
+		"id":               cert.ID,
+		"name":             cert.Name,
+		"type":             cert.Type,
+		"certificate":      cert.Certificate,
+		"domain_names":     cert.DomainNames,
+		"fingerprint":      cert.Fingerprint,
+		"labels":           cert.Labels,
+		"created":          cert.Created.Format(time.RFC3339),
+		"not_valid_before": cert.NotValidBefore.Format(time.RFC3339),
+		"not_valid_after":  cert.NotValidAfter.Format(time.RFC3339),
+	}
 }
 
 func updateResource(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {

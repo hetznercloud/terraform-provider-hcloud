@@ -61,7 +61,7 @@ func ByID(t *testing.T, cert *hcloud.Certificate) func(*hcloud.Client, int) bool
 	}
 }
 
-// DData defines the fields for the "testdata/d/hcloud_uploaded_certificate"
+// DData defines the fields for the "testdata/d/hcloud_certificate"
 // template.
 type DData struct {
 	testtemplate.DataCommon
@@ -74,6 +74,18 @@ type DData struct {
 // TFID returns the data source identifier.
 func (d *DData) TFID() string {
 	return fmt.Sprintf("data.%s.%s", DataSourceType, d.RName())
+}
+
+// DDataList defines the fields for the "testdata/d/hcloud_certificates" template.
+type DDataList struct {
+	testtemplate.DataCommon
+
+	LabelSelector string
+}
+
+// TFID DDataList the data source identifier.
+func (d *DDataList) TFID() string {
+	return fmt.Sprintf("data.%s.%s", DataSourceListType, d.RName())
 }
 
 // RDataUploaded defines the fields for the "testdata/r/hcloud_uploaded_certificate"
