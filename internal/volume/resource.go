@@ -385,16 +385,31 @@ func resourceVolumeIsNotFound(err error, d *schema.ResourceData) bool {
 }
 
 func setVolumeSchema(d *schema.ResourceData, v *hcloud.Volume) {
-	d.SetId(strconv.Itoa(v.ID))
-	d.Set("name", v.Name)
-	d.Set("size", v.Size)
-	d.Set("location", v.Location.Name)
-	if v.Server != nil {
-		d.Set("server_id", v.Server.ID)
+	for key, val := range getVolumeAttributes(v) {
+		if key == "id" {
+			d.SetId(strconv.Itoa(val.(int)))
+		} else {
+			d.Set(key, val)
+		}
 	}
-	d.Set("labels", v.Labels)
-	d.Set("linux_device", v.LinuxDevice)
-	d.Set("delete_protection", v.Protection.Delete)
+}
+
+func getVolumeAttributes(v *hcloud.Volume) map[string]interface{} {
+	res := map[string]interface{}{
+		"id":                v.ID,
+		"name":              v.Name,
+		"size":              v.Size,
+		"location":          v.Location.Name,
+		"labels":            v.Labels,
+		"linux_device":      v.LinuxDevice,
+		"delete_protection": v.Protection.Delete,
+	}
+
+	if v.Server != nil {
+		res["server_id"] = v.Server.ID
+	}
+
+	return res
 }
 
 func setProtection(ctx context.Context, c *hcloud.Client, v *hcloud.Volume, delete bool) error {

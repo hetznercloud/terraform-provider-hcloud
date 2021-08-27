@@ -89,6 +89,7 @@ func TestProvider_DataSources(t *testing.T) {
 		sshkey.DataSourceType,
 		sshkey.DataSourceListType,
 		volume.DataSourceType,
+		volume.DataSourceListType,
 	}
 
 	datasources := provider.DataSources()

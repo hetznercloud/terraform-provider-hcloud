@@ -63,7 +63,6 @@ func ByID(t *testing.T, fl *hcloud.Volume) func(*hcloud.Client, int) bool {
 type DData struct {
 	testtemplate.DataCommon
 
-	Name          string
 	VolumeID      string
 	VolumeName    string
 	LabelSelector string
@@ -71,7 +70,20 @@ type DData struct {
 
 // TFID returns the data source identifier.
 func (d *DData) TFID() string {
-	return fmt.Sprintf("data.%s.%s", DataSourceType, d.Name)
+	return fmt.Sprintf("data.%s.%s", DataSourceType, d.RName())
+}
+
+// DData defines the fields for the "testdata/d/hcloud_volumes"
+// template.
+type DDataList struct {
+	testtemplate.DataCommon
+
+	LabelSelector string
+}
+
+// TFID returns the data source identifier.
+func (d *DDataList) TFID() string {
+	return fmt.Sprintf("data.%s.%s", DataSourceListType, d.RName())
 }
 
 // RData defines the fields for the "testdata/r/hcloud_volume" template.
