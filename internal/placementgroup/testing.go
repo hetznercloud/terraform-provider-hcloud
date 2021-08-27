@@ -28,8 +28,7 @@ func ByID(t *testing.T, placementGroup *hcloud.PlacementGroup) func(*hcloud.Clie
 	}
 }
 
-// DData defines the fields for the "testdata/d/hcloud_placement_group"
-// template.
+// DData defines the fields for the "testdata/d/hcloud_placement_group" template.
 type DData struct {
 	testtemplate.DataCommon
 
@@ -41,6 +40,18 @@ type DData struct {
 // TFID returns the data source identifier.
 func (d *DData) TFID() string {
 	return fmt.Sprintf("data.%s.%s", DataSourceType, d.RName())
+}
+
+// DData defines the fields for the "testdata/d/hcloud_placement_groups" template.
+type DDataList struct {
+	testtemplate.DataCommon
+
+	LabelSelector string
+}
+
+// TFID returns the data source identifier.
+func (d *DDataList) TFID() string {
+	return fmt.Sprintf("data.%s.%s", DataSourceListType, d.RName())
 }
 
 // RData defines the fields for the "testdata/r/hcloud_placement_group"

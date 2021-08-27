@@ -190,11 +190,22 @@ func handleNotFound(err error, d *schema.ResourceData) bool {
 	return false
 }
 
-func setSchema(d *schema.ResourceData, v *hcloud.PlacementGroup) {
-	d.SetId(strconv.Itoa(v.ID))
-	d.Set("name", v.Name)
-	d.Set("labels", v.Labels)
+func setSchema(d *schema.ResourceData, pg *hcloud.PlacementGroup) {
+	for key, val := range getAttributes(pg) {
+		if key == "id" {
+			d.SetId(strconv.Itoa(val.(int)))
+		} else {
+			d.Set(key, val)
+		}
+	}
+}
 
-	d.Set("type", v.Type)
-	d.Set("servers", v.Servers)
+func getAttributes(pg *hcloud.PlacementGroup) map[string]interface{} {
+	return map[string]interface{}{
+		"id":      pg.ID,
+		"name":    pg.Name,
+		"labels":  pg.Labels,
+		"type":    pg.Type,
+		"servers": pg.Servers,
+	}
 }
