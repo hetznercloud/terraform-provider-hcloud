@@ -30,6 +30,18 @@ resource "hcloud_firewall" "{{ .RName }}" {
     }
 {{- end }}
 {{- end }}
+{{- if .ApplyTo }}
+{{- range $v := .ApplyTo }}
+   apply_to {
+{{- if $v.Server }}
+        server = "{{ $v.Server }}"
+{{- end }}
+{{- if $v.LabelSelector }}
+        label_selector = "{{ $v.LabelSelector }}"
+{{- end }}
+   }
+{{- end }}
+{{- end }}
 {{- if .Labels }}
     labels = {
     {{- range $k,$v := .Labels }}

@@ -3,6 +3,7 @@ package firewall
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"net"
 	"strconv"
@@ -36,6 +37,31 @@ func Resource() *schema.Resource {
 			"labels": {
 				Type:     schema.TypeMap,
 				Optional: true,
+				Computed: true,
+			},
+			"apply_to": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				DiffSuppressFunc: func(_, _, _ string, d *schema.ResourceData) bool {
+					// Diff is only valid if "network" resource is set in
+					// terraform configuration.
+					_, ok := d.GetOk("apply_to")
+					return !ok // Negate because we do **not** want to suppress the diff.
+				},
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"label_selector": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+						},
+						"server": {
+							Type:     schema.TypeInt,
+							Optional: true,
+							Computed: true,
+						},
+					},
+				},
 			},
 			"rule": {
 				Type:     schema.TypeSet,
@@ -124,6 +150,14 @@ func resourceFirewallCreate(ctx context.Context, d *schema.ResourceData, m inter
 			tmpLabels[k] = v.(string)
 		}
 		opts.Labels = tmpLabels
+	}
+	if applyTo, ok := d.GetOk("apply_to"); ok {
+		for _, tfApplyToRaw := range applyTo.(*schema.Set).List() {
+			tfApplyTo := tfApplyToRaw.(map[string]interface{})
+
+			r, _ := toHcloudFirewallResource(tfApplyTo)
+			opts.ApplyTo = append(opts.ApplyTo, r)
+		}
 	}
 
 	res, _, err := client.Firewall.Create(ctx, opts)
@@ -284,9 +318,76 @@ func resourceFirewallUpdate(ctx context.Context, d *schema.ResourceData, m inter
 			return hcclient.ErrorToDiag(err)
 		}
 	}
+
+	if d.HasChange("apply_to") {
+		err := syncApplyTo(ctx, d, client, firewall)
+		if err != nil {
+			return err
+		}
+	}
 	d.Partial(false)
 
 	return resourceFirewallRead(ctx, d, m)
+}
+
+func syncApplyTo(ctx context.Context, d *schema.ResourceData, client *hcloud.Client, firewall *hcloud.Firewall) diag.Diagnostics {
+	o, n := d.GetChange("apply_to")
+
+	diffToRemove := o.(*schema.Set).Difference(n.(*schema.Set))
+	diffToAdd := n.(*schema.Set).Difference(o.(*schema.Set))
+
+	removeResources := []hcloud.FirewallResource{}
+	addResources := []hcloud.FirewallResource{}
+	// We first prepare all changes to then simply apply them
+	for _, d := range diffToRemove.List() {
+		field := d.(map[string]interface{})
+		r, _ := toHcloudFirewallResource(field) // we ignore the error here, as it can not happen because of the validation before
+		removeResources = append(removeResources, r)
+	}
+
+	for _, d := range diffToAdd.List() {
+		field := d.(map[string]interface{})
+
+		r, _ := toHcloudFirewallResource(field) // we ignore the error here, as it can not happen because of the validation before
+		addResources = append(addResources, r)
+	}
+
+	if len(removeResources) > 0 {
+		actions, _, err := client.Firewall.RemoveResources(ctx, firewall, removeResources)
+		if err != nil {
+			if resourceFirewallIsNotFound(err, d) {
+				return nil
+			}
+			return hcclient.ErrorToDiag(err)
+		}
+		if err := waitForFirewallActions(ctx, client, actions, firewall); err != nil {
+			return hcclient.ErrorToDiag(err)
+		}
+	}
+
+	if len(addResources) > 0 {
+		actions, _, err := client.Firewall.ApplyResources(ctx, firewall, addResources)
+		if err != nil {
+			if resourceFirewallIsNotFound(err, d) {
+				return nil
+			}
+			return hcclient.ErrorToDiag(err)
+		}
+		if err := waitForFirewallActions(ctx, client, actions, firewall); err != nil {
+			return hcclient.ErrorToDiag(err)
+		}
+	}
+	return nil
+}
+
+func toHcloudFirewallResource(field map[string]interface{}) (hcloud.FirewallResource, error) {
+	var op = "toHcloudFirewallResource"
+	if labelSelector, ok := field["label_selector"].(string); ok && labelSelector != "" {
+		return hcloud.FirewallResource{Type: hcloud.FirewallResourceTypeLabelSelector, LabelSelector: &hcloud.FirewallResourceLabelSelector{Selector: labelSelector}}, nil
+	} else if server, ok := field["server"].(int); ok && server != 0 {
+		return hcloud.FirewallResource{Type: hcloud.FirewallResourceTypeServer, Server: &hcloud.FirewallResourceServer{ID: server}}, nil
+	}
+	return hcloud.FirewallResource{}, fmt.Errorf("%s: unknown apply to resource", op)
 }
 
 func resourceFirewallDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -353,11 +454,22 @@ func getFirewallAttributes(f *hcloud.Firewall) map[string]interface{} {
 		rules[i] = toTFRule(rule)
 	}
 
+	var applyTo []map[string]interface{}
+
+	for _, a := range f.AppliedTo {
+		if a.Type == hcloud.FirewallResourceTypeLabelSelector {
+			applyTo = append(applyTo, map[string]interface{}{"label_selector": a.LabelSelector.Selector})
+		} else if a.Type == hcloud.FirewallResourceTypeServer {
+			applyTo = append(applyTo, map[string]interface{}{"server": a.Server.ID})
+		}
+	}
+
 	return map[string]interface{}{
-		"id":     f.ID,
-		"name":   f.Name,
-		"rule":   rules,
-		"labels": f.Labels,
+		"id":       f.ID,
+		"name":     f.Name,
+		"rule":     rules,
+		"labels":   f.Labels,
+		"apply_to": applyTo,
 	}
 }
 

@@ -40,6 +40,24 @@ func getCommonDataSchema() map[string]*schema.Schema {
 			Type:     schema.TypeMap,
 			Optional: true,
 		},
+		"apply_to": {
+			Type:     schema.TypeSet,
+			Optional: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"label_selector": {
+						Type:     schema.TypeString,
+						Optional: true,
+						Computed: true,
+					},
+					"server": {
+						Type:     schema.TypeInt,
+						Optional: true,
+						Computed: true,
+					},
+				},
+			},
+		},
 		"rule": {
 			Type:     schema.TypeSet,
 			Optional: true,

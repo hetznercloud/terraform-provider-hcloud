@@ -365,7 +365,7 @@ func TestServerResource_Firewalls(t *testing.T) {
 			Protocol:  "icmp",
 			SourceIPs: []string{"0.0.0.0/0", "::/0"},
 		},
-	})
+	}, nil)
 	fw2 := firewall.NewRData(t, "server-test-2", []firewall.RDataRule{
 		{
 			Direction: "in",
@@ -373,7 +373,7 @@ func TestServerResource_Firewalls(t *testing.T) {
 			SourceIPs: []string{"0.0.0.0/0", "::/0"},
 			Port:      "1-65535",
 		},
-	})
+	}, nil)
 	res := &server.RData{
 		Name:        "server-firewall",
 		Type:        e2etests.TestServerType,

@@ -15,7 +15,7 @@ import (
 func TestAccHcloudDataSourceFirewallTest(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
-	res := firewall.NewRData(t, "basic-firewall", []firewall.RDataRule{})
+	res := firewall.NewRData(t, "basic-firewall", []firewall.RDataRule{}, nil)
 	res.SetRName("firewall-ds-test")
 	firewallByName := &firewall.DData{
 		FirewallName: res.TFID() + ".name",
@@ -64,7 +64,7 @@ func TestAccHcloudDataSourceFirewallTest(t *testing.T) {
 }
 
 func TestAccHcloudDataSourceFirewallListTest(t *testing.T) {
-	res := firewall.NewRData(t, "firewall-ds-test", []firewall.RDataRule{})
+	res := firewall.NewRData(t, "firewall-ds-test", []firewall.RDataRule{}, nil)
 
 	firewallBySel := &firewall.DDataList{
 		LabelSelector: fmt.Sprintf("key=${%s.labels[\"key\"]}", res.TFID()),

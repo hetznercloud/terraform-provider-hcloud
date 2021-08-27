@@ -40,7 +40,7 @@ func TestFirewallResource_Basic(t *testing.T) {
 			Port:        "any",
 			Description: "allow udp in all ports",
 		},
-	})
+	}, nil)
 
 	updated := firewall.NewRData(t, "basic-firewall", []firewall.RDataRule{
 		{
@@ -64,7 +64,7 @@ func TestFirewallResource_Basic(t *testing.T) {
 			Port:        "any",
 			Description: "allow udp in all ports",
 		},
-	})
+	}, nil)
 	updated.SetRName(res.RName())
 	tmplMan := testtemplate.Manager{}
 	resource.Test(t, resource.TestCase{
@@ -110,6 +110,74 @@ func TestFirewallResource_Basic(t *testing.T) {
 	})
 }
 
+func TestFirewallResource_ApplyTo(t *testing.T) {
+	var f hcloud.Firewall
+
+	res := firewall.NewRData(t, "applyto-firewall", []firewall.RDataRule{
+		{
+			Direction:   "in",
+			Protocol:    "tcp",
+			SourceIPs:   []string{"0.0.0.0/0", "::/0"},
+			Port:        "80",
+			Description: "allow http in",
+		},
+	}, []firewall.RDataApplyTo{
+		{
+			LabelSelector: "key=value",
+		},
+	})
+	resUpdated := firewall.NewRData(t, "applyto-firewall", []firewall.RDataRule{
+		{
+			Direction:   "in",
+			Protocol:    "tcp",
+			SourceIPs:   []string{"0.0.0.0/0", "::/0"},
+			Port:        "80",
+			Description: "allow http in",
+		},
+	}, []firewall.RDataApplyTo{
+		{
+			LabelSelector: "key=value",
+		},
+		{
+			LabelSelector: "another=value",
+		},
+	})
+	resUpdated.SetRName(res.RName())
+	tmplMan := testtemplate.Manager{}
+	resource.Test(t, resource.TestCase{
+		PreCheck:     e2etests.PreCheck(t),
+		Providers:    e2etests.Providers(),
+		CheckDestroy: testsupport.CheckResourcesDestroyed(firewall.ResourceType, firewall.ByID(t, &f)),
+		Steps: []resource.TestStep{
+			{
+				// Create a new Firewall using the required values
+				// only.
+				Config: tmplMan.Render(t, "testdata/r/hcloud_firewall", res),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(res.TFID(), firewall.ByID(t, &f)),
+					resource.TestCheckResourceAttr(res.TFID(), "name",
+						fmt.Sprintf("applyto-firewall--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(res.TFID(), "rule.#", "1"),
+					testsupport.LiftTCF(hasFirewallRule(t, &f, "in", "80", "tcp", []string{"0.0.0.0/0", "::/0"}, []string{}, "allow http in")),
+					testsupport.LiftTCF(hasLabelSelectorResource(t, &f, "key=value")),
+				),
+			},
+			{
+				Config: tmplMan.Render(t, "testdata/r/hcloud_firewall", resUpdated),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(resUpdated.TFID(), firewall.ByID(t, &f)),
+					resource.TestCheckResourceAttr(resUpdated.TFID(), "name",
+						fmt.Sprintf("applyto-firewall--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(resUpdated.TFID(), "rule.#", "1"),
+					testsupport.LiftTCF(hasFirewallRule(t, &f, "in", "80", "tcp", []string{"0.0.0.0/0", "::/0"}, []string{}, "allow http in")),
+					testsupport.LiftTCF(hasLabelSelectorResource(t, &f, "key=value")),
+					testsupport.LiftTCF(hasLabelSelectorResource(t, &f, "another=value")),
+				),
+			},
+		},
+	})
+}
+
 func hasFirewallRule(
 	t *testing.T,
 	f *hcloud.Firewall,
@@ -144,6 +212,26 @@ func hasFirewallRule(
 			if assert.Exactly(t, expectedDestinationIps, destinationIPs, "firewall rule does not contain expected destination ips") {
 				return nil
 			}
+		}
+		return nil
+	}
+}
+
+func hasLabelSelectorResource(
+	t *testing.T,
+	f *hcloud.Firewall,
+	labelSelector string,
+) func() error {
+	return func() error {
+		var firewallResource *hcloud.FirewallResource
+		for _, r := range f.AppliedTo {
+			if r.Type == hcloud.FirewallResourceTypeLabelSelector && r.LabelSelector.Selector == labelSelector {
+				firewallResource = &r
+				break
+			}
+		}
+		if !assert.NotNil(t, firewallResource, "firewall has no resource for this") {
+			return nil
 		}
 		return nil
 	}
