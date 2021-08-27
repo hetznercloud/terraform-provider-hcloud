@@ -96,6 +96,7 @@ func Provider() *schema.Provider {
 			firewall.DataSourceType:              firewall.DataSource(),
 			firewall.DataSourceListType:          firewall.DataSourceList(),
 			floatingip.DataSourceType:            floatingip.DataSource(),
+			floatingip.DataSourceListType:        floatingip.DataSourceList(),
 			image.DataSourceType:                 image.DataSource(),
 			loadbalancer.DataSourceType:          loadbalancer.DataSource(),
 			location.DataSourceType:              location.DataSource(),

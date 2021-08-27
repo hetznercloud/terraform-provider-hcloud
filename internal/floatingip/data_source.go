@@ -2,8 +2,13 @@ package floatingip
 
 import (
 	"context"
+	"crypto/sha1"
+	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/datasourceutil"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
@@ -11,67 +16,100 @@ import (
 	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 
-// DataSourceType is the type name of the Hetzner Cloud Floating IP resource.
-const DataSourceType = "hcloud_floating_ip"
+const (
+	// DataSourceType is the type name of the Hetzner Cloud Floating IP resource.
+	DataSourceType = "hcloud_floating_ip"
+
+	// DataSourceListType is the type name to receive a list of Hetzner Cloud Floating IPs resources.
+	DataSourceListType = "hcloud_floating_ips"
+)
+
+// getCommonDataSchema returns a new common schema used by all floating ip data sources.
+func getCommonDataSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"id": {
+			Type:     schema.TypeInt,
+			Optional: true,
+			Computed: true,
+		},
+		"name": {
+			Type:     schema.TypeString,
+			Optional: true,
+		},
+		"type": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"description": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"home_location": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"server_id": {
+			Type:     schema.TypeInt,
+			Computed: true,
+		},
+		"ip_address": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Computed: true,
+		},
+		"ip_network": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"labels": {
+			Type:     schema.TypeMap,
+			Computed: true,
+		},
+		"delete_protection": {
+			Type:     schema.TypeBool,
+			Computed: true,
+		},
+	}
+}
 
 // DataSource creates a new Terraform schema for the hcloud_floating_ip data
 // source.
 func DataSource() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceHcloudFloatingIPRead,
+		Schema: datasourceutil.MergeSchema(
+			getCommonDataSchema(),
+			map[string]*schema.Schema{
+				"selector": {
+					Type:          schema.TypeString,
+					Optional:      true,
+					Deprecated:    "Please use the with_selector property instead.",
+					ConflictsWith: []string{"with_selector"},
+				},
+				"with_selector": {
+					Type:          schema.TypeString,
+					Optional:      true,
+					ConflictsWith: []string{"selector"},
+				},
+			},
+		),
+	}
+}
+
+func DataSourceList() *schema.Resource {
+	return &schema.Resource{
+		ReadContext: dataSourceHcloudFloatingIPListRead,
 		Schema: map[string]*schema.Schema{
-			"id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+			"floating_ips": {
+				Type:     schema.TypeList,
 				Computed: true,
-			},
-			"name": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
-			"type": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"description": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"home_location": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"server_id": {
-				Type:     schema.TypeInt,
-				Computed: true,
-			},
-			"ip_address": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-			},
-			"ip_network": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"labels": {
-				Type:     schema.TypeMap,
-				Computed: true,
-			},
-			"selector": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				Deprecated:    "Please use the with_selector property instead.",
-				ConflictsWith: []string{"with_selector"},
+				Elem: &schema.Resource{
+					Schema: getCommonDataSchema(),
+				},
 			},
 			"with_selector": {
-				Type:          schema.TypeString,
-				Optional:      true,
-				ConflictsWith: []string{"selector"},
-			},
-			"delete_protection": {
-				Type:     schema.TypeBool,
-				Computed: true,
+				Type:     schema.TypeString,
+				Optional: true,
 			},
 		},
 	}
@@ -147,4 +185,32 @@ func dataSourceHcloudFloatingIPRead(ctx context.Context, d *schema.ResourceData,
 	}
 
 	return diag.Errorf("please specify a id, ip_address or a selector to lookup the FloatingIP")
+}
+
+func dataSourceHcloudFloatingIPListRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	client := m.(*hcloud.Client)
+
+	selector := d.Get("with_selector").(string)
+
+	var allIPs []*hcloud.FloatingIP
+	opts := hcloud.FloatingIPListOpts{
+		ListOpts: hcloud.ListOpts{
+			LabelSelector: selector,
+		},
+	}
+	allIPs, err := client.FloatingIP.AllWithOpts(ctx, opts)
+	if err != nil {
+		return hcclient.ErrorToDiag(err)
+	}
+
+	ids := make([]string, len(allIPs))
+	tfIPs := make([]map[string]interface{}, len(allIPs))
+	for i, ip := range allIPs {
+		ids[i] = strconv.Itoa(ip.ID)
+		tfIPs[i] = getFloatingIPAttributes(ip)
+	}
+	d.Set("floating_ips", tfIPs)
+	d.SetId(fmt.Sprintf("%x", sha1.Sum([]byte(strings.Join(ids, "")))))
+
+	return nil
 }
