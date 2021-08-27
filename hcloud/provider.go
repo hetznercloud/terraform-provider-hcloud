@@ -98,6 +98,7 @@ func Provider() *schema.Provider {
 			floatingip.DataSourceType:            floatingip.DataSource(),
 			floatingip.DataSourceListType:        floatingip.DataSourceList(),
 			image.DataSourceType:                 image.DataSource(),
+			image.DataSourceListType:             image.DataSourceList(),
 			loadbalancer.DataSourceType:          loadbalancer.DataSource(),
 			location.DataSourceType:              location.DataSource(),
 			location.DataSourceListType:          location.DataSourceList(),

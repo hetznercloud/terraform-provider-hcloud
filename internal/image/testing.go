@@ -20,3 +20,16 @@ type DData struct {
 func (d *DData) TFID() string {
 	return fmt.Sprintf("data.%s.%s", DataSourceType, d.RName())
 }
+
+// DData defines the fields for the "testdata/d/hcloud_images"
+// template.
+type DDataList struct {
+	testtemplate.DataCommon
+
+	LabelSelector string
+}
+
+// TFID returns the data source identifier.
+func (d *DDataList) TFID() string {
+	return fmt.Sprintf("data.%s.%s", DataSourceListType, d.RName())
+}
