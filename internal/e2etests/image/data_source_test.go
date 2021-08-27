@@ -51,3 +51,31 @@ func TestAccHcloudDataSourceImageTest(t *testing.T) {
 		},
 	})
 }
+
+func TestAccHcloudDataSourceImageListTest(t *testing.T) {
+	allImagesSel := &image.DDataList{}
+	allImagesSel.SetRName("all_images_sel")
+
+	tmplMan := testtemplate.Manager{}
+	resource.Test(t, resource.TestCase{
+		PreCheck:     e2etests.PreCheck(t),
+		Providers:    e2etests.Providers(),
+		CheckDestroy: testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
+		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t,
+					"testdata/d/hcloud_images", allImagesSel,
+				),
+
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckTypeSetElemNestedAttrs(allImagesSel.TFID(), "images.*",
+						map[string]string{
+							"name": TestImageName,
+							"id":   TestImageID,
+						},
+					),
+				),
+			},
+		},
+	})
+}
