@@ -377,22 +377,36 @@ func resourceLoadBalancerIsNotFound(err error, d *schema.ResourceData) bool {
 }
 
 func setLoadBalancerSchema(d *schema.ResourceData, lb *hcloud.LoadBalancer) {
-	d.SetId(strconv.Itoa(lb.ID))
-	d.Set("name", lb.Name)
-	d.Set("load_balancer_type", lb.LoadBalancerType.Name)
-	d.Set("ipv4", lb.PublicNet.IPv4.IP.String())
-	d.Set("ipv6", lb.PublicNet.IPv6.IP.String())
-	d.Set("location", lb.Location.Name)
-	d.Set("algorithm", algorithmToTerraformAlgorithm(lb.Algorithm))
-	d.Set("network_zone", lb.Location.NetworkZone)
-	d.Set("labels", lb.Labels)
-	d.Set("target", targetToTerraformTargets(lb.Targets))
-	d.Set("delete_protection", lb.Protection.Delete)
+	for key, val := range getLoadBalancerAttributes(lb) {
+		if key == "id" {
+			d.SetId(strconv.Itoa(val.(int)))
+		} else {
+			d.Set(key, val)
+		}
+	}
+}
+
+func getLoadBalancerAttributes(lb *hcloud.LoadBalancer) map[string]interface{} {
+	res := map[string]interface{}{
+		"id":                 lb.ID,
+		"name":               lb.Name,
+		"load_balancer_type": lb.LoadBalancerType.Name,
+		"ipv4":               lb.PublicNet.IPv4.IP.String(),
+		"ipv6":               lb.PublicNet.IPv6.IP.String(),
+		"location":           lb.Location.Name,
+		"algorithm":          algorithmToTerraformAlgorithm(lb.Algorithm),
+		"network_zone":       lb.Location.NetworkZone,
+		"labels":             lb.Labels,
+		"target":             targetToTerraformTargets(lb.Targets),
+		"delete_protection":  lb.Protection.Delete,
+	}
 
 	if len(lb.PrivateNet) > 0 {
-		d.Set("network_id", lb.PrivateNet[0].Network.ID)
-		d.Set("network_ip", lb.PrivateNet[0].IP.String())
+		res["network_id"] = lb.PrivateNet[0].Network.ID
+		res["network_ip"] = lb.PrivateNet[0].IP.String()
 	}
+
+	return res
 }
 
 func parseTerraformTarget(tfTargets *schema.Set) (opts []hcloud.LoadBalancerCreateOptsTarget) {

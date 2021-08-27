@@ -8,7 +8,7 @@ description: |-
 
 # hcloud_load_balancer
 
-    Provides details about a specific Hetzner Cloud Server.
+    Provides details about a specific Hetzner Cloud Load Balancer.
 
 ## Example Usage
 
