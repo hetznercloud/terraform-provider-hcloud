@@ -79,6 +79,7 @@ func TestProvider_DataSources(t *testing.T) {
 		location.DataSourceType,
 		location.DataSourceListType,
 		network.DataSourceType,
+		network.DataSourceListType,
 		server.DataSourceType,
 		server.DataSourceListType,
 		servertype.DataSourceType,

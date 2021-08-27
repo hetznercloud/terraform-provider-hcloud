@@ -87,6 +87,18 @@ func (d *RData) TFID() string {
 	return fmt.Sprintf("%s.%s", ResourceType, d.RName())
 }
 
+// DDataList defines the fields for the "testdata/d/hcloud_networks" template.
+type DDataList struct {
+	testtemplate.DataCommon
+
+	LabelSelector string
+}
+
+// TFID DDataList the data source identifier.
+func (d *DDataList) TFID() string {
+	return fmt.Sprintf("data.%s.%s", DataSourceListType, d.RName())
+}
+
 // RDataSubnet defines the fields for the "testdata/r/hcloud_network_subnet"
 // template.
 type RDataSubnet struct {
