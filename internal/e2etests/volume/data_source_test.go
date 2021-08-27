@@ -28,18 +28,21 @@ func TestAccHcloudDataSourceVolumeTest(t *testing.T) {
 		},
 	}
 	res.SetRName("some-volume")
+
 	volByName := &volume.DData{
-		Name:       "vol_by_name",
 		VolumeName: res.TFID() + ".name",
 	}
+	volByName.SetRName("vol_by_name")
+
 	volByID := &volume.DData{
-		Name:     "vol_by_id",
 		VolumeID: res.TFID() + ".id",
 	}
+	volByID.SetRName("vol_by_id")
+
 	volBySel := &volume.DData{
-		Name:          "vol_by_sel",
 		LabelSelector: fmt.Sprintf("key=${%s.labels[\"key\"]}", res.TFID()),
 	}
+	volBySel.SetRName("vol_by_sel")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
@@ -104,17 +107,19 @@ func TestAccHcloudDataSourceAttachedVolumeTest(t *testing.T) {
 	resVolume.SetRName("some-volume")
 
 	volByName := &volume.DData{
-		Name:       "vol_by_name",
 		VolumeName: resVolume.TFID() + ".name",
 	}
+	volByName.SetRName("vol_by_name")
+
 	volByID := &volume.DData{
-		Name:     "vol_by_id",
 		VolumeID: resVolume.TFID() + ".id",
 	}
+	volByID.SetRName("vol_by_id")
+
 	volBySel := &volume.DData{
-		Name:          "vol_by_sel",
 		LabelSelector: fmt.Sprintf("key=${%s.labels[\"key\"]}", resVolume.TFID()),
 	}
+	volBySel.SetRName("vol_by_sel")
 
 	tmplMan := testtemplate.Manager{}
 	resource.Test(t, resource.TestCase{
@@ -160,6 +165,64 @@ func TestAccHcloudDataSourceAttachedVolumeTest(t *testing.T) {
 						return strconv.Itoa(s.ID)
 					}),
 					resource.TestCheckResourceAttr(volBySel.TFID(), "size", strconv.Itoa(resVolume.Size)),
+				),
+			},
+		},
+	})
+}
+
+func TestAccHcloudDataSourceVolumeListTest(t *testing.T) {
+	res := &volume.RData{
+		Name:         "volume-ds-test",
+		Size:         10,
+		LocationName: e2etests.TestLocationName,
+		Labels: map[string]string{
+			"key": strconv.Itoa(acctest.RandInt()),
+		},
+	}
+	res.SetRName("volume-ds-test")
+
+	volumesBySel := &volume.DDataList{
+		LabelSelector: fmt.Sprintf("key=${%s.labels[\"key\"]}", res.TFID()),
+	}
+	volumesBySel.SetRName("volumes_by_sel")
+
+	allVolumesSel := &volume.DDataList{}
+	allVolumesSel.SetRName("all_volumes_sel")
+
+	tmplMan := testtemplate.Manager{}
+	resource.Test(t, resource.TestCase{
+		PreCheck:     e2etests.PreCheck(t),
+		Providers:    e2etests.Providers(),
+		CheckDestroy: testsupport.CheckResourcesDestroyed(volume.ResourceType, volume.ByID(t, nil)),
+		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_volume", res,
+				),
+			},
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_volume", res,
+					"testdata/d/hcloud_volumes", volumesBySel,
+					"testdata/d/hcloud_volumes", allVolumesSel,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckTypeSetElemNestedAttrs(volumesBySel.TFID(), "volumes.*",
+						map[string]string{
+							"name":     fmt.Sprintf("%s--%d", res.Name, tmplMan.RandInt),
+							"size":     strconv.Itoa(res.Size),
+							"location": res.LocationName,
+						},
+					),
+
+					resource.TestCheckTypeSetElemNestedAttrs(allVolumesSel.TFID(), "volumes.*",
+						map[string]string{
+							"name":     fmt.Sprintf("%s--%d", res.Name, tmplMan.RandInt),
+							"size":     strconv.Itoa(res.Size),
+							"location": res.LocationName,
+						},
+					),
 				),
 			},
 		},

@@ -114,6 +114,7 @@ func Provider() *schema.Provider {
 			sshkey.DataSourceType:             sshkey.DataSource(),
 			sshkey.DataSourceListType:         sshkey.DataSourceList(),
 			volume.DataSourceType:             volume.DataSource(),
+			volume.DataSourceListType:         volume.DataSourceList(),
 		},
 		ConfigureContextFunc: providerConfigure,
 	}

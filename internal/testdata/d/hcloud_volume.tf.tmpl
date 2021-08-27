@@ -1,6 +1,6 @@
 {{- /* vim: set ft=terraform: */ -}}
 
-data "hcloud_volume" "{{ .Name }}" {
+data "hcloud_volume" "{{ .RName }}" {
   {{ if .VolumeID -}}   id            = {{ .VolumeID }}{{ end -}}
   {{ if .VolumeName -}} name          = {{ .VolumeName }}{{ end -}}
   {{ if .LabelSelector -}}    with_selector = "{{ .LabelSelector }}"{{ end }}
