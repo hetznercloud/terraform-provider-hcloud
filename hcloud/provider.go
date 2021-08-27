@@ -100,6 +100,7 @@ func Provider() *schema.Provider {
 			image.DataSourceType:                 image.DataSource(),
 			image.DataSourceListType:             image.DataSourceList(),
 			loadbalancer.DataSourceType:          loadbalancer.DataSource(),
+			loadbalancer.DataSourceListType:      loadbalancer.DataSourceList(),
 			location.DataSourceType:              location.DataSource(),
 			location.DataSourceListType:          location.DataSourceList(),
 			network.DataSourceType:               network.DataSource(),
