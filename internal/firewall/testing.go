@@ -91,9 +91,10 @@ func (d *DDataList) TFID() string {
 type RData struct {
 	testtemplate.DataCommon
 
-	Name   string
-	Rules  []RDataRule
-	Labels map[string]string
+	Name    string
+	Rules   []RDataRule
+	ApplyTo []RDataApplyTo
+	Labels  map[string]string
 }
 
 // RData defines the fields for the "testdata/r/hcloud_firewall"
@@ -107,18 +108,24 @@ type RDataRule struct {
 	Description    string
 }
 
+type RDataApplyTo struct {
+	Server        string
+	LabelSelector string
+}
+
 // TFID returns the resource identifier.
 func (d *RData) TFID() string {
 	return fmt.Sprintf("%s.%s", ResourceType, d.RName())
 }
 
 // NewRData creates data for a new firewall resource.
-func NewRData(t *testing.T, name string, rules []RDataRule) *RData {
+func NewRData(t *testing.T, name string, rules []RDataRule, applyTo []RDataApplyTo) *RData {
 	rInt := acctest.RandInt()
 	r := &RData{
-		Name:   name,
-		Rules:  rules,
-		Labels: map[string]string{"key": strconv.Itoa(rInt)},
+		Name:    name,
+		Rules:   rules,
+		ApplyTo: applyTo,
+		Labels:  map[string]string{"key": strconv.Itoa(rInt)},
 	}
 	r.SetRName(name)
 	return r
