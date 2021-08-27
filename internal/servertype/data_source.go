@@ -20,48 +20,88 @@ const (
 
 	// ServerTypesDataSourceType is the type name of the Hetzner Cloud Server Types
 	// data source.
-	ServerTypesDataSourceType = "hcloud_server_types"
+	DataSourceListType = "hcloud_server_types"
 )
+
+// getCommonDataSchema returns a new common schema used by all server type data sources.
+func getCommonDataSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"id": {
+			Type:     schema.TypeInt,
+			Optional: true,
+			Computed: true,
+		},
+		"name": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Computed: true,
+		},
+		"description": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"cores": {
+			Type:     schema.TypeInt,
+			Computed: true,
+		},
+		"memory": {
+			Type:     schema.TypeInt,
+			Computed: true,
+		},
+		"disk": {
+			Type:     schema.TypeInt,
+			Computed: true,
+		},
+		"storage_type": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+		"cpu_type": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
+	}
+}
 
 // DataSourcecreates a new Terraform schema for the hcloud_server_type data
 // source.
 func DataSource() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceHcloudServerTypeRead,
+		Schema:      getCommonDataSchema(),
+	}
+}
+
+// ServerTypesDataSource creates a new Terraform schema for the
+// hcloud_server_types data source.
+func ServerTypesDataSource() *schema.Resource {
+	return &schema.Resource{
+		ReadContext: dataSourceHcloudServerTypeListRead,
 		Schema: map[string]*schema.Schema{
-			"id": {
-				Type:     schema.TypeInt,
-				Optional: true,
+			"server_types": {
+				Type:     schema.TypeList,
 				Computed: true,
+				Elem: &schema.Resource{
+					Schema: getCommonDataSchema(),
+				},
 			},
-			"name": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+			"server_type_ids": {
+				Type:       schema.TypeList,
+				Optional:   true,
+				Deprecated: "Use server_types list instead",
+				Elem:       &schema.Schema{Type: schema.TypeString},
 			},
-			"description": {
-				Type:     schema.TypeString,
-				Computed: true,
+			"names": {
+				Type:       schema.TypeList,
+				Computed:   true,
+				Deprecated: "Use server_types list instead",
+				Elem:       &schema.Schema{Type: schema.TypeString},
 			},
-			"cores": {
-				Type:     schema.TypeInt,
-				Computed: true,
-			},
-			"memory": {
-				Type:     schema.TypeInt,
-				Computed: true,
-			},
-			"disk": {
-				Type:     schema.TypeInt,
-				Computed: true,
-			},
-			"storage_type": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"cpu_type": {
-				Type:     schema.TypeString,
-				Computed: true,
+			"descriptions": {
+				Type:       schema.TypeList,
+				Computed:   true,
+				Deprecated: "Use server_types list instead",
+				Elem:       &schema.Schema{Type: schema.TypeString},
 			},
 		},
 	}
@@ -96,62 +136,53 @@ func dataSourceHcloudServerTypeRead(ctx context.Context, data *schema.ResourceDa
 	return diag.Errorf("please specify an id, or a name to lookup for a server type")
 }
 
-func setServerTypeSchema(data *schema.ResourceData, d *hcloud.ServerType) {
-	data.SetId(strconv.Itoa(d.ID))
-	data.Set("name", d.Name)
-	data.Set("description", d.Description)
-	data.Set("cores", d.Cores)
-	data.Set("memory", d.Memory)
-	data.Set("disk", d.Disk)
-	data.Set("description", d.Description)
-	data.Set("storage_type", d.StorageType)
-	data.Set("cpu_type", d.CPUType)
-}
-
-// ServerTypesDataSource creates a new Terraform schema for the
-// hcloud_server_types data source.
-func ServerTypesDataSource() *schema.Resource {
-	return &schema.Resource{
-		ReadContext: dataSourceHcloudServerTypesRead,
-		Schema: map[string]*schema.Schema{
-			"server_type_ids": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
-			"names": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
-			"descriptions": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-			},
-		},
+func setServerTypeSchema(d *schema.ResourceData, t *hcloud.ServerType) {
+	for key, val := range getServerTypeAttributes(t) {
+		if key == "id" {
+			d.SetId(strconv.Itoa(val.(int)))
+		} else {
+			d.Set(key, val)
+		}
 	}
 }
 
-func dataSourceHcloudServerTypesRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func getServerTypeAttributes(t *hcloud.ServerType) map[string]interface{} {
+	return map[string]interface{}{
+		"id":           t.ID,
+		"name":         t.Name,
+		"description":  t.Description,
+		"cores":        t.Cores,
+		"memory":       t.Memory,
+		"disk":         t.Disk,
+		"storage_type": t.StorageType,
+		"cpu_type":     t.CPUType,
+	}
+}
+
+func dataSourceHcloudServerTypeListRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	sts, err := client.ServerType.All(ctx)
+	allServerTypes, err := client.ServerType.All(ctx)
 	if err != nil {
 		return hcclient.ErrorToDiag(err)
 	}
 
-	names := make([]string, len(sts))
-	descriptions := make([]string, len(sts))
-	ids := make([]string, len(sts))
-	for i, v := range sts {
-		ids[i] = strconv.Itoa(v.ID)
-		descriptions[i] = v.Description
-		names[i] = v.Name
+	names := make([]string, len(allServerTypes))
+	descriptions := make([]string, len(allServerTypes))
+	ids := make([]string, len(allServerTypes))
+	tfServerTypes := make([]map[string]interface{}, len(allServerTypes))
+	for i, serverType := range allServerTypes {
+		ids[i] = strconv.Itoa(serverType.ID)
+		descriptions[i] = serverType.Description
+		names[i] = serverType.Name
+
+		tfServerTypes[i] = getServerTypeAttributes(serverType)
 	}
 
 	d.SetId(fmt.Sprintf("%x", sha1.Sum([]byte(strings.Join(ids, "")))))
 	d.Set("server_type_ids", ids)
 	d.Set("names", names)
 	d.Set("descriptions", descriptions)
+	d.Set("server_types", tfServerTypes)
+
 	return nil
 }

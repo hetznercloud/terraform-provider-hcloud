@@ -85,7 +85,7 @@ func TestProvider_DataSources(t *testing.T) {
 		server.DataSourceType,
 		server.DataSourceListType,
 		servertype.DataSourceType,
-		servertype.ServerTypesDataSourceType,
+		servertype.DataSourceListType,
 		sshkey.DataSourceType,
 		sshkey.DataSourceListType,
 		volume.DataSourceType,
