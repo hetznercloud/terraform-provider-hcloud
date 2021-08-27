@@ -23,6 +23,4 @@ resource "hcloud_server" "workers" {
 ```
 
 ## Attributes Reference
-- `server_type_ids` - (list) List of unique Server Types identifiers.
-- `names` - (list) List of Server Types names.
-- `descriptions` - (list) List of all Server Types descriptions.
+- `server_types` - (list) List of all server types. See `data.hcloud_type` for schema.

@@ -22,11 +22,11 @@ func (d *DData) TFID() string {
 
 // ServerTypesDData defines the fields for the "testdata/d/hcloud_server_types"
 // template.
-type ServerTypesDData struct {
+type DDataList struct {
 	testtemplate.DataCommon
 }
 
 // TFID returns the data source identifier.
-func (d *ServerTypesDData) TFID() string {
-	return fmt.Sprintf("data.%s.%s", ServerTypesDataSourceType, d.RName())
+func (d *DDataList) TFID() string {
+	return fmt.Sprintf("data.%s.%s", DataSourceListType, d.RName())
 }

@@ -52,7 +52,7 @@ func TestAccHcloudDataSourceServerTypeTest(t *testing.T) {
 func TestAccHcloudDataSourceServerTypesTest(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
-	servertypesD := &servertype.ServerTypesDData{}
+	servertypesD := &servertype.DDataList{}
 	servertypesD.SetRName("ds")
 	resource.Test(t, resource.TestCase{
 		PreCheck:  e2etests.PreCheck(t),
