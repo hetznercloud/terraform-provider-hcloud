@@ -192,11 +192,23 @@ func resourceNetworkIsNotFound(err error, d *schema.ResourceData) bool {
 }
 
 func setNetworkSchema(d *schema.ResourceData, n *hcloud.Network) {
-	d.SetId(strconv.Itoa(n.ID))
-	d.Set("ip_range", n.IPRange.String())
-	d.Set("name", n.Name)
-	d.Set("labels", n.Labels)
-	d.Set("delete_protection", n.Protection.Delete)
+	for key, val := range getNetworkAttributes(n) {
+		if key == "id" {
+			d.SetId(strconv.Itoa(val.(int)))
+		} else {
+			d.Set(key, val)
+		}
+	}
+}
+
+func getNetworkAttributes(n *hcloud.Network) map[string]interface{} {
+	return map[string]interface{}{
+		"id":                n.ID,
+		"ip_range":          n.IPRange.String(),
+		"name":              n.Name,
+		"labels":            n.Labels,
+		"delete_protection": n.Protection.Delete,
+	}
 }
 
 func setProtection(ctx context.Context, c *hcloud.Client, n *hcloud.Network, delete bool) error {

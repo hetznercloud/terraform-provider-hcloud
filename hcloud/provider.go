@@ -104,6 +104,7 @@ func Provider() *schema.Provider {
 			location.DataSourceType:              location.DataSource(),
 			location.DataSourceListType:          location.DataSourceList(),
 			network.DataSourceType:               network.DataSource(),
+			network.DataSourceListType:           network.DataSourceList(),
 			server.DataSourceType:                server.DataSource(),
 			server.DataSourceListType:            server.DataSourceList(),
 			servertype.DataSourceType:            servertype.DataSource(),

@@ -74,3 +74,57 @@ func TestAccHcloudDataSourceNetworkTest(t *testing.T) {
 		},
 	})
 }
+
+func TestAccHcloudDataSourceNetworkListTest(t *testing.T) {
+	res := &network.RData{
+		Name:    "network-ds-test",
+		IPRange: "10.0.0.0/16",
+		Labels: map[string]string{
+			"key": strconv.Itoa(acctest.RandInt()),
+		},
+	}
+	res.SetRName("network-ds-test")
+
+	networksBySel := &network.DDataList{
+		LabelSelector: fmt.Sprintf("key=${%s.labels[\"key\"]}", res.TFID()),
+	}
+	networksBySel.SetRName("networks_by_sel")
+
+	allNetworksSel := &network.DDataList{}
+	allNetworksSel.SetRName("all_networks_sel")
+
+	tmplMan := testtemplate.Manager{}
+	resource.Test(t, resource.TestCase{
+		PreCheck:     e2etests.PreCheck(t),
+		Providers:    e2etests.Providers(),
+		CheckDestroy: testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
+		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_network", res,
+				),
+			},
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_network", res,
+					"testdata/d/hcloud_networks", networksBySel,
+					"testdata/d/hcloud_networks", allNetworksSel,
+				),
+
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckTypeSetElemNestedAttrs(networksBySel.TFID(), "networks.*",
+						map[string]string{
+							"name": fmt.Sprintf("%s--%d", res.Name, tmplMan.RandInt),
+						},
+					),
+
+					resource.TestCheckTypeSetElemNestedAttrs(allNetworksSel.TFID(), "networks.*",
+						map[string]string{
+							"name": fmt.Sprintf("%s--%d", res.Name, tmplMan.RandInt),
+						},
+					),
+				),
+			},
+		},
+	})
+}
