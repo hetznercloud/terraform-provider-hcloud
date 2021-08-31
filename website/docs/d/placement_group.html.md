@@ -25,6 +25,7 @@ data "hcloud_placement_group" "sample_placement_group_2" {
 - `id` - ID of the placement group.
 - `name` - Name of the placement group.
 - `with_selector` - (Optional, string) [Label selector](https://docs.hetzner.cloud/#overview-label-selector)
+- `most_recent` - (Optional, bool) Return most recent placement group if multiple are found.
 
 ## Attribute Reference
 

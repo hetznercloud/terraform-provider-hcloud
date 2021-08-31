@@ -80,6 +80,8 @@ func TestProvider_DataSources(t *testing.T) {
 		location.DataSourceListType,
 		network.DataSourceType,
 		network.DataSourceListType,
+		placementgroup.DataSourceType,
+		placementgroup.DataSourceListType,
 		server.DataSourceType,
 		server.DataSourceListType,
 		servertype.DataSourceType,
@@ -87,7 +89,6 @@ func TestProvider_DataSources(t *testing.T) {
 		sshkey.DataSourceType,
 		sshkey.DataSourceListType,
 		volume.DataSourceType,
-		placementgroup.DataSourceType,
 	}
 
 	datasources := provider.DataSources()

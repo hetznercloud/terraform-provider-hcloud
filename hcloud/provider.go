@@ -105,6 +105,8 @@ func Provider() *schema.Provider {
 			location.DataSourceListType:          location.DataSourceList(),
 			network.DataSourceType:               network.DataSource(),
 			network.DataSourceListType:           network.DataSourceList(),
+			placementgroup.DataSourceType:        placementgroup.DataSource(),
+			placementgroup.DataSourceListType:    placementgroup.DataSourceList(),
 			server.DataSourceType:                server.DataSource(),
 			server.DataSourceListType:            server.DataSourceList(),
 			servertype.DataSourceType:            servertype.DataSource(),
@@ -112,7 +114,6 @@ func Provider() *schema.Provider {
 			sshkey.DataSourceType:                sshkey.DataSource(),
 			sshkey.DataSourceListType:            sshkey.DataSourceList(),
 			volume.DataSourceType:                volume.DataSource(),
-			placementgroup.DataSourceType:        placementgroup.DataSource(),
 		},
 		ConfigureContextFunc: providerConfigure,
 	}

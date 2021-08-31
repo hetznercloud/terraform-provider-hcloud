@@ -1,45 +1,88 @@
 package placementgroup
 
 import (
+	"crypto/sha1"
+	"fmt"
 	"log"
 	"sort"
+	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/datasourceutil"
 	"golang.org/x/net/context"
 )
 
-const DataSourceType = "hcloud_placement_group"
+const (
+	// DataSourceType is the type name of the Hetzner Cloud Placement Group resource.
+	DataSourceType = "hcloud_placement_group"
+
+	// DataSourceListType is the type name to receive a list of Hetzner Cloud Placement Group resources.
+	DataSourceListType = "hcloud_placement_groups"
+)
+
+// getCommonDataSchema returns a new common schema used by all placement group data sources.
+func getCommonDataSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"id": {
+			Type:     schema.TypeInt,
+			Optional: true,
+		},
+		"name": {
+			Type:     schema.TypeString,
+			Optional: true,
+			Computed: true,
+		},
+		"labels": {
+			Type:     schema.TypeMap,
+			Optional: true,
+		},
+		"servers": {
+			Type:     schema.TypeList,
+			Computed: true,
+			Elem: &schema.Schema{
+				Type: schema.TypeInt,
+			},
+		},
+		"type": {
+			Type:     schema.TypeString,
+			Optional: true,
+		},
+	}
+}
 
 func DataSource() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: dataSourceHcloudPlacementGroupRead,
-		Schema: map[string]*schema.Schema{
-			"id": {
-				Type:     schema.TypeInt,
-				Optional: true,
-			},
-			"name": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
-			},
-			"labels": {
-				Type:     schema.TypeMap,
-				Optional: true,
-			},
-			"servers": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeInt,
+		Schema: datasourceutil.MergeSchema(
+			getCommonDataSchema(),
+			map[string]*schema.Schema{
+				"most_recent": {
+					Type:     schema.TypeBool,
+					Optional: true,
+				},
+				"with_selector": {
+					Type:     schema.TypeString,
+					Optional: true,
 				},
 			},
-			"type": {
-				Type:     schema.TypeString,
-				Optional: true,
+		),
+	}
+}
+
+func DataSourceList() *schema.Resource {
+	return &schema.Resource{
+		ReadContext: dataSourceHcloudPlacementGroupListRead,
+		Schema: map[string]*schema.Schema{
+			"placement_groups": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: getCommonDataSchema(),
+				},
 			},
 			"most_recent": {
 				Type:     schema.TypeBool,
@@ -99,6 +142,33 @@ func dataSourceHcloudPlacementGroupRead(ctx context.Context, d *schema.ResourceD
 		return nil
 	}
 	return diag.Errorf("please specify an id, a name or a selector to lookup the placement group")
+}
+
+func dataSourceHcloudPlacementGroupListRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	client := m.(*hcloud.Client)
+
+	selector := d.Get("with_selector")
+
+	opts := hcloud.PlacementGroupListOpts{ListOpts: hcloud.ListOpts{LabelSelector: selector.(string)}}
+	allPlacementGroups, err := client.PlacementGroup.AllWithOpts(ctx, opts)
+	if err != nil {
+		return hcclient.ErrorToDiag(err)
+	}
+
+	if _, ok := d.GetOk("most_recent"); ok {
+		sortPlacementGroupListByCreated(allPlacementGroups)
+	}
+
+	ids := make([]string, len(allPlacementGroups))
+	tfPlacementGroups := make([]map[string]interface{}, len(allPlacementGroups))
+	for i, firewall := range allPlacementGroups {
+		ids[i] = strconv.Itoa(firewall.ID)
+		tfPlacementGroups[i] = getAttributes(firewall)
+	}
+	d.Set("placement_groups", tfPlacementGroups)
+	d.SetId(fmt.Sprintf("%x", sha1.Sum([]byte(strings.Join(ids, "")))))
+
+	return nil
 }
 
 func sortPlacementGroupListByCreated(placementGroupList []*hcloud.PlacementGroup) {
