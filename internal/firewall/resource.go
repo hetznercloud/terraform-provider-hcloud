@@ -42,6 +42,7 @@ func Resource() *schema.Resource {
 			"apply_to": {
 				Type:     schema.TypeSet,
 				Optional: true,
+				Computed: true,
 				DiffSuppressFunc: func(_, _, _ string, d *schema.ResourceData) bool {
 					// Diff is only valid if "network" resource is set in
 					// terraform configuration.
