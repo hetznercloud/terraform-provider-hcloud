@@ -166,6 +166,7 @@ func Resource() *schema.Resource {
 			"firewall_ids": {
 				Type:     schema.TypeSet,
 				Optional: true,
+				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeInt},
 			},
 			"placement_group_id": {
