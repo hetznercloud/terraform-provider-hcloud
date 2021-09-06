@@ -404,7 +404,19 @@ func resourceFirewallDelete(ctx context.Context, d *schema.ResourceData, m inter
 	if err != nil {
 		return hcclient.ErrorToDiag(err)
 	}
-
+	// Detach all Resources of the firewall before trying to delete it.
+	if len(firewall.AppliedTo) > 0 {
+		actions, _, err := client.Firewall.RemoveResources(ctx, firewall, firewall.AppliedTo)
+		if err != nil {
+			if resourceFirewallIsNotFound(err, d) {
+				return nil
+			}
+			return hcclient.ErrorToDiag(err)
+		}
+		if err := waitForFirewallActions(ctx, client, actions, firewall); err != nil {
+			return hcclient.ErrorToDiag(err)
+		}
+	}
 	// Removing resources from the firewall can sometimes take longer. We
 	// thus retry two times the number of DefaultRetries.
 	err = control.Retry(2*control.DefaultRetries, func() error {
