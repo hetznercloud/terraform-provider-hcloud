@@ -428,14 +428,7 @@ func resourceFirewallDelete(ctx context.Context, d *schema.ResourceData, m inter
 	}
 	// Detach all Resources of the firewall before trying to delete it.
 	if len(firewall.AppliedTo) > 0 {
-		actions, _, err := client.Firewall.RemoveResources(ctx, firewall, firewall.AppliedTo)
-		if err != nil {
-			if resourceFirewallIsNotFound(err, d) {
-				return nil
-			}
-			return hcclient.ErrorToDiag(err)
-		}
-		if err := waitForFirewallActions(ctx, client, actions, firewall); err != nil {
+		if err := removeFromResources(ctx, client, d, firewall); err != nil {
 			return hcclient.ErrorToDiag(err)
 		}
 	}
@@ -461,6 +454,20 @@ func resourceFirewallDelete(ctx context.Context, d *schema.ResourceData, m inter
 		return hcclient.ErrorToDiag(err)
 	}
 
+	return nil
+}
+
+func removeFromResources(ctx context.Context, client *hcloud.Client, d *schema.ResourceData, fw *hcloud.Firewall) error {
+	actions, _, err := client.Firewall.RemoveResources(ctx, fw, fw.AppliedTo)
+	if err != nil {
+		if hcloud.IsError(err, hcloud.ErrorCodeFirewallResourceNotFound) || resourceFirewallIsNotFound(err, d) {
+			return nil
+		}
+		return err
+	}
+	if err := waitForFirewallActions(ctx, client, actions, fw); err != nil {
+		return err
+	}
 	return nil
 }
 
