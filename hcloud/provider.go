@@ -54,6 +54,7 @@ func Provider() *schema.Provider {
 					}
 					return
 				},
+				Sensitive: true,
 			},
 			"endpoint": {
 				Type:        schema.TypeString,
