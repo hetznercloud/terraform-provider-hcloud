@@ -51,7 +51,7 @@ func Resource() *schema.Resource {
 				ValidateFunc: func(val interface{}, key string) (i []string, errors []error) {
 					image := val.(string)
 					if len(image) == 0 {
-						errors = append(errors, fmt.Errorf("%q must have more then 0 characters. Have you set the name instead of an ID?", key))
+						errors = append(errors, fmt.Errorf("%q must have more than 0 characters. Have you set the name instead of an ID?", key))
 					}
 					return
 				},
