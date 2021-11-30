@@ -245,21 +245,44 @@ func lookupRDNSID(ctx context.Context, terraformID string, client *hcloud.Client
 		return nil, nil, InvalidRDNSIDError{terraformID}
 	}
 
+	// We need to check the individual values returned by hcloud-go
+	// before assigning them to rdns. hcloud-go may return no error but nil
+	// for the value. If we do the check after the switch using rdns != nil
+	// we get bitten by the way go handles interfaces.
+	//
+	// https://go.dev/doc/faq#nil_error
 	var rdns hcloud.RDNSSupporter
-
 	switch parts[0] {
 	case "s":
-		rdns, _, err = client.Server.GetByID(ctx, id)
+		srv, _, err := client.Server.GetByID(ctx, id)
+		if err != nil {
+			return nil, nil, err
+		}
+		if srv == nil {
+			return nil, nil, InvalidRDNSIDError{terraformID}
+		}
+		rdns = srv
 	case "f":
-		rdns, _, err = client.FloatingIP.GetByID(ctx, id)
+		fip, _, err := client.FloatingIP.GetByID(ctx, id)
+		if err != nil {
+			return nil, nil, err
+		}
+		if fip == nil {
+			return nil, nil, InvalidRDNSIDError{terraformID}
+		}
+		rdns = fip
 	case "l":
-		rdns, _, err = client.LoadBalancer.GetByID(ctx, id)
+		lb, _, err := client.LoadBalancer.GetByID(ctx, id)
+		if err != nil {
+			return nil, nil, err
+		}
+		if lb == nil {
+			return nil, nil, InvalidRDNSIDError{terraformID}
+		}
+		rdns = lb
 	default:
-		err = InvalidRDNSIDError{terraformID}
-	}
-	if rdns == nil {
-		return nil, nil, InvalidRDNSIDError{terraformID}
+		return nil, nil, err
 	}
 
-	return rdns, ip, err
+	return rdns, ip, nil
 }
