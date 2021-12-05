@@ -50,7 +50,7 @@ resource "hcloud_load_balancer" "load_balancer" {
 - `name` - (string) Name of the Load Balancer.
 - `location` - (string) Name of the location the Load Balancer is in.
 - `ipv4` - (string) IPv4 Address of the Load Balancer.
-- `ipv6` - (string) IPv4 Address of the Load Balancer.
+- `ipv6` - (string) IPv6 Address of the Load Balancer.
 - `algorithm` - (Optional) Configuration of the algorithm the Load Balancer use.
 - `service` - (list) List of services a Load Balancer provides.
 - `labels` - (map) User-defined labels (key-value pairs).
