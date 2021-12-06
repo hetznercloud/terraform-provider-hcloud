@@ -99,5 +99,5 @@ Load Balancer Service entries can be imported using a compound ID with the follo
 `<load-balancer-id>__<listen-port>`
 
 ```
-terraform import hcloud_load_balancer_network.myloadbalancernetwork 123__80
+terraform import hcloud_load_balancer_service.myloadbalancernetwork 123__80
 ```
