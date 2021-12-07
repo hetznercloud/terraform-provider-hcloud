@@ -65,14 +65,11 @@ func TestAccHcloudDataSourceServerTypesTest(t *testing.T) {
 
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(servertypesD.TFID(), "server_type_ids.0", "1"),
-					resource.TestCheckResourceAttr(servertypesD.TFID(), "server_type_ids.1", "2"),
-					resource.TestCheckResourceAttr(servertypesD.TFID(), "server_type_ids.2", "3"),
+					resource.TestCheckResourceAttr(servertypesD.TFID(), "server_type_ids.1", "3"),
 					resource.TestCheckResourceAttr(servertypesD.TFID(), "names.0", "cx11"),
-					resource.TestCheckResourceAttr(servertypesD.TFID(), "names.1", "cx11-ceph"),
-					resource.TestCheckResourceAttr(servertypesD.TFID(), "names.2", "cx21"),
+					resource.TestCheckResourceAttr(servertypesD.TFID(), "names.1", "cx21"),
 					resource.TestCheckResourceAttr(servertypesD.TFID(), "descriptions.0", "CX11"),
-					resource.TestCheckResourceAttr(servertypesD.TFID(), "descriptions.1", "CX11 Ceph Disk"),
-					resource.TestCheckResourceAttr(servertypesD.TFID(), "descriptions.2", "CX21"),
+					resource.TestCheckResourceAttr(servertypesD.TFID(), "descriptions.1", "CX21"),
 				),
 			},
 		},
