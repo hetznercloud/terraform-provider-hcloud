@@ -26,6 +26,7 @@ The following arguments are supported:
 
 - `name` - (Required, string) Name of the SSH key.
 - `public_key` - (Required, string) The public key. If this is a file, it can be read using the file interpolation function
+- `labels` - (Optional, map) User-defined labels (key-value pairs) should be created with.
 
 ## Attributes Reference
 
