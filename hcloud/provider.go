@@ -71,6 +71,7 @@ func Provider() *schema.Provider {
 			certificate.ResourceType:          certificate.UploadedResource(), // Alias for backwards compatibility.
 			certificate.ManagedResourceType:   certificate.ManagedResource(),
 			firewall.ResourceType:             firewall.Resource(),
+			firewall.AttachmentResourceType:   firewall.AttachmentResource(),
 			floatingip.AssignmentResourceType: floatingip.AssignmentResource(),
 			floatingip.ResourceType:           floatingip.Resource(),
 			loadbalancer.NetworkResourceType:  loadbalancer.NetworkResource(),
