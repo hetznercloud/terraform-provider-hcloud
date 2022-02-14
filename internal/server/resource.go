@@ -46,7 +46,7 @@ func Resource() *schema.Resource {
 			},
 			"image": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 				ForceNew: true,
 				ValidateFunc: func(val interface{}, key string) (i []string, errors []error) {
 					image := val.(string)
