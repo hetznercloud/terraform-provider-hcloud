@@ -97,8 +97,25 @@ type RData struct {
 	Labels  map[string]string
 }
 
-// RData defines the fields for the "testdata/r/hcloud_firewall"
-// template.
+// NewRData creates data for a new firewall resource.
+func NewRData(t *testing.T, name string, rules []RDataRule, applyTo []RDataApplyTo) *RData {
+	rInt := acctest.RandInt()
+	r := &RData{
+		Name:    name,
+		Rules:   rules,
+		ApplyTo: applyTo,
+		Labels:  map[string]string{"key": strconv.Itoa(rInt)},
+	}
+	r.SetRName(name)
+	return r
+}
+
+// TFID returns the resource identifier.
+func (d *RData) TFID() string {
+	return fmt.Sprintf("%s.%s", ResourceType, d.RName())
+}
+
+// RDataRule defines the fields for the "testdata/r/hcloud_firewall" template.
 type RDataRule struct {
 	Direction      string
 	Port           string
@@ -113,20 +130,28 @@ type RDataApplyTo struct {
 	LabelSelector string
 }
 
-// TFID returns the resource identifier.
-func (d *RData) TFID() string {
-	return fmt.Sprintf("%s.%s", ResourceType, d.RName())
+// RDataAttachment defines the fields for the
+// "testdata/r/hcloud_firewall_attachment" template.
+//
+// Fields ending in Ref are meant to contain a string referencing a Terraform
+// value.
+type RDataAttachment struct {
+	testtemplate.DataCommon
+
+	FirewallIDRef  string
+	ServerIDRefs   []string
+	LabelSelectors []string
 }
 
-// NewRData creates data for a new firewall resource.
-func NewRData(t *testing.T, name string, rules []RDataRule, applyTo []RDataApplyTo) *RData {
-	rInt := acctest.RandInt()
-	r := &RData{
-		Name:    name,
-		Rules:   rules,
-		ApplyTo: applyTo,
-		Labels:  map[string]string{"key": strconv.Itoa(rInt)},
-	}
-	r.SetRName(name)
-	return r
+// NewRDataAttachment creates a new RDataAttachment with the passed
+// terraform resource name. It references a firewall using fwIDRef.
+func NewRDataAttachment(resName, fwIDRef string) *RDataAttachment {
+	d := RDataAttachment{FirewallIDRef: fwIDRef}
+	d.SetRName(resName)
+	return &d
+}
+
+// TFID returns the resource identifier.
+func (d *RDataAttachment) TFID() string {
+	return fmt.Sprintf("%s.%s", AttachmentResourceType, d.RName())
 }

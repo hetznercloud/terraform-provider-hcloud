@@ -32,6 +32,7 @@ func TestProvider_Resources(t *testing.T) {
 	expectedResources := []string{
 		certificate.ResourceType,
 		firewall.ResourceType,
+		firewall.AttachmentResourceType,
 		certificate.UploadedResourceType,
 		certificate.ManagedResourceType,
 		floatingip.AssignmentResourceType,

@@ -29,12 +29,14 @@ func Resource() *schema.Resource {
 		ReadContext:   resourceServerRead,
 		UpdateContext: resourceServerUpdate,
 		DeleteContext: resourceServerDelete,
+
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(90 * time.Minute),
 		},
+
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:     schema.TypeString,
@@ -163,11 +165,23 @@ func Resource() *schema.Resource {
 					},
 				},
 			},
+			"ignore_remote_firewall_ids": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
 			"firewall_ids": {
 				Type:     schema.TypeSet,
 				Optional: true,
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeInt},
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					sup := d.Get("ignore_remote_firewall_ids").(bool)
+					if sup && old != "" && new != "" {
+						return true
+					}
+					return false
+				},
 			},
 			"placement_group_id": {
 				Type:     schema.TypeInt,

@@ -281,13 +281,10 @@ func hasFirewallRule(
 	}
 }
 
-func hasLabelSelectorResource(
-	t *testing.T,
-	f *hcloud.Firewall,
-	labelSelector string,
-) func() error {
+func hasLabelSelectorResource(t *testing.T, f *hcloud.Firewall, labelSelector string) func() error {
 	return func() error {
 		var firewallResource *hcloud.FirewallResource
+
 		for _, r := range f.AppliedTo {
 			if r.Type == hcloud.FirewallResourceTypeLabelSelector && r.LabelSelector.Selector == labelSelector {
 				firewallResource = &r
@@ -297,6 +294,19 @@ func hasLabelSelectorResource(
 		if !assert.NotNil(t, firewallResource, "firewall has no resource for this") {
 			return nil
 		}
+		return nil
+	}
+}
+
+func hasServerResource(t *testing.T, fw *hcloud.Firewall, srv *hcloud.Server) func() error {
+	return func() error {
+		for _, r := range fw.AppliedTo {
+			if r.Type == hcloud.FirewallResourceTypeServer && r.Server.ID == srv.ID {
+				return nil
+			}
+		}
+
+		t.Errorf("Firewall %d has no server resource for server %d", fw.ID, srv.ID)
 		return nil
 	}
 }
