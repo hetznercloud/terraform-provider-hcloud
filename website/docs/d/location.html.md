@@ -30,3 +30,4 @@ data "hcloud_location" "l_2" {
 - `country` - (string) Country of the location.
 - `latitude` - (float) Latitude of the city.
 - `longitude` - (float) Longitude of the city.
+- `network_zone` - (string) Network Zone of the location.
