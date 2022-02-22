@@ -55,6 +55,10 @@ func getCommonDataSchema() map[string]*schema.Schema {
 			Type:     schema.TypeFloat,
 			Computed: true,
 		},
+		"network_zone": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
 	}
 }
 
@@ -143,13 +147,14 @@ func setLocationSchema(d *schema.ResourceData, l *hcloud.Location) {
 
 func getLocationAttributes(l *hcloud.Location) map[string]interface{} {
 	return map[string]interface{}{
-		"id":          l.ID,
-		"name":        l.Name,
-		"description": l.Description,
-		"country":     l.Country,
-		"city":        l.City,
-		"latitude":    l.Latitude,
-		"longitude":   l.Longitude,
+		"id":           l.ID,
+		"name":         l.Name,
+		"description":  l.Description,
+		"country":      l.Country,
+		"city":         l.City,
+		"latitude":     l.Latitude,
+		"longitude":    l.Longitude,
+		"network_zone": l.NetworkZone,
 	}
 }
 
