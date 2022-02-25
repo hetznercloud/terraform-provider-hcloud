@@ -652,11 +652,14 @@ func setRescue(ctx context.Context, c *hcloud.Client, server *hcloud.Server, res
 		}
 	}
 	if rescueChanged {
-		action, _, err := c.Server.Reset(ctx, server)
+		err := control.Retry(control.DefaultRetries*2, func() error {
+			action, _, err := c.Server.Reset(ctx, server)
+			if err != nil {
+				return fmt.Errorf("%s: %v", op, err)
+			}
+			return hcclient.WaitForAction(ctx, &c.Action, action)
+		})
 		if err != nil {
-			return fmt.Errorf("%s: %v", op, err)
-		}
-		if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
 			return fmt.Errorf("%s: %v", op, err)
 		}
 	}
