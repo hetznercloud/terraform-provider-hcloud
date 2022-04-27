@@ -32,6 +32,12 @@ func Resource() *schema.Resource {
 			"labels": {
 				Type:     schema.TypeMap,
 				Optional: true,
+				ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics {
+					if ok, err := hcloud.ValidateResourceLabels(i.(map[string]interface{})); !ok {
+						return diag.Errorf(err.Error())
+					}
+					return nil
+				},
 			},
 			"servers": {
 				Type:     schema.TypeSet,

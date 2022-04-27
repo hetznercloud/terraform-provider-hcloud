@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -81,6 +82,12 @@ func UploadedResource() *schema.Resource {
 				Type:     schema.TypeMap,
 				Optional: true,
 				Elem:     schema.TypeString,
+				ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics {
+					if ok, error := hcloud.ValidateResourceLabels(i.(map[string]interface{})); !ok {
+						return diag.Errorf(error.Error())
+					}
+					return nil
+				},
 			},
 			"domain_names": {
 				Type:     schema.TypeList,
