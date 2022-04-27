@@ -21,6 +21,7 @@ func AssignmentResource() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceFloatingIPAssignmentCreate,
 		ReadContext:   resourceFloatingIPAssignmentRead,
+		UpdateContext: resourceFloatingIPAssignmentUpdate,
 		DeleteContext: resourceFloatingIPAssignmentDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -34,7 +35,6 @@ func AssignmentResource() *schema.Resource {
 			"server_id": {
 				Type:     schema.TypeInt,
 				Required: true,
-				ForceNew: true,
 			},
 		},
 	}
@@ -111,6 +111,62 @@ func resourceFloatingIPAssignmentRead(ctx context.Context, d *schema.ResourceDat
 	d.Set("server_id", floatingIP.Server.ID)
 	d.Set("floating_ip_id", floatingIP.ID)
 	return nil
+}
+
+func resourceFloatingIPAssignmentUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	client := m.(*hcloud.Client)
+
+	floatingIPID, err := strconv.Atoi(d.Id())
+	if err != nil {
+		log.Printf("[WARN] Invalid id (%s), removing from state: %v", d.Id(), err)
+		d.SetId("")
+		return nil
+	}
+
+	floatingIP, _, err := client.FloatingIP.GetByID(ctx, floatingIPID)
+	if err != nil {
+		log.Printf("[WARN] Invalid id (%s), removing from state: %v", d.Id(), err)
+		d.SetId("")
+		return nil
+	}
+	if floatingIP == nil {
+		log.Printf("[WARN] Floating IP ID (%v) not found, removing Floating IP Association from state", d.Get("floating_ip_id"))
+		d.SetId("")
+		return nil
+	}
+
+	d.Partial(true)
+
+	if d.HasChange("server_id") {
+		serverID := d.Get("server_id").(int)
+		if serverID == 0 {
+			action, _, err := client.FloatingIP.Unassign(ctx, floatingIP)
+			if err != nil {
+				if resourceFloatingIPIsNotFound(err, d) {
+					return nil
+				}
+				return hcclient.ErrorToDiag(err)
+			}
+			if err := hcclient.WaitForAction(ctx, &client.Action, action); err != nil {
+				return hcclient.ErrorToDiag(err)
+			}
+		} else {
+			a, _, err := client.FloatingIP.Assign(ctx, floatingIP, &hcloud.Server{ID: serverID})
+			if err != nil {
+				if resourceFloatingIPIsNotFound(err, d) {
+					return nil
+				}
+				return hcclient.ErrorToDiag(err)
+			}
+			if err := hcclient.WaitForAction(ctx, &client.Action, a); err != nil {
+				return hcclient.ErrorToDiag(err)
+			}
+		}
+	}
+
+	d.Partial(false)
+
+	return resourceFloatingIPAssignmentRead(ctx, d, m)
 }
 
 func resourceFloatingIPAssignmentDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
