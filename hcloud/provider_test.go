@@ -93,10 +93,10 @@ func TestProvider_DataSources(t *testing.T) {
 		volume.DataSourceListType,
 	}
 
-	datasources := provider.DataSources()
-	assert.Len(t, datasources, len(expectedDataSources))
+	dataSources := provider.DataSources()
+	assert.Len(t, dataSources, len(expectedDataSources))
 
-	for _, datasource := range datasources {
+	for _, datasource := range dataSources {
 		assert.Contains(t, expectedDataSources, datasource.Name)
 	}
 }
