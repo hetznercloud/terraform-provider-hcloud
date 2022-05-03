@@ -177,14 +177,12 @@ func TestLoadBalancerResource_InlineTarget(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testsupport.CheckResourceExists(resServer1.TFID(), server.ByID(t, &srv0)),
 					testsupport.CheckResourceExists(resServer2.TFID(), server.ByID(t, &srv1)),
-					testsupport.CheckResourceAttrFunc(res.TFID(),
-						"target.0.server_id", func() []string {
-							return []string{strconv.Itoa(srv0.ID), strconv.Itoa(srv1.ID)}
-						}),
-					testsupport.CheckResourceAttrFunc(res.TFID(),
-						"target.1.server_id", func() []string {
-							return []string{strconv.Itoa(srv0.ID), strconv.Itoa(srv1.ID)}
-						}),
+					testsupport.CheckResourceAttrFunc(res.TFID(), "target.0.server_id", func() []string {
+						return []string{strconv.Itoa(srv0.ID), strconv.Itoa(srv1.ID)}
+					}),
+					testsupport.CheckResourceAttrFunc(res.TFID(), "target.1.server_id", func() []string {
+						return []string{strconv.Itoa(srv0.ID), strconv.Itoa(srv1.ID)}
+					}),
 				),
 			},
 			{
@@ -192,7 +190,7 @@ func TestLoadBalancerResource_InlineTarget(t *testing.T) {
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_load_balancer", resWithoutTargets,
 				),
-				Check: resource.TestCheckNoResourceAttr(res.TFID(), "target"),
+				Check: resource.TestCheckNoResourceAttr(res.TFID(), "target.%"),
 			},
 		},
 	})
