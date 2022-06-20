@@ -50,7 +50,7 @@ resource "hcloud_server" "node1" {
 - `rule` - (Optional) Configuration of a Rule from this Firewall.
 - `apply_to` (Optional) Resources the firewall should be assigned to
 
-`rule` support the following fields:
+`rule` supports the following fields:
 
 - `direction` - (Required, string) Direction of the Firewall Rule. `in`
 - `protocol` - (Required, string) Protocol of the Firewall Rule. `tcp`, `icmp`, `udp`, `gre`, `esp`
@@ -60,7 +60,7 @@ resource "hcloud_server" "node1" {
 - `source_ips` - (Required, List) List of CIDRs that are allowed within this Firewall Rule
 - `description` - (Optional, string) Description of the firewall rule
 
-`apply_to` support the following fields:
+`apply_to` supports the following fields:
 
 - `label_selector` - (Optional, string) Label Selector to select servers the firewall should be applied to (only one
   of `server` and `label_selector`can be applied in one block)
@@ -75,7 +75,7 @@ resource "hcloud_server" "node1" {
 - `labels` - (map) User-defined labels (key-value pairs)
 - `apply_to` - Configuration of the Applied Resources
 
-`rule` support the following fields:
+`rule` supports the following fields:
 - `direction` - (Required, string) Direction of the Firewall Rule. `in`, `out`
 - `protocol` - (Required, string) Protocol of the Firewall Rule. `tcp`, `icmp`, `udp`, `gre`, `esp`
 - `port` - (Required, string) Port of the Firewall Rule. Required when `protocol` is `tcp` or `udp`
@@ -84,7 +84,7 @@ resource "hcloud_server" "node1" {
   is `out`)
 - `description` - (Optional, string) Description of the firewall rule
 
-`apply_to` support the following fields:
+`apply_to` supports the following fields:
 - `label_selector` - (string) Label Selector to select servers the firewall is applied to. Empty if a server is directly
   referenced
 - `server` - (int) ID of a server where the firewall is applied to. `0` if applied to a label_selector

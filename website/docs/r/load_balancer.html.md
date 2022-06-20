@@ -40,7 +40,7 @@ resource "hcloud_load_balancer" "load_balancer" {
 - `labels` - (Optional, map) User-defined labels (key-value pairs) should be created with.
 - `delete_protection` - (Optional, boolean) Enable or disable delete protection.
 
-`algorithm` support the following fields:
+`algorithm` supports the following fields:
 - `type` - (Required, string) Type of the Load Balancer Algorithm. `round_robin` or `least_connections`
 
 ## Attributes Reference
@@ -56,7 +56,7 @@ resource "hcloud_load_balancer" "load_balancer" {
 - `labels` - (map) User-defined labels (key-value pairs).
 - `delete_protection` - (boolean) Whether delete protection is enabled.
 
-`algorithm` support the following fields:
+`algorithm` supports the following fields:
 - `type` - (string) Type of the Load Balancer Algorithm. `round_robin` or `least_connections`
 
 ## Import

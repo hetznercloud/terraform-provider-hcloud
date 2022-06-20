@@ -90,7 +90,7 @@ The following arguments are supported:
 - `delete_protection` - (Optional, boolean) Enable or disable delete protection (Needs to be the same as `rebuild_protection`).
 - `rebuild_protection` - (Optional, boolean) Enable or disable rebuild protection (Needs to be the same as `delete_protection`).
 
-`network` support the following fields:
+`network` supports the following fields:
 - `network_id` - (Required, int) ID of the network
 - `ip` - (Optional, string) Specify the IP the server should get in the network
 - `alias_ips` - (Optional, list) Alias IPs the server should have in the Network.
@@ -127,7 +127,7 @@ The following attributes are exported:
 - `delete_protection` - (boolean) Whether delete protection is enabled.
 - `rebuild_protection` - (boolean) Whether rebuild protection is enabled.
 
-a single entry in `network` support the following fields:
+a single entry in `network` supports the following fields:
 - `network_id` - (Required, int) ID of the network
 - `ip` - (Optional, string) Specify the IP the server should get in the network
 - `alias_ips` - (Optional, list) Alias IPs the server should have in the Network.
