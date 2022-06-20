@@ -46,7 +46,7 @@ resource "hcloud_server" "node1" {
 ## Argument Reference
 
 - `name` - (Optional, string) Name of the Firewall.
-- `labels` - (Optional, map) User-defined labels (key-value pairs) should be created with.
+- `labels` - (Optional, map) User-defined labels (key-value pairs) this resource should be created with.
 - `rule` - (Optional) Configuration of a Rule from this Firewall.
 - `apply_to` (Optional) Resources the firewall should be assigned to
 

@@ -28,7 +28,7 @@ resource "hcloud_snapshot" "my-snapshot" {
 
 - `server_id` - (Required, int) Server to the snapshot should be created from.
 - `description` - (Optional, string) Description of the snapshot.
-- `labels` - (Optional, map) User-defined labels (key-value pairs) should be created with.
+- `labels` - (Optional, map) User-defined labels (key-value pairs) this resource should be created with.
 
 ## Attributes Reference
 

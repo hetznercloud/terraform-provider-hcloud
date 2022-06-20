@@ -32,7 +32,7 @@ resource "hcloud_floating_ip" "master" {
 - `server_id` - (Optional, int) Server to assign the Floating IP to.
 - `home_location` - (Optional, string) Home location (routing is optimized for that location). Optional if server_id argument is passed.
 - `description` - (Optional, string) Description of the Floating IP.
-- `labels` - (Optional, map) User-defined labels (key-value pairs) should be created with.
+- `labels` - (Optional, map) User-defined labels (key-value pairs) this resource should be created with.
 - `delete_protection` - (Optional, boolean) Enable or disable delete protection.
 
 ## Attributes Reference
