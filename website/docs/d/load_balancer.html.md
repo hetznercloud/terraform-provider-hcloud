@@ -40,11 +40,11 @@ data "hcloud_load_balancer" "lb_3" {
 - `algorithm` - (Optional) Configuration of the algorithm the Load Balancer use.
 - `target` - (list) List of targets of the Load Balancer.
 - `service` - (list) List of services a Load Balancer provides.
-- `labels` - (map) User-defined labels (key-value pairs) .
+- `labels` - (map) User-defined labels (key-value pairs).
 - `delete_protection` - (boolean) Whether delete protection is enabled.
 
 `algorithm` supports the following fields:
-- `type` - (string) Type of the Load Balancer Algorithm. `round_robin` or `least_connection`
+- `type` - (string) Type of the Load Balancer Algorithm. `round_robin` or `least_connections`
 
 `target` supports the following fields:
 - `type` - (string) Type of the target. `server` or `label_selector`
