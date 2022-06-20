@@ -36,7 +36,7 @@ resource "hcloud_load_balancer" "load_balancer" {
 - `load_balancer_type` - (Required, string) Type of the Load Balancer.
 - `location` - (Optional, string) Location of the Load Balancer. Require when no network_zone is set.
 - `network_zone` - (Optional, string) Network Zone of the Load Balancer. Require when no location is set.
-- `algorithm` - (Optional) Configuration of the algorithm the Load Balancer use.
+- `algorithm` - (Optional) Configuration of the algorithm the Load Balancer uses.
 - `labels` - (Optional, map) User-defined labels (key-value pairs) this resource should be created with.
 - `delete_protection` - (Optional, boolean) Enable or disable delete protection.
 
@@ -51,8 +51,8 @@ resource "hcloud_load_balancer" "load_balancer" {
 - `location` - (string) Name of the location the Load Balancer is in.
 - `ipv4` - (string) IPv4 Address of the Load Balancer.
 - `ipv6` - (string) IPv6 Address of the Load Balancer.
-- `algorithm` - (Optional) Configuration of the algorithm the Load Balancer use.
-- `service` - (list) List of services a Load Balancer provides.
+- `algorithm` - (Optional) Configuration of the algorithm the Load Balancer uses.
+- `service` - (list) List of services the Load Balancer provides.
 - `labels` - (map) User-defined labels (key-value pairs).
 - `delete_protection` - (boolean) Whether delete protection is enabled.
 
