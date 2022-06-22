@@ -11,7 +11,7 @@ This resource is useful if you want to use a non-terraform managed network.
 ## Example Usage
 ```hcl
 data "hcloud_network" "network_1" {
-  id = "1234"
+  id = 1234
 }
 data "hcloud_network" "network_2" {
   name = "my-network"
