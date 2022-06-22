@@ -33,7 +33,7 @@ resource "hcloud_server" "node1" {
 
 - `name` - (Optional, string) Name of the Placement Group.
 - `type` - (Required, string) Type of the Placement Group.
-- `labels` - (Optional, map) User-defined labels (key-value pairs) should be created with.
+- `labels` - (Optional, map) User-defined labels (key-value pairs) this resource should be created with.
 
 ## Attributes Reference
 
