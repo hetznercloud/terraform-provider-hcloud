@@ -581,8 +581,8 @@ func updatePublicNet(ctx context.Context, o interface{}, n interface{}, c *hclou
 	diffToRemove := o.(*schema.Set).Difference(n.(*schema.Set))
 	diffToAdd := n.(*schema.Set).Difference(o.(*schema.Set))
 
-	var unassignPrimaryIPIDs []int
-	var assignPrimaryIPIDs []int
+	var unassignPrimaryIPIDs = make([]int, diffToRemove.Len())
+	var assignPrimaryIPIDs = make([]int, diffToAdd.Len())
 	// We first prepare all changes to then simply apply them
 	for _, d := range diffToRemove.List() {
 		field := d.(map[string]interface{})
@@ -622,7 +622,6 @@ func updatePublicNet(ctx context.Context, o interface{}, n interface{}, c *hclou
 		if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
 			return hcclient.ErrorToDiag(err)
 		}
-		return nil
 	}
 
 	powerOn, _, err := c.Server.Poweron(ctx, server)
