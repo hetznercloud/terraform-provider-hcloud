@@ -1,0 +1,24 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+resource "hcloud_primary_ip" "{{ .RName }}" {
+  {{/* Required properties */ -}}
+  name        = "{{ .Name }}--{{ .RInt }}"
+  type = "{{ .Type }}"
+  {{- if .Datacenter }}
+  datacenter       = "{{ .Datacenter }}"
+  {{ end }}
+  {{- if .AssigneeType }}
+  assignee_type       = "{{ .AssigneeType }}"
+  {{ end }}
+  {{- if .Labels }}
+  labels = {
+  {{- range $k,$v := .Labels }}
+    {{ $k }} = "{{ $v }}"
+  {{- end }}
+  }
+  {{ end }}
+  auto_delete       = {{ .AutoDelete }}
+  {{- if .DeleteProtection }}
+  delete_protection = {{ .DeleteProtection }}
+  {{ end }}
+}

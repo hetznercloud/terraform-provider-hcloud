@@ -1,0 +1,5 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+data "hcloud_primary_ips" "{{ .RName }}" {
+  {{ if .LabelSelector -}}    with_selector = "{{ .LabelSelector }}"{{ end }}
+}
