@@ -3,9 +3,10 @@ package primaryip
 import (
 	"context"
 	"errors"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/control"
 	"log"
 	"strconv"
+
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/control"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -104,10 +105,8 @@ func resourcePrimaryIPCreate(ctx context.Context, d *schema.ResourceData, m inte
 			"If assignee_id is set, datacenter must be left out"))
 	case ok1:
 		opts.AssigneeID = hcloud.Int(assigneeID.(int))
-		break
 	case ok2:
 		opts.Datacenter = dataCenter.(string)
-		break
 	default:
 	}
 	if labels, ok := d.GetOk("labels"); ok {
