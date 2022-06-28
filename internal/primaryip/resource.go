@@ -303,7 +303,7 @@ func setPrimaryIPSchema(d *schema.ResourceData, f *hcloud.PrimaryIP) {
 func getPrimaryIPAttributes(f *hcloud.PrimaryIP) map[string]interface{} {
 	res := map[string]interface{}{
 		"id":                f.ID,
-		"ip_address":        f.IP,
+		"ip_address":        f.IP.String(),
 		"assignee_id":       f.AssigneeID,
 		"assignee_type":     f.AssigneeType,
 		"name":              f.Name,
