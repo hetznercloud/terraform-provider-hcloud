@@ -77,7 +77,7 @@ The following arguments are supported:
 - `keep_disk` - (Optional, bool) If true, do not upgrade the disk. This allows downgrading the server type later.
 - `iso` - (Optional, string) ID or Name of an ISO image to mount.
 - `rescue` - (Optional, string) Enable and boot in to the specified rescue system. This enables simple installation of custom operating systems. `linux64` `linux32` or `freebsd64`
-- `labels` - (Optional, map) User-defined labels (key-value pairs) this resource should be created with.
+- `labels` - (Optional, map) User-defined labels (key-value pairs) should be created with.
 - `backups` - (Optional, boolean) Enable or disable backups.
 - `firewall_ids` - (Optional, list) Firewall IDs the server should be attached to on creation.
 - `ignore_remote_firewall_ids` - (Optional, boolean) Ingores any updates
@@ -90,7 +90,7 @@ The following arguments are supported:
 - `delete_protection` - (Optional, boolean) Enable or disable delete protection (Needs to be the same as `rebuild_protection`).
 - `rebuild_protection` - (Optional, boolean) Enable or disable rebuild protection (Needs to be the same as `delete_protection`).
 
-`network` supports the following fields:
+`network` support the following fields:
 - `network_id` - (Required, int) ID of the network
 - `ip` - (Optional, string) Specify the IP the server should get in the network
 - `alias_ips` - (Optional, list) Alias IPs the server should have in the Network.
@@ -127,7 +127,7 @@ The following attributes are exported:
 - `delete_protection` - (boolean) Whether delete protection is enabled.
 - `rebuild_protection` - (boolean) Whether rebuild protection is enabled.
 
-a single entry in `network` supports the following fields:
+a single entry in `network` support the following fields:
 - `network_id` - (Required, int) ID of the network
 - `ip` - (Optional, string) Specify the IP the server should get in the network
 - `alias_ips` - (Optional, list) Alias IPs the server should have in the Network.

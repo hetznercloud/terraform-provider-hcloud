@@ -9,6 +9,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/firewall"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/placementgroup"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/primaryip"
 
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/snapshot"
 
@@ -74,6 +75,7 @@ func Provider() *schema.Provider {
 			firewall.AttachmentResourceType:   firewall.AttachmentResource(),
 			floatingip.AssignmentResourceType: floatingip.AssignmentResource(),
 			floatingip.ResourceType:           floatingip.Resource(),
+			primaryip.ResourceType:            primaryip.Resource(),
 			loadbalancer.NetworkResourceType:  loadbalancer.NetworkResource(),
 			loadbalancer.ResourceType:         loadbalancer.Resource(),
 			loadbalancer.ServiceResourceType:  loadbalancer.ServiceResource(),
@@ -99,6 +101,8 @@ func Provider() *schema.Provider {
 			firewall.DataSourceListType:       firewall.DataSourceList(),
 			floatingip.DataSourceType:         floatingip.DataSource(),
 			floatingip.DataSourceListType:     floatingip.DataSourceList(),
+			primaryip.DataSourceType:          primaryip.DataSource(),
+			primaryip.DataSourceListType:      primaryip.DataSourceList(),
 			image.DataSourceType:              image.DataSource(),
 			image.DataSourceListType:          image.DataSourceList(),
 			loadbalancer.DataSourceType:       loadbalancer.DataSource(),

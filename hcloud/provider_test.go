@@ -12,6 +12,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/location"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/network"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/placementgroup"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/primaryip"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/rdns"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/servertype"
@@ -37,6 +38,7 @@ func TestProvider_Resources(t *testing.T) {
 		certificate.ManagedResourceType,
 		floatingip.AssignmentResourceType,
 		floatingip.ResourceType,
+		primaryip.ResourceType,
 		loadbalancer.NetworkResourceType,
 		loadbalancer.ResourceType,
 		loadbalancer.ServiceResourceType,
@@ -73,6 +75,8 @@ func TestProvider_DataSources(t *testing.T) {
 		firewall.DataSourceListType,
 		floatingip.DataSourceType,
 		floatingip.DataSourceListType,
+		primaryip.DataSourceType,
+		primaryip.DataSourceListType,
 		image.DataSourceType,
 		image.DataSourceListType,
 		loadbalancer.DataSourceType,

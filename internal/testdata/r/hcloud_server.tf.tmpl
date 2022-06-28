@@ -10,8 +10,8 @@ resource "hcloud_server" "{{ .RName }}" {
   {{- if .LocationName }}
   location    = "{{ .LocationName }}"
   {{ end }}
-  {{- if .DataCenter }}
-  datacenter  = "{{ .DataCenter }}"
+  {{- if .Datacenter }}
+  datacenter  = "{{ .Datacenter }}"
   {{ end }}
   {{- if .SSHKeys }}
   ssh_keys    = [{{ StringsJoin .SSHKeys ", " }}]
@@ -40,6 +40,14 @@ resource "hcloud_server" "{{ .RName }}" {
       {{- end }}
   }
   {{ end }}{{ end }}
+
+  {{- if .PublicNet }}
+  public_net {
+  {{- range $k,$v := .PublicNet }}
+    {{ $k }} = {{ $v }}
+  {{- end }}
+  }
+  {{ end }}
 
   {{- if .Labels }}
   labels = {

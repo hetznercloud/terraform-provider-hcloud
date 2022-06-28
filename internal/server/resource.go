@@ -140,6 +140,31 @@ func Resource() *schema.Resource {
 					return nil
 				},
 			},
+			"public_net": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				DiffSuppressFunc: func(_, _, _ string, d *schema.ResourceData) bool {
+					// Diff is only valid if "public_net" resource is set in
+					// terraform configuration.
+					_, ok := d.GetOk("public_net")
+					return !ok // Negate because we do **not** want to suppress the diff.
+				},
+
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"ipv4": {
+							Type:     schema.TypeInt,
+							Optional: true,
+							Computed: true,
+						},
+						"ipv6": {
+							Type:     schema.TypeInt,
+							Optional: true,
+							Computed: true,
+						},
+					},
+				},
+			},
 			"network": {
 				Type:     schema.TypeSet,
 				Optional: true,
@@ -231,7 +256,6 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	if err != nil {
 		return hcclient.ErrorToDiag(err)
 	}
-
 	opts := hcloud.ServerCreateOpts{
 		Name: d.Get("name").(string),
 		ServerType: &hcloud.ServerType{
@@ -274,6 +298,17 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		}
 
 		opts.PlacementGroup = placementGroup
+	}
+
+	if publicNet, ok := d.GetOk("public_net"); ok {
+		createPublicNet := hcloud.ServerCreatePublicNet{}
+		for _, publicNetValue := range publicNet.(*schema.Set).List() {
+			publicNetEntry := publicNetValue.(map[string]interface{})
+			if err := toServerPublicNet(publicNetEntry, &createPublicNet); err != nil {
+				return hcclient.ErrorToDiag(err)
+			}
+			opts.PublicNet = &createPublicNet
+		}
 	}
 
 	res, _, err := c.Server.Create(ctx, opts)
@@ -516,6 +551,13 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		}
 	}
 
+	if d.HasChange("public_net") {
+		o, n := d.GetChange("public_net")
+		if err := updatePublicNet(ctx, o, n, c, server); err != nil {
+			return err
+		}
+	}
+
 	if d.HasChange("placement_group") {
 		placementGroupID := d.Get("placement_group").(int)
 		if err := setPlacementGroup(ctx, c, server, placementGroupID); err != nil {
@@ -533,6 +575,70 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 
 	d.Partial(false)
 	return resourceServerRead(ctx, d, m)
+}
+
+func updatePublicNet(ctx context.Context, o interface{}, n interface{}, c *hcloud.Client, server *hcloud.Server) diag.Diagnostics {
+	diffToRemove := o.(*schema.Set).Difference(n.(*schema.Set))
+	diffToAdd := n.(*schema.Set).Difference(o.(*schema.Set))
+
+	unassignPrimaryIPIDs := []int{}
+	assignPrimaryIPIDs := []int{}
+
+	// We first prepare all changes to then simply apply them
+	for _, d := range diffToRemove.List() {
+		field := d.(map[string]interface{})
+		r, _ := toPrimaryIPID(field)
+		unassignPrimaryIPIDs = append(unassignPrimaryIPIDs, r)
+	}
+
+	for _, d := range diffToAdd.List() {
+		field := d.(map[string]interface{})
+		r, _ := toPrimaryIPID(field)
+		assignPrimaryIPIDs = append(assignPrimaryIPIDs, r)
+	}
+
+	shutdown, _, _ := c.Server.Poweroff(ctx, &hcloud.Server{ID: server.ID})
+	if err := hcclient.WaitForAction(ctx, &c.Action, shutdown); err != nil {
+		return hcclient.ErrorToDiag(err)
+	}
+	for _, v := range unassignPrimaryIPIDs {
+		action, _, err := c.PrimaryIP.Unassign(ctx, v)
+		if err != nil {
+			return hcclient.ErrorToDiag(err)
+		}
+		if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
+			return hcclient.ErrorToDiag(err)
+		}
+	}
+
+	for _, v := range assignPrimaryIPIDs {
+		action, _, err := c.PrimaryIP.Assign(ctx, hcloud.PrimaryIPAssignOpts{
+			ID:         v,
+			AssigneeID: server.ID,
+		})
+		if err != nil {
+			return hcclient.ErrorToDiag(err)
+		}
+		if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
+			return hcclient.ErrorToDiag(err)
+		}
+	}
+
+	err := control.Retry(control.DefaultRetries, func() error {
+		powerOn, _, err := c.Server.Poweron(ctx, server)
+		if err != nil {
+			return err
+		}
+		if err := hcclient.WaitForAction(ctx, &c.Action, powerOn); err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return hcclient.ErrorToDiag(err)
+	}
+
+	return nil
 }
 
 func resourceServerDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -911,4 +1017,27 @@ func setProtection(ctx context.Context, c *hcloud.Client, server *hcloud.Server,
 	}
 
 	return nil
+}
+func toServerPublicNet(field map[string]interface{}, opts *hcloud.ServerCreatePublicNet) error {
+	var op = "toServerPublicNet"
+	if ipv4ID, ok := field["ipv4"].(int); ok && ipv4ID != 0 {
+		opts.EnableIPv4 = true
+		opts.IPv4 = &hcloud.PrimaryIP{ID: ipv4ID}
+		return nil
+	} else if ipv6ID, ok := field["ipv6"].(int); ok && ipv6ID != 0 {
+		opts.EnableIPv6 = true
+		opts.IPv6 = &hcloud.PrimaryIP{ID: ipv6ID}
+		return nil
+	}
+	return fmt.Errorf("%s: unknown apply to resource", op)
+}
+
+func toPrimaryIPID(field map[string]interface{}) (int, error) {
+	var op = "toPrimaryIPID"
+	if ipv4ID, ok := field["ipv4"].(int); ok && ipv4ID != 0 {
+		return ipv4ID, nil
+	} else if ipv6ID, ok := field["ipv6"].(int); ok && ipv6ID != 0 {
+		return ipv6ID, nil
+	}
+	return 0, fmt.Errorf("%s: unknown apply to resource", op)
 }

@@ -136,7 +136,7 @@ resource "hcloud_firewall_attachment" "allow_rules_att" {
 ## Attribute Reference
 
 - `id` (int) - Unique ID representing this `hcloud_firewall_attachment`.
-- `firewall_id` (int) - ID of the Firewall the resources referenced by
+- `firewall_id` (int) - ID of the Firewall the resourced referenced by
   this attachment are attached to.
 - `server_ids` (List) - List of Server IDs attached to the Firewall.
 - `label_selectors` (List) - List of label selectors attached to the

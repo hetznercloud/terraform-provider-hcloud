@@ -1,9 +1,7 @@
 package main
 
 import (
-	"context"
 	"flag"
-	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 	"github.com/hetznercloud/terraform-provider-hcloud/hcloud"
@@ -16,13 +14,10 @@ func main() {
 	flag.Parse()
 
 	if debugMode {
-		err := plugin.Debug(context.Background(), "registry.terraform.io/hetznercloud/hcloud",
-			&plugin.ServeOpts{
-				ProviderFunc: hcloud.Provider,
-			})
-		if err != nil {
-			log.Println(err.Error())
-		}
+		plugin.Serve(&plugin.ServeOpts{
+			ProviderAddr: "registry.terraform.io/hetznercloud/hcloud",
+			ProviderFunc: hcloud.Provider,
+		})
 	} else {
 		plugin.Serve(&plugin.ServeOpts{
 			ProviderFunc: hcloud.Provider})

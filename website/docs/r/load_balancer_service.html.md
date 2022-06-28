@@ -28,8 +28,8 @@ resource "hcloud_load_balancer_service" "load_balancer_service" {
 ## Argument Reference
 
 - `load_balancer_id` - (Required, string) Id of the load balancer this service belongs to.
-- `protocol` - (Required, string) Protocol of the service. `http`, `https` or `tcp`.
-- `listen_port` - (Optional, int) Port the service listens on, required if protocol is `tcp`. Can be everything between `1` and `65535`. Must be unique per Load Balancer.
+- `protocol` - (Required, string) Protocol of the service. `http`, `https` or `tcp`
+- `listen_port` - (Optional, int) Port the service listen on, required if protocol is `tcp`. Can be everything between `1` and `65535`. Must be unique per Load Balancer.
 - `destination_port` - (Optional, int) Port the service connects to the targets on, required if protocol is `tcp`. Can be everything between `1` and `65535`.
 - `proxyprotocol` - (Optional, bool) Enable proxyprotocol.
 - `http` - (Optional, list) List of http configurations when `protocol` is `http` or `https`.
@@ -47,9 +47,9 @@ resource "hcloud_load_balancer_service" "load_balancer_service" {
 
 - `protocol` - (Required, string) Protocol the health check uses. `http` or `tcp`
 - `port` - (Required, int) Port the health check tries to connect to, required if protocol is `tcp`. Can be everything between `1` and `65535`. Must be unique per Load Balancer.
-- `interval` - (Required, int) Interval between health checks, in seconds.
-- `timeout` - (Required, int) Timeout of a health check attempt if there is no response, in seconds.
-- `retries` - (Optional, int) Number of tries a health check will be performed until a target is listed as `unhealthy`.
+- `interval` - (Required, int) Interval how often the health check will be performed, in seconds.
+- `timeout` - (Required, int) Timeout when a health check try will be canceled if there is no response, in seconds.
+- `retries` - (Optional, int) Number of tries a health check will be performed until a target will be listed as `unhealthy`.
 - `http` - (Optional, list) List of http configurations. Required if `protocol` is `http`.
 
 (health check) `http` supports the following fields:
@@ -80,9 +80,9 @@ resource "hcloud_load_balancer_service" "load_balancer_service" {
 
 - `protocol` - (string) Protocol the health check uses. `http`, `https` or `tcp`
 - `port` - (int) Port the health check tries to connect to. Can be everything between `1` and `65535`.
-- `interval` - (int) Interval between health checks, in seconds.
-- `timeout` - (int) Timeout of a health check attempt if there is no response, in seconds.
-- `retries` - (int) Number of tries a health check will be performed until a target is listed as `unhealthy`.
+- `interval` - (int) Interval how often the health check will be performed, in seconds.
+- `timeout` - (int) Timeout when a health check try will be canceled if there is no response, in seconds.
+- `retries` - (int) Number of tries a health check will be performed until a target will be listed as `unhealthy`.
 - `http` - (list) List of http configurations when `protocol` is `http`.
 
 (health check) `http` supports the following fields:
