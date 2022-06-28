@@ -1016,11 +1016,11 @@ func toServerPublicNet(field map[string]interface{}, opts *hcloud.ServerCreatePu
 	var op = "toServerPublicNet"
 	if ipv4ID, ok := field["ipv4"].(int); ok && ipv4ID != 0 {
 		opts.EnableIPv4 = true
-		opts.IPv4 = hcloud.PrimaryIP{ID: ipv4ID}
+		opts.IPv4 = &hcloud.PrimaryIP{ID: ipv4ID}
 		return nil
 	} else if ipv6ID, ok := field["ipv6"].(int); ok && ipv6ID != 0 {
 		opts.EnableIPv6 = true
-		opts.IPv6 = hcloud.PrimaryIP{ID: ipv6ID}
+		opts.IPv6 = &hcloud.PrimaryIP{ID: ipv6ID}
 		return nil
 	}
 	return fmt.Errorf("%s: unknown apply to resource", op)
