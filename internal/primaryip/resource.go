@@ -133,7 +133,7 @@ func resourcePrimaryIPCreate(ctx context.Context, d *schema.ResourceData, m inte
 
 	deleteProtection := d.Get("delete_protection").(bool)
 	if deleteProtection {
-		if err := setProtection(ctx, client, &res.PrimaryIP, deleteProtection); err != nil {
+		if err := setProtection(ctx, client, res.PrimaryIP, deleteProtection); err != nil {
 			return hcclient.ErrorToDiag(err)
 		}
 	}
