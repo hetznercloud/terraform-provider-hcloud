@@ -11,6 +11,7 @@ Provides details about a specific Hetzner Cloud Primary IP.
 Provides details about a Hetzner Cloud Primary IP.
 
 This resource can be useful when you need to determine a Primary IP ID based on the IP address.
+Currently, primary IPs can only be attached to servers.
 
 ## Example Usage
 
