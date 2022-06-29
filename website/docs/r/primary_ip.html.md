@@ -10,6 +10,7 @@ description: |-
 
 Provides a Hetzner Cloud Primary IP to represent a publicly-accessible static IP address that can be mapped to one of your servers.
 
+If a server is getting created, it has to have a primary ip. If a server is getting created without defining primary ips, two of them (one ipv4 and one ipv6) getting created & attached.
 Currently, Primary IPs can be only attached to servers.
 
 ## Example Usage

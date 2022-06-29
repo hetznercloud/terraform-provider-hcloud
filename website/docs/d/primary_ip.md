@@ -11,7 +11,11 @@ Provides details about a specific Hetzner Cloud Primary IP.
 Provides details about a Hetzner Cloud Primary IP.
 
 This resource can be useful when you need to determine a Primary IP ID based on the IP address.
-Currently, primary IPs can only be attached to servers.
+
+Side note:
+
+If a server is getting created, it has to have a primary ip. If a server is getting created without defining primary ips, two of them (one ipv4 and one ipv6) getting created & attached.
+Currently, Primary IPs can be only attached to servers.
 
 ## Example Usage
 
