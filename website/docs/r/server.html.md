@@ -10,6 +10,8 @@ description: |-
 
 Provides an Hetzner Cloud server resource. This can be used to create, modify, and delete servers. Servers also support [provisioning](https://www.terraform.io/docs/provisioners/index.html).
 
+When creating a server without linking at least one ´primary_ip´, it automatically creates & assigns two (ipv4 & ipv6).
+
 ## Example Usage
 
 ### Basic server creation
@@ -22,7 +24,32 @@ resource "hcloud_server" "node1" {
   server_type = "cx11"
 }
 ```
-
+```hcl
+### Server creation with primary ip
+resource "hcloud_primary_ip" "primary_ip_1" {
+name          = "primary_ip_test"
+datacenter    = "fsn1-dc14"
+type          = "ipv4"
+assignee_type = "server"
+auto_delete   = true
+labels = {
+"hallo" : "welt"
+}
+}
+// Link a server to a primary IP
+resource "hcloud_server" "server_test" {
+  name        = "test-server"
+  image       = "ubuntu-20.04"
+  server_type = "cx11"
+  datacenter  = "fsn1-dc14"
+  labels = {
+    "test" : "tessst1"
+  }
+  public_net {
+    ipv4 = hcloud_primary_ip.primary_ip_1.id
+  }
+}
+```
 ### Server creation with network
 
 ```hcl
