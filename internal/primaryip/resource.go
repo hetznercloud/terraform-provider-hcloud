@@ -259,7 +259,7 @@ func resourcePrimaryIPDelete(ctx context.Context, d *schema.ResourceData, m inte
 	}
 
 	if assigneeID, ok := d.GetOk("assignee_id"); ok {
-		shutdown, _, _ := client.Server.Shutdown(ctx, &hcloud.Server{ID: assigneeID.(int)})
+		shutdown, _, _ := client.Server.Poweroff(ctx, &hcloud.Server{ID: assigneeID.(int)})
 		if errDiag := watchProgress(ctx, shutdown, client); err != nil {
 			return errDiag
 		}
@@ -269,7 +269,7 @@ func resourcePrimaryIPDelete(ctx context.Context, d *schema.ResourceData, m inte
 		}
 	}
 	err = control.Retry(2*control.DefaultRetries, func() error {
-		if err := deletePrimaryIP(ctx, client, primaryIPID); err != nil {
+		if _, err := client.PrimaryIP.Delete(ctx, &hcloud.PrimaryIP{ID: primaryIPID}); err != nil {
 			return err
 		}
 		return nil
@@ -340,13 +340,6 @@ func watchProgress(ctx context.Context, action *hcloud.Action, client *hcloud.Cl
 		if err := <-errCh; err != nil {
 			return hcclient.ErrorToDiag(err)
 		}
-	}
-	return nil
-}
-
-func deletePrimaryIP(ctx context.Context, client *hcloud.Client, primaryIPID int) error {
-	if _, err := client.PrimaryIP.Delete(ctx, &hcloud.PrimaryIP{ID: primaryIPID}); err != nil {
-		return err
 	}
 	return nil
 }

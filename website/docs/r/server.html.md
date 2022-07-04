@@ -10,7 +10,27 @@ description: |-
 
 Provides an Hetzner Cloud server resource. This can be used to create, modify, and delete servers. Servers also support [provisioning](https://www.terraform.io/docs/provisioners/index.html).
 
+
+
+## Primary IPs
 When creating a server without linking at least one ´primary_ip´, it automatically creates & assigns two (ipv4 & ipv6).
+With the public_net block, you can define if you want to enable or link primary ips. If you don't define this block, two primary ips (ipv4, ipv6) will be created and assigned to the server.
+
+### Examples
+
+```hcl
+# Assign existing ipv4 only
+public_net {
+  ipv4_enabled = true
+  ipv4 = hcloud_primary_ip.primary_ip_1.id
+  ipv6_enabled = false
+}
+# Assign & create ipv4 & ipv6
+public_net {
+  ipv4_enabled = true
+  ipv6_enabled = true
+}
+```
 
 ## Example Usage
 
@@ -25,18 +45,18 @@ resource "hcloud_server" "node1" {
 }
 ```
 ```hcl
-### Server creation with primary ip
+### Server creation with one linked primary ip (ipv4)
 resource "hcloud_primary_ip" "primary_ip_1" {
 name          = "primary_ip_test"
 datacenter    = "fsn1-dc14"
 type          = "ipv4"
 assignee_type = "server"
 auto_delete   = true
-labels = {
-"hallo" : "welt"
+  labels = {
+    "hallo" : "welt"
+  }
 }
-}
-// Link a server to a primary IP
+
 resource "hcloud_server" "server_test" {
   name        = "test-server"
   image       = "ubuntu-20.04"
@@ -46,12 +66,13 @@ resource "hcloud_server" "server_test" {
     "test" : "tessst1"
   }
   public_net {
+    ipv4_enabled = true
     ipv4 = hcloud_primary_ip.primary_ip_1.id
+    ipv6_enabled = false
   }
 }
 ```
 ### Server creation with network
-
 ```hcl
 resource "hcloud_network" "network" {
   name     = "network"
@@ -101,6 +122,7 @@ The following arguments are supported:
 - `datacenter` - (Optional, string) The datacenter name to create the server in.
 - `user_data` - (Optional, string) Cloud-Init user data to use during server creation
 - `ssh_keys` - (Optional, list) SSH key IDs or names which should be injected into the server at creation time
+- `public_net` - (Optional, block) In this block you can either enable / disable ipv4 and ipv6 or link existing primary IPs (checkout the examples)
 - `keep_disk` - (Optional, bool) If true, do not upgrade the disk. This allows downgrading the server type later.
 - `iso` - (Optional, string) ID or Name of an ISO image to mount.
 - `rescue` - (Optional, string) Enable and boot in to the specified rescue system. This enables simple installation of custom operating systems. `linux64` `linux32` or `freebsd64`
