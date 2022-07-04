@@ -1085,7 +1085,7 @@ func toPublicNetPrimaryIPField[V int | bool](field map[string]interface{}, key s
 func onServerCreateWithoutPublicNet(opts *hcloud.ServerCreateOpts,
 	fn func(opts *hcloud.ServerCreateOpts) error) diag.Diagnostics {
 	if opts.PublicNet != nil {
-		if opts.PublicNet.EnableIPv6 == false && opts.PublicNet.EnableIPv4 == false {
+		if !opts.PublicNet.EnableIPv6 && !opts.PublicNet.EnableIPv4 {
 			if err := fn(opts); err != nil {
 				return hcclient.ErrorToDiag(err)
 			}
