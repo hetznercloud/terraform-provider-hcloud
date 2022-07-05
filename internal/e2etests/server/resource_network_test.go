@@ -37,11 +37,11 @@ func TestAccHcloudServerNetwork_NetworkID(t *testing.T) {
 	}
 	subNetRes.SetRName("test-network-subnet")
 	sRes := &server.RData{
-		Name:         "s-network-test",
-		Type:         e2etests.TestServerType,
-		LocationName: e2etests.TestLocationName,
-		Image:        e2etests.TestImage,
-		SSHKeys:      []string{sk.TFID() + ".id"},
+		Name:       "s-network-test",
+		Type:       e2etests.TestServerType,
+		Datacenter: e2etests.TestLocationDataCenter,
+		Image:      e2etests.TestImage,
+		SSHKeys:    []string{sk.TFID() + ".id"},
 	}
 	sRes.SetRName("s-network-test")
 	sNRes := &server.RDataNetwork{
@@ -106,11 +106,11 @@ func TestAccHcloudServerNetwork_SubNetID(t *testing.T) {
 	}
 	subNetRes.SetRName("test-network-subnet")
 	sRes := &server.RData{
-		Name:         "s-network-test",
-		Type:         e2etests.TestServerType,
-		LocationName: e2etests.TestLocationName,
-		Image:        e2etests.TestImage,
-		SSHKeys:      []string{sk.TFID() + ".id"},
+		Name:       "s-network-test",
+		Type:       e2etests.TestServerType,
+		Datacenter: e2etests.TestLocationDataCenter,
+		Image:      e2etests.TestImage,
+		SSHKeys:    []string{sk.TFID() + ".id"},
 	}
 	sRes.SetRName("s-network-test")
 

@@ -4,6 +4,7 @@ import (
 	"crypto/sha1"
 	"encoding/base64"
 	"fmt"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/primaryip"
 	"strconv"
 	"testing"
 
@@ -262,11 +263,11 @@ func TestServerResource_DirectAttachToNetwork(t *testing.T) {
 	}
 	snwRes.SetRName("test-network-subnet")
 	sRes := &server.RData{
-		Name:         "server-direct-attach",
-		Type:         e2etests.TestServerType,
-		LocationName: e2etests.TestLocationName,
-		Image:        e2etests.TestImage,
-		SSHKeys:      []string{sk.TFID() + ".id"},
+		Name:       "server-direct-attach",
+		Type:       e2etests.TestServerType,
+		Datacenter: e2etests.TestLocationDataCenter,
+		Image:      e2etests.TestImage,
+		SSHKeys:    []string{sk.TFID() + ".id"},
 	}
 	sRes.SetRName(sRes.Name)
 
@@ -349,6 +350,116 @@ func TestServerResource_DirectAttachToNetwork(t *testing.T) {
 					testsupport.LiftTCF(func() error {
 						t.Log("Checking if server has no private network")
 						assert.Empty(t, s.PrivateNet)
+						return nil
+					}),
+				),
+			},
+		},
+	})
+}
+
+func TestServerResource_StartServerWithoutPrimaryIPs(t *testing.T) {
+	var (
+		nw hcloud.Network
+		s  hcloud.Server
+		p  hcloud.PrimaryIP
+	)
+
+	sk := sshkey.NewRData(t, "server-iso")
+	nwRes := &network.RData{
+		Name:    "test-network",
+		IPRange: "10.0.0.0/16",
+	}
+	nwRes.SetRName("test-network")
+	snwRes := &network.RDataSubnet{
+		Type:        "cloud",
+		NetworkID:   nwRes.TFID() + ".id",
+		NetworkZone: "eu-central",
+		IPRange:     "10.0.1.0/24",
+	}
+	snwRes.SetRName("test-network-subnet")
+
+	primaryIPRes := &primaryip.RData{
+		Name:         "primaryip-test",
+		Type:         "ipv4",
+		Labels:       nil,
+		Datacenter:   "hel1-dc2",
+		AssigneeType: "server",
+		AutoDelete:   false,
+	}
+	primaryIPRes.SetRName("primary-ip")
+
+	sResWithNet := &server.RData{
+		Name:       "server-direct-attach",
+		Type:       e2etests.TestServerType,
+		Datacenter: e2etests.TestLocationDataCenter,
+		Image:      e2etests.TestImage,
+		SSHKeys:    []string{sk.TFID() + ".id"},
+		Network: server.RDataInlineNetwork{
+			NetworkID: nwRes.TFID() + ".id",
+			IP:        "10.0.1.5",
+			AliasIPs:  []string{"10.0.1.6", "10.0.1.7"},
+		},
+		PublicNet: map[string]interface{}{
+			"ipv4_enabled": false,
+			"ipv6_enabled": false,
+		},
+		DependsOn: []string{snwRes.TFID()},
+	}
+	sResWithNet.SetRName(sResWithNet.Name)
+
+	sResWithPrimaryIP := &server.RData{
+		Name:         sResWithNet.Name,
+		Type:         sResWithNet.Type,
+		LocationName: sResWithNet.LocationName,
+		Image:        sResWithNet.Image,
+		SSHKeys:      sResWithNet.SSHKeys,
+		Network:      sResWithNet.Network,
+		PublicNet: map[string]interface{}{
+			"ipv4_enabled": true,
+			"ipv4":         primaryIPRes.TFID() + ".id",
+			"ipv6_enabled": false,
+		},
+		DependsOn: sResWithNet.DependsOn,
+	}
+
+	tmplMan := testtemplate.Manager{}
+	resource.Test(t, resource.TestCase{
+		PreCheck:     e2etests.PreCheck(t),
+		Providers:    e2etests.Providers(),
+		CheckDestroy: testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, nil)),
+		Steps: []resource.TestStep{
+			{
+				// Create a new server without primary ip and directly attach it to a network.
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_network", nwRes,
+					"testdata/r/hcloud_network_subnet", snwRes,
+					"testdata/r/hcloud_server", sResWithNet,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(nwRes.TFID(), network.ByID(t, &nw)),
+					testsupport.CheckResourceExists(sResWithNet.TFID(), server.ByID(t, &s)),
+					testsupport.LiftTCF(hasServerNetwork(t, &s, &nw, "10.0.1.5", "10.0.1.6", "10.0.1.7")),
+					resource.TestCheckResourceAttr(sResWithNet.TFID(), "network.#", "1"),
+					resource.TestCheckResourceAttr(sResWithNet.TFID(), "network.0.ip", "10.0.1.5"),
+					resource.TestCheckResourceAttr(sResWithNet.TFID(), "network.0.alias_ips.#", "2"),
+				),
+			},
+			{
+				// Add primary IPs to existing server
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_network", nwRes,
+					"testdata/r/hcloud_network_subnet", snwRes,
+					"testdata/r/hcloud_primary_ip", primaryIPRes,
+					"testdata/r/hcloud_server", sResWithPrimaryIP,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(primaryIPRes.TFID(), primaryip.ByID(t, &p)),
+					testsupport.CheckResourceExists(sResWithPrimaryIP.TFID(), server.ByID(t, &s)),
+					testsupport.LiftTCF(func() error {
+						assert.Equal(t, p.AssigneeID, s.ID)
 						return nil
 					}),
 				),

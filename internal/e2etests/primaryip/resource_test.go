@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	testDatacenter = "hel1-dc2"
+	TestDatacenter = "hel1-dc2"
 )
 
 func TestPrimaryIPResource_Basic(t *testing.T) {
@@ -29,7 +29,7 @@ func TestPrimaryIPResource_Basic(t *testing.T) {
 		Name:         "primaryip-test",
 		Type:         "ipv4",
 		Labels:       nil,
-		Datacenter:   testDatacenter,
+		Datacenter:   TestDatacenter,
 		AssigneeType: "server",
 		AutoDelete:   false,
 	}
@@ -93,7 +93,7 @@ func TestPrimaryIPResource_with_server(t *testing.T) {
 		Name:         "primaryip-test-v4-one",
 		Type:         "ipv4",
 		Labels:       nil,
-		Datacenter:   testDatacenter,
+		Datacenter:   TestDatacenter,
 		AssigneeType: "server",
 		AutoDelete:   false,
 	}
@@ -103,7 +103,7 @@ func TestPrimaryIPResource_with_server(t *testing.T) {
 		Name:         "primaryip-test-v6-one",
 		Type:         "ipv6",
 		Labels:       nil,
-		Datacenter:   testDatacenter,
+		Datacenter:   TestDatacenter,
 		AssigneeType: "server",
 		AutoDelete:   false,
 	}
@@ -113,7 +113,7 @@ func TestPrimaryIPResource_with_server(t *testing.T) {
 		Name:         "primaryip-test-v4-two",
 		Type:         "ipv4",
 		Labels:       nil,
-		Datacenter:   testDatacenter,
+		Datacenter:   TestDatacenter,
 		AssigneeType: "server",
 		AutoDelete:   false,
 	}
@@ -123,7 +123,7 @@ func TestPrimaryIPResource_with_server(t *testing.T) {
 		Name:       "server-test",
 		Type:       e2etests.TestServerType,
 		Image:      e2etests.TestImage,
-		Datacenter: testDatacenter,
+		Datacenter: TestDatacenter,
 		Labels:     nil,
 		PublicNet: map[string]interface{}{
 			"ipv4_enabled": true,
@@ -225,7 +225,7 @@ func TestPrimaryIPResource_Protection(t *testing.T) {
 			Name:             "primaryip-protection",
 			Type:             "ipv4",
 			Labels:           nil,
-			Datacenter:       testDatacenter,
+			Datacenter:       TestDatacenter,
 			AssigneeType:     "server",
 			DeleteProtection: true,
 		}
