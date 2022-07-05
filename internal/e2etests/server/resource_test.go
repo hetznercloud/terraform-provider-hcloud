@@ -266,7 +266,7 @@ func TestServerResource_DirectAttachToNetwork(t *testing.T) {
 	sRes := &server.RData{
 		Name:       "server-direct-attach",
 		Type:       e2etests.TestServerType,
-		Datacenter: e2etests.TestLocationDataCenter,
+		Datacenter: e2etests.TestDataCenter,
 		Image:      e2etests.TestImage,
 		SSHKeys:    []string{sk.TFID() + ".id"},
 	}
@@ -393,7 +393,7 @@ func TestServerResource_StartServerWithoutPrimaryIPs(t *testing.T) {
 	sResWithNet := &server.RData{
 		Name:       "server-direct-attach",
 		Type:       e2etests.TestServerType,
-		Datacenter: e2etests.TestLocationDataCenter,
+		Datacenter: e2etests.TestDataCenter,
 		Image:      e2etests.TestImage,
 		SSHKeys:    []string{sk.TFID() + ".id"},
 		Network: server.RDataInlineNetwork{

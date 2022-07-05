@@ -18,10 +18,6 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-const (
-	TestDatacenter = "hel1-dc2"
-)
-
 func TestPrimaryIPResource_Basic(t *testing.T) {
 	var pip hcloud.PrimaryIP
 
@@ -29,7 +25,7 @@ func TestPrimaryIPResource_Basic(t *testing.T) {
 		Name:         "primaryip-test",
 		Type:         "ipv4",
 		Labels:       nil,
-		Datacenter:   TestDatacenter,
+		Datacenter:   e2etests.TestDataCenter,
 		AssigneeType: "server",
 		AutoDelete:   false,
 	}
@@ -93,7 +89,7 @@ func TestPrimaryIPResource_with_server(t *testing.T) {
 		Name:         "primaryip-test-v4-one",
 		Type:         "ipv4",
 		Labels:       nil,
-		Datacenter:   TestDatacenter,
+		Datacenter:   e2etests.TestDataCenter,
 		AssigneeType: "server",
 		AutoDelete:   false,
 	}
@@ -103,7 +99,7 @@ func TestPrimaryIPResource_with_server(t *testing.T) {
 		Name:         "primaryip-test-v6-one",
 		Type:         "ipv6",
 		Labels:       nil,
-		Datacenter:   TestDatacenter,
+		Datacenter:   e2etests.TestDataCenter,
 		AssigneeType: "server",
 		AutoDelete:   false,
 	}
@@ -113,7 +109,7 @@ func TestPrimaryIPResource_with_server(t *testing.T) {
 		Name:         "primaryip-test-v4-two",
 		Type:         "ipv4",
 		Labels:       nil,
-		Datacenter:   TestDatacenter,
+		Datacenter:   e2etests.TestDataCenter,
 		AssigneeType: "server",
 		AutoDelete:   false,
 	}
@@ -123,7 +119,7 @@ func TestPrimaryIPResource_with_server(t *testing.T) {
 		Name:       "server-test",
 		Type:       e2etests.TestServerType,
 		Image:      e2etests.TestImage,
-		Datacenter: TestDatacenter,
+		Datacenter: e2etests.TestDataCenter,
 		Labels:     nil,
 		PublicNet: map[string]interface{}{
 			"ipv4_enabled": true,
@@ -225,7 +221,7 @@ func TestPrimaryIPResource_Protection(t *testing.T) {
 			Name:             "primaryip-protection",
 			Type:             "ipv4",
 			Labels:           nil,
-			Datacenter:       TestDatacenter,
+			Datacenter:       e2etests.TestDataCenter,
 			AssigneeType:     "server",
 			DeleteProtection: true,
 		}
