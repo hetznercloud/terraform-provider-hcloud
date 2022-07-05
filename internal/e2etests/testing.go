@@ -21,7 +21,7 @@ const (
 	TestLoadBalancerType = "lb11"
 
 	// TestLocationName is the default location where we execute our tests.
-	TestLocationName = "fsn1"
+	TestLocationName = "hel1"
 )
 
 func init() {

@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
@@ -17,7 +19,7 @@ import (
 )
 
 const (
-	testDatacenter = "fsn1-dc14"
+	testDatacenter = "hel1-dc2"
 )
 
 func TestPrimaryIPResource_Basic(t *testing.T) {
@@ -84,27 +86,38 @@ func TestPrimaryIPResource_Basic(t *testing.T) {
 
 func TestPrimaryIPResource_with_server(t *testing.T) {
 	var srv hcloud.Server
-	var pip hcloud.PrimaryIP
-	var pip2 hcloud.PrimaryIP
-	primaryIPOneRes := &primaryip.RData{
-		Name:         "primaryip-test",
+	var primaryIPv4One hcloud.PrimaryIP
+	var primaryIPv4Two hcloud.PrimaryIP
+	var primaryIPv6One hcloud.PrimaryIP
+	primaryIPv4OneRes := &primaryip.RData{
+		Name:         "primaryip-test-v4-one",
 		Type:         "ipv4",
 		Labels:       nil,
 		Datacenter:   testDatacenter,
 		AssigneeType: "server",
 		AutoDelete:   false,
 	}
-	primaryIPOneRes.SetRName("primary_ip_test")
+	primaryIPv4OneRes.SetRName("primary_ip_v4_test")
 
-	primaryIPTwoRes := &primaryip.RData{
-		Name:         "primaryip-test_2",
+	primaryIPv6OneRes := &primaryip.RData{
+		Name:         "primaryip-test-v6-one",
+		Type:         "ipv6",
+		Labels:       nil,
+		Datacenter:   testDatacenter,
+		AssigneeType: "server",
+		AutoDelete:   false,
+	}
+	primaryIPv6OneRes.SetRName("primary_ip_v6_test")
+
+	primaryIPv4TwoRes := &primaryip.RData{
+		Name:         "primaryip-test-v4-two",
 		Type:         "ipv4",
 		Labels:       nil,
 		Datacenter:   testDatacenter,
 		AssigneeType: "server",
 		AutoDelete:   false,
 	}
-	primaryIPTwoRes.SetRName("primary_ip_test_2")
+	primaryIPv4TwoRes.SetRName("primary_ip_v4_two_test")
 
 	testServerRes := &server.RData{
 		Name:       "server-test",
@@ -112,8 +125,11 @@ func TestPrimaryIPResource_with_server(t *testing.T) {
 		Image:      e2etests.TestImage,
 		Datacenter: testDatacenter,
 		Labels:     nil,
-		PublicNet: map[string]string{
-			"ipv4": primaryIPOneRes.TFID() + ".id",
+		PublicNet: map[string]interface{}{
+			"ipv4_enabled": true,
+			"ipv6_enabled": true,
+			"ipv4":         primaryIPv4OneRes.TFID() + ".id",
+			"ipv6":         primaryIPv6OneRes.TFID() + ".id",
 		},
 	}
 
@@ -123,8 +139,9 @@ func TestPrimaryIPResource_with_server(t *testing.T) {
 		Image:      testServerRes.Image,
 		Datacenter: testServerRes.Datacenter,
 		Labels:     testServerRes.Labels,
-		PublicNet: map[string]string{
-			"ipv4": primaryIPTwoRes.TFID() + ".id",
+		PublicNet: map[string]interface{}{
+			"ipv4":         primaryIPv4TwoRes.TFID() + ".id",
+			"ipv6_enabled": false,
 		},
 	}
 	testServerUpdatedRes.SetRName(testServerRes.RName())
@@ -139,37 +156,62 @@ func TestPrimaryIPResource_with_server(t *testing.T) {
 		},
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &srv)),
-			testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &pip)),
-			testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &pip2)),
+			testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &primaryIPv4One)),
+			testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &primaryIPv4Two)),
+			testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &primaryIPv6One)),
 		),
 		Steps: []resource.TestStep{
 			{
 				// Create a new primary ip & server using the required values
 				// only.
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_primary_ip", primaryIPOneRes,
-					"testdata/r/hcloud_primary_ip", primaryIPTwoRes,
+					"testdata/r/hcloud_primary_ip", primaryIPv4OneRes,
+					"testdata/r/hcloud_primary_ip", primaryIPv6OneRes,
+					"testdata/r/hcloud_primary_ip", primaryIPv4TwoRes,
 					"testdata/r/hcloud_server", testServerRes),
 
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(primaryIPOneRes.TFID(), primaryip.ByID(t, &pip)),
-					testsupport.CheckResourceExists(primaryIPTwoRes.TFID(), primaryip.ByID(t, &pip2)),
+					testsupport.CheckResourceExists(primaryIPv4OneRes.TFID(), primaryip.ByID(t, &primaryIPv4One)),
+					testsupport.CheckResourceExists(primaryIPv4TwoRes.TFID(), primaryip.ByID(t, &primaryIPv4Two)),
+					testsupport.CheckResourceExists(primaryIPv6OneRes.TFID(), primaryip.ByID(t, &primaryIPv6One)),
 					testsupport.CheckResourceExists(testServerRes.TFID(), server.ByID(t, &srv)),
-					resource.TestCheckResourceAttr(primaryIPOneRes.TFID(), "name",
-						fmt.Sprintf("primaryip-test--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(primaryIPv4OneRes.TFID(), "name",
+						fmt.Sprintf("primaryip-test-v4-one--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(primaryIPv6OneRes.TFID(), "name",
+						fmt.Sprintf("primaryip-test-v6-one--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(testServerRes.TFID(), "name",
 						fmt.Sprintf("server-test--%d", tmplMan.RandInt)),
-					resource.TestCheckResourceAttr(primaryIPOneRes.TFID(), "type", primaryIPOneRes.Type),
+					resource.TestCheckResourceAttr(primaryIPv4OneRes.TFID(), "type", primaryIPv4OneRes.Type),
 					resource.TestCheckResourceAttr(testServerRes.TFID(), "server_type", testServerRes.Type),
-					resource.TestCheckResourceAttr(primaryIPOneRes.TFID(), "assignee_id", strconv.Itoa(pip.ID)),
+					resource.TestCheckResourceAttr(primaryIPv4OneRes.TFID(), "assignee_id", strconv.Itoa(primaryIPv4One.ID)),
 				),
 			},
 			{
-				Config: tmplMan.Render(t, "testdata/r/hcloud_primary_ip", primaryIPOneRes,
-					"testdata/r/hcloud_primary_ip", primaryIPTwoRes,
+				Config: tmplMan.Render(t, "testdata/r/hcloud_primary_ip", primaryIPv4OneRes,
+					"testdata/r/hcloud_primary_ip", primaryIPv6OneRes,
+					"testdata/r/hcloud_primary_ip", primaryIPv4TwoRes,
 					"testdata/r/hcloud_server", testServerUpdatedRes),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(primaryIPTwoRes.TFID(), "assignee_id", strconv.Itoa(pip2.ID))),
+					// assign current hcloud primary ips + new server to local variables + check its existence
+					testsupport.CheckResourceExists(primaryIPv4OneRes.TFID(), primaryip.ByID(t, &primaryIPv4One)),
+					testsupport.CheckResourceExists(primaryIPv4TwoRes.TFID(), primaryip.ByID(t, &primaryIPv4Two)),
+					testsupport.CheckResourceExists(primaryIPv6OneRes.TFID(), primaryip.ByID(t, &primaryIPv6One)),
+					testsupport.CheckResourceExists(testServerUpdatedRes.TFID(), server.ByID(t, &srv)),
+					func(_ *terraform.State) error {
+						// check current hcloud state, validating if ips got assigned / unassigned correctly
+						if primaryIPv4Two.AssigneeID == srv.ID &&
+							primaryIPv6One.AssigneeID != srv.ID &&
+							primaryIPv4One.AssigneeID != srv.ID {
+							return nil
+						}
+						return fmt.Errorf("State is not as expected: \n" +
+							fmt.Sprintf("primary IP v2 two has assignee id %d which not equals target server id %d",
+								primaryIPv4Two.AssigneeID, srv.ID) + "\n" +
+							fmt.Sprintf("primary IP v1 one has assignee id %d and should shouldnt be assigned to server id %d",
+								primaryIPv4One.AssigneeID, srv.ID) + "\n" +
+							fmt.Sprintf("primary IP v6 one has assignee id %d and should shouldnt be assigned to server id %d",
+								primaryIPv6One.AssigneeID, srv.ID))
+					}),
 			},
 		},
 	})
