@@ -314,30 +314,28 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		createPublicNet := hcloud.ServerCreatePublicNet{}
 		for _, publicNetBlock := range publicNet.(*schema.Set).List() {
 			publicNetEntry := publicNetBlock.(map[string]interface{})
-
 			if enableIPv4, err := toServerPublicNet[bool](publicNetEntry, "ipv4_enabled"); err == nil {
 				createPublicNet.EnableIPv4 = enableIPv4
 			}
 			if enableIPv6, err := toServerPublicNet[bool](publicNetEntry, "ipv6_enabled"); err == nil {
 				createPublicNet.EnableIPv6 = enableIPv6
 			}
-			if ipv4, err := toServerPublicNet[int](publicNetEntry, "ipv4"); err == nil {
+			if ipv4, err := toServerPublicNet[int](publicNetEntry, "ipv4"); err == nil && ipv4 != 0 {
 				createPublicNet.EnableIPv4 = true
 				createPublicNet.IPv4 = &hcloud.PrimaryIP{ID: ipv4}
 			}
-			if ipv6, err := toServerPublicNet[int](publicNetEntry, "ipv6"); err == nil {
+			if ipv6, err := toServerPublicNet[int](publicNetEntry, "ipv6"); err == nil && ipv6 != 0 {
 				createPublicNet.EnableIPv6 = true
 				createPublicNet.IPv6 = &hcloud.PrimaryIP{ID: ipv6}
 			}
 		}
 		opts.PublicNet = &createPublicNet
 		// if the server has no public net, it has to be created without starting it
-		onServerCreateWithoutPublicNet(&opts, func(opts *hcloud.ServerCreateOpts) error {
+		onServerCreateWithoutPublicNet(&opts, d, func(opts *hcloud.ServerCreateOpts) error {
 			opts.StartAfterCreate = hcloud.Bool(false)
 			return nil
 		})
 	}
-
 	res, _, err := c.Server.Create(ctx, opts)
 	if err != nil {
 		return hcclient.ErrorToDiag(err)
@@ -362,7 +360,7 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		}
 		// if the server was created without public net, the server is now still offline and has to be powered on after
 		// network assignment
-		onServerCreateWithoutPublicNet(&opts, func(opts *hcloud.ServerCreateOpts) error {
+		onServerCreateWithoutPublicNet(&opts, d, func(opts *hcloud.ServerCreateOpts) error {
 			powerOn, _, err := c.Server.Poweron(ctx, res.Server)
 			if err != nil {
 				return err
@@ -1082,9 +1080,8 @@ func toPublicNetPrimaryIPField[V int | bool](field map[string]interface{}, key s
 	return fieldValue, fmt.Errorf("%s: field does not contain ID", op)
 }
 
-func onServerCreateWithoutPublicNet(opts *hcloud.ServerCreateOpts,
-	fn func(opts *hcloud.ServerCreateOpts) error) diag.Diagnostics {
-	if opts.PublicNet != nil {
+func onServerCreateWithoutPublicNet(opts *hcloud.ServerCreateOpts, d *schema.ResourceData, fn func(opts *hcloud.ServerCreateOpts) error) diag.Diagnostics {
+	if _, ok := d.GetOk("network"); ok && opts.PublicNet != nil {
 		if !opts.PublicNet.EnableIPv6 && !opts.PublicNet.EnableIPv4 {
 			if err := fn(opts); err != nil {
 				return hcclient.ErrorToDiag(err)

@@ -20,6 +20,9 @@ const (
 	// TestLoadBalancerType is the default Load Balancer type used in all tests
 	TestLoadBalancerType = "lb11"
 
+	// TestDataCenter is the default datacenter where we execute our tests.
+	TestDataCenter = "hel1-dc2"
+
 	// TestLocationName is the default location where we execute our tests.
 	TestLocationName = "hel1"
 )
