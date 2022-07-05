@@ -22,6 +22,9 @@ const (
 
 	// TestLocationDataCenter is the default datacenter where we execute our tests.
 	TestLocationDataCenter = "hel1-dc2"
+
+	// TestLocationName is the default location where we execute our tests.
+	TestLocationName = "hel1"
 )
 
 func init() {

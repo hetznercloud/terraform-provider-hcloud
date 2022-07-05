@@ -4,9 +4,10 @@ import (
 	"crypto/sha1"
 	"encoding/base64"
 	"fmt"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/primaryip"
 	"strconv"
 	"testing"
+
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/primaryip"
 
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/e2etests"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/firewall"
