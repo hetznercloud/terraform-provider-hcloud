@@ -5,14 +5,15 @@ import (
 	"crypto/sha1"
 	"encoding/base64"
 	"fmt"
-	"github.com/hashicorp/go-cty/cty"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/primaryip"
 	"log"
 	"net"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/primaryip"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
@@ -631,7 +632,6 @@ func updatePublicNet(ctx context.Context, o interface{}, n interface{}, c *hclou
 		if ipv6Enabled, err := toPublicNetPrimaryIPField[bool](fields, "ipv6_enabled"); err == nil {
 			ipv6EnabledInRemoveDiff = ipv6Enabled
 		}
-
 	}
 
 	shutdown, _, _ := c.Server.Poweroff(ctx, &hcloud.Server{ID: server.ID})
@@ -752,7 +752,7 @@ func publicNetUpdateDecision(ctx context.Context,
 	// if ip set from false -> true, create & assign auto generated primary ip
 	case ipEnabled && ipID == 0:
 		// unassign managed ip when id is removed
-		if ipEnabledInRemoveDiff == true && ipIDInRemoveDiff != 0 {
+		if ipEnabledInRemoveDiff && ipIDInRemoveDiff != 0 {
 			if err := primaryip.UnassignPrimaryIP(ctx, c, ipIDInRemoveDiff); err != nil {
 				if err := powerOnServer(ctx, c, server); err != nil {
 					return err
@@ -760,8 +760,8 @@ func publicNetUpdateDecision(ctx context.Context,
 				return err
 			}
 		}
-		if ipEnabledInRemoveDiff == false && ipIDInRemoveDiff == 0 ||
-			ipEnabledInRemoveDiff == true && ipIDInRemoveDiff != 0 {
+		if !ipEnabledInRemoveDiff && ipIDInRemoveDiff == 0 ||
+			ipEnabledInRemoveDiff && ipIDInRemoveDiff != 0 {
 			if err := primaryip.CreateRandomPrimaryIP(ctx, c, server, ipType); err != nil {
 				if err := powerOnServer(ctx, c, server); err != nil {
 					return err
@@ -1224,8 +1224,7 @@ func publicNetRemovedDecision(ctx context.Context,
 	serverIPID int,
 	ipIDToRemove int,
 	ipType hcloud.PrimaryIPType) diag.Diagnostics {
-	switch {
-	case server.PublicNet.IPv4.ID != 0 && ipIDToRemove != 0:
+	if server.PublicNet.IPv4.ID != 0 && ipIDToRemove != 0 {
 		if err := primaryip.UnassignPrimaryIP(ctx, c, serverIPID); err != nil {
 			return err
 		}

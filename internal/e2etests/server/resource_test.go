@@ -4,10 +4,11 @@ import (
 	"crypto/sha1"
 	"encoding/base64"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	tfhcloud "github.com/hetznercloud/terraform-provider-hcloud/hcloud"
 	"strconv"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	tfhcloud "github.com/hetznercloud/terraform-provider-hcloud/hcloud"
 
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/primaryip"
 
