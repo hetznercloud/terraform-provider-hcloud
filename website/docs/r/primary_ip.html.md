@@ -47,6 +47,7 @@ resource "hcloud_server" "server_test" {
 - `type` - (string) Type of the Primary IP.
 - `name` - (string) Name of the Primary IP.
 - `auto_delete` - (boolean) Whether auto delete is enabled.
+  `Important note:`It is recommended to set `auto_delete` to `false`, because if a server assigned to the managed ip is getting deleted, it will also delete the primary IP which will break the TF state.
 - `labels` - (string) Description of the Primary IP.
 - `assignee_id` - (int) ID of the assigned resource
 - `assignee_type` - (string, optional) The type of the assigned resource.
@@ -57,11 +58,12 @@ resource "hcloud_server" "server_test" {
 - `type` - (string) Type of the Primary IP.
 - `name` - (string) Name of the Primary IP.
 - `auto_delete` - (boolean) Whether auto delete is enabled.
+`Important note:`It is recommended to set `auto_delete` to `false`, because if a server assigned to a managed ip is getting deleted, it will also delete the primary IP which will break the TF state.
 - `labels` - (string) Description of the Primary IP.
 - `ip_address` - (string) IP Address of the Primary IP.
 - `assignee_id` - (int) ID of the assigned resource
 - `assignee_type` - (string) The type of the assigned resource.
-- `delete_protection` - (boolean) Whether delete protection is enabled.
+- `delete_protection` - (boolean) Whether delete protection is enabled. 
 
 ## Import
 

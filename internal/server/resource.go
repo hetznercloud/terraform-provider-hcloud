@@ -5,14 +5,14 @@ import (
 	"crypto/sha1"
 	"encoding/base64"
 	"fmt"
+	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/primaryip"
 	"log"
 	"net"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/hashicorp/go-cty/cty"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
@@ -149,7 +149,6 @@ func Resource() *schema.Resource {
 					_, ok := d.GetOk("public_net")
 					return !ok // Negate because we do **not** want to suppress the diff.
 				},
-
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"ipv4_enabled": {
@@ -618,59 +617,167 @@ func updatePublicNet(ctx context.Context, o interface{}, n interface{}, c *hclou
 	diffToRemove := o.(*schema.Set).Difference(n.(*schema.Set))
 	diffToAdd := n.(*schema.Set).Difference(o.(*schema.Set))
 
-	unassignPrimaryIPIDs := []int{}
-	assignPrimaryIPIDs := []int{}
-
+	ipv4IDToRemove := 0
+	ipv6IDToRemove := 0
+	ipv4EnabledInRemoveDiff := true
+	ipv6EnabledInRemoveDiff := true
+	// collect ip IDs which got removed
 	for _, d := range diffToRemove.List() {
 		fields := d.(map[string]interface{})
-		unassignPrimaryIPIDs = collectPrimaryIPIDs(fields, unassignPrimaryIPIDs)
+		ipv4IDToRemove, ipv6IDToRemove = collectPrimaryIPIDs(fields)
+		if ipv4Enabled, err := toPublicNetPrimaryIPField[bool](fields, "ipv4_enabled"); err == nil {
+			ipv4EnabledInRemoveDiff = ipv4Enabled
+		}
+		if ipv6Enabled, err := toPublicNetPrimaryIPField[bool](fields, "ipv6_enabled"); err == nil {
+			ipv6EnabledInRemoveDiff = ipv6Enabled
+		}
+
 	}
 
-	for _, d := range diffToAdd.List() {
-		fields := d.(map[string]interface{})
-		assignPrimaryIPIDs = collectPrimaryIPIDs(fields, assignPrimaryIPIDs)
-	}
 	shutdown, _, _ := c.Server.Poweroff(ctx, &hcloud.Server{ID: server.ID})
 	if err := hcclient.WaitForAction(ctx, &c.Action, shutdown); err != nil {
 		return hcclient.ErrorToDiag(err)
 	}
-	for _, v := range unassignPrimaryIPIDs {
-		action, _, err := c.PrimaryIP.Unassign(ctx, v)
-		if err != nil {
-			return hcclient.ErrorToDiag(err)
-		}
-		if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
-			return hcclient.ErrorToDiag(err)
-		}
-	}
 
-	for _, v := range assignPrimaryIPIDs {
-		action, _, err := c.PrimaryIP.Assign(ctx, hcloud.PrimaryIPAssignOpts{
-			ID:         v,
-			AssigneeID: server.ID,
-		})
-		if err != nil {
-			return hcclient.ErrorToDiag(err)
-		}
-		if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
-			return hcclient.ErrorToDiag(err)
-		}
-	}
-
-	err := control.Retry(control.DefaultRetries, func() error {
-		powerOn, _, err := c.Server.Poweron(ctx, server)
-		if err != nil {
+	// if public net block is removed, auto generate primary ips & remove existing
+	if diffToAdd.Len() == 0 {
+		if err := publicNetRemovedDecision(ctx,
+			c,
+			server,
+			server.PublicNet.IPv4.ID,
+			ipv4IDToRemove,
+			hcloud.PrimaryIPTypeIPv4); err != nil {
 			return err
 		}
-		if err := hcclient.WaitForAction(ctx, &c.Action, powerOn); err != nil {
+		if err := publicNetRemovedDecision(ctx,
+			c,
+			server,
+			server.PublicNet.IPv6.ID,
+			ipv6IDToRemove,
+			hcloud.PrimaryIPTypeIPv6); err != nil {
 			return err
 		}
-		return nil
-	})
-	if err != nil {
-		return hcclient.ErrorToDiag(err)
 	}
 
+	// Check ip bool together with IDs to trigger the right actions
+	for _, d := range diffToAdd.List() {
+		fields := d.(map[string]interface{})
+		ipv4IDToAdd, ipv6IDToAdd := collectPrimaryIPIDs(fields)
+
+		if ipv4Enabled, err := toPublicNetPrimaryIPField[bool](fields, "ipv4_enabled"); err == nil {
+			if err := publicNetUpdateDecision(ctx,
+				c,
+				ipv4Enabled,
+				ipv4EnabledInRemoveDiff,
+				ipv4IDToAdd,
+				ipv4IDToRemove,
+				server,
+				server.PublicNet.IPv4.ID,
+				hcloud.PrimaryIPTypeIPv4); err != nil {
+				return err
+			}
+		}
+		if ipv6Enabled, err := toPublicNetPrimaryIPField[bool](fields, "ipv6_enabled"); err == nil {
+			if err := publicNetUpdateDecision(ctx,
+				c, ipv6Enabled,
+				ipv6EnabledInRemoveDiff,
+				ipv6IDToAdd,
+				ipv6IDToRemove,
+				server,
+				server.PublicNet.IPv6.ID,
+				hcloud.PrimaryIPTypeIPv6); err != nil {
+				return err
+			}
+		}
+	}
+
+	if err := powerOnServer(ctx, c, server); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func publicNetUpdateDecision(ctx context.Context,
+	c *hcloud.Client,
+	ipEnabled bool,
+	ipEnabledInRemoveDiff bool,
+	ipID int,
+	ipIDInRemoveDiff int,
+	server *hcloud.Server,
+	serverIPID int,
+	ipType hcloud.PrimaryIPType) diag.Diagnostics {
+	switch {
+	// if ip set true + ip id, remove all previous assigned ipv4 + assign new
+	case ipEnabled && ipID != 0:
+		if serverIPID != 0 {
+			// if primary ip is managed + unassigned before, this might throw an error
+			if err := primaryip.UnassignPrimaryIP(ctx, c, serverIPID); err != nil {
+				return err
+			}
+			if ipIDInRemoveDiff == 0 {
+				if err := primaryip.DeletePrimaryIP(ctx, c, &hcloud.PrimaryIP{ID: serverIPID}); err != nil {
+					if err := powerOnServer(ctx, c, server); err != nil {
+						return err
+					}
+					return err
+				}
+			}
+		}
+		if err := primaryip.AssignPrimaryIP(ctx, c, ipID, server.ID); err != nil {
+			if err := powerOnServer(ctx, c, server); err != nil {
+				return err
+			}
+			return err
+		}
+	// if ip set from true -> false + no ip id, unassign + delete PrimaryIP
+	case !ipEnabled && ipID == 0:
+		if serverIPID != 0 {
+			if err := primaryip.UnassignPrimaryIP(ctx, c, serverIPID); err != nil {
+				if err := powerOnServer(ctx, c, server); err != nil {
+					return err
+				}
+				return err
+			}
+			if ipIDInRemoveDiff == 0 {
+				if err := primaryip.DeletePrimaryIP(ctx, c, &hcloud.PrimaryIP{ID: serverIPID}); err != nil {
+					if err := powerOnServer(ctx, c, server); err != nil {
+						return err
+					}
+					return err
+				}
+			}
+		}
+
+	// if ip set from false -> true, create & assign auto generated primary ip
+	case ipEnabled && ipID == 0:
+		// unassign managed ip when id is removed
+		if ipEnabledInRemoveDiff == true && ipIDInRemoveDiff != 0 {
+			if err := primaryip.UnassignPrimaryIP(ctx, c, ipIDInRemoveDiff); err != nil {
+				if err := powerOnServer(ctx, c, server); err != nil {
+					return err
+				}
+				return err
+			}
+		}
+		if ipEnabledInRemoveDiff == false && ipIDInRemoveDiff == 0 ||
+			ipEnabledInRemoveDiff == true && ipIDInRemoveDiff != 0 {
+			if err := primaryip.CreateRandomPrimaryIP(ctx, c, server, ipType); err != nil {
+				if err := powerOnServer(ctx, c, server); err != nil {
+					return err
+				}
+				return err
+			}
+		}
+
+	// error on ip set from true -> false + ipv4 ID provided
+	case !ipEnabled && ipID != 0:
+		if err := powerOnServer(ctx, c, server); err != nil {
+			return err
+		}
+		return hcclient.ErrorToDiag(
+			fmt.Errorf("this operation is not allowed: ipv4_enabled = false | ipv4 = %d", ipID))
+	}
 	return nil
 }
 
@@ -1061,14 +1168,16 @@ func toServerPublicNet[V int | bool](field map[string]interface{}, key string) (
 	return valType, fmt.Errorf("%s: unable to apply value to public_net values", op)
 }
 
-func collectPrimaryIPIDs(primaryIPList map[string]interface{}, list []int) []int {
-	if r, err := toPublicNetPrimaryIPField[int](primaryIPList, "ipv4"); r != 0 && err == nil {
-		list = append(list, r)
+func collectPrimaryIPIDs(primaryIPList map[string]interface{}) (int, int) {
+	var IPv4ID = 0
+	var IPv6ID = 0
+	if id, err := toPublicNetPrimaryIPField[int](primaryIPList, "ipv4"); id != 0 && err == nil {
+		IPv4ID = id
 	}
-	if r, err := toPublicNetPrimaryIPField[int](primaryIPList, "ipv6"); r != 0 && err == nil {
-		list = append(list, r)
+	if id, err := toPublicNetPrimaryIPField[int](primaryIPList, "ipv6"); id != 0 && err == nil {
+		IPv6ID = id
 	}
-	return list
+	return IPv4ID, IPv6ID
 }
 
 func toPublicNetPrimaryIPField[V int | bool](field map[string]interface{}, key string) (V, error) {
@@ -1088,6 +1197,41 @@ func onServerCreateWithoutPublicNet(opts *hcloud.ServerCreateOpts, d *schema.Res
 			}
 		}
 		return nil
+	}
+	return nil
+}
+
+func powerOnServer(ctx context.Context, c *hcloud.Client, server *hcloud.Server) diag.Diagnostics {
+	err := control.Retry(control.DefaultRetries, func() error {
+		powerOn, _, err := c.Server.Poweron(ctx, server)
+		if err != nil {
+			return err
+		}
+		if err := hcclient.WaitForAction(ctx, &c.Action, powerOn); err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return hcclient.ErrorToDiag(err)
+	}
+	return nil
+}
+
+func publicNetRemovedDecision(ctx context.Context,
+	c *hcloud.Client,
+	server *hcloud.Server,
+	serverIPID int,
+	ipIDToRemove int,
+	ipType hcloud.PrimaryIPType) diag.Diagnostics {
+	switch {
+	case server.PublicNet.IPv4.ID != 0 && ipIDToRemove != 0:
+		if err := primaryip.UnassignPrimaryIP(ctx, c, serverIPID); err != nil {
+			return err
+		}
+		if err := primaryip.CreateRandomPrimaryIP(ctx, c, server, ipType); err != nil {
+			return err
+		}
 	}
 	return nil
 }
