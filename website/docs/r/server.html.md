@@ -10,28 +10,6 @@ description: |-
 
 Provides an Hetzner Cloud server resource. This can be used to create, modify, and delete servers. Servers also support [provisioning](https://www.terraform.io/docs/provisioners/index.html).
 
-
-
-## Primary IPs
-When creating a server without linking at least one ´primary_ip´, it automatically creates & assigns two (ipv4 & ipv6).
-With the public_net block, you can define if you want to enable or link primary ips. If you don't define this block, two primary ips (ipv4, ipv6) will be created and assigned to the server.
-
-### Examples
-
-```hcl
-# Assign existing ipv4 only
-public_net {
-  ipv4_enabled = true
-  ipv4 = hcloud_primary_ip.primary_ip_1.id
-  ipv6_enabled = false
-}
-# Assign & create ipv4 & ipv6
-public_net {
-  ipv4_enabled = true
-  ipv6_enabled = true
-}
-```
-
 ## Example Usage
 
 ### Basic server creation
@@ -42,6 +20,10 @@ resource "hcloud_server" "node1" {
   name        = "node1"
   image       = "debian-9"
   server_type = "cx11"
+  public_net {
+    ipv4_enabled = true
+    ipv6_enabled = true
+  }
 }
 ```
 ```hcl
@@ -111,6 +93,44 @@ resource "hcloud_server" "server" {
 }
 ```
 
+## Primary IPs
+When creating a server without linking at least one ´primary_ip´, it automatically creates & assigns two (ipv4 & ipv6).
+With the public_net block, you can enable or link primary ips. If you don't define this block, two primary ips (ipv4, ipv6) will be created and assigned to the server automatically.
+
+### Examples
+
+```hcl
+# Assign existing ipv4 only
+resource "hcloud_server" "server_test" {
+  //...
+  public_net {
+    ipv4_enabled = true
+    ipv4 = hcloud_primary_ip.primary_ip_1.id
+    ipv6_enabled = false
+  }
+  //...
+}
+# Link a managed ipv4 but autogenerate ipv6
+resource "hcloud_server" "server_test" {
+  //...
+  public_net {
+    ipv4_enabled = true
+    ipv4 = hcloud_primary_ip.primary_ip_1.id
+    ipv6_enabled = false
+  }
+  //...
+}
+# Assign & create auto-generated ipv4 & ipv6
+resource "hcloud_server" "server_test" {
+  //...
+  public_net {
+    ipv4_enabled = true
+    ipv6_enabled = true
+  }
+  //...
+}
+```
+
 ## Argument Reference
 
 The following arguments are supported:
@@ -122,7 +142,8 @@ The following arguments are supported:
 - `datacenter` - (Optional, string) The datacenter name to create the server in.
 - `user_data` - (Optional, string) Cloud-Init user data to use during server creation
 - `ssh_keys` - (Optional, list) SSH key IDs or names which should be injected into the server at creation time
-- `public_net` - (Optional, block) In this block you can either enable / disable ipv4 and ipv6 or link existing primary IPs (checkout the examples)
+- `public_net` - (Optional, block) In this block you can either enable / disable ipv4 and ipv6 or link existing primary IPs (checkout the examples). 
+  If this block is not defined, two primary (ipv4 & ipv6) ips getting auto generated.
 - `keep_disk` - (Optional, bool) If true, do not upgrade the disk. This allows downgrading the server type later.
 - `iso` - (Optional, string) ID or Name of an ISO image to mount.
 - `rescue` - (Optional, string) Enable and boot in to the specified rescue system. This enables simple installation of custom operating systems. `linux64` `linux32` or `freebsd64`
