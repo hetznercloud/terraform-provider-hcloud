@@ -19,6 +19,9 @@ resource "hcloud_server" "{{ .RName }}" {
   {{- if .KeepDisk }}
   keep_disk   = {{ .KeepDisk }}
   {{ end }}
+  {{- if .AllowDeprecatedImages }}
+  allow_deprecated_images   = {{ .AllowDeprecatedImages }}
+  {{ end }}
   {{- if .ISO }}
   iso         = {{ .ISO }}
   {{ end }}
