@@ -150,15 +150,16 @@ The following arguments are supported:
 - `labels` - (Optional, map) User-defined labels (key-value pairs) should be created with.
 - `backups` - (Optional, boolean) Enable or disable backups.
 - `firewall_ids` - (Optional, list) Firewall IDs the server should be attached to on creation.
-- `ignore_remote_firewall_ids` - (Optional, boolean) Ingores any updates
+- `ignore_remote_firewall_ids` - (Optional, boolean) Ignores any updates
   to the `firewall_ids` argument which were received from the server.
   This should not be used in normal cases. See the documentation of the
-  `hcloud_firewall_attachment` resouce for a reason to use this
+  `hcloud_firewall_attachment` resource for a reason to use this
   argument.
 - `network` - (Optional)  Network the server should be attached to on creation. (Can be specified multiple times)
 - `placement_group_id` - (Optional, string) Placement Group ID the server added to on creation.
 - `delete_protection` - (Optional, boolean) Enable or disable delete protection (Needs to be the same as `rebuild_protection`).
 - `rebuild_protection` - (Optional, boolean) Enable or disable rebuild protection (Needs to be the same as `delete_protection`).
+- `allow_deprecated_images` - (Optional, boolean) Enable the use of deprecated images (default: false). **Note** Deprecated images will be removed after three months. Using them is then no longer possible.
 
 `network` support the following fields:
 - `network_id` - (Required, int) ID of the network

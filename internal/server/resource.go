@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/primaryip"
@@ -93,6 +95,11 @@ func Resource() *schema.Resource {
 				ForceNew: true,
 			},
 			"keep_disk": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
+			"allow_deprecated_images": {
 				Type:     schema.TypeBool,
 				Optional: true,
 				Default:  false,
@@ -262,9 +269,29 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	c := m.(*hcloud.Client)
 
 	var err error
-	image, _, err := c.Image.Get(ctx, d.Get("image").(string))
+	var image *hcloud.Image
+	images, err := c.Image.AllWithOpts(ctx, hcloud.ImageListOpts{Name: d.Get("image").(string), IncludeDeprecated: true})
 	if err != nil {
 		return hcclient.ErrorToDiag(err)
+	}
+	switch len(images) {
+	case 1:
+		image = images[0]
+	case 0:
+		image, _, err = c.Image.Get(ctx, d.Get("image").(string))
+		if err != nil {
+			return hcclient.ErrorToDiag(err)
+		}
+	default:
+		return diag.Errorf("more than one Image found for name %s", d.Get("image").(string))
+	}
+
+	if image.IsDeprecated() {
+		if d.Get("allow_deprecated_images").(bool) {
+			tflog.Warn(ctx, fmt.Sprintf("image %s is deprecated. It will continue to be available until %s", image.Name, image.Deprecated.AddDate(0, 3, 0).Format("2006-01-02")))
+		} else {
+			return diag.Errorf("image %s is deprecated. It will continue to be available until %s. If you want to use it, specify the allow_deprecated_images option.", image.Name, image.Deprecated.AddDate(0, 3, 0).Format("2006-01-02"))
+		}
 	}
 	opts := hcloud.ServerCreateOpts{
 		Name: d.Get("name").(string),
