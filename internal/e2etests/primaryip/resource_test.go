@@ -41,6 +41,7 @@ func TestPrimaryIPResource_Basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: e2etests.PreCheck(t),
 		ProviderFactories: map[string]func() (*schema.Provider, error){
+			//nolint:unparam
 			"hcloud": func() (*schema.Provider, error) {
 				return tfhcloud.Provider(), nil
 			},
@@ -146,6 +147,7 @@ func TestPrimaryIPResource_with_server(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: e2etests.PreCheck(t),
 		ProviderFactories: map[string]func() (*schema.Provider, error){
+			//nolint:unparam
 			"hcloud": func() (*schema.Provider, error) {
 				return tfhcloud.Provider(), nil
 			},
@@ -236,6 +238,7 @@ func TestPrimaryIPResource_Protection(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: e2etests.PreCheck(t),
 		ProviderFactories: map[string]func() (*schema.Provider, error){
+			//nolint:unparam
 			"hcloud": func() (*schema.Provider, error) {
 				return tfhcloud.Provider(), nil
 			},

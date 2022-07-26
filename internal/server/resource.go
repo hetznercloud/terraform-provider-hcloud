@@ -358,10 +358,12 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		}
 		opts.PublicNet = &createPublicNet
 		// if the server has no public net, it has to be created without starting it
-		onServerCreateWithoutPublicNet(&opts, d, func(opts *hcloud.ServerCreateOpts) error {
+		if err := onServerCreateWithoutPublicNet(&opts, d, func(opts *hcloud.ServerCreateOpts) error {
 			opts.StartAfterCreate = hcloud.Bool(false)
 			return nil
-		})
+		}); err != nil {
+			return err
+		}
 	}
 	res, _, err := c.Server.Create(ctx, opts)
 	if err != nil {
@@ -387,16 +389,36 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		}
 		// if the server was created without public net, the server is now still offline and has to be powered on after
 		// network assignment
-		onServerCreateWithoutPublicNet(&opts, d, func(opts *hcloud.ServerCreateOpts) error {
+		if err := onServerCreateWithoutPublicNet(&opts, d, func(opts *hcloud.ServerCreateOpts) error {
 			powerOn, _, err := c.Server.Poweron(ctx, res.Server)
 			if err != nil {
 				return err
 			}
 			if err := hcclient.WaitForAction(ctx, &c.Action, powerOn); err != nil {
-				return fmt.Errorf("start server: %v", err)
+				return fmt.Errorf("power on server: %v", err)
+			}
+
+			// Workaround for network interface issue
+			powerOffTwo, _, err := c.Server.Poweroff(ctx, res.Server)
+			if err != nil {
+				return err
+			}
+			time.Sleep(time.Second * 5)
+			if err := hcclient.WaitForAction(ctx, &c.Action, powerOffTwo); err != nil {
+				return fmt.Errorf("power off server: %v", err)
+			}
+
+			powerOnTwo, _, err := c.Server.Poweron(ctx, res.Server)
+			if err != nil {
+				return err
+			}
+			if err := hcclient.WaitForAction(ctx, &c.Action, powerOnTwo); err != nil {
+				return fmt.Errorf("power on server: %v", err)
 			}
 			return nil
-		})
+		}); err != nil {
+			return err
+		}
 	}
 
 	backups := d.Get("backups").(bool)
