@@ -283,7 +283,7 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 			return hcclient.ErrorToDiag(err)
 		}
 		if image == nil {
-			return diag.Errorf("image %s not found", d.Get("image").(string))	
+			return diag.Errorf("image %s not found", d.Get("image").(string))
 		}
 	default:
 		return diag.Errorf("more than one Image found for name %s", d.Get("image").(string))
