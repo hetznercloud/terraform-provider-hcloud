@@ -20,10 +20,12 @@ Currently, Primary IPs can be only attached to servers.
 ## Example Usage
 
 # Data Source: hcloud_primary_ip
+
 Provides details about a Hetzner Cloud Primary IP.
 This resource can be useful when you need to determine a Primary IP ID based on the IP address.
 
 ## Example Usage
+
 ```hcl
 data "hcloud_primary_ip" "ip_1" {
   ip_address = "1.2.3.4"
@@ -50,6 +52,7 @@ resource "hcloud_server" "server_test" {
 
 }
 ```
+
 ## Argument Reference
 - `id` - (Optional, string) ID of the Primary IP.
 - `name` - (Optional, string) Name of the Primary IP.
@@ -60,9 +63,10 @@ resource "hcloud_server" "server_test" {
 - `id` - (int) Unique ID of the Primary IP.
 - `type` - (string) Type of the Primary IP.
 - `name` - (string) Name of the Primary IP.
-- `auto_delete` - (boolean) Whether auto delete is enabled. 
+- `datacenter` - (string) The datacenter name of the Primary IP.
+- `auto_delete` - (boolean) Whether auto delete is enabled.
 - `labels` - (string) Description of the Primary IP.
 - `ip_address` - (string) IP Address of the Primary IP.
-- `assignee_id` - (int) ID of the assigned resource
+- `assignee_id` - (int) ID of the assigned resource.
 - `assignee_type` - (string) The type of the assigned resource.
 - `delete_protection` - (boolean) Whether delete protection is enabled.
