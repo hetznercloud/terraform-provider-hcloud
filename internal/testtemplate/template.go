@@ -3,8 +3,8 @@ package testtemplate
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"math/rand"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -144,7 +144,7 @@ func parseTmplGlob(t *testing.T, root *template.Template, prefix, glob string) {
 		t.Fatalf("list files in %s: %v", glob, err)
 	}
 	for _, fileName := range fileNames {
-		str, err := ioutil.ReadFile(fileName)
+		str, err := os.ReadFile(fileName)
 		if err != nil {
 			t.Fatalf("read template file %s: %v", fileName, err)
 		}
