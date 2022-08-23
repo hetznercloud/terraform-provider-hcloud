@@ -12,16 +12,16 @@ linters:
     - deadcode
     - depguard
     - errcheck
+    - exportloopref
     - gocritic
     - goimports
-    - golint
     - gosimple
     - govet
     - ineffassign
     - misspell
     - prealloc
+    - revive
     - rowserrcheck
-    - scopelint
     - staticcheck
     - structcheck
     - typecheck
@@ -34,8 +34,8 @@ issues:
   exclude-rules:
     - path: _test\.go
       linters:
+        - exportloopref
         - gosec
-        - scopelint
         - errcheck
     - linters:
         - gosec
