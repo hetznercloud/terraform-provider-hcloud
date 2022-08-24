@@ -10,10 +10,12 @@
 # in `goreleaser` to indicate this is being used in a non-interactive mode.
 #
 name: release
+
 on:
   push:
     tags:
       - 'v*'
+
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
