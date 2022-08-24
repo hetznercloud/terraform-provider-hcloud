@@ -393,12 +393,8 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		// if the server was created without public net, the server is now still offline and has to be powered on after
 		// network assignment
 		if err := onServerCreateWithoutPublicNet(&opts, d, func(opts *hcloud.ServerCreateOpts) error {
-			powerOn, _, err := c.Server.Poweron(ctx, res.Server)
-			if err != nil {
+			if err := powerOnServer(ctx, c, res.Server); err != nil {
 				return err
-			}
-			if err := hcclient.WaitForAction(ctx, &c.Action, powerOn); err != nil {
-				return fmt.Errorf("power on server: %v", err)
 			}
 
 			// Workaround for network interface issue
@@ -406,17 +402,11 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 			if err != nil {
 				return err
 			}
-			time.Sleep(time.Second * 5)
 			if err := hcclient.WaitForAction(ctx, &c.Action, powerOffTwo); err != nil {
 				return fmt.Errorf("power off server: %v", err)
 			}
-
-			powerOnTwo, _, err := c.Server.Poweron(ctx, res.Server)
-			if err != nil {
+			if err := powerOnServer(ctx, c, res.Server); err != nil {
 				return err
-			}
-			if err := hcclient.WaitForAction(ctx, &c.Action, powerOnTwo); err != nil {
-				return fmt.Errorf("power on server: %v", err)
 			}
 			return nil
 		}); err != nil {
@@ -744,7 +734,7 @@ func updatePublicNet(ctx context.Context, o interface{}, n interface{}, c *hclou
 	}
 
 	if err := powerOnServer(ctx, c, server); err != nil {
-		return err
+		return hcclient.ErrorToDiag(err)
 	}
 
 	return nil
@@ -770,7 +760,7 @@ func publicNetUpdateDecision(ctx context.Context,
 			if ipIDInRemoveDiff == 0 {
 				if err := primaryip.DeletePrimaryIP(ctx, c, &hcloud.PrimaryIP{ID: serverIPID}); err != nil {
 					if err := powerOnServer(ctx, c, server); err != nil {
-						return err
+						return hcclient.ErrorToDiag(err)
 					}
 					return err
 				}
@@ -778,7 +768,7 @@ func publicNetUpdateDecision(ctx context.Context,
 		}
 		if err := primaryip.AssignPrimaryIP(ctx, c, ipID, server.ID); err != nil {
 			if err := powerOnServer(ctx, c, server); err != nil {
-				return err
+				return hcclient.ErrorToDiag(err)
 			}
 			return err
 		}
@@ -787,14 +777,14 @@ func publicNetUpdateDecision(ctx context.Context,
 		if serverIPID != 0 {
 			if err := primaryip.UnassignPrimaryIP(ctx, c, serverIPID); err != nil {
 				if err := powerOnServer(ctx, c, server); err != nil {
-					return err
+					return hcclient.ErrorToDiag(err)
 				}
 				return err
 			}
 			if ipIDInRemoveDiff == 0 {
 				if err := primaryip.DeletePrimaryIP(ctx, c, &hcloud.PrimaryIP{ID: serverIPID}); err != nil {
 					if err := powerOnServer(ctx, c, server); err != nil {
-						return err
+						return hcclient.ErrorToDiag(err)
 					}
 					return err
 				}
@@ -807,7 +797,7 @@ func publicNetUpdateDecision(ctx context.Context,
 		if ipEnabledInRemoveDiff && ipIDInRemoveDiff != 0 {
 			if err := primaryip.UnassignPrimaryIP(ctx, c, ipIDInRemoveDiff); err != nil {
 				if err := powerOnServer(ctx, c, server); err != nil {
-					return err
+					return hcclient.ErrorToDiag(err)
 				}
 				return err
 			}
@@ -816,7 +806,7 @@ func publicNetUpdateDecision(ctx context.Context,
 			ipEnabledInRemoveDiff && ipIDInRemoveDiff != 0 {
 			if err := primaryip.CreateRandomPrimaryIP(ctx, c, server, ipType); err != nil {
 				if err := powerOnServer(ctx, c, server); err != nil {
-					return err
+					return hcclient.ErrorToDiag(err)
 				}
 				return err
 			}
@@ -825,7 +815,7 @@ func publicNetUpdateDecision(ctx context.Context,
 	// error on ip set from true -> false + ipv4 ID provided
 	case !ipEnabled && ipID != 0:
 		if err := powerOnServer(ctx, c, server); err != nil {
-			return err
+			return hcclient.ErrorToDiag(err)
 		}
 		return hcclient.ErrorToDiag(
 			fmt.Errorf("this operation is not allowed: ipv4_enabled = false | ipv4 = %d", ipID))
@@ -1253,7 +1243,7 @@ func onServerCreateWithoutPublicNet(opts *hcloud.ServerCreateOpts, d *schema.Res
 	return nil
 }
 
-func powerOnServer(ctx context.Context, c *hcloud.Client, server *hcloud.Server) diag.Diagnostics {
+func powerOnServer(ctx context.Context, c *hcloud.Client, server *hcloud.Server) error {
 	err := control.Retry(control.DefaultRetries, func() error {
 		powerOn, _, err := c.Server.Poweron(ctx, server)
 		if err != nil {
@@ -1265,7 +1255,7 @@ func powerOnServer(ctx context.Context, c *hcloud.Client, server *hcloud.Server)
 		return nil
 	})
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return err
 	}
 	return nil
 }
