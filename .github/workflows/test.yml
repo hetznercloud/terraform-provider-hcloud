@@ -4,6 +4,7 @@ on:
 jobs:
   integration_tests:
     runs-on: self-hosted
+    concurrency: integration_tests
     strategy:
       fail-fast: false
       matrix:
