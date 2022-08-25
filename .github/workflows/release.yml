@@ -10,10 +10,12 @@
 # in `goreleaser` to indicate this is being used in a non-interactive mode.
 #
 name: release
+
 on:
   push:
     tags:
       - 'v*'
+
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
@@ -32,9 +34,9 @@ jobs:
         name: Import GPG key
         id: import_gpg
         uses: crazy-max/ghaction-import-gpg@v5
-        env:
-          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-          PASSPHRASE: ${{ secrets.PASSPHRASE }}
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.PASSPHRASE }}
       -
         name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v3

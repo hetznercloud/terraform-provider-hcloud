@@ -1,6 +1,8 @@
 name: test
+
 on:
   pull_request:
+
 jobs:
   integration_tests:
     runs-on: self-hosted
@@ -11,36 +13,46 @@ jobs:
         terraform_version: [ "1.0.x", "1.1.x", "1.2.x" ]
     name: integration-${{ matrix.terraform_version }}
     steps:
-      - name: Checkout
+      -
+        name: Checkout
         uses: actions/checkout@v3
-      - name: Unshallow
+      -
+        name: Unshallow
         run: git fetch --prune --unshallow
-      - uses: hashicorp/setup-terraform@v2
+      -
+        uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: ${{ matrix.terraform_version }}
           terraform_wrapper: false
-      - name: Set up Go
+      -
+        name: Set up Go
         uses: actions/setup-go@v3
         with:
           go-version: 1.19
-      - name: Run tests
+      -
+        name: Run tests
         run: |
           export HCLOUD_TOKEN=$(./scripts/get-token.sh)
           cat resp.json
           make testacc
           make
           ./scripts/delete-token.sh $HCLOUD_TOKEN
+
   unit_tests:
     runs-on: self-hosted
     steps:
-      - name: Checkout
+      -
+        name: Checkout
         uses: actions/checkout@v3
-      - name: Unshallow
+      -
+        name: Unshallow
         run: git fetch --prune --unshallow
-      - name: Set up Go
+      -
+        name: Set up Go
         uses: actions/setup-go@v3
         with:
           go-version: 1.19
-      - name: Run tests
+      -
+        name: Run tests
         run: |
           make test
