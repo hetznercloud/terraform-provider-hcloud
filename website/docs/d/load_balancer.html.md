@@ -53,7 +53,7 @@ data "hcloud_load_balancer" "lb_3" {
 
 `service` support the following fields:
 - `protocol` - (string) Protocol of the service. `http`, `https` or `tcp`
-- `listen_port` - (int) Port the service listen on`. Can be everything between `1` and `65535`. Must be unique per Load Balancer. 
+- `listen_port` - (int) Port the service listen on`. Can be everything between `1` and `65535`. Must be unique per Load Balancer.
 - `destination_port` - (int) Port the service connects to the targets on. Can be everything between `1` and `65535`.
 - `proxyprotocol` - (bool) Enable proxyprotocol.
 - `http` - (list) List of http configurations when `protocol` is `http` or `https`.
@@ -87,5 +87,5 @@ data "hcloud_load_balancer" "lb_3" {
 Load Balancers can be imported using its `id`:
 
 ```
-terraform import hcloud_load_balancer.my_load_balancer <id>
+terraform import hcloud_load_balancer.my_load_balancer id
 ```

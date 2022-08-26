@@ -65,5 +65,5 @@ certificate should be created with.
 Uploaded certificates can be imported using their `id`:
 
 ```hcl
-terraform import hcloud_uploaded_certificate.sample_certificate <id>
+terraform import hcloud_uploaded_certificate.sample_certificate id
 ```

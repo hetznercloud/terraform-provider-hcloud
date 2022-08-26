@@ -5,8 +5,6 @@ Terraform Provider for the Hetzner Cloud
 - Website: https://www.terraform.io
 - Documentation: https://www.terraform.io/docs/providers/hcloud/index.html
 
-<img src="https://cdn.rawgit.com/hashicorp/terraform-website/master/content/source/assets/images/logo-hashicorp.svg" width="600px">
-
 Requirements
 ------------
 

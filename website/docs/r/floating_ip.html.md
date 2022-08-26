@@ -53,5 +53,5 @@ resource "hcloud_floating_ip" "master" {
 Floating IPs can be imported using its `id`:
 
 ```
-terraform import hcloud_floating_ip.myip <id>
+terraform import hcloud_floating_ip.myip id
 ```

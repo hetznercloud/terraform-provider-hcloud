@@ -29,7 +29,7 @@ resource "hcloud_managed_certificate" "managed_cert" {
 Managed certificates can be imported using their `id`:
 
 ```hcl
-terraform import hcloud_managed_certificate.sample_certificate <id>
+terraform import hcloud_managed_certificate.sample_certificate id
 ```
 
 ## Argument Reference

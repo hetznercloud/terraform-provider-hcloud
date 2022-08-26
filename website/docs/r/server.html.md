@@ -142,7 +142,7 @@ The following arguments are supported:
 - `datacenter` - (Optional, string) The datacenter name to create the server in.
 - `user_data` - (Optional, string) Cloud-Init user data to use during server creation
 - `ssh_keys` - (Optional, list) SSH key IDs or names which should be injected into the server at creation time
-- `public_net` - (Optional, block) In this block you can either enable / disable ipv4 and ipv6 or link existing primary IPs (checkout the examples). 
+- `public_net` - (Optional, block) In this block you can either enable / disable ipv4 and ipv6 or link existing primary IPs (checkout the examples).
   If this block is not defined, two primary (ipv4 & ipv6) ips getting auto generated.
 - `keep_disk` - (Optional, bool) If true, do not upgrade the disk. This allows downgrading the server type later.
 - `iso` - (Optional, string) ID or Name of an ISO image to mount.
@@ -210,5 +210,5 @@ a single entry in `network` support the following fields:
 Servers can be imported using the server `id`:
 
 ```
-terraform import hcloud_server.myserver <id>
+terraform import hcloud_server.myserver id
 ```
