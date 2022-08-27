@@ -148,18 +148,18 @@ The following arguments are supported:
 - `iso` - (Optional, string) ID or Name of an ISO image to mount.
 - `rescue` - (Optional, string) Enable and boot in to the specified rescue system. This enables simple installation of custom operating systems. `linux64` `linux32` or `freebsd64`
 - `labels` - (Optional, map) User-defined labels (key-value pairs) should be created with.
-- `backups` - (Optional, boolean) Enable or disable backups.
+- `backups` - (Optional, bool) Enable or disable backups.
 - `firewall_ids` - (Optional, list) Firewall IDs the server should be attached to on creation.
-- `ignore_remote_firewall_ids` - (Optional, boolean) Ignores any updates
+- `ignore_remote_firewall_ids` - (Optional, bool) Ignores any updates
   to the `firewall_ids` argument which were received from the server.
   This should not be used in normal cases. See the documentation of the
   `hcloud_firewall_attachment` resource for a reason to use this
   argument.
 - `network` - (Optional)  Network the server should be attached to on creation. (Can be specified multiple times)
 - `placement_group_id` - (Optional, string) Placement Group ID the server added to on creation.
-- `delete_protection` - (Optional, boolean) Enable or disable delete protection (Needs to be the same as `rebuild_protection`).
-- `rebuild_protection` - (Optional, boolean) Enable or disable rebuild protection (Needs to be the same as `delete_protection`).
-- `allow_deprecated_images` - (Optional, boolean) Enable the use of deprecated images (default: false). **Note** Deprecated images will be removed after three months. Using them is then no longer possible.
+- `delete_protection` - (Optional, bool) Enable or disable delete protection (Needs to be the same as `rebuild_protection`).
+- `rebuild_protection` - (Optional, bool) Enable or disable rebuild protection (Needs to be the same as `delete_protection`).
+- `allow_deprecated_images` - (Optional, bool) Enable the use of deprecated images (default: false). **Note** Deprecated images will be removed after three months. Using them is then no longer possible.
 
 `network` support the following fields:
 - `network_id` - (Required, int) ID of the network
@@ -178,7 +178,7 @@ The following attributes are exported:
 - `location` - (string) The location name.
 - `datacenter` - (string) The datacenter name.
 - `backup_window` - (string) The backup window of the server, if enabled.
-- `backups` - (boolean) Whether backups are enabled.
+- `backups` - (bool) Whether backups are enabled.
 - `iso` - (string) ID or Name of the mounted ISO image.
 - `ipv4_address` - (string) The IPv4 address.
 - `ipv6_address` - (string) The first IPv6 address of the assigned network.
@@ -195,8 +195,8 @@ The following attributes are exported:
 - `firewall_ids` - (Optional, list) Firewall IDs the server is attached to.
 - `network` - (Optional, list)  Network the server should be attached to on creation. (Can be specified multiple times)
 - `placement_group_id` - (Optional, string) Placement Group ID the server is assigned to.
-- `delete_protection` - (boolean) Whether delete protection is enabled.
-- `rebuild_protection` - (boolean) Whether rebuild protection is enabled.
+- `delete_protection` - (bool) Whether delete protection is enabled.
+- `rebuild_protection` - (bool) Whether rebuild protection is enabled.
 
 a single entry in `network` support the following fields:
 - `network_id` - (Required, int) ID of the network

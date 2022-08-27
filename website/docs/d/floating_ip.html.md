@@ -48,4 +48,4 @@ resource "hcloud_floating_ip_assignment" "main" {
 - `ip_address` - (string) IP Address of the Floating IP.
 - `ip_network` - (string) IPv6 subnet. (Only set if `type` is `ipv6`)
 - `labels` - (map) User-defined labels (key-value pairs).
-- `delete_protection` - (boolean) Whether delete protection is enabled.
+- `delete_protection` - (bool) Whether delete protection is enabled.

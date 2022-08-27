@@ -24,7 +24,7 @@ resource "hcloud_network" "privNet" {
 - `name` - (Required, string) Name of the Network to create (must be unique per project).
 - `ip_range` - (Required, string) IP Range of the whole Network which must span all included subnets and route destinations. Must be one of the private ipv4 ranges of RFC1918.
 - `labels` - (Optional, map) User-defined labels (key-value pairs) should be created with.
-- `delete_protection` - (Optional, boolean) Enable or disable delete protection.
+- `delete_protection` - (Optional, bool) Enable or disable delete protection.
 
 ## Attributes Reference
 
@@ -32,7 +32,7 @@ resource "hcloud_network" "privNet" {
 - `name` - (string) Name of the network.
 - `ip_range` - (string) IPv4 Prefix of the whole Network.
 - `labels` - (map) User-defined labels (key-value pairs)
-- `delete_protection` - (boolean) Whether delete protection is enabled.
+- `delete_protection` - (bool) Whether delete protection is enabled.
 
 ## Import
 
