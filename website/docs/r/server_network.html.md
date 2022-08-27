@@ -39,7 +39,7 @@ resource "hcloud_server_network" "srvnetwork" {
 ## Argument Reference
 
 - `server_id` - (Required, int) ID of the server.
-- `alias_ips` - (Required, list[string]) Additional IPs to be assigned
+- `alias_ips` - (Optional, list[string]) Additional IPs to be assigned
   to this server.
 - `network_id` - (Optional, int) ID of the network which should be added
   to the server. Required if `subnet_id` is not set. Successful creation
