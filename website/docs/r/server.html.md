@@ -210,5 +210,5 @@ a single entry in `network` support the following fields:
 Servers can be imported using the server `id`:
 
 ```
-terraform import hcloud_server.myserver <id>
+terraform import hcloud_server.myserver 123456
 ```

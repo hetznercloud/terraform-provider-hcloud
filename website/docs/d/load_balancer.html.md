@@ -87,5 +87,5 @@ data "hcloud_load_balancer" "lb_3" {
 Load Balancers can be imported using its `id`:
 
 ```
-terraform import hcloud_load_balancer.my_load_balancer <id>
+terraform import hcloud_load_balancer.my_load_balancer 123456
 ```

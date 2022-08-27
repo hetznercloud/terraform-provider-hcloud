@@ -43,5 +43,5 @@ The following attributes are exported:
 SSH keys can be imported using the SSH key `id`:
 
 ```
-terraform import hcloud_ssh_key.mykey <id>
+terraform import hcloud_ssh_key.mykey 123456
 ```
