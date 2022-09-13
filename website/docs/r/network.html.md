@@ -39,6 +39,6 @@ resource "hcloud_network" "privNet" {
 Networks can be imported using its `id`:
 
 ```
-terraform import hcloud_network.myip <id>
+terraform import hcloud_network.myip id
 ```
 

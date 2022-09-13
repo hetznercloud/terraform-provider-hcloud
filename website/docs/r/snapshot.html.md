@@ -42,5 +42,5 @@ resource "hcloud_snapshot" "my-snapshot" {
 Snapshots can be imported using its image `id`:
 
 ```
-terraform import hcloud_snapshot.myimage <id>
+terraform import hcloud_snapshot.myimage id
 ```

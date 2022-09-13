@@ -64,5 +64,5 @@ resource "hcloud_load_balancer" "load_balancer" {
 Load Balancers can be imported using its `id`:
 
 ```
-terraform import hcloud_load_balancer.my_load_balancer <id>
+terraform import hcloud_load_balancer.my_load_balancer id
 ```

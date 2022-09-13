@@ -47,5 +47,5 @@ resource "hcloud_server" "node1" {
 Placement Groups can be imported using its `id`:
 
 ```
-terraform import hcloud_placement_group.my-placement-group <id>
+terraform import hcloud_placement_group.my-placement-group id
 ```

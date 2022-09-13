@@ -72,5 +72,5 @@ resource "hcloud_server" "server_test" {
 Primary IPs can be imported using its `id`:
 
 ```
-terraform import hcloud_primary_ip.myip <id>
+terraform import hcloud_primary_ip.myip id
 ```

@@ -94,5 +94,5 @@ resource "hcloud_server" "node1" {
 Firewalls can be imported using its `id`:
 
 ```
-terraform import hcloud_firewall.myfirewall <id>
+terraform import hcloud_firewall.myfirewall id
 ```

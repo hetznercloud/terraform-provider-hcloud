@@ -43,5 +43,5 @@ data "hcloud_certificate" "sample_certificate_2" {
 Certificates can be imported using their `id`:
 
 ```hcl
-terraform import hcloud_certificate.sample_certificate_1 <id>
+terraform import hcloud_certificate.sample_certificate_1 id
 ```
