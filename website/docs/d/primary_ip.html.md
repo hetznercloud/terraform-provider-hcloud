@@ -64,9 +64,9 @@ resource "hcloud_server" "server_test" {
 - `type` - (string) Type of the Primary IP.
 - `name` - (string) Name of the Primary IP.
 - `datacenter` - (string) The datacenter name of the Primary IP.
-- `auto_delete` - (boolean) Whether auto delete is enabled.
+- `auto_delete` - (bool) Whether auto delete is enabled.
 - `labels` - (string) Description of the Primary IP.
 - `ip_address` - (string) IP Address of the Primary IP.
 - `assignee_id` - (int) ID of the assigned resource.
 - `assignee_type` - (string) The type of the assigned resource.
-- `delete_protection` - (boolean) Whether delete protection is enabled.
+- `delete_protection` - (bool) Whether delete protection is enabled.
