@@ -191,6 +191,19 @@ func resourcePrimaryIPUpdate(ctx context.Context, d *schema.ResourceData, m inte
 		}
 	}
 
+	if d.HasChange("auto_delete") {
+		autoDelete := d.Get("auto_delete").(bool)
+		_, _, err := client.PrimaryIP.Update(ctx, primaryIP, hcloud.PrimaryIPUpdateOpts{
+			AutoDelete: hcloud.Bool(autoDelete),
+		})
+		if err != nil {
+			if resourcePrimaryIPIsNotFound(err, d) {
+				return nil
+			}
+			return hcclient.ErrorToDiag(err)
+		}
+	}
+
 	if d.HasChange("assignee_id") {
 		serverID := d.Get("assignee_id").(int)
 		if serverID == 0 {
