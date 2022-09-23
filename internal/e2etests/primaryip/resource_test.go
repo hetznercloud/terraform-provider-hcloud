@@ -112,7 +112,7 @@ func TestPrimaryIPResource_with_server(t *testing.T) {
 		Labels:       nil,
 		Datacenter:   e2etests.TestDataCenter,
 		AssigneeType: "server",
-		AutoDelete:   false,
+		AutoDelete:   true,
 	}
 	primaryIPv4TwoRes.SetRName("primary_ip_v4_two_test")
 
@@ -215,7 +215,7 @@ func TestPrimaryIPResource_with_server(t *testing.T) {
 	})
 }
 
-func TestPrimaryIPResource_Protection(t *testing.T) {
+func TestPrimaryIPResource_FieldUpdates(t *testing.T) {
 	var (
 		pip hcloud.PrimaryIP
 
@@ -226,10 +226,12 @@ func TestPrimaryIPResource_Protection(t *testing.T) {
 			Datacenter:       e2etests.TestDataCenter,
 			AssigneeType:     "server",
 			DeleteProtection: true,
+			AutoDelete:       true,
 		}
 
-		updateProtection = func(d *primaryip.RData, protection bool) *primaryip.RData {
+		updateFields = func(d *primaryip.RData, protection bool, autoDelete bool) *primaryip.RData {
 			d.DeleteProtection = protection
+			d.AutoDelete = autoDelete
 			return d
 		}
 	)
@@ -262,7 +264,7 @@ func TestPrimaryIPResource_Protection(t *testing.T) {
 			{
 				// Update delete protection
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_primary_ip", updateProtection(res, false),
+					"testdata/r/hcloud_primary_ip", updateFields(res, false, false),
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(res.TFID(), "delete_protection", fmt.Sprintf("%t", res.DeleteProtection)),
