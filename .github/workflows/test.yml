@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        terraform_version: [ "1.0.x", "1.1.x", "1.2.x" ]
+        terraform_version: [ "1.0.x", "1.1.x", "1.2.x", "1.3.x" ]
     name: integration-${{ matrix.terraform_version }}
     steps:
       -
