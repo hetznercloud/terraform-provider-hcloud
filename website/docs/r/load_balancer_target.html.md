@@ -58,3 +58,20 @@ resource "hcloud_load_balancer_target" "load_balancer_target" {
 - `ip` - (string) IP address of an IP Target.
 - `use_private_ip` - (bool) use the private IP to connect to Load
   Balancer targets.
+
+## Import
+
+Load Balancer Target entries can be imported using a compound ID with the following format:
+`<load-balancer-id>__<type>__<identifier>`
+
+Where _identifier_ depends on the _type_:
+
+- `server`: server id, for example: `123`
+- `label_selector`: label selector, for example: `foo=bar`
+- `ip`: ip address, for example: `203.0.113.123`
+
+```
+terraform import hcloud_load_balancer_target.myloadbalancerservertarget 123__server__321
+terraform import hcloud_load_balancer_target.myloadbalancerlabeltarget 123__label_selector__foo=bar
+terraform import hcloud_load_balancer_target.myloadbalanceriptarget 123__ip__203.0.113.123
+```

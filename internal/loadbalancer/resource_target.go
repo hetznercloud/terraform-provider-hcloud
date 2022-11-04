@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -32,6 +33,9 @@ func TargetResource() *schema.Resource {
 		ReadContext:   resourceLoadBalancerTargetRead,
 		UpdateContext: resourceLoadBalancerTargetUpdate,
 		DeleteContext: resourceLoadBalancerTargetDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: resourceLoadBalancerTargetImport,
+		},
 
 		Schema: map[string]*schema.Schema{
 			"type": {
@@ -267,6 +271,63 @@ func resourceLoadBalancerTargetRead(ctx context.Context, d *schema.ResourceData,
 
 	setLoadBalancerTarget(d, lbID, tgt)
 	return nil
+}
+
+// resourceLoadBalancerTargetImport parses the passed ID and tries to import a
+// matching load balancer target.
+// The passed ID has the format `<load-balancer-id>__<type>__<identifier>`.
+func resourceLoadBalancerTargetImport(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
+	parts := strings.SplitN(d.Id(), "__", 3) // split into at-most 3 parts, everything after that might be label_selector
+	if len(parts) != 3 {
+		return nil, fmt.Errorf("import id has invalid format: %s", d.Id())
+	}
+
+	// Parse and set load balancer id
+	lbID, err := strconv.ParseInt(parts[0], 10, 0)
+	if err != nil {
+		return nil, fmt.Errorf("load balancer id is not an integer: %s", parts[0])
+	}
+	if err := d.Set("load_balancer_id", lbID); err != nil {
+		// We previously verified that lbID is an int
+		return nil, err
+	}
+
+	// Parse and set type
+	tgtType := hcloud.LoadBalancerTargetType(parts[1])
+	if err := d.Set("type", tgtType); err != nil {
+		return nil, err
+	}
+
+	// Set identifier depending on type
+	identifier := parts[2]
+	switch tgtType {
+	case hcloud.LoadBalancerTargetTypeServer:
+		srvID, err := strconv.ParseInt(identifier, 10, 0)
+		if err != nil {
+			return nil, fmt.Errorf("server id is not an integer: %s", identifier)
+		}
+		if err := d.Set("server_id", srvID); err != nil {
+			return nil, err
+		}
+	case hcloud.LoadBalancerTargetTypeLabelSelector:
+		if err := d.Set("label_selector", identifier); err != nil {
+			return nil, err
+		}
+	case hcloud.LoadBalancerTargetTypeIP:
+		if err := d.Set("ip", identifier); err != nil {
+			return nil, err
+		}
+	default:
+		return nil, fmt.Errorf("unsupported target type: %s", tgtType)
+	}
+
+	// Read existing state from api and finish resource
+	diag := resourceLoadBalancerTargetRead(ctx, d, m)
+	if diag.HasError() {
+		return nil, fmt.Errorf("importing the actual state of load balancer target failed: %v", diag)
+	}
+
+	return []*schema.ResourceData{d}, nil
 }
 
 func resourceLoadBalancerTargetUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
