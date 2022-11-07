@@ -832,7 +832,13 @@ func resourceServerDelete(ctx context.Context, d *schema.ResourceData, m interfa
 		d.SetId("")
 		return nil
 	}
-	if _, err := client.Server.Delete(ctx, &hcloud.Server{ID: serverID}); err != nil {
+	result, _, err := client.Server.DeleteWithResult(ctx, &hcloud.Server{ID: serverID})
+	if err != nil {
+		return hcclient.ErrorToDiag(err)
+	}
+
+	err = hcclient.WaitForAction(ctx, &client.Action, result.Action)
+	if err != nil {
 		return hcclient.ErrorToDiag(err)
 	}
 
