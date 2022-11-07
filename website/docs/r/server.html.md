@@ -93,6 +93,27 @@ resource "hcloud_server" "server" {
 }
 ```
 
+### Server creation from snapshot
+
+```hcl
+# Get image infos because we need the ID
+data "hcloud_image" "packer_snapshot" {
+  with_selector = "app=foobar"
+  most_recent = true
+}
+
+# Create a new server from the snapshot
+resource "hcloud_server" "from_snapshot" {
+  name        = "from-snapshot"
+  image       = data.hcloud_image.packer_snapshot.id
+  server_type = "cx11"
+  public_net {
+    ipv4_enabled = true
+    ipv6_enabled = true
+  }
+}
+```
+
 ## Primary IPs
 When creating a server without linking at least one ´primary_ip´, it automatically creates & assigns two (ipv4 & ipv6).
 With the public_net block, you can enable or link primary ips. If you don't define this block, two primary ips (ipv4, ipv6) will be created and assigned to the server automatically.
