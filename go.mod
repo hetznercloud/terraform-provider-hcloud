@@ -5,7 +5,7 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/terraform-plugin-log v0.7.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.23.0
-	github.com/hetznercloud/hcloud-go v1.35.3
+	github.com/hetznercloud/hcloud-go v1.36.0
 	github.com/stretchr/testify v1.8.0
 	golang.org/x/crypto v0.0.0-20221005025214-4161e89ecf1b
 	golang.org/x/net v0.0.0-20221004154528-8021a29435af
