@@ -6,7 +6,9 @@ on:
 jobs:
   integration_tests:
     runs-on: self-hosted
-    concurrency: integration_tests
+    # These tests use actual resources in a hetzner-owned hcloud project,
+    # depending on the current usage, some quotas are reached and test tests
+    # might fail.
     strategy:
       fail-fast: false
       matrix:
