@@ -54,7 +54,7 @@ func TestAccHcloudLoadBalancerService_TCP(t *testing.T) {
 				),
 			},
 			{
-				// Try to import the newly created volume attachment
+				// Try to import the newly created load balancer service
 				ResourceName:      svcResName,
 				ImportState:       true,
 				ImportStateVerify: true,
