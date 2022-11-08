@@ -384,7 +384,7 @@ func TestServerResource_PrimaryIPNetworkTests(t *testing.T) {
 	snwRes.SetRName("test-network-subnet")
 
 	primaryIPv4Res := &primaryip.RData{
-		Name:         "primaryip-test",
+		Name:         "primaryip-v4-test",
 		Type:         "ipv4",
 		Labels:       nil,
 		Datacenter:   "hel1-dc2",
@@ -394,7 +394,7 @@ func TestServerResource_PrimaryIPNetworkTests(t *testing.T) {
 	primaryIPv4Res.SetRName("primary-ip-v4")
 
 	primaryIPv6Res := &primaryip.RData{
-		Name:         "primaryip-test",
+		Name:         "primaryip-v6-test",
 		Type:         "ipv6",
 		Labels:       nil,
 		Datacenter:   "hel1-dc2",
