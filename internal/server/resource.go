@@ -33,6 +33,7 @@ func Resource() *schema.Resource {
 		ReadContext:   resourceServerRead,
 		UpdateContext: resourceServerUpdate,
 		DeleteContext: resourceServerDelete,
+		CustomizeDiff: resourceServerCustomizeDiff,
 
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -1280,5 +1281,50 @@ func publicNetRemovedDecision(ctx context.Context,
 			return err
 		}
 	}
+	return nil
+}
+
+func resourceServerCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
+	if err := validateUniqueNetworkIDs(d); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func validateUniqueNetworkIDs(d *schema.ResourceDiff) error {
+	// Validate that every network set element uses unique network id
+	if n, ok := d.GetOkExists("network"); ok {
+		networks, ok := n.(*schema.Set)
+		if !ok {
+			return fmt.Errorf("network has unexpected type: %T", n)
+		}
+
+		uniqueNetworkIDs := map[int]bool{}
+
+		for _, networkI := range networks.List() {
+			network, ok := networkI.(map[string]interface{})
+			if !ok {
+				return fmt.Errorf("network item has unexpected type: %T", networkI)
+			}
+
+			networkID, ok := network["network_id"]
+			if !ok {
+				continue
+			}
+
+			id, ok := networkID.(int)
+			if !ok {
+				return fmt.Errorf("network id has unexpected type: %T", networkID)
+			}
+
+			if uniqueNetworkIDs[id] {
+				return fmt.Errorf("server is only allowed to be attached to each network once: %d", networkID)
+			}
+
+			uniqueNetworkIDs[id] = true
+		}
+	}
+
 	return nil
 }
