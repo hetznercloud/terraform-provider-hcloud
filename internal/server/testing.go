@@ -102,7 +102,7 @@ type RData struct {
 	ISO                   string
 	Labels                map[string]string
 	UserData              string
-	Network               RDataInlineNetwork
+	Networks              []RDataInlineNetwork
 	FirewallIDs           []string
 	DependsOn             []string
 	PlacementGroupID      string

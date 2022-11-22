@@ -32,7 +32,8 @@ resource "hcloud_server" "{{ .RName }}" {
   backups     = {{ .Backups }}
   {{ end }}
 
-  {{- if .Network.NetworkID }}{{ with .Network }}
+  {{- range $network := .Networks }}{{ with $network }}
+  {{- if .NetworkID }}
   network {
       network_id = {{ .NetworkID }}
       {{- if .IP }}
@@ -43,6 +44,7 @@ resource "hcloud_server" "{{ .RName }}" {
       {{- end }}
   }
   {{ end }}{{ end }}
+  {{ end }}
 
   {{- if .PublicNet }}
   public_net {

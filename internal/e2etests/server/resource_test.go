@@ -242,13 +242,21 @@ func TestServerResource_DirectAttachToNetwork(t *testing.T) {
 
 		// Helper functions to modify the test data. Those functions modify
 		// the passed in server on purpose. Calling them once to change the
-		// respective value es enough.
-		updateIP = func(d *server.RData, ip string) *server.RData {
-			d.Network.IP = ip
+		// respective value is enough.
+		updateIP = func(d *server.RData, networkID string, ip string) *server.RData {
+			for i := range d.Networks {
+				if d.Networks[i].NetworkID == networkID {
+					d.Networks[i].IP = ip
+				}
+			}
 			return d
 		}
-		updateAliasIPs = func(d *server.RData, ips ...string) *server.RData {
-			d.Network.AliasIPs = ips
+		updateAliasIPs = func(d *server.RData, networkID string, ips ...string) *server.RData {
+			for i := range d.Networks {
+				if d.Networks[i].NetworkID == networkID {
+					d.Networks[i].AliasIPs = ips
+				}
+			}
 			return d
 		}
 	)
@@ -281,11 +289,11 @@ func TestServerResource_DirectAttachToNetwork(t *testing.T) {
 		LocationName: sRes.LocationName,
 		Image:        sRes.Image,
 		SSHKeys:      sRes.SSHKeys,
-		Network: server.RDataInlineNetwork{
+		Networks: []server.RDataInlineNetwork{{
 			NetworkID: nwRes.TFID() + ".id",
 			IP:        "10.0.1.5",
 			AliasIPs:  []string{"10.0.1.6", "10.0.1.7"},
-		},
+		}},
 		DependsOn: []string{snwRes.TFID()},
 	}
 	sResWithNet.SetRName(sResWithNet.Name)
@@ -319,7 +327,7 @@ func TestServerResource_DirectAttachToNetwork(t *testing.T) {
 					"testdata/r/hcloud_ssh_key", sk,
 					"testdata/r/hcloud_network", nwRes,
 					"testdata/r/hcloud_network_subnet", snwRes,
-					"testdata/r/hcloud_server", updateIP(sResWithNet, "10.0.1.4"),
+					"testdata/r/hcloud_server", updateIP(sResWithNet, nwRes.TFID()+".id", "10.0.1.4"),
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckResourceExists(nwRes.TFID(), network.ByID(t, &nw)),
@@ -333,7 +341,7 @@ func TestServerResource_DirectAttachToNetwork(t *testing.T) {
 					"testdata/r/hcloud_ssh_key", sk,
 					"testdata/r/hcloud_network", nwRes,
 					"testdata/r/hcloud_network_subnet", snwRes,
-					"testdata/r/hcloud_server", updateAliasIPs(sResWithNet, "10.0.1.5", "10.0.1.7"),
+					"testdata/r/hcloud_server", updateAliasIPs(sResWithNet, nwRes.TFID()+".id", "10.0.1.5", "10.0.1.7"),
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckResourceExists(nwRes.TFID(), network.ByID(t, &nw)),
@@ -409,11 +417,11 @@ func TestServerResource_PrimaryIPNetworkTests(t *testing.T) {
 		Datacenter: e2etests.TestDataCenter,
 		Image:      e2etests.TestImage,
 		SSHKeys:    []string{sk.TFID() + ".id"},
-		Network: server.RDataInlineNetwork{
+		Networks: []server.RDataInlineNetwork{{
 			NetworkID: nwRes.TFID() + ".id",
 			IP:        "10.0.1.5",
 			AliasIPs:  []string{"10.0.1.6", "10.0.1.7"},
-		},
+		}},
 		PublicNet: map[string]interface{}{
 			"ipv4_enabled": true,
 			"ipv6_enabled": true,
@@ -428,7 +436,7 @@ func TestServerResource_PrimaryIPNetworkTests(t *testing.T) {
 		LocationName: sResWithNetAndPublicNet.LocationName,
 		Image:        sResWithNetAndPublicNet.Image,
 		SSHKeys:      sResWithNetAndPublicNet.SSHKeys,
-		Network:      sResWithNetAndPublicNet.Network,
+		Networks:     sResWithNetAndPublicNet.Networks,
 		PublicNet: map[string]interface{}{
 			"ipv4_enabled": false,
 			"ipv6_enabled": false,
@@ -443,7 +451,7 @@ func TestServerResource_PrimaryIPNetworkTests(t *testing.T) {
 		LocationName: sResWithoutPublicNet.LocationName,
 		Image:        sResWithoutPublicNet.Image,
 		SSHKeys:      sResWithoutPublicNet.SSHKeys,
-		Network:      sResWithoutPublicNet.Network,
+		Networks:     sResWithoutPublicNet.Networks,
 		PublicNet: map[string]interface{}{
 			"ipv4_enabled": true,
 			"ipv4":         primaryIPv4Res.TFID() + ".id",
@@ -460,7 +468,7 @@ func TestServerResource_PrimaryIPNetworkTests(t *testing.T) {
 		LocationName: sResWithPrimaryIP.LocationName,
 		Image:        sResWithPrimaryIP.Image,
 		SSHKeys:      sResWithPrimaryIP.SSHKeys,
-		Network:      sResWithPrimaryIP.Network,
+		Networks:     sResWithPrimaryIP.Networks,
 		PublicNet: map[string]interface{}{
 			"ipv4_enabled": true,
 			"ipv4":         primaryIPv4Res.TFID() + ".id",
@@ -477,7 +485,7 @@ func TestServerResource_PrimaryIPNetworkTests(t *testing.T) {
 		LocationName: sResWithTwoPrimaryIPs.LocationName,
 		Image:        sResWithTwoPrimaryIPs.Image,
 		SSHKeys:      sResWithTwoPrimaryIPs.SSHKeys,
-		Network:      sResWithTwoPrimaryIPs.Network,
+		Networks:     sResWithTwoPrimaryIPs.Networks,
 		DependsOn:    sResWithTwoPrimaryIPs.DependsOn,
 	}
 
@@ -489,7 +497,7 @@ func TestServerResource_PrimaryIPNetworkTests(t *testing.T) {
 		LocationName: sResWithNoPublicNet.LocationName,
 		Image:        sResWithNoPublicNet.Image,
 		SSHKeys:      sResWithNoPublicNet.SSHKeys,
-		Network:      sResWithNoPublicNet.Network,
+		Networks:     sResWithNoPublicNet.Networks,
 		PublicNet: map[string]interface{}{
 			"ipv4_enabled": false,
 			"ipv6_enabled": true,
@@ -506,7 +514,7 @@ func TestServerResource_PrimaryIPNetworkTests(t *testing.T) {
 		LocationName: sResWithOnlyIPv6.LocationName,
 		Image:        sResWithOnlyIPv6.Image,
 		SSHKeys:      sResWithOnlyIPv6.SSHKeys,
-		Network:      sResWithOnlyIPv6.Network,
+		Networks:     sResWithOnlyIPv6.Networks,
 		PublicNet: map[string]interface{}{
 			"ipv4_enabled": false,
 			"ipv6_enabled": true,
