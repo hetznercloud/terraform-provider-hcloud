@@ -4,6 +4,7 @@ import (
 	"crypto/sha1"
 	"encoding/base64"
 	"fmt"
+	"regexp"
 	"strconv"
 	"testing"
 
@@ -259,6 +260,11 @@ func TestServerResource_DirectAttachToNetwork(t *testing.T) {
 			}
 			return d
 		}
+
+		addNetwork = func(d *server.RData, network server.RDataInlineNetwork) *server.RData {
+			d.Networks = append(d.Networks, network)
+			return d
+		}
 	)
 
 	sk := sshkey.NewRData(t, "server-iso")
@@ -365,6 +371,19 @@ func TestServerResource_DirectAttachToNetwork(t *testing.T) {
 						return nil
 					}),
 				),
+			},
+			{
+				// Fail when using conflicting networks
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_network", nwRes,
+					"testdata/r/hcloud_network_subnet", snwRes,
+					"testdata/r/hcloud_server", addNetwork(sResWithNet, server.RDataInlineNetwork{
+						NetworkID: nwRes.TFID() + ".id",
+						IP:        "10.0.1.8",
+					}),
+				),
+				ExpectError: regexp.MustCompile(`server is only allowed to be attached to each network once: \d+`),
 			},
 		},
 	})
