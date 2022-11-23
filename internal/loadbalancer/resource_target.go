@@ -50,6 +50,7 @@ func TargetResource() *schema.Resource {
 			"load_balancer_id": {
 				Type:     schema.TypeInt,
 				Required: true,
+				ForceNew: true,
 			},
 			"server_id": {
 				Type:         schema.TypeInt,
