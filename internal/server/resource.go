@@ -151,6 +151,7 @@ func Resource() *schema.Resource {
 			"public_net": {
 				Type:     schema.TypeSet,
 				Optional: true,
+				Computed: true,
 				DiffSuppressFunc: func(_, _, _ string, d *schema.ResourceData) bool {
 					// Diff is only valid if "public_net" resource is set in
 					// terraform configuration.
@@ -1123,6 +1124,10 @@ func getServerAttributes(d *schema.ResourceData, s *hcloud.Server) map[string]in
 		res["network"] = networkToTerraformNetworks(s.PrivateNet)
 	}
 
+	// Wrap in slice, as type of public_net is Set, even though only one element
+	// can be set.
+	res["public_net"] = []map[string]interface{}{publicNetToTerraformPublicNet(s.PublicNet)}
+
 	if s.PlacementGroup != nil {
 		res["placement_group_id"] = s.PlacementGroup.ID
 	}
@@ -1145,6 +1150,22 @@ func networkToTerraformNetworks(privateNetworks []hcloud.ServerPrivateNet) []map
 		tfPrivateNetworks[i] = tfPrivateNetwork
 	}
 	return tfPrivateNetworks
+}
+
+func publicNetToTerraformPublicNet(publicNet hcloud.ServerPublicNet) map[string]interface{} {
+	tfPublicNet := make(map[string]interface{})
+
+	if !publicNet.IPv4.IsUnspecified() {
+		tfPublicNet["ipv4_enabled"] = true
+		tfPublicNet["ipv4"] = publicNet.IPv4.ID
+	}
+
+	if !publicNet.IPv6.IsUnspecified() {
+		tfPublicNet["ipv6_enabled"] = true
+		tfPublicNet["ipv6"] = publicNet.IPv6.ID
+	}
+
+	return tfPublicNet
 }
 
 func getPlacementGroup(ctx context.Context, c *hcloud.Client, id int) (*hcloud.PlacementGroup, error) {
