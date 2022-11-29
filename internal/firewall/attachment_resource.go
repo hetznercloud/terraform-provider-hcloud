@@ -29,6 +29,7 @@ func AttachmentResource() *schema.Resource {
 			"firewall_id": {
 				Type:     schema.TypeInt,
 				Required: true,
+				ForceNew: true,
 			},
 			"server_ids": {
 				Type:     schema.TypeSet,
