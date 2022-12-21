@@ -42,6 +42,8 @@ data "hcloud_load_balancer" "lb_3" {
 - `service` - (list) List of services a Load Balancer provides.
 - `labels` - (map) User-defined labels (key-value pairs) .
 - `delete_protection` - (bool) Whether delete protection is enabled.
+- `network_id` - (int) ID of the first private network that this Load Balancer is connected to.
+- `network_ip` - (string) IP of the Load Balancer in the first private network that it is connected to.
 
 `algorithm` support the following fields:
 - `type` - (string) Type of the Load Balancer Algorithm. `round_robin` or `least_connection`

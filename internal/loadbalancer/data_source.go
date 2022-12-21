@@ -57,6 +57,14 @@ func getCommonDataSchema() map[string]*schema.Schema {
 			ForceNew: true,
 			Computed: true,
 		},
+		"network_id": {
+			Type:     schema.TypeInt,
+			Computed: true,
+		},
+		"network_ip": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
 		"algorithm": {
 			Type:     schema.TypeList,
 			Computed: true,
