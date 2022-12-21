@@ -678,7 +678,11 @@ func updatePublicNet(ctx context.Context, o interface{}, n interface{}, c *hclou
 		}
 	}
 
-	shutdown, _, _ := c.Server.Poweroff(ctx, &hcloud.Server{ID: server.ID})
+	shutdown, _, err := c.Server.Poweroff(ctx, &hcloud.Server{ID: server.ID})
+	if err != nil {
+		return hcclient.ErrorToDiag(err)
+	}
+
 	if err := hcclient.WaitForAction(ctx, &c.Action, shutdown); err != nil {
 		return hcclient.ErrorToDiag(err)
 	}

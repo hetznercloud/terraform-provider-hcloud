@@ -341,10 +341,14 @@ func detachServerFromNetwork(ctx context.Context, c *hcloud.Client, s *hcloud.Se
 		}
 		return control.AbortRetry(err)
 	})
-	if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
-		// network has already been deleted
-		return nil
+	if err != nil {
+		if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
+			// network has already been deleted
+			return nil
+		}
+		return fmt.Errorf("%s: %v", op, err)
 	}
+
 	if err := hcclient.WaitForAction(ctx, &c.Action, a); err != nil {
 		return fmt.Errorf("%s: %v", op, err)
 	}
