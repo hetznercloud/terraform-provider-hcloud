@@ -23,6 +23,7 @@ import (
 const TargetResourceType = "hcloud_load_balancer_target"
 
 var errLoadBalancerTargetNotFound = errors.New("load balancer target not found")
+var errLoadBalancerNotFound = errors.New("load balancer not found")
 
 // TargetResource creates a Terraform schema for the
 // hcloud_load_balancer_target resource.
@@ -262,7 +263,7 @@ func resourceLoadBalancerTargetRead(ctx context.Context, d *schema.ResourceData,
 	tgtType := hcloud.LoadBalancerTargetType(d.Get("type").(string))
 
 	_, tgt, err := findLoadBalancerTarget(ctx, client, lbID, tgtType, d)
-	if errors.Is(err, errLoadBalancerTargetNotFound) {
+	if errors.Is(err, errLoadBalancerTargetNotFound) || errors.Is(err, errLoadBalancerNotFound) {
 		d.SetId("")
 		return nil
 	}
@@ -337,7 +338,7 @@ func resourceLoadBalancerTargetUpdate(ctx context.Context, d *schema.ResourceDat
 	tgtType := hcloud.LoadBalancerTargetType(d.Get("type").(string))
 
 	lb, tgt, err := findLoadBalancerTarget(ctx, client, lbID, tgtType, d)
-	if errors.Is(err, errLoadBalancerTargetNotFound) {
+	if errors.Is(err, errLoadBalancerTargetNotFound) || errors.Is(err, errLoadBalancerNotFound) {
 		d.SetId("")
 		return nil
 	}
@@ -356,7 +357,7 @@ func resourceLoadBalancerTargetDelete(ctx context.Context, d *schema.ResourceDat
 	lbID := d.Get("load_balancer_id").(int)
 
 	lb, tgt, err := findLoadBalancerTarget(ctx, client, lbID, tgtType, d)
-	if errors.Is(err, errLoadBalancerTargetNotFound) {
+	if errors.Is(err, errLoadBalancerTargetNotFound) || errors.Is(err, errLoadBalancerNotFound) {
 		return nil
 	}
 	if err != nil {
@@ -420,7 +421,7 @@ func findLoadBalancerTarget(
 		return nil, hcloud.LoadBalancerTarget{}, fmt.Errorf("get load balancer by id: %d: %v", lbID, err)
 	}
 	if lb == nil {
-		return nil, hcloud.LoadBalancerTarget{}, fmt.Errorf("load balancer %d: not found", lbID)
+		return nil, hcloud.LoadBalancerTarget{}, errLoadBalancerNotFound
 	}
 	if v, ok := d.GetOk("server_id"); ok {
 		serverID = v.(int)
