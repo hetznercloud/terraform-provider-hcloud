@@ -159,7 +159,7 @@ The following arguments are supported:
 - `name` - (Required, string) Name of the server to create (must be unique per project and a valid hostname as per RFC 1123).
 - `server_type` - (Required, string) Name of the server type this server should be created with.
 - `image` - (Required, string) Name or ID of the image the server is created from. **Note** the `image` property is only required when using the resource to create servers. As the Hetzner Cloud API may return servers without an image ID set it is not marked as required in the Terraform Provider itself. Thus, users will get an error from the underlying client library if they forget to set the property and try to create a server.
-- `location` - (Optional, string) The location name to create the server in. `nbg1`, `fsn1`, `hel1` or `ash`
+- `location` - (Optional, string) The location name to create the server in. `nbg1`, `fsn1`, `hel1`, `ash` or `hil`
 - `datacenter` - (Optional, string) The datacenter name to create the server in.
 - `user_data` - (Optional, string) Cloud-Init user data to use during server creation
 - `ssh_keys` - (Optional, list) SSH key IDs or names which should be injected into the server at creation time
