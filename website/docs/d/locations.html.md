@@ -15,17 +15,17 @@ data "hcloud_locations" "ds" {
 }
 
 resource "hcloud_server" "workers" {
-  count = 3
+  count = 5
 
-  name        = "node1"
+  name        = "node${count.index}"
   image       = "debian-11"
   server_type = "cx31"
-  location    = element(data.hcloud_locations.ds.names, count.index)
+  location    = element(data.hcloud_locations.ds.locations, count.index).name
 }
 ```
 
 ## Attributes Reference
-- `location_ids` - (list) List of unique location identifiers.
-- `names` - (list) List of location names.
-- `descriptions` - (list) List of all location descriptions.
+- `location_ids` - (list) List of unique location identifiers. **Deprecated**: Use `locations` attribute instead.
+- `names` - (list) List of location names. **Deprecated**: Use `locations` attribute instead.
+- `descriptions` - (list) List of all location descriptions. **Deprecated**: Use `locations` attribute instead.
 - `locations` - (list) List of all locations. See `data.hcloud_location` for schema.
