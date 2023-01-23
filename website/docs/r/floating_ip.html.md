@@ -15,7 +15,7 @@ Provides a Hetzner Cloud Floating IP to represent a publicly-accessible static I
 ```hcl
 resource "hcloud_server" "node1" {
   name        = "node1"
-  image       = "debian-9"
+  image       = "debian-11"
   server_type = "cx11"
 }
 

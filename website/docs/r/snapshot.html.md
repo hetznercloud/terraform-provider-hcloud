@@ -15,7 +15,7 @@ Provides a Hetzner Cloud snapshot to represent an image with type snapshot in th
 ```hcl
 resource "hcloud_server" "node1" {
   name        = "node1"
-  image       = "debian-9"
+  image       = "debian-11"
   server_type = "cx11"
 }
 
