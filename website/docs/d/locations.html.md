@@ -18,7 +18,7 @@ resource "hcloud_server" "workers" {
   count = 3
 
   name        = "node1"
-  image       = "debian-9"
+  image       = "debian-11"
   server_type = "cx31"
   location    = element(data.hcloud_locations.ds.names, count.index)
 }
