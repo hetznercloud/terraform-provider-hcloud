@@ -87,10 +87,10 @@ func resourceNetworkRouteCreate(ctx context.Context, d *schema.ResourceData, m i
 	if err != nil {
 		return hcclient.ErrorToDiag(err)
 	}
+	d.SetId(generateNetworkRouteID(network, destination.String()))
 	if err := hcclient.WaitForAction(ctx, &c.Action, a); err != nil {
 		return hcclient.ErrorToDiag(err)
 	}
-	d.SetId(generateNetworkRouteID(network, destination.String()))
 
 	return resourceNetworkRouteRead(ctx, d, m)
 }

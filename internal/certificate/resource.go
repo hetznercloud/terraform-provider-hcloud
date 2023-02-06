@@ -230,10 +230,10 @@ func createManagedResource(ctx context.Context, d *schema.ResourceData, m interf
 	if err != nil {
 		return hcclient.ErrorToDiag(err)
 	}
+	d.SetId(strconv.Itoa(res.Certificate.ID))
 	if err := hcclient.WaitForAction(ctx, &c.Action, res.Action); err != nil {
 		return hcclient.ErrorToDiag(err)
 	}
-	d.SetId(strconv.Itoa(res.Certificate.ID))
 
 	return readResource(ctx, d, m)
 }

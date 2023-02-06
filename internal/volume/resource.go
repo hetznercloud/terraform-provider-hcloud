@@ -116,6 +116,8 @@ func resourceVolumeCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		}
 		return hcclient.ErrorToDiag(err)
 	}
+	d.SetId(strconv.Itoa(result.Volume.ID))
+
 	if err := hcclient.WaitForAction(ctx, &c.Action, result.Action); err != nil {
 		return hcclient.ErrorToDiag(err)
 	}
@@ -160,7 +162,6 @@ func resourceVolumeCreate(ctx context.Context, d *schema.ResourceData, m interfa
 			}
 		}
 	}
-	d.SetId(strconv.Itoa(result.Volume.ID))
 
 	deleteProtection := d.Get("delete_protection").(bool)
 	if deleteProtection {

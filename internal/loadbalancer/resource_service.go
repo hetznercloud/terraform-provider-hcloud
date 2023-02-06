@@ -238,12 +238,13 @@ func resourceLoadBalancerServiceCreate(ctx context.Context, d *schema.ResourceDa
 	if err != nil {
 		return hcclient.ErrorToDiag(err)
 	}
+
+	svcID := fmt.Sprintf("%d__%d", lb.ID, listenPort)
+	d.SetId(svcID)
+
 	if err := hcclient.WaitForAction(ctx, &c.Action, a); err != nil {
 		return hcclient.ErrorToDiag(err)
 	}
-	svcID := fmt.Sprintf("%d__%d", lb.ID, listenPort)
-
-	d.SetId(svcID)
 
 	return resourceLoadBalancerServiceRead(ctx, d, m)
 }
