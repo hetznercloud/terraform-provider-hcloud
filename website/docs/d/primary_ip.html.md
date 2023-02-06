@@ -67,6 +67,7 @@ resource "hcloud_server" "server_test" {
 - `auto_delete` - (bool) Whether auto delete is enabled.
 - `labels` - (string) Description of the Primary IP.
 - `ip_address` - (string) IP Address of the Primary IP.
+- `ip_network` - (string) IPv6 subnet of the Primary IP for IPv6 addresses. (Only set if `type` is `ipv6`)
 - `assignee_id` - (int) ID of the assigned resource.
 - `assignee_type` - (string) The type of the assigned resource.
 - `delete_protection` - (bool) Whether delete protection is enabled.

@@ -63,6 +63,7 @@ resource "hcloud_server" "server_test" {
   `Important note:`It is recommended to set `auto_delete` to `false`, because if a server assigned to a managed ip is getting deleted, it will also delete the primary IP which will break the TF state.
 - `labels` - (string) Description of the Primary IP.
 - `ip_address` - (string) IP Address of the Primary IP.
+- `ip_network` - (string) IPv6 subnet of the Primary IP for IPv6 addresses. (Only set if `type` is `ipv6`)
 - `assignee_id` - (int) ID of the assigned resource
 - `assignee_type` - (string) The type of the assigned resource.
 - `delete_protection` - (bool) Whether delete protection is enabled.

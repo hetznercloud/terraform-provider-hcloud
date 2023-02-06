@@ -318,6 +318,11 @@ func getPrimaryIPAttributes(f *hcloud.PrimaryIP) map[string]interface{} {
 		"delete_protection": f.Protection.Delete,
 		"auto_delete":       f.AutoDelete,
 	}
+
+	if f.Type == hcloud.PrimaryIPTypeIPv6 {
+		res["ip_network"] = f.Network.String()
+	}
+
 	return res
 }
 
