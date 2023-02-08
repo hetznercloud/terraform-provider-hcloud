@@ -82,13 +82,13 @@ func create(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Dia
 	if err != nil {
 		return hcclient.ErrorToDiag(err)
 	}
+	d.SetId(strconv.Itoa(res.PlacementGroup.ID))
+
 	if res.Action != nil {
 		if err := hcclient.WaitForAction(ctx, &client.Action, res.Action); err != nil {
 			return hcclient.ErrorToDiag(err)
 		}
 	}
-
-	d.SetId(strconv.Itoa(res.PlacementGroup.ID))
 
 	return read(ctx, d, m)
 }

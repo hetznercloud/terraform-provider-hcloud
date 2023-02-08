@@ -78,12 +78,14 @@ func resourceVolumeAttachmentCreate(ctx context.Context, d *schema.ResourceData,
 	if err != nil {
 		return hcclient.ErrorToDiag(err)
 	}
-	if err := hcclient.WaitForAction(ctx, &c.Action, a); err != nil {
-		return hcclient.ErrorToDiag(err)
-	}
 	// Since a volume can only be attached to one server
 	// we can use the volume id as volume attachment id.
 	d.SetId(strconv.Itoa(volume.ID))
+
+	if err := hcclient.WaitForAction(ctx, &c.Action, a); err != nil {
+		return hcclient.ErrorToDiag(err)
+	}
+
 	return resourceVolumeAttachmentRead(ctx, d, m)
 }
 

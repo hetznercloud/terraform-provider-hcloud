@@ -112,11 +112,11 @@ func resourceNetworkSubnetCreate(ctx context.Context, d *schema.ResourceData, m 
 	if err != nil {
 		return hcclient.ErrorToDiag(err)
 	}
+	d.SetId(generateNetworkSubnetID(network, ipRange.String()))
 
 	if err := hcclient.WaitForAction(ctx, &c.Action, a); err != nil {
 		return hcclient.ErrorToDiag(err)
 	}
-	d.SetId(generateNetworkSubnetID(network, ipRange.String()))
 
 	return resourceNetworkSubnetRead(ctx, d, m)
 }
