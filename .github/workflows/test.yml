@@ -5,7 +5,7 @@ on:
 
 jobs:
   integration_tests:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     # These tests use actual resources in a hetzner-owned hcloud project,
     # depending on the current usage, some quotas are reached and test tests
     # might fail.
@@ -15,46 +15,52 @@ jobs:
         terraform_version: [ "1.0.x", "1.1.x", "1.2.x", "1.3.x" ]
     name: integration-${{ matrix.terraform_version }}
     steps:
-      -
-        name: Checkout
+      - name: Checkout
         uses: actions/checkout@v3
-      -
-        name: Unshallow
+      - name: Unshallow
         run: git fetch --prune --unshallow
-      -
-        uses: hashicorp/setup-terraform@v2
+      - uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: ${{ matrix.terraform_version }}
           terraform_wrapper: false
-      -
-        name: Set up Go
+      - name: Set up Go
         uses: actions/setup-go@v3
         with:
           go-version: 1.19
-      -
-        name: Run tests
+      - name: HCLOUD_TOKEN
+        env:
+          HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
+          TTS_TOKEN: ${{ secrets.TTS_TOKEN }}
         run: |
-          export HCLOUD_TOKEN=$(./scripts/get-token.sh)
+          set -ueo pipefail
+          if [[ "${HCLOUD_TOKEN:-}" != "" ]]; then
+            echo "HCLOUD_TOKEN=$HCLOUD_TOKEN" >> "$GITHUB_ENV"
+          elif [[ "${TTS_TOKEN:-}" != "" ]]; then
+                    token="$(./scripts/get-token.sh)"
+                    echo "::add-mask::$token"
+                    echo "HCLOUD_TOKEN=$token" >> "$GITHUB_ENV"
+          else
+            echo "::error ::Couldn't determine HCLOUD_TOKEN. Check that repository secrets are setup correctly."
+            exit 1
+          fi
+      - name: Run tests
+        run: |
           cat resp.json
           make testacc
           make
           ./scripts/delete-token.sh $HCLOUD_TOKEN
 
   unit_tests:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
-      -
-        name: Checkout
+      - name: Checkout
         uses: actions/checkout@v3
-      -
-        name: Unshallow
+      - name: Unshallow
         run: git fetch --prune --unshallow
-      -
-        name: Set up Go
+      - name: Set up Go
         uses: actions/setup-go@v3
         with:
           go-version: 1.19
-      -
-        name: Run tests
+      - name: Run tests
         run: |
           make test

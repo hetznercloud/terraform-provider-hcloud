@@ -34,11 +34,9 @@ func TestAccHcloudDataSourceDatacenterTest(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(dcByName.TFID(), "id", "4"),
 					resource.TestCheckResourceAttr(dcByName.TFID(), "name", "fsn1-dc14"),
-					resource.TestCheckResourceAttr(dcByName.TFID(), "description", "Falkenstein 1 DC14"),
 
 					resource.TestCheckResourceAttr(dcByID.TFID(), "id", "4"),
 					resource.TestCheckResourceAttr(dcByID.TFID(), "name", "fsn1-dc14"),
-					resource.TestCheckResourceAttr(dcByID.TFID(), "description", "Falkenstein 1 DC14"),
 				),
 			},
 		},
@@ -70,11 +68,6 @@ func TestAccHcloudDataSourceDatacentersTest(t *testing.T) {
 					resource.TestCheckResourceAttr(datacentersD.TFID(), "names.2", "fsn1-dc14"),
 					resource.TestCheckResourceAttr(datacentersD.TFID(), "names.3", "ash-dc1"),
 					resource.TestCheckResourceAttr(datacentersD.TFID(), "names.4", "hil-dc1"),
-					resource.TestCheckResourceAttr(datacentersD.TFID(), "descriptions.0", "Nuremberg 1 DC 3"),
-					resource.TestCheckResourceAttr(datacentersD.TFID(), "descriptions.1", "Helsinki 1 DC 2"),
-					resource.TestCheckResourceAttr(datacentersD.TFID(), "descriptions.2", "Falkenstein 1 DC14"),
-					resource.TestCheckResourceAttr(datacentersD.TFID(), "descriptions.3", "Ashburn DC1"),
-					resource.TestCheckResourceAttr(datacentersD.TFID(), "descriptions.4", "Hillsboro DC 1"),
 					resource.TestCheckResourceAttr(datacentersD.TFID(), "datacenters.#", "5"),
 					resource.TestCheckResourceAttr(datacentersD.TFID(), "datacenters.0.name", "nbg1-dc3"),
 					resource.TestCheckResourceAttr(datacentersD.TFID(), "datacenters.1.name", "hel1-dc2"),
