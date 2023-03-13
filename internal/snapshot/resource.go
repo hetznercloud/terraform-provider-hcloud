@@ -52,7 +52,7 @@ func resourceSnapshotCreate(ctx context.Context, d *schema.ResourceData, m inter
 	serverID := d.Get("server_id").(int)
 	opts := hcloud.ServerCreateImageOpts{
 		Type:        hcloud.ImageTypeSnapshot,
-		Description: hcloud.String(d.Get("description").(string)),
+		Description: hcloud.Ptr(d.Get("description").(string)),
 	}
 
 	if labels, ok := d.GetOk("labels"); ok {
@@ -124,7 +124,7 @@ func resourceSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	if d.HasChange("description") {
 		description := d.Get("description").(string)
 		_, _, err := client.Image.Update(ctx, image, hcloud.ImageUpdateOpts{
-			Description: hcloud.String(description),
+			Description: hcloud.Ptr(description),
 		})
 		if err != nil {
 			if resourceSnapshotIsNotFound(err, d) {
