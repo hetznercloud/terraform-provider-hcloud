@@ -33,7 +33,7 @@ func Sweep(r string) error {
 	}
 
 	for _, srv := range servers {
-		if _, err := client.Server.Delete(ctx, srv); err != nil {
+		if _, _, err = client.Server.DeleteWithResult(ctx, srv); err != nil {
 			return err
 		}
 	}

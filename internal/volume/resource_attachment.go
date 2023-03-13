@@ -63,7 +63,7 @@ func resourceVolumeAttachmentCreate(ctx context.Context, d *schema.ResourceData,
 		Server: server,
 	}
 	if automount, ok := d.GetOk("automount"); ok {
-		opts.Automount = hcloud.Bool(automount.(bool))
+		opts.Automount = hcloud.Ptr(automount.(bool))
 	}
 
 	err := control.Retry(control.DefaultRetries, func() error {

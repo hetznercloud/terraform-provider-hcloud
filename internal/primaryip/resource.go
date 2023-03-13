@@ -92,7 +92,7 @@ func resourcePrimaryIPCreate(ctx context.Context, d *schema.ResourceData, m inte
 	opts := hcloud.PrimaryIPCreateOpts{
 		Type:         hcloud.PrimaryIPType(d.Get("type").(string)),
 		AssigneeType: d.Get("assignee_type").(string),
-		AutoDelete:   hcloud.Bool(d.Get("auto_delete").(bool)),
+		AutoDelete:   hcloud.Ptr(d.Get("auto_delete").(bool)),
 	}
 	if name, ok := d.GetOk("name"); ok {
 		opts.Name = name.(string)
@@ -105,7 +105,7 @@ func resourcePrimaryIPCreate(ctx context.Context, d *schema.ResourceData, m inte
 		return hcclient.ErrorToDiag(errors.New("assignee_id & datacenter cannot be set in the same time. " +
 			"If assignee_id is set, datacenter must be left out"))
 	case ok1:
-		opts.AssigneeID = hcloud.Int(assigneeID.(int))
+		opts.AssigneeID = hcloud.Ptr(assigneeID.(int))
 	case ok2:
 		opts.Datacenter = dataCenter.(string)
 	default:
@@ -194,7 +194,7 @@ func resourcePrimaryIPUpdate(ctx context.Context, d *schema.ResourceData, m inte
 	if d.HasChange("auto_delete") {
 		autoDelete := d.Get("auto_delete").(bool)
 		_, _, err := client.PrimaryIP.Update(ctx, primaryIP, hcloud.PrimaryIPUpdateOpts{
-			AutoDelete: hcloud.Bool(autoDelete),
+			AutoDelete: hcloud.Ptr(autoDelete),
 		})
 		if err != nil {
 			if resourcePrimaryIPIsNotFound(err, d) {
@@ -392,7 +392,7 @@ func CreateRandomPrimaryIP(ctx context.Context, c *hcloud.Client, server *hcloud
 		Name:         "primary_ip-" + strconv.Itoa(randomNumberBetween(1000000, 9999999)),
 		AssigneeID:   &server.ID,
 		AssigneeType: "server",
-		AutoDelete:   hcloud.Bool(true),
+		AutoDelete:   hcloud.Ptr(true),
 		Type:         ipType,
 	})
 	if err != nil {

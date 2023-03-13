@@ -103,10 +103,10 @@ func resourceVolumeCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		opts.Labels = tmpLabels
 	}
 	if automount, ok := d.GetOk("automount"); ok {
-		opts.Automount = hcloud.Bool(automount.(bool))
+		opts.Automount = hcloud.Ptr(automount.(bool))
 	}
 	if format, ok := d.GetOk("format"); ok {
-		opts.Format = hcloud.String(format.(string))
+		opts.Format = hcloud.Ptr(format.(string))
 	}
 
 	result, _, err := c.Volume.Create(ctx, opts)
@@ -147,7 +147,7 @@ func resourceVolumeCreate(ctx context.Context, d *schema.ResourceData, m interfa
 					err := control.Retry(control.DefaultRetries, func() error {
 						o := hcloud.VolumeAttachOpts{Server: opts.Server}
 						if automount, ok := d.GetOk("automount"); ok {
-							opts.Automount = hcloud.Bool(automount.(bool))
+							opts.Automount = hcloud.Ptr(automount.(bool))
 						}
 						a, _, err := c.Volume.AttachWithOpts(ctx, result.Volume, o)
 						if err != nil {
@@ -271,7 +271,7 @@ func resourceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 			err := control.Retry(control.DefaultRetries, func() error {
 				opts := hcloud.VolumeAttachOpts{Server: &hcloud.Server{ID: serverID}}
 				if automount, ok := d.GetOk("automount"); ok {
-					opts.Automount = hcloud.Bool(automount.(bool))
+					opts.Automount = hcloud.Ptr(automount.(bool))
 				}
 
 				action, _, err := c.Volume.AttachWithOpts(ctx, volume, opts)

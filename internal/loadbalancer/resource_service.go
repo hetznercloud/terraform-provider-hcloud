@@ -203,12 +203,12 @@ func resourceLoadBalancerServiceCreate(ctx context.Context, d *schema.ResourceDa
 			listenPort = 443
 		}
 	}
-	opts.ListenPort = hcloud.Int(listenPort)
+	opts.ListenPort = hcloud.Ptr(listenPort)
 	if p, ok := d.GetOk("destination_port"); ok {
-		opts.DestinationPort = hcloud.Int(p.(int))
+		opts.DestinationPort = hcloud.Ptr(p.(int))
 	}
 	if pp, ok := d.GetOk("proxyprotocol"); ok {
-		opts.Proxyprotocol = hcloud.Bool(pp.(bool))
+		opts.Proxyprotocol = hcloud.Ptr(pp.(bool))
 	}
 	if tfHTTP, ok := d.GetOk("http"); ok {
 		opts.HTTP = parseTFHTTP(tfHTTP.([]interface{}))
@@ -267,10 +267,10 @@ func resourceLoadBalancerServiceUpdate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	pp := d.Get("proxyprotocol")
-	opts.Proxyprotocol = hcloud.Bool(pp.(bool))
+	opts.Proxyprotocol = hcloud.Ptr(pp.(bool))
 
 	if p, ok := d.GetOk("destination_port"); ok {
-		opts.DestinationPort = hcloud.Int(p.(int))
+		opts.DestinationPort = hcloud.Ptr(p.(int))
 	}
 
 	if tfHTTP, ok := d.GetOk("http"); ok {
@@ -434,20 +434,20 @@ func parseTFHTTP(tfHTTP []interface{}) *hcloud.LoadBalancerAddServiceOptsHTTP {
 	}
 	http := &hcloud.LoadBalancerAddServiceOptsHTTP{}
 	if stickySessions, ok := httpMap["sticky_sessions"]; ok {
-		http.StickySessions = hcloud.Bool(stickySessions.(bool))
+		http.StickySessions = hcloud.Ptr(stickySessions.(bool))
 	}
 	if cookieName, ok := httpMap["cookie_name"]; ok && cookieName != "" {
-		http.CookieName = hcloud.String(cookieName.(string))
+		http.CookieName = hcloud.Ptr(cookieName.(string))
 	}
 	if cookieLifetime, ok := httpMap["cookie_lifetime"]; ok && cookieLifetime != 0 {
-		http.CookieLifetime = hcloud.Duration(time.Duration(cookieLifetime.(int)) * time.Second)
+		http.CookieLifetime = hcloud.Ptr(time.Duration(cookieLifetime.(int)) * time.Second)
 	}
 
 	if certificates, ok := httpMap["certificates"]; ok {
 		http.Certificates = parseTFCertificates(certificates.(*schema.Set))
 	}
 	if redirectHTTP, ok := httpMap["redirect_http"]; ok {
-		http.RedirectHTTP = hcloud.Bool(redirectHTTP.(bool))
+		http.RedirectHTTP = hcloud.Ptr(redirectHTTP.(bool))
 	}
 	return http
 }
@@ -462,20 +462,20 @@ func parseUpdateTFHTTP(tfHTTP []interface{}) *hcloud.LoadBalancerUpdateServiceOp
 	}
 	http := &hcloud.LoadBalancerUpdateServiceOptsHTTP{}
 	if stickySessions, ok := httpMap["sticky_sessions"]; ok {
-		http.StickySessions = hcloud.Bool(stickySessions.(bool))
+		http.StickySessions = hcloud.Ptr(stickySessions.(bool))
 	}
 	if cookieName, ok := httpMap["cookie_name"]; ok {
-		http.CookieName = hcloud.String(cookieName.(string))
+		http.CookieName = hcloud.Ptr(cookieName.(string))
 	}
 	if cookieLifetime, ok := httpMap["cookie_lifetime"]; ok {
-		http.CookieLifetime = hcloud.Duration(time.Duration(cookieLifetime.(int)) * time.Second)
+		http.CookieLifetime = hcloud.Ptr(time.Duration(cookieLifetime.(int)) * time.Second)
 	}
 
 	if certificates, ok := httpMap["certificates"]; ok {
 		http.Certificates = parseTFCertificates(certificates.(*schema.Set))
 	}
 	if redirectHTTP, ok := httpMap["redirect_http"]; ok {
-		http.RedirectHTTP = hcloud.Bool(redirectHTTP.(bool))
+		http.RedirectHTTP = hcloud.Ptr(redirectHTTP.(bool))
 	}
 	return http
 }
@@ -531,16 +531,16 @@ func parseTFHealthCheckAdd(tfHealthCheck []interface{}) *hcloud.LoadBalancerAddS
 	healthCheckMap := tfHealthCheck[0].(map[string]interface{})
 	healthCheckOpts.Protocol = hcloud.LoadBalancerServiceProtocol(healthCheckMap["protocol"].(string))
 	if port, ok := healthCheckMap["port"]; ok {
-		healthCheckOpts.Port = hcloud.Int(port.(int))
+		healthCheckOpts.Port = hcloud.Ptr(port.(int))
 	}
 	if interval, ok := healthCheckMap["interval"]; ok {
-		healthCheckOpts.Interval = hcloud.Duration(time.Duration(interval.(int)) * time.Second)
+		healthCheckOpts.Interval = hcloud.Ptr(time.Duration(interval.(int)) * time.Second)
 	}
 	if timeout, ok := healthCheckMap["timeout"]; ok {
-		healthCheckOpts.Timeout = hcloud.Duration(time.Duration(timeout.(int)) * time.Second)
+		healthCheckOpts.Timeout = hcloud.Ptr(time.Duration(timeout.(int)) * time.Second)
 	}
 	if retries, ok := healthCheckMap["retries"]; ok {
-		healthCheckOpts.Retries = hcloud.Int(retries.(int))
+		healthCheckOpts.Retries = hcloud.Ptr(retries.(int))
 	}
 	if http, ok := healthCheckMap["http"]; ok {
 		healthCheckOpts.HTTP = parseTFHealthCheckHTTPAdd(http.([]interface{}))
@@ -558,16 +558,16 @@ func parseTFHealthCheckUpdate(tfHealthCheck []interface{}) *hcloud.LoadBalancerU
 	healthCheckMap := tfHealthCheck[0].(map[string]interface{})
 	healthCheckOpts.Protocol = hcloud.LoadBalancerServiceProtocol(healthCheckMap["protocol"].(string))
 	if port, ok := healthCheckMap["port"]; ok {
-		healthCheckOpts.Port = hcloud.Int(port.(int))
+		healthCheckOpts.Port = hcloud.Ptr(port.(int))
 	}
 	if interval, ok := healthCheckMap["interval"]; ok {
-		healthCheckOpts.Interval = hcloud.Duration(time.Duration(interval.(int)) * time.Second)
+		healthCheckOpts.Interval = hcloud.Ptr(time.Duration(interval.(int)) * time.Second)
 	}
 	if timeout, ok := healthCheckMap["timeout"]; ok {
-		healthCheckOpts.Timeout = hcloud.Duration(time.Duration(timeout.(int)) * time.Second)
+		healthCheckOpts.Timeout = hcloud.Ptr(time.Duration(timeout.(int)) * time.Second)
 	}
 	if retries, ok := healthCheckMap["retries"]; ok {
-		healthCheckOpts.Retries = hcloud.Int(retries.(int))
+		healthCheckOpts.Retries = hcloud.Ptr(retries.(int))
 	}
 	if http, ok := healthCheckMap["http"]; ok {
 		healthCheckOpts.HTTP = parseTFHealthCheckHTTPUpdate(http.([]interface{}))
@@ -584,16 +584,16 @@ func parseTFHealthCheckHTTPAdd(tfHealthCheckHTTP []interface{}) *hcloud.LoadBala
 	httpHealthCheck := &hcloud.LoadBalancerAddServiceOptsHealthCheckHTTP{}
 
 	if domain, ok := httpMap["domain"]; ok {
-		httpHealthCheck.Domain = hcloud.String(domain.(string))
+		httpHealthCheck.Domain = hcloud.Ptr(domain.(string))
 	}
 	if path, ok := httpMap["path"]; ok {
-		httpHealthCheck.Path = hcloud.String(path.(string))
+		httpHealthCheck.Path = hcloud.Ptr(path.(string))
 	}
 	if response, ok := httpMap["response"]; ok {
-		httpHealthCheck.Response = hcloud.String(response.(string))
+		httpHealthCheck.Response = hcloud.Ptr(response.(string))
 	}
 	if tls, ok := httpMap["tls"]; ok {
-		httpHealthCheck.TLS = hcloud.Bool(tls.(bool))
+		httpHealthCheck.TLS = hcloud.Ptr(tls.(bool))
 	}
 	if scs, ok := httpMap["status_codes"]; ok {
 		var statusCodes []string
@@ -614,16 +614,16 @@ func parseTFHealthCheckHTTPUpdate(tfHealthCheckHTTP []interface{}) *hcloud.LoadB
 	httpHealthCheck := &hcloud.LoadBalancerUpdateServiceOptsHealthCheckHTTP{}
 
 	if domain, ok := httpMap["domain"]; ok {
-		httpHealthCheck.Domain = hcloud.String(domain.(string))
+		httpHealthCheck.Domain = hcloud.Ptr(domain.(string))
 	}
 	if path, ok := httpMap["path"]; ok {
-		httpHealthCheck.Path = hcloud.String(path.(string))
+		httpHealthCheck.Path = hcloud.Ptr(path.(string))
 	}
 	if response, ok := httpMap["response"]; ok {
-		httpHealthCheck.Response = hcloud.String(response.(string))
+		httpHealthCheck.Response = hcloud.Ptr(response.(string))
 	}
 	if tls, ok := httpMap["tls"]; ok {
-		httpHealthCheck.TLS = hcloud.Bool(tls.(bool))
+		httpHealthCheck.TLS = hcloud.Ptr(tls.(bool))
 	}
 	if scs, ok := httpMap["status_codes"]; ok {
 		var statusCodes []string
