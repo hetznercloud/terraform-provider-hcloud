@@ -65,6 +65,7 @@ func Provider() *schema.Provider {
 			"poll_interval": {
 				Type:     schema.TypeString,
 				Optional: true,
+				Default:  "500ms",
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
@@ -139,7 +140,7 @@ func providerConfigure(_ context.Context, d *schema.ResourceData) (interface{}, 
 		if err != nil {
 			return nil, hcclient.ErrorToDiag(err)
 		}
-		opts = append(opts, hcloud.WithPollInterval(pollInterval))
+		opts = append(opts, hcloud.WithPollBackoffFunc(hcloud.ExponentialBackoff(2, pollInterval)))
 	}
 	if logging.LogLevel() != "" {
 		opts = append(opts, hcloud.WithDebugWriter(log.Writer()))
