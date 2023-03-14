@@ -10,7 +10,7 @@ builds:
     flags:
       - -trimpath
     ldflags:
-      - '-s -w -X github.com/terraform-providers/terraform-provider-hcloud/hcloud.Version={{.Version}} -X  github.com/terraform-providers/terraform-provider-hcloud/hcloud.Commit={{.Commit}}'
+      - '-s -w -X github.com/hetznercloud/terraform-provider-hcloud/hcloud.Version={{.Version}} -X github.com/hetznercloud/terraform-provider-hcloud/hcloud.Commit={{.Commit}}'
     goos:
       - freebsd
       - windows
