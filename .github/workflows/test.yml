@@ -16,7 +16,7 @@ jobs:
           terraform_version: v1.4.x
           terraform_wrapper: false
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
           go-version: 1.19
       - name: HCLOUD_TOKEN
@@ -50,7 +50,7 @@ jobs:
       - name: Unshallow
         run: git fetch --prune --unshallow
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
           go-version: 1.19
       - name: Run tests
