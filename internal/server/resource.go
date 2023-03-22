@@ -11,16 +11,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-log/tflog"
-
 	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/primaryip"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/control"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/primaryip"
 )
 
 // ResourceType is the type name of the Hetzner Cloud Server resource.
@@ -270,25 +269,20 @@ func userDataDiffSuppress(k, old, new string, d *schema.ResourceData) bool {
 func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*hcloud.Client)
 
-	var err error
-	var image *hcloud.Image
-	images, err := c.Image.AllWithOpts(ctx, hcloud.ImageListOpts{Name: d.Get("image").(string), IncludeDeprecated: true})
+	// Get server type to select correct image (based on arch)
+	serverType, _, err := c.ServerType.Get(ctx, d.Get("server_type").(string))
 	if err != nil {
 		return hcclient.ErrorToDiag(err)
 	}
-	switch len(images) {
-	case 1:
-		image = images[0]
-	case 0:
-		image, _, err = c.Image.Get(ctx, d.Get("image").(string))
-		if err != nil {
-			return hcclient.ErrorToDiag(err)
-		}
-		if image == nil {
-			return diag.Errorf("image %s not found", d.Get("image").(string))
-		}
-	default:
-		return diag.Errorf("more than one Image found for name %s", d.Get("image").(string))
+
+	imageName := d.Get("image").(string)
+	image, _, err := c.Image.GetByNameAndArchitecture(ctx, imageName, serverType.Architecture)
+	if err != nil {
+		return hcclient.ErrorToDiag(err)
+	}
+
+	if image == nil {
+		return diag.Errorf("image %s for architecture %s not found", imageName, serverType.Architecture)
 	}
 
 	if image.IsDeprecated() {
