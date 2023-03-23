@@ -42,3 +42,4 @@ resource "hcloud_server" "main" {
 - `os_version` - (string) Operating system version.
 - `rapid_deploy` - (bool) Indicates that rapid deploy of the image is available.
 - `deprecated` - (string) Point in time when the image is considered to be deprecated (in ISO-8601 format).
+- `architecture` - (string) Architecture of the Image.

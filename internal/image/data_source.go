@@ -59,6 +59,10 @@ func getCommonDataSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
+		"architecture": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
 		"rapid_deploy": {
 			Type:     schema.TypeBool,
 			Computed: true,
@@ -254,6 +258,7 @@ func getImageAttributes(i *hcloud.Image) map[string]interface{} {
 		"description":  i.Description,
 		"os_flavor":    i.OSFlavor,
 		"os_version":   i.OSVersion,
+		"architecture": i.Architecture,
 		"rapid_deploy": i.RapidDeploy,
 		"labels":       i.Labels,
 	}
