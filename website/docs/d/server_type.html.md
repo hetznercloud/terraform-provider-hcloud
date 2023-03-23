@@ -29,3 +29,4 @@ data "hcloud_server_type" "ds_2" {
 - `cores` - (int) Number of cpu cores a Server of this type will have.
 - `memory` - (int) Memory a Server of this type will have in GB.
 - `disk` - (int) Disk size a Server of this type will have in GB.
+- `architecture` - (string) Architecture of the server_type.
