@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha1"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"log"
 	"net"
@@ -894,6 +895,12 @@ func setISO(ctx context.Context, c *hcloud.Client, server *hcloud.Server, isoIDO
 
 		if iso == nil {
 			return fmt.Errorf("ISO not found: %s", isoIDOrName)
+		}
+
+		// If ISO architecture is empty -> wildcard/unknown     --> allow
+		// If ISO architecture is set and does not match server -->  deny
+		if iso.Architecture != nil && *iso.Architecture != server.ServerType.Architecture {
+			return errors.New("failed to attach iso: iso has a different architecture than the server")
 		}
 
 		a, _, err := c.Server.AttachISO(ctx, server, iso)
