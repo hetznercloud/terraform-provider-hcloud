@@ -171,7 +171,7 @@ func dataSourceHcloudSSHKeyListRead(ctx context.Context, d *schema.ResourceData,
 			LabelSelector: labelSelectorStr,
 		},
 	}
-	allKeys, err := client.SSHKey.AllWithOpts(context.Background(), opts)
+	allKeys, err := client.SSHKey.AllWithOpts(ctx, opts)
 	if err != nil {
 		return hcclient.ErrorToDiag(err)
 	}

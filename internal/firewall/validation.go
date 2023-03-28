@@ -8,7 +8,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
 )
 
-func validateIPDiag(i interface{}, path cty.Path) diag.Diagnostics {
+func validateIPDiag(i interface{}, _ cty.Path) diag.Diagnostics {
 	ipS := i.(string)
 	ip, n, err := net.ParseCIDR(ipS)
 	if err != nil {

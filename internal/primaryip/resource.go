@@ -234,8 +234,8 @@ func resourcePrimaryIPUpdate(ctx context.Context, d *schema.ResourceData, m inte
 	}
 
 	if d.HasChange("delete_protection") {
-		delete := d.Get("delete_protection").(bool)
-		if err := setProtection(ctx, client, primaryIP, delete); err != nil {
+		deletionProtection := d.Get("delete_protection").(bool)
+		if err := setProtection(ctx, client, primaryIP, deletionProtection); err != nil {
 			return hcclient.ErrorToDiag(err)
 		}
 	}
@@ -337,11 +337,7 @@ func setProtection(ctx context.Context, c *hcloud.Client, primaryIP *hcloud.Prim
 		return err
 	}
 
-	if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
-		return err
-	}
-
-	return nil
+	return hcclient.WaitForAction(ctx, &c.Action, action)
 }
 
 func watchProgress(ctx context.Context, action *hcloud.Action, client *hcloud.Client) diag.Diagnostics {

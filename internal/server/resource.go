@@ -143,8 +143,8 @@ func Resource() *schema.Resource {
 				Type:     schema.TypeMap,
 				Optional: true,
 				ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics {
-					if ok, error := hcloud.ValidateResourceLabels(i.(map[string]interface{})); !ok {
-						return diag.Errorf(error.Error())
+					if ok, err := hcloud.ValidateResourceLabels(i.(map[string]interface{})); !ok {
+						return diag.Errorf(err.Error())
 					}
 					return nil
 				},
@@ -407,10 +407,7 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 			if err := hcclient.WaitForAction(ctx, &c.Action, powerOffTwo); err != nil {
 				return fmt.Errorf("power off server: %v", err)
 			}
-			if err := powerOnServer(ctx, c, res.Server); err != nil {
-				return err
-			}
-			return nil
+			return powerOnServer(ctx, c, res.Server)
 		}); err != nil {
 			return err
 		}
@@ -647,9 +644,9 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 
 	if d.HasChange("delete_protection") || d.HasChange("rebuild_protection") {
-		delete := d.Get("delete_protection").(bool)
+		deletionProtection := d.Get("delete_protection").(bool)
 		rebuild := d.Get("rebuild_protection").(bool)
-		if err := setProtection(ctx, c, server, delete, rebuild); err != nil {
+		if err := setProtection(ctx, c, server, deletionProtection, rebuild); err != nil {
 			return hcclient.ErrorToDiag(err)
 		}
 	}
@@ -866,20 +863,18 @@ func setBackups(ctx context.Context, c *hcloud.Client, server *hcloud.Server, ba
 		if err != nil {
 			return err
 		}
-		if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
-			return err
-		}
-		return nil
+
+		return hcclient.WaitForAction(ctx, &c.Action, action)
 	}
+
 	if server.BackupWindow == "" && backups {
 		action, _, err := c.Server.EnableBackup(ctx, server, "")
 		if err != nil {
 			return err
 		}
-		if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
-			return err
-		}
+		return hcclient.WaitForAction(ctx, &c.Action, action)
 	}
+
 	return nil
 }
 
@@ -1206,11 +1201,7 @@ func setProtection(ctx context.Context, c *hcloud.Client, server *hcloud.Server,
 		return err
 	}
 
-	if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
-		return err
-	}
-
-	return nil
+	return hcclient.WaitForAction(ctx, &c.Action, action)
 }
 
 func toServerPublicNet[V int | bool](field map[string]interface{}, key string) (V, error) {
@@ -1261,10 +1252,8 @@ func powerOnServer(ctx context.Context, c *hcloud.Client, server *hcloud.Server)
 		if err != nil {
 			return err
 		}
-		if err := hcclient.WaitForAction(ctx, &c.Action, powerOn); err != nil {
-			return err
-		}
-		return nil
+
+		return hcclient.WaitForAction(ctx, &c.Action, powerOn)
 	})
 	if err != nil {
 		return err
@@ -1290,11 +1279,7 @@ func publicNetRemovedDecision(ctx context.Context,
 }
 
 func resourceServerCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
-	if err := validateUniqueNetworkIDs(d); err != nil {
-		return err
-	}
-
-	return nil
+	return validateUniqueNetworkIDs(d)
 }
 
 func validateUniqueNetworkIDs(d *schema.ResourceDiff) error {

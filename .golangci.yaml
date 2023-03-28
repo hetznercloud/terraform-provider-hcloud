@@ -37,6 +37,8 @@ issues:
         - exportloopref
         - gosec
         - errcheck
+    - path: testing.go
+      text: unused-parameter
     - linters:
         - gosec
       text: "G401:"

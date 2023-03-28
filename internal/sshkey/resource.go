@@ -48,8 +48,8 @@ func Resource() *schema.Resource {
 				Type:     schema.TypeMap,
 				Optional: true,
 				ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics {
-					if ok, error := hcloud.ValidateResourceLabels(i.(map[string]interface{})); !ok {
-						return diag.Errorf(error.Error())
+					if ok, err := hcloud.ValidateResourceLabels(i.(map[string]interface{})); !ok {
+						return diag.Errorf(err.Error())
 					}
 					return nil
 				},
@@ -58,7 +58,7 @@ func Resource() *schema.Resource {
 	}
 }
 
-func resourceSSHKeyPublicKeyDiffSuppress(k, old, new string, d *schema.ResourceData) bool {
+func resourceSSHKeyPublicKeyDiffSuppress(_, old, new string, d *schema.ResourceData) bool {
 	fingerprint := d.Get("fingerprint").(string)
 	if new != "" && fingerprint != "" {
 		publicKey, _, _, _, err := ssh.ParseAuthorizedKey([]byte(new))
