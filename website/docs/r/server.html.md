@@ -167,7 +167,7 @@ The following arguments are supported:
   If this block is not defined, two primary (ipv4 & ipv6) ips getting auto generated.
 - `keep_disk` - (Optional, bool) If true, do not upgrade the disk. This allows downgrading the server type later.
 - `iso` - (Optional, string) ID or Name of an ISO image to mount.
-- `rescue` - (Optional, string) Enable and boot in to the specified rescue system. This enables simple installation of custom operating systems. `linux64` `linux32` or `freebsd64`
+- `rescue` - (Optional, string) Enable and boot in to the specified rescue system. This enables simple installation of custom operating systems. `linux64` or `linux32`
 - `labels` - (Optional, map) User-defined labels (key-value pairs) should be created with.
 - `backups` - (Optional, bool) Enable or disable backups.
 - `firewall_ids` - (Optional, list) Firewall IDs the server should be attached to on creation.
