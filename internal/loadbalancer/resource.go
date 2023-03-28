@@ -341,8 +341,8 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, m i
 	}
 
 	if d.HasChange("delete_protection") {
-		delete := d.Get("delete_protection").(bool)
-		if err := setProtection(ctx, c, loadBalancer, delete); err != nil {
+		deletionProtection := d.Get("delete_protection").(bool)
+		if err := setProtection(ctx, c, loadBalancer, deletionProtection); err != nil {
 			return hcclient.ErrorToDiag(err)
 		}
 	}
@@ -466,9 +466,5 @@ func setProtection(ctx context.Context, c *hcloud.Client, lb *hcloud.LoadBalance
 		return err
 	}
 
-	if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
-		return err
-	}
-
-	return nil
+	return hcclient.WaitForAction(ctx, &c.Action, action)
 }

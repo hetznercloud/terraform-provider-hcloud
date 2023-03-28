@@ -157,8 +157,8 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interf
 	}
 
 	if d.HasChange("delete_protection") {
-		delete := d.Get("delete_protection").(bool)
-		if err := setProtection(ctx, client, network, delete); err != nil {
+		deletionProtection := d.Get("delete_protection").(bool)
+		if err := setProtection(ctx, client, network, deletionProtection); err != nil {
 			return hcclient.ErrorToDiag(err)
 		}
 	}
@@ -228,9 +228,5 @@ func setProtection(ctx context.Context, c *hcloud.Client, n *hcloud.Network, del
 		return err
 	}
 
-	if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
-		return err
-	}
-
-	return nil
+	return hcclient.WaitForAction(ctx, &c.Action, action)
 }

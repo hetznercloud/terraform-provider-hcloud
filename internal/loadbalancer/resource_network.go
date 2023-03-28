@@ -272,19 +272,16 @@ func setEnablePublicInterface(ctx context.Context, c *hcloud.Client, loadBalance
 		if err != nil {
 			return err
 		}
-		if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
-			return err
-		}
-		return nil
+
+		return hcclient.WaitForAction(ctx, &c.Action, action)
 	}
 	if !loadBalancer.PublicNet.Enabled && enablePublicInterface {
 		action, _, err := c.LoadBalancer.EnablePublicInterface(ctx, loadBalancer)
 		if err != nil {
 			return err
 		}
-		if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
-			return err
-		}
+
+		return hcclient.WaitForAction(ctx, &c.Action, action)
 	}
 	return nil
 }

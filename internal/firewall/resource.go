@@ -471,10 +471,8 @@ func removeFromResources(ctx context.Context, client *hcloud.Client, d *schema.R
 		}
 		return err
 	}
-	if err := waitForFirewallActions(ctx, client, actions, fw); err != nil {
-		return err
-	}
-	return nil
+
+	return waitForFirewallActions(ctx, client, actions, fw)
 }
 
 func resourceFirewallIsNotFound(err error, d *schema.ResourceData) bool {
