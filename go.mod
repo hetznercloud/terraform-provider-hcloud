@@ -8,7 +8,7 @@ require (
 	github.com/hetznercloud/hcloud-go v1.41.0
 	github.com/stretchr/testify v1.8.2
 	golang.org/x/crypto v0.7.0
-	golang.org/x/net v0.8.0
+	golang.org/x/net v0.9.0
 )
 
 require (
@@ -57,8 +57,8 @@ require (
 	github.com/vmihailenco/tagparser v0.1.2 // indirect
 	github.com/zclconf/go-cty v1.13.1 // indirect
 	golang.org/x/mod v0.8.0 // indirect
-	golang.org/x/sys v0.6.0 // indirect
-	golang.org/x/text v0.8.0 // indirect
+	golang.org/x/sys v0.7.0 // indirect
+	golang.org/x/text v0.9.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20220822174746-9e6da59bd2fc // indirect
 	google.golang.org/grpc v1.51.0 // indirect
