@@ -37,7 +37,7 @@ data "hcloud_server" "s_3" {
 - `datacenter` - (string) The datacenter name.
 - `backup_window` - (string) The backup window of the server, if enabled.
 - `backups` - (bool) Whether backups are enabled.
-- `iso` - (string) ID or Name of the mounted ISO image.
+- `iso` - (string) ID or Name of the mounted ISO image. Architecture of ISO must equal the server (type) architecture.
 - `ipv4_address` - (string) The IPv4 address.
 - `ipv6_address` - (string) The first IPv6 address of the assigned network.
 - `ipv6_network` - (string) The IPv6 network.

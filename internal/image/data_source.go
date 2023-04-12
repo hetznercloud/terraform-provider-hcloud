@@ -59,6 +59,10 @@ func getCommonDataSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
+		"architecture": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
 		"rapid_deploy": {
 			Type:     schema.TypeBool,
 			Computed: true,
@@ -94,13 +98,18 @@ func DataSource() *schema.Resource {
 				"with_selector": {
 					Type:          schema.TypeString,
 					Optional:      true,
-					ConflictsWith: []string{"selector"},
+					ConflictsWith: []string{"selector", "name"},
 				},
 				"with_status": {
 					Type: schema.TypeList,
 					Elem: &schema.Schema{
 						Type: schema.TypeString,
 					},
+					Optional: true,
+				},
+				"with_architecture": {
+					Type:     schema.TypeString,
+					Default:  hcloud.ArchitectureX86,
 					Optional: true,
 				},
 			},
@@ -134,6 +143,13 @@ func DataSourceList() *schema.Resource {
 				},
 				Optional: true,
 			},
+			"with_architecture": {
+				Type: schema.TypeSet,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional: true,
+			},
 		},
 	}
 }
@@ -151,17 +167,14 @@ func dataSourceHcloudImageRead(ctx context.Context, d *schema.ResourceData, m in
 		setImageSchema(d, i)
 		return nil
 	}
-	if name, ok := d.GetOk("name"); ok {
-		i, _, err := client.Image.GetByName(ctx, name.(string))
-		if err != nil {
-			return hcclient.ErrorToDiag(err)
-		}
-		if i == nil {
-			return diag.Errorf("no image found with name %v", name)
-		}
-		setImageSchema(d, i)
-		return nil
+
+	opts := hcloud.ImageListOpts{}
+
+	name := d.Get("name").(string)
+	if name != "" {
+		opts.Name = name
 	}
+
 	var selector string
 	if v := d.Get("with_selector").(string); v != "" {
 		selector = v
@@ -169,32 +182,46 @@ func dataSourceHcloudImageRead(ctx context.Context, d *schema.ResourceData, m in
 		selector = v
 	}
 	if selector != "" {
-		var allImages []*hcloud.Image
-
-		var statuses []hcloud.ImageStatus
-		for _, status := range d.Get("with_status").([]interface{}) {
-			statuses = append(statuses, hcloud.ImageStatus(status.(string)))
-		}
-
-		opts := hcloud.ImageListOpts{ListOpts: hcloud.ListOpts{LabelSelector: selector}, Status: statuses}
-		allImages, err := client.Image.AllWithOpts(ctx, opts)
-		if err != nil {
-			return hcclient.ErrorToDiag(err)
-		}
-		if len(allImages) == 0 {
-			return diag.Errorf("no image found for selector %q", selector)
-		}
-		if len(allImages) > 1 {
-			if _, ok := d.GetOk("most_recent"); !ok {
-				return diag.Errorf("more than one image found for selector %q", selector)
-			}
-			sortImageListByCreated(allImages)
-			log.Printf("[INFO] %d images found for selector %q, using %d as the most recent one", len(allImages), selector, allImages[0].ID)
-		}
-		setImageSchema(d, allImages[0])
-		return nil
+		opts.LabelSelector = selector
 	}
-	return diag.Errorf("please specify an id, a name or a selector to lookup the image")
+
+	// Resources can be selected either by name or selector
+	if name != "" && selector != "" {
+		diag.Errorf("you can only use one of name and with_selector")
+	}
+	if name == "" && selector == "" {
+		diag.Errorf("please specify an id, a name or a selector to lookup the image")
+	}
+
+	statuses := make([]hcloud.ImageStatus, 0)
+	for _, status := range d.Get("with_status").([]interface{}) {
+		statuses = append(statuses, hcloud.ImageStatus(status.(string)))
+	}
+	opts.Status = statuses
+
+	log.Printf("Arches: %+v", d.Get("with_architecture"))
+
+	architecture := hcloud.Architecture(d.Get("with_architecture").(string))
+	if architecture != "" {
+		opts.Architecture = []hcloud.Architecture{architecture}
+	}
+
+	allImages, err := client.Image.AllWithOpts(ctx, opts)
+	if err != nil {
+		return hcclient.ErrorToDiag(err)
+	}
+	if len(allImages) == 0 {
+		return diag.Errorf("no image found matching the selection")
+	}
+	if len(allImages) > 1 {
+		if _, ok := d.GetOk("most_recent"); !ok {
+			return diag.Errorf("more than one image found")
+		}
+		sortImageListByCreated(allImages)
+		log.Printf("[INFO] %d images found, using %d as the most recent one", len(allImages), allImages[0].ID)
+	}
+	setImageSchema(d, allImages[0])
+	return nil
 }
 
 func dataSourceHcloudImageListRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -207,7 +234,16 @@ func dataSourceHcloudImageListRead(ctx context.Context, d *schema.ResourceData, 
 		statuses = append(statuses, hcloud.ImageStatus(status.(string)))
 	}
 
-	opts := hcloud.ImageListOpts{ListOpts: hcloud.ListOpts{LabelSelector: selector}, Status: statuses}
+	architectures := make([]hcloud.Architecture, 0)
+	for _, arch := range d.Get("with_architecture").(*schema.Set).List() {
+		architectures = append(architectures, hcloud.Architecture(arch.(string)))
+	}
+
+	opts := hcloud.ImageListOpts{
+		ListOpts:     hcloud.ListOpts{LabelSelector: selector},
+		Status:       statuses,
+		Architecture: architectures,
+	}
 	allImages, err := client.Image.AllWithOpts(ctx, opts)
 	if err != nil {
 		return hcclient.ErrorToDiag(err)
@@ -254,6 +290,7 @@ func getImageAttributes(i *hcloud.Image) map[string]interface{} {
 		"description":  i.Description,
 		"os_flavor":    i.OSFlavor,
 		"os_version":   i.OSVersion,
+		"architecture": i.Architecture,
 		"rapid_deploy": i.RapidDeploy,
 		"labels":       i.Labels,
 	}

@@ -60,10 +60,14 @@ func getCommonDataSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
+		"architecture": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
 	}
 }
 
-// DataSourcecreates a new Terraform schema for the hcloud_server_type data
+// DataSource creates a new Terraform schema for the hcloud_server_type data
 // source.
 func DataSource() *schema.Resource {
 	return &schema.Resource{
@@ -156,6 +160,7 @@ func getServerTypeAttributes(t *hcloud.ServerType) map[string]interface{} {
 		"disk":         t.Disk,
 		"storage_type": t.StorageType,
 		"cpu_type":     t.CPUType,
+		"architecture": t.Architecture,
 	}
 }
 

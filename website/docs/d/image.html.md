@@ -14,7 +14,8 @@ data "hcloud_image" "image_1" {
   id = "1234"
 }
 data "hcloud_image" "image_2" {
-  name = "ubuntu-18.04"
+  name              = "ubuntu-18.04"
+  with_architecture = "x86"
 }
 data "hcloud_image" "image_3" {
   with_selector = "key=value"
@@ -29,7 +30,8 @@ resource "hcloud_server" "main" {
 - `name` - (Optional, string) Name of the Image.
 - `with_selector` - (Optional, string) [Label selector](https://docs.hetzner.cloud/#overview-label-selector)
 - `most_recent` - (Optional, bool) If more than one result is returned, use the most recent Image.
-- `with_status` - (Optional, list) List only images with the specified status, could contain `creating` or `available`.
+- `with_status` - (Optional, list) Select only images with the specified status, could contain `creating` or `available`.
+- `with_architecture` - (Optional, string) Select only images with this architecture, could be `x86` (default) or `arm`.
 
 ## Attributes Reference
 - `id` - (int) Unique ID of the Image.
@@ -42,3 +44,4 @@ resource "hcloud_server" "main" {
 - `os_version` - (string) Operating system version.
 - `rapid_deploy` - (bool) Indicates that rapid deploy of the image is available.
 - `deprecated` - (string) Point in time when the image is considered to be deprecated (in ISO-8601 format).
+- `architecture` - (string) Architecture of the Image.
