@@ -33,7 +33,7 @@ func TestAccHcloudDataSourcePlacementGroupTest(t *testing.T) {
 	}
 	placementGroupBySel.SetRName("placement_group_by_sel")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(placementgroup.ResourceType, placementgroup.ByID(t, nil)),
@@ -79,7 +79,7 @@ func TestAccHcloudDataSourcePlacementGroupListTest(t *testing.T) {
 	placementGroupBySel.SetRName("all_placement_groups_sel")
 
 	tmplMan := testtemplate.Manager{}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(placementgroup.ResourceType, placementgroup.ByID(t, nil)),

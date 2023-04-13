@@ -44,7 +44,7 @@ func TestAccHcloudDataSourceVolumeTest(t *testing.T) {
 	}
 	volBySel.SetRName("vol_by_sel")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(volume.ResourceType, volume.ByID(t, nil)),
@@ -122,7 +122,7 @@ func TestAccHcloudDataSourceAttachedVolumeTest(t *testing.T) {
 	volBySel.SetRName("vol_by_sel")
 
 	tmplMan := testtemplate.Manager{}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(volume.ResourceType, volume.ByID(t, nil)),
@@ -191,7 +191,7 @@ func TestAccHcloudDataSourceVolumeListTest(t *testing.T) {
 	allVolumesSel.SetRName("all_volumes_sel")
 
 	tmplMan := testtemplate.Manager{}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(volume.ResourceType, volume.ByID(t, nil)),

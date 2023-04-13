@@ -40,7 +40,7 @@ func TestAccHcloudDataSourceServerTest(t *testing.T) {
 		LabelSelector: fmt.Sprintf("key=${%s.labels[\"key\"]}", res.TFID()),
 	}
 	serverBySel.SetRName("server_by_sel")
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
@@ -92,7 +92,7 @@ func TestAccHcloudDataSourceServerListTest(t *testing.T) {
 	allServersSel.SetRName("all_servers_sel")
 
 	tmplMan := testtemplate.Manager{}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, nil)),

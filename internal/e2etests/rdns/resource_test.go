@@ -63,6 +63,7 @@ func TestRDNSResource_Server(t *testing.T) {
 			resServer.SetRName(tt.name)
 			resRDNS := rdns.NewRDataServer(t, tt.name, resServer.TFID()+".id", resServer.TFID()+tt.ipAddress, tt.dns)
 
+			// TODO: Debug issues that causes this to fail when running in parallel
 			resource.Test(t, resource.TestCase{
 				PreCheck:     e2etests.PreCheck(t),
 				Providers:    e2etests.Providers(),
@@ -126,6 +127,8 @@ func TestRDNSResource_FloatingIP(t *testing.T) {
 			}
 			restFloatingIP.SetRName(tt.name)
 			resRDNS := rdns.NewRDataFloatingIP(t, tt.name, restFloatingIP.TFID()+".id", restFloatingIP.TFID()+".ip_address", tt.dns)
+
+			// TODO: Debug issues that causes this to fail when running in parallel
 			resource.Test(t, resource.TestCase{
 				PreCheck:     e2etests.PreCheck(t),
 				Providers:    e2etests.Providers(),
@@ -195,6 +198,8 @@ func TestRDNSResource_LoadBalancer(t *testing.T) {
 			restLoadBalancer.SetRName(tt.name)
 
 			resRDNS := rdns.NewRDataLoadBalancer(t, tt.name, restLoadBalancer.TFID()+".id", restLoadBalancer.TFID()+tt.ipAddress, tt.dns)
+
+			// TODO: Debug issues that causes this to fail when running in parallel
 			resource.Test(t, resource.TestCase{
 				PreCheck:     e2etests.PreCheck(t),
 				Providers:    e2etests.Providers(),

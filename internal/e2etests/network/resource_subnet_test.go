@@ -32,7 +32,7 @@ func TestNetworkSubnetResource_Basic(t *testing.T) {
 	}
 	res.SetRName("network-subnet-test")
 	tmplMan := testtemplate.Manager{}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(network.ResourceType, network.ByID(t, &nw)),
@@ -82,7 +82,7 @@ func TestNetworkSubnetResource_VSwitch(t *testing.T) {
 	}
 	res.SetRName("network-subnet-vswitch-test")
 	tmplMan := testtemplate.Manager{}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(network.ResourceType, network.ByID(t, &nw)),

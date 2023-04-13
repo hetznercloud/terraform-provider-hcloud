@@ -29,7 +29,7 @@ func TestAccHcloudDataSourceCertificateTest(t *testing.T) {
 	}
 	certificateBySel.SetRName("certificate_by_sel")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(certificate.ResourceType, certificate.ByID(t, nil)),
@@ -77,7 +77,7 @@ func TestAccHcloudDataSourceCertificateListTest(t *testing.T) {
 	allCertificateSel.SetRName("all_certificates_sel")
 
 	tmplMan := testtemplate.Manager{}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(certificate.ResourceType, certificate.ByID(t, nil)),

@@ -29,7 +29,7 @@ func TestAccHcloudDataSourceSSHKeyTest(t *testing.T) {
 	}
 	sshKeyBySel.SetRName("sshkey_by_sel")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(sshkey.ResourceType, sshkey.ByID(t, nil)),
@@ -77,7 +77,7 @@ func TestAccHcloudDataSourceSSHKeysTest(t *testing.T) {
 	allKeysSel.SetRName("all_keys_sel")
 
 	tmplMan := testtemplate.Manager{}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  e2etests.PreCheck(t),
 		Providers: e2etests.Providers(),
 		Steps: []resource.TestStep{

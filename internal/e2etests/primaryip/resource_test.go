@@ -38,7 +38,7 @@ func TestPrimaryIPResource_Basic(t *testing.T) {
 	}
 	resRenamed.SetRName(res.Name)
 	tmplMan := testtemplate.Manager{}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: e2etests.PreCheck(t),
 		ProviderFactories: map[string]func() (*schema.Provider, error){
 			//nolint:unparam
@@ -144,7 +144,7 @@ func TestPrimaryIPResource_with_server(t *testing.T) {
 	testServerUpdatedRes.SetRName(testServerRes.RName())
 
 	tmplMan := testtemplate.Manager{}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: e2etests.PreCheck(t),
 		ProviderFactories: map[string]func() (*schema.Provider, error){
 			//nolint:unparam
@@ -237,7 +237,7 @@ func TestPrimaryIPResource_FieldUpdates(t *testing.T) {
 	)
 
 	tmplMan := testtemplate.Manager{}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: e2etests.PreCheck(t),
 		ProviderFactories: map[string]func() (*schema.Provider, error){
 			//nolint:unparam

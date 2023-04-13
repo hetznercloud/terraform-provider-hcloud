@@ -24,7 +24,7 @@ func TestNetworkResource_Basic(t *testing.T) {
 	resRenamed := &network.RData{Name: res.Name + "-renamed", IPRange: res.IPRange}
 	resRenamed.SetRName(res.Name)
 	tmplMan := testtemplate.Manager{}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(network.ResourceType, network.ByID(t, &cert)),
@@ -73,7 +73,7 @@ func TestNetworkResource_IncreaseNetwork(t *testing.T) {
 	resResized := &network.RData{Name: res.Name, IPRange: "10.0.0.0/8"}
 	resResized.SetRName(res.RName())
 	tmplMan := testtemplate.Manager{}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(network.ResourceType, network.ByID(t, &cert)),
@@ -129,7 +129,7 @@ func TestNetworkResource_Protection(t *testing.T) {
 	)
 
 	tmplMan := testtemplate.Manager{}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(network.ResourceType, network.ByID(t, &cert)),

@@ -21,7 +21,7 @@ func TestAccHcloudDataSourceLocationTest(t *testing.T) {
 		LocationID: "1",
 	}
 	lByID.SetRName("l_by_id")
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  e2etests.PreCheck(t),
 		Providers: e2etests.Providers(),
 		Steps: []resource.TestStep{
@@ -52,7 +52,7 @@ func TestAccHcloudDataSourceLocationsTest(t *testing.T) {
 
 	locationsDS := &location.DDataList{}
 	locationsDS.SetRName("ds")
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  e2etests.PreCheck(t),
 		Providers: e2etests.Providers(),
 		Steps: []resource.TestStep{

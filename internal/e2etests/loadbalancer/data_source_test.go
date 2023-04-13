@@ -37,7 +37,7 @@ func TestAccHcloudDataSourceLoadBalancerTest(t *testing.T) {
 	}
 	lbBySel.SetRName("lb_by_sel")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
@@ -97,7 +97,7 @@ func TestAccHcloudDataSourceLoadBalancerListTest(t *testing.T) {
 	allLoadBalancersSel.SetRName("all_load_balancers_sel")
 
 	tmplMan := testtemplate.Manager{}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),

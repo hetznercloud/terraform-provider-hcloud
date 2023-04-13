@@ -39,7 +39,7 @@ func TestAccHcloudDataSourceFloatingIPTest(t *testing.T) {
 	}
 	floatingipBySel.SetRName("floatingip_by_sel")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(floatingip.ResourceType, floatingip.ByID(t, nil)),
@@ -95,7 +95,7 @@ func TestAccHcloudDataSourceFloatingIPListTest(t *testing.T) {
 	allFloatingIPsSel.SetRName("all_floatingips_sel")
 
 	tmplMan := testtemplate.Manager{}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(floatingip.ResourceType, floatingip.ByID(t, nil)),

@@ -47,7 +47,7 @@ func TestAccHcloudDataSourcePrimaryIPTest(t *testing.T) {
 	}
 	primaryIPBySel.SetRName("primaryip_by_sel")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: e2etests.PreCheck(t),
 		ProviderFactories: map[string]func() (*schema.Provider, error){
 			//nolint:unparam
@@ -110,7 +110,7 @@ func TestAccHcloudDataSourcePrimaryIPListTest(t *testing.T) {
 	allPrimaryIPsSel.SetRName("all_primaryips_sel")
 
 	tmplMan := testtemplate.Manager{}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: e2etests.PreCheck(t),
 		ProviderFactories: map[string]func() (*schema.Provider, error){
 			//nolint:unparam

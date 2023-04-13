@@ -21,6 +21,7 @@ func TestCertificateResource_Uploaded_Basic(t *testing.T) {
 	resRenamed := &certificate.RDataUploaded{Name: res.Name + "-renamed", PrivateKey: res.PrivateKey, Certificate: res.Certificate}
 	resRenamed.SetRName(res.Name)
 	tmplMan := testtemplate.Manager{}
+	// Not parallel because number of certificates per domain is limited
 	resource.Test(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
@@ -67,6 +68,7 @@ func TestCertificateResource_Uploaded_ChangeCertRequiresNewResource(t *testing.T
 	resOtherCert := &certificate.RDataUploaded{Name: res.Name, PrivateKey: rKey, Certificate: rCert}
 	resOtherCert.SetRName(res.Name)
 	tmplMan := testtemplate.Manager{}
+	// Not parallel because number of certificates per domain is limited
 	resource.Test(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
@@ -117,6 +119,7 @@ func TestCertificateResource_Managed_Basic(t *testing.T) {
 	resRenamed.SetRName(res.Name)
 
 	tmplMan := testtemplate.Manager{}
+	// Not parallel because number of certificates per domain is limited
 	resource.Test(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
