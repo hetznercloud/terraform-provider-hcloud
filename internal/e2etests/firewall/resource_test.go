@@ -67,7 +67,7 @@ func TestFirewallResource_Basic(t *testing.T) {
 	}, nil)
 	updated.SetRName(res.RName())
 	tmplMan := testtemplate.Manager{}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(firewall.ResourceType, firewall.ByID(t, &f)),
@@ -144,7 +144,7 @@ func TestFirewallResource_ApplyTo(t *testing.T) {
 	})
 	resUpdated.SetRName(res.RName())
 	tmplMan := testtemplate.Manager{}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(firewall.ResourceType, firewall.ByID(t, &f)),
@@ -191,7 +191,7 @@ func TestFirewallResource_SourceIPs_IPv6Comparison(t *testing.T) {
 	}, nil)
 	tmplMan := testtemplate.Manager{}
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(firewall.ResourceType, firewall.ByID(t, &f)),
@@ -223,7 +223,7 @@ func TestFirewallResource_DestinationIPs_IPv6Comparison(t *testing.T) {
 	}, nil)
 	tmplMan := testtemplate.Manager{}
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(firewall.ResourceType, firewall.ByID(t, &f)),

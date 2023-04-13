@@ -62,7 +62,7 @@ func TestFloatingIPAssignmentResource_Basic(t *testing.T) {
 		FloatingIPID: resFloatingIP.TFID() + ".id",
 		ServerID:     resServer2.TFID() + ".id",
 	}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),

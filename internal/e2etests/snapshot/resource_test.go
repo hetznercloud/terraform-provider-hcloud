@@ -46,7 +46,7 @@ func TestSnapshotResource_Basic(t *testing.T) {
 			"tf-test": fmt.Sprintf("tf-test-fip-assignment-%d", tmplMan.RandInt),
 		}}
 	resRenamed.SetRName("snapshot-basic")
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(snapshot.ResourceType, snapshot.ByID(t, &s)),

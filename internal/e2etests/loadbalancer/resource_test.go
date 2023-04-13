@@ -30,7 +30,7 @@ func TestLoadBalancerResource_Basic(t *testing.T) {
 	}
 
 	tmplMan := testtemplate.Manager{}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, &lb)),
@@ -85,7 +85,7 @@ func TestLoadBalancerResource_Resize(t *testing.T) {
 	}
 
 	tmplMan := testtemplate.Manager{}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, &lb)),
@@ -159,7 +159,7 @@ func TestLoadBalancerResource_InlineTarget(t *testing.T) {
 	}
 	resWithoutTargets.SetRName(res.RName())
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  e2etests.PreCheck(t),
 		Providers: e2etests.Providers(),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
@@ -213,7 +213,7 @@ func TestLoadBalancerResource_Protection(t *testing.T) {
 	)
 
 	tmplMan := testtemplate.Manager{}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, &lb)),

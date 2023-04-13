@@ -30,7 +30,7 @@ func TestAttachmentResource_Servers(t *testing.T) {
 	fwAttRes.ServerIDRefs = append(fwAttRes.ServerIDRefs, srvRes.TFID()+".id")
 
 	tmplMan := testtemplate.Manager{}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  e2etests.PreCheck(t),
 		Providers: e2etests.Providers(),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
@@ -75,7 +75,7 @@ func TestAttachmentResource_LabelSelectors(t *testing.T) {
 	fwAttRes.LabelSelectors = append(fwAttRes.LabelSelectors, "firewall-attachment=test-server")
 
 	tmplMan := testtemplate.Manager{}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  e2etests.PreCheck(t),
 		Providers: e2etests.Providers(),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(

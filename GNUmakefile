@@ -59,10 +59,10 @@ _output/terraform-provider-hcloud_%.zip: bin/%/terraform-provider-hcloud
 test: fmtcheck
 	go test $(TEST) || exit 1
 	echo $(TEST) | \
-		xargs -t -n4 go test $(TESTARGS) -timeout=30s -parallel=4
+		xargs -t -n4 go test $(TESTARGS) -timeout=30s -parallel=8
 
 testacc: fmtcheck
-	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 30m -parallel=4
+	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 30m -parallel=8
 
 vet:
 	@echo "go vet ."

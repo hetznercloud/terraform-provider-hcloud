@@ -52,7 +52,7 @@ func TestAccHcloudServerNetwork_NetworkID(t *testing.T) {
 		DependsOn: []string{subNetRes.TFID()},
 	}
 	tmplMan := testtemplate.Manager{}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, nil)),
@@ -115,7 +115,7 @@ func TestAccHcloudServerNetwork_SubNetID(t *testing.T) {
 	sRes.SetRName("s-network-test")
 
 	tmplMan := testtemplate.Manager{}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, nil)),

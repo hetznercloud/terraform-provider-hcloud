@@ -21,7 +21,7 @@ func TestAccHcloudDataSourceDatacenterTest(t *testing.T) {
 		DatacenterID: "4",
 	}
 	dcByID.SetRName("dc_by_id")
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  e2etests.PreCheck(t),
 		Providers: e2etests.Providers(),
 		Steps: []resource.TestStep{
@@ -48,7 +48,7 @@ func TestAccHcloudDataSourceDatacentersTest(t *testing.T) {
 
 	datacentersD := &datacenter.DDataList{}
 	datacentersD.SetRName("ds")
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:  e2etests.PreCheck(t),
 		Providers: e2etests.Providers(),
 		Steps: []resource.TestStep{

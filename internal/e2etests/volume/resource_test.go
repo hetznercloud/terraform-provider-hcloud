@@ -30,7 +30,7 @@ func TestVolumeResource_Basic(t *testing.T) {
 	resRenamed.SetRName(res.RName())
 
 	tmplMan := testtemplate.Manager{}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(volume.ResourceType, volume.ByID(t, &vol)),
@@ -89,7 +89,7 @@ func TestVolumeResource_Resize(t *testing.T) {
 	resResized.SetRName(res.RName())
 
 	tmplMan := testtemplate.Manager{}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(volume.ResourceType, volume.ByID(t, &vol)),
@@ -155,7 +155,7 @@ func TestVolumeResource_WithServer(t *testing.T) {
 	resAnotherServer.ServerID = resServer2.TFID() + ".id"
 	resAnotherServer.SetRName(res.RName())
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(volume.ResourceType, volume.ByID(t, &vol)),
@@ -225,7 +225,7 @@ func TestVolumeResource_WithServerMultipleVolumes(t *testing.T) {
 	}
 	resAnotherVolume.SetRName("another-volume")
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(volume.ResourceType, volume.ByID(t, &vol)),
@@ -268,7 +268,7 @@ func TestVolumeResource_Protection(t *testing.T) {
 	)
 
 	tmplMan := testtemplate.Manager{}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(volume.ResourceType, volume.ByID(t, &vol)),

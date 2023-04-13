@@ -34,7 +34,7 @@ func TestAccHcloudLoadBalancerTarget_ServerTarget(t *testing.T) {
 		SSHKeys: []string{resSSHKey.TFID() + ".id"},
 	}
 	resServer.SetRName("lb-server-target")
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
@@ -104,7 +104,7 @@ func TestAccHcloudLoadBalancerTarget_ServerTarget_UsePrivateIP(t *testing.T) {
 		IPRange: "10.0.0.0/16",
 	}
 	resNetwork.SetRName("lb-target-test-network")
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
@@ -186,7 +186,7 @@ func TestAccHcloudLoadBalancerTarget_LabelSelectorTarget(t *testing.T) {
 		SSHKeys: []string{resSSHKey.TFID() + ".id"},
 	}
 	resServer.SetRName("lb-server-target")
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
@@ -262,7 +262,7 @@ func TestAccHcloudLoadBalancerTarget_LabelSelectorTarget_UsePrivateIP(t *testing
 	resSubNet.SetRName("lb-target-test-sub-network")
 
 	selector := fmt.Sprintf("tf-test=tf-test-%d", tmplMan.RandInt)
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
@@ -335,7 +335,7 @@ func TestAccHcloudLoadBalancerTarget_IPTarget(t *testing.T) {
 
 	ip := "213.239.214.25"
 	tmplMan := testtemplate.Manager{}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),

@@ -20,7 +20,7 @@ func TestSSHKeyResource_Basic(t *testing.T) {
 	res := sshkey.NewRData(t, "basic-ssh-key")
 	resRenamed := &sshkey.RData{Name: res.Name + "-renamed", PublicKey: res.PublicKey}
 	resRenamed.SetRName(res.Name)
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(sshkey.ResourceType, sshkey.ByID(t, &sk)),

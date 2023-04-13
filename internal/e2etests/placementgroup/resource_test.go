@@ -29,7 +29,7 @@ func TestPlacementGroupResource_Basic(t *testing.T) {
 	updated := placementgroup.NewRData(t, "basic-placement-group", "spread")
 	updated.SetRName(res.RName())
 	tmplMan := testtemplate.Manager{}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(placementgroup.ResourceType, placementgroup.ByID(t, &g)),

@@ -24,7 +24,7 @@ func TestAccHcloudLoadBalancerService_TCP(t *testing.T) {
 	svcResName := fmt.Sprintf("%s.%s", loadbalancer.ServiceResourceType, svcName)
 
 	tmplMan := testtemplate.Manager{}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
@@ -98,7 +98,7 @@ func TestAccHcloudLoadBalancerService_HTTP(t *testing.T) {
 	svcResName := fmt.Sprintf("%s.%s", loadbalancer.ServiceResourceType, svcName)
 
 	tmplMan := testtemplate.Manager{}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
@@ -212,7 +212,7 @@ func TestAccHcloudLoadBalancerService_HTTP_StickySessions(t *testing.T) {
 	svcResName := fmt.Sprintf("%s.%s", loadbalancer.ServiceResourceType, svcName)
 
 	tmplMan := testtemplate.Manager{}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
@@ -260,7 +260,7 @@ func TestAccHcloudLoadBalancerService_HTTPS(t *testing.T) {
 	svcResName := fmt.Sprintf("%s.%s", loadbalancer.ServiceResourceType, svcName)
 
 	tmplMan := testtemplate.Manager{}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
@@ -315,7 +315,7 @@ func TestAccHcloudLoadBalancerService_HTTPS_UpdateUnchangedCertificates(t *testi
 	}
 
 	tmplMan := testtemplate.Manager{}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
@@ -336,13 +336,16 @@ func TestAccHcloudLoadBalancerService_HTTPS_UpdateUnchangedCertificates(t *testi
 func TestAccHcloudLoadBalancerService_CreateDelete_NoListenPort(t *testing.T) {
 	svcName := "lb-create-delete-service-test"
 
+	certData := certificate.NewUploadedRData(t, "test-cert", "example.org")
+
 	tmplMan := testtemplate.Manager{}
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
 		Steps: []resource.TestStep{
+			// HTTP
 			{
 				// Create a HTTP service without setting a listen port.
 				Config: tmplMan.Render(t,
@@ -358,15 +361,8 @@ func TestAccHcloudLoadBalancerService_CreateDelete_NoListenPort(t *testing.T) {
 				// Immediately remove it from the Load Balancer.
 				Config: tmplMan.Render(t, "testdata/r/hcloud_load_balancer", loadbalancer.Basic),
 			},
-		},
-	})
 
-	certData := certificate.NewUploadedRData(t, "test-cert", "example.org")
-	resource.Test(t, resource.TestCase{
-		PreCheck:     e2etests.PreCheck(t),
-		Providers:    e2etests.Providers(),
-		CheckDestroy: testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
-		Steps: []resource.TestStep{
+			// HTTPS
 			{
 				// Create a HTTPS service without setting a listen port.
 				Config: tmplMan.Render(t,
@@ -401,7 +397,7 @@ func TestAccHcloudLoadBalancerService_ChangeListenPort(t *testing.T) {
 	svcResName2 := fmt.Sprintf("%s.%s", loadbalancer.ServiceResourceType, svcName2)
 
 	tmplMan := testtemplate.Manager{}
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
