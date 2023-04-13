@@ -3,6 +3,7 @@ package image
 import (
 	"fmt"
 
+	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
@@ -14,6 +15,7 @@ type DData struct {
 	ImageID       string
 	ImageName     string
 	LabelSelector string
+	Architecture  hcloud.Architecture
 }
 
 // TFID returns the data source identifier.
@@ -27,6 +29,7 @@ type DDataList struct {
 	testtemplate.DataCommon
 
 	LabelSelector string
+	Architecture  hcloud.Architecture
 }
 
 // TFID returns the data source identifier.

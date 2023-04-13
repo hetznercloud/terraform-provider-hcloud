@@ -279,14 +279,14 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.Errorf("server type %s not found", d.Get("server_type"))
 	}
 
-	imageName := d.Get("image").(string)
-	image, _, err := c.Image.GetByNameAndArchitecture(ctx, imageName, serverType.Architecture)
+	imageNameOrID := d.Get("image").(string)
+	image, _, err := c.Image.GetForArchitecture(ctx, imageNameOrID, serverType.Architecture)
 	if err != nil {
 		return hcclient.ErrorToDiag(err)
 	}
 
 	if image == nil {
-		return diag.Errorf("image %s for architecture %s not found", imageName, serverType.Architecture)
+		return diag.Errorf("image %s for architecture %s not found", imageNameOrID, serverType.Architecture)
 	}
 
 	if image.IsDeprecated() {
