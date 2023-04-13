@@ -8,22 +8,20 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	tfhcloud "github.com/hetznercloud/terraform-provider-hcloud/hcloud"
-
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/primaryip"
-
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/e2etests"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/firewall"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/network"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/placementgroup"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hetznercloud/hcloud-go/hcloud"
+	tfhcloud "github.com/hetznercloud/terraform-provider-hcloud/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/e2etests"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/firewall"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/image"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/network"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/placementgroup"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/primaryip"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
@@ -83,6 +81,49 @@ func TestServerResource_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resRenamed.TFID(), "server_type", res.Type),
 					resource.TestCheckResourceAttr(resRenamed.TFID(), "image", res.Image),
 				),
+			},
+		},
+	})
+}
+
+func TestServerResource_ImageID(t *testing.T) {
+	var s hcloud.Server
+
+	sk := sshkey.NewRData(t, "server-image-id")
+	img := &image.DData{
+		ImageName:    e2etests.TestImage,
+		Architecture: hcloud.ArchitectureX86,
+	}
+	img.SetRName("server-image-id")
+	res := &server.RData{
+		Name:    "server-image-id",
+		Type:    e2etests.TestServerType,
+		Image:   fmt.Sprintf("${%s.id}", img.TFID()),
+		SSHKeys: []string{sk.TFID() + ".id"},
+	}
+	res.SetRName("server-image-id")
+	tmplMan := testtemplate.Manager{}
+	resource.Test(t, resource.TestCase{
+		PreCheck:     e2etests.PreCheck(t),
+		Providers:    e2etests.Providers(),
+		CheckDestroy: testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
+		Steps: []resource.TestStep{
+			{
+				// Create a new Server using the required values
+				// only.
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/d/hcloud_image", img,
+					"testdata/r/hcloud_server", res,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s)),
+				),
+
+				// TODO: There is currently a bug that causes a plan when specifying the ID of an official Image. The
+				//       test is still valid to verify that creating servers from image ids work.
+				//       See https://github.com/hetznercloud/terraform-provider-hcloud/issues/657
+				ExpectNonEmptyPlan: true,
 			},
 		},
 	})

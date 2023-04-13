@@ -4,4 +4,5 @@ data "hcloud_image" "{{ .RName }}" {
   {{ if .ImageID -}}   id            = "{{ .ImageID }}"{{ end -}}
   {{ if .ImageName -}} name          = "{{ .ImageName }}"{{ end -}}
   {{ if .LabelSelector -}}    with_selector = "{{ .LabelSelector }}"{{ end }}
+  {{ if .Architecture -}}    with_architecture = "{{ .Architecture }}"{{ end }}
 }

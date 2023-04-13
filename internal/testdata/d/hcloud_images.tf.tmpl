@@ -2,4 +2,5 @@
 
 data "hcloud_images" "{{ .RName }}" {
   {{ if .LabelSelector -}}    with_selector = "{{ .LabelSelector }}"{{ end }}
+  {{ if .Architecture -}}    with_architecture = ["{{ .Architecture }}"]{{ end }}
 }
