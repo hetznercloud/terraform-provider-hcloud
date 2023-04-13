@@ -1076,9 +1076,10 @@ func newIPSet(f schema.SchemaSetFunc, ips []net.IP) *schema.Set {
 
 func setServerSchema(d *schema.ResourceData, s *hcloud.Server) {
 	for key, val := range getServerAttributes(d, s) {
-		if key == "id" {
+		switch key {
+		case "id":
 			d.SetId(strconv.Itoa(val.(int)))
-		} else {
+		default:
 			d.Set(key, val)
 		}
 	}
@@ -1109,7 +1110,9 @@ func getServerAttributes(d *schema.ResourceData, s *hcloud.Server) map[string]in
 	}
 
 	if s.Image != nil {
-		if s.Image.Name != "" {
+		if s.Image.Name != "" && strconv.Itoa(s.Image.ID) != d.Get("image") {
+			// Only use the image name if the image is official (Name != "")
+			// AND the user did not explicitly specify the image id
 			res["image"] = s.Image.Name
 		} else {
 			res["image"] = fmt.Sprintf("%d", s.Image.ID)

@@ -119,11 +119,6 @@ func TestServerResource_ImageID(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s)),
 				),
-
-				// TODO: There is currently a bug that causes a plan when specifying the ID of an official Image. The
-				//       test is still valid to verify that creating servers from image ids work.
-				//       See https://github.com/hetznercloud/terraform-provider-hcloud/issues/657
-				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
