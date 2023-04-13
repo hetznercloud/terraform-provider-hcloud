@@ -275,6 +275,9 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	if err != nil {
 		return hcclient.ErrorToDiag(err)
 	}
+	if serverType == nil {
+		return diag.Errorf("server type %s not found", d.Get("server_type"))
+	}
 
 	imageName := d.Get("image").(string)
 	image, _, err := c.Image.GetByNameAndArchitecture(ctx, imageName, serverType.Architecture)
