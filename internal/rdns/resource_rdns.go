@@ -34,19 +34,25 @@ func Resource() *schema.Resource {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				ForceNew:     true,
-				ExactlyOneOf: []string{"server_id", "floating_ip_id", "load_balancer_id"},
+				ExactlyOneOf: []string{"server_id", "primary_ip_id", "floating_ip_id", "load_balancer_id"},
+			},
+			"primary_ip_id": {
+				Type:         schema.TypeInt,
+				Optional:     true,
+				ForceNew:     true,
+				ExactlyOneOf: []string{"server_id", "primary_ip_id", "floating_ip_id", "load_balancer_id"},
 			},
 			"floating_ip_id": {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				ForceNew:     true,
-				ExactlyOneOf: []string{"server_id", "floating_ip_id", "load_balancer_id"},
+				ExactlyOneOf: []string{"server_id", "primary_ip_id", "floating_ip_id", "load_balancer_id"},
 			},
 			"load_balancer_id": {
 				Type:         schema.TypeInt,
 				Optional:     true,
 				ForceNew:     true,
-				ExactlyOneOf: []string{"server_id", "floating_ip_id", "load_balancer_id"},
+				ExactlyOneOf: []string{"server_id", "primary_ip_id", "floating_ip_id", "load_balancer_id"},
 			},
 			"ip_address": {
 				Type:     schema.TypeString,
@@ -82,6 +88,8 @@ func resourceReverseDNSRead(ctx context.Context, d *schema.ResourceData, m inter
 	switch v := rdns.(type) {
 	case *hcloud.Server:
 		d.Set("server_id", v.ID)
+	case *hcloud.PrimaryIP:
+		d.Set("primary_ip_id", v.ID)
 	case *hcloud.FloatingIP:
 		d.Set("floating_ip_id", v.ID)
 	case *hcloud.LoadBalancer:
@@ -97,6 +105,7 @@ func resourceReverseDNSRead(ctx context.Context, d *schema.ResourceData, m inter
 func resourceReverseDNSCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*hcloud.Client)
 	serverID, serverOK := d.GetOk("server_id")
+	primaryIPID, primaryIPOK := d.GetOk("primary_ip_id")
 	floatingIPID, floatingIPOK := d.GetOk("floating_ip_id")
 	loadBalancerID, loadBalancerOK := d.GetOk("load_balancer_id")
 
@@ -114,6 +123,9 @@ func resourceReverseDNSCreate(ctx context.Context, d *schema.ResourceData, m int
 	case serverOK:
 		rdns, _, err = c.Server.GetByID(ctx, serverID.(int))
 		resourceName = "Server"
+	case primaryIPOK:
+		rdns, _, err = c.PrimaryIP.GetByID(ctx, primaryIPID.(int))
+		resourceName = "Primary IP"
 	case floatingIPOK:
 		rdns, _, err = c.FloatingIP.GetByID(ctx, floatingIPID.(int))
 		resourceName = "Floating IP"
@@ -201,6 +213,8 @@ func generateRDNSID(rdns hcloud.RDNSSupporter, ip net.IP) string {
 	switch v := rdns.(type) {
 	case *hcloud.Server:
 		return fmt.Sprintf("s-%d-%s", v.ID, ip)
+	case *hcloud.PrimaryIP:
+		return fmt.Sprintf("p-%d-%s", v.ID, ip)
 	case *hcloud.FloatingIP:
 		return fmt.Sprintf("f-%d-%s", v.ID, ip)
 	case *hcloud.LoadBalancer:
@@ -262,6 +276,15 @@ func lookupRDNSID(ctx context.Context, terraformID string, client *hcloud.Client
 			return nil, nil, InvalidRDNSIDError{terraformID}
 		}
 		rdns = srv
+	case "p":
+		pip, _, err := client.PrimaryIP.GetByID(ctx, id)
+		if err != nil {
+			return nil, nil, err
+		}
+		if pip == nil {
+			return nil, nil, InvalidRDNSIDError{terraformID}
+		}
+		rdns = pip
 	case "f":
 		fip, _, err := client.FloatingIP.GetByID(ctx, id)
 		if err != nil {
