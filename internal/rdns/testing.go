@@ -46,6 +46,7 @@ type RData struct {
 	testtemplate.DataCommon
 
 	ServerID       string
+	PrimaryIPID    string
 	FloatingIPID   string
 	LoadBalancerID string
 	IPAddress      string
@@ -63,6 +64,17 @@ func NewRDataServer(t *testing.T, rName string, serverID string, ipAddress strin
 		ServerID:  serverID,
 		IPAddress: ipAddress,
 		DNSPTR:    dnsPTR,
+	}
+	r.SetRName(rName)
+	return r
+}
+
+// NewRDataPrimaryIP creates data for a new rdns resource with primary_ip_id.
+func NewRDataPrimaryIP(t *testing.T, rName string, primaryIPID string, ipAddress string, dnsPTR string) *RData {
+	r := &RData{
+		PrimaryIPID: primaryIPID,
+		IPAddress:   ipAddress,
+		DNSPTR:      dnsPTR,
 	}
 	r.SetRName(rName)
 	return r

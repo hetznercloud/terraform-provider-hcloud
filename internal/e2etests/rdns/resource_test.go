@@ -2,20 +2,20 @@ package rdns_test
 
 import (
 	"fmt"
+
 	"testing"
 
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/e2etests"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancer"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
-
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
+	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/e2etests"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/floatingip"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancer"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/primaryip"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/rdns"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
@@ -87,6 +87,71 @@ func TestRDNSResource_Server(t *testing.T) {
 						ResourceName: resRDNS.TFID(),
 						ImportStateIdFunc: func(state *terraform.State) (string, error) {
 							return fmt.Sprintf("s-%d-%s", s.ID, tt.ipAsStrFunc(&s)), nil
+						},
+						ImportState:       true,
+						ImportStateVerify: true,
+					},
+				},
+			})
+		})
+	}
+}
+
+func TestRDNSResource_PrimaryIP(t *testing.T) {
+	tests := []struct {
+		name          string
+		dns           string
+		primaryIPType string
+	}{
+		{
+			name:          "primary-ipv6-rdns",
+			dns:           "ipv6.example.hetzner.cloud",
+			primaryIPType: "ipv6",
+		},
+		{
+			name:          "primary-ipv4-rdns",
+			dns:           "ipv4.example.hetzner.cloud",
+			primaryIPType: "ipv4",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var primaryIP hcloud.PrimaryIP
+
+			tmplMan := testtemplate.Manager{}
+			restPrimaryIP := &primaryip.RData{
+				Name:         tt.name,
+				Type:         tt.primaryIPType,
+				AssigneeType: "server",
+				Datacenter:   e2etests.TestDataCenter,
+			}
+			restPrimaryIP.SetRName(tt.name)
+			resRDNS := rdns.NewRDataPrimaryIP(t, tt.name, restPrimaryIP.TFID()+".id", restPrimaryIP.TFID()+".ip_address", tt.dns)
+
+			// TODO: Debug issues that causes this to fail when running in parallel
+			resource.Test(t, resource.TestCase{
+				PreCheck:     e2etests.PreCheck(t),
+				Providers:    e2etests.Providers(),
+				CheckDestroy: testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &primaryIP)),
+				Steps: []resource.TestStep{
+					{
+						// Create a new SSH Key using the required values
+						// only.
+						Config: tmplMan.Render(t,
+							"testdata/r/hcloud_primary_ip", restPrimaryIP,
+							"testdata/r/hcloud_rdns", resRDNS,
+						),
+						Check: resource.ComposeTestCheckFunc(
+							testsupport.CheckResourceExists(restPrimaryIP.TFID(), primaryip.ByID(t, &primaryIP)),
+							resource.TestCheckResourceAttr(resRDNS.TFID(), "dns_ptr", tt.dns),
+						),
+					},
+					{
+						// Try to import the newly created RDNS
+						ResourceName: resRDNS.TFID(),
+						ImportStateIdFunc: func(state *terraform.State) (string, error) {
+							return fmt.Sprintf("p-%d-%s", primaryIP.ID, primaryIP.IP.String()), nil
 						},
 						ImportState:       true,
 						ImportStateVerify: true,
