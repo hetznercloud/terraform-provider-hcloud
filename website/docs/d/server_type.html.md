@@ -30,3 +30,4 @@ data "hcloud_server_type" "ds_2" {
 - `memory` - (int) Memory a Server of this type will have in GB.
 - `disk` - (int) Disk size a Server of this type will have in GB.
 - `architecture` - (string) Architecture of the server_type.
+- `included_traffic` - (int) Free traffic per month in bytes.
