@@ -64,6 +64,10 @@ func getCommonDataSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
+		"included_traffic": {
+			Type:     schema.TypeInt,
+			Computed: true,
+		},
 	}
 }
 
@@ -152,15 +156,16 @@ func setServerTypeSchema(d *schema.ResourceData, t *hcloud.ServerType) {
 
 func getServerTypeAttributes(t *hcloud.ServerType) map[string]interface{} {
 	return map[string]interface{}{
-		"id":           t.ID,
-		"name":         t.Name,
-		"description":  t.Description,
-		"cores":        t.Cores,
-		"memory":       t.Memory,
-		"disk":         t.Disk,
-		"storage_type": t.StorageType,
-		"cpu_type":     t.CPUType,
-		"architecture": t.Architecture,
+		"id":               t.ID,
+		"name":             t.Name,
+		"description":      t.Description,
+		"cores":            t.Cores,
+		"memory":           t.Memory,
+		"disk":             t.Disk,
+		"storage_type":     t.StorageType,
+		"cpu_type":         t.CPUType,
+		"architecture":     t.Architecture,
+		"included_traffic": t.IncludedTraffic,
 	}
 }
 

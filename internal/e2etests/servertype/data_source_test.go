@@ -38,6 +38,7 @@ func TestAccHcloudDataSourceServerTypeTest(t *testing.T) {
 					resource.TestCheckResourceAttr(stByName.TFID(), "cores", "1"),
 					resource.TestCheckResourceAttr(stByName.TFID(), "memory", "2"),
 					resource.TestCheckResourceAttr(stByName.TFID(), "architecture", "x86"),
+					resource.TestCheckResourceAttr(stByName.TFID(), "included_traffic", "21990232555520"),
 
 					resource.TestCheckResourceAttr(stByID.TFID(), "id", "1"),
 					resource.TestCheckResourceAttr(stByID.TFID(), "name", "cx11"),
@@ -45,6 +46,7 @@ func TestAccHcloudDataSourceServerTypeTest(t *testing.T) {
 					resource.TestCheckResourceAttr(stByID.TFID(), "cores", "1"),
 					resource.TestCheckResourceAttr(stByID.TFID(), "memory", "2"),
 					resource.TestCheckResourceAttr(stByID.TFID(), "architecture", "x86"),
+					resource.TestCheckResourceAttr(stByID.TFID(), "included_traffic", "21990232555520"),
 				),
 			},
 		},
