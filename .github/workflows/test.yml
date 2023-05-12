@@ -5,6 +5,8 @@ on:
 
 jobs:
   integration_tests:
+    permissions:
+      id-token: write
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -22,25 +24,22 @@ jobs:
       - name: HCLOUD_TOKEN
         env:
           HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
-          TTS_TOKEN: ${{ secrets.TTS_TOKEN }}
         run: |
-          set -ueo pipefail
-          if [[ "${HCLOUD_TOKEN:-}" != "" ]]; then
-            echo "HCLOUD_TOKEN=$HCLOUD_TOKEN" >> "$GITHUB_ENV"
-          elif [[ "${TTS_TOKEN:-}" != "" ]]; then
-                    token="$(./scripts/get-token.sh)"
-                    echo "::add-mask::$token"
-                    echo "HCLOUD_TOKEN=$token" >> "$GITHUB_ENV"
-          else
-            echo "::error ::Couldn't determine HCLOUD_TOKEN. Check that repository secrets are setup correctly."
+          echo "HCLOUD_TOKEN=$HCLOUD_TOKEN" >> "$GITHUB_ENV"
+
+      - uses: hetznercloud/tps-action@main
+        if: ${{ vars.USE_TPS }}
+
+      - name: check HCLOUD_TOKEN
+        run: |
+          if [[ "${HCLOUD_TOKEN:-}" == "" ]]; then
+            echo "::error ::Couldn't determine HCLOUD_TOKEN. Are repository secrets correctly set?"
             exit 1
           fi
       - name: Run tests
         run: |
-          cat resp.json
           make testacc
           make
-          ./scripts/delete-token.sh $HCLOUD_TOKEN
 
   unit_tests:
     runs-on: ubuntu-latest
