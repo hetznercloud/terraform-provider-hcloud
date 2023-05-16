@@ -329,6 +329,8 @@ func TestAccHcloudLoadBalancerTarget_LabelSelectorTarget_UsePrivateIP(t *testing
 }
 
 func TestAccHcloudLoadBalancerTarget_IPTarget(t *testing.T) {
+	t.Skip("No dedicated server available in test account")
+
 	var (
 		lb hcloud.LoadBalancer
 	)
