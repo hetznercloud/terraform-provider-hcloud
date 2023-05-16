@@ -37,6 +37,10 @@ jobs:
             exit 1
           fi
       - name: Run tests
+        env:
+          # Domain must be available in the account running the tests. This domain is available in the account
+          # running the public integration tests.
+          CERT_DOMAIN: hc-integrations-test.de
         run: |
           make testacc
           make
