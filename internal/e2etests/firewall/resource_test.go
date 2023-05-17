@@ -67,7 +67,8 @@ func TestFirewallResource_Basic(t *testing.T) {
 	}, nil)
 	updated.SetRName(res.RName())
 	tmplMan := testtemplate.Manager{}
-	resource.ParallelTest(t, resource.TestCase{
+	// TODO: Move to parallel test once API endpoint is fixed
+	resource.Test(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(firewall.ResourceType, firewall.ByID(t, &f)),
@@ -144,7 +145,8 @@ func TestFirewallResource_ApplyTo(t *testing.T) {
 	})
 	resUpdated.SetRName(res.RName())
 	tmplMan := testtemplate.Manager{}
-	resource.ParallelTest(t, resource.TestCase{
+	// TODO: Move to parallel test once API endpoint is fixed
+	resource.Test(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(firewall.ResourceType, firewall.ByID(t, &f)),
@@ -191,7 +193,8 @@ func TestFirewallResource_SourceIPs_IPv6Comparison(t *testing.T) {
 	}, nil)
 	tmplMan := testtemplate.Manager{}
 
-	resource.ParallelTest(t, resource.TestCase{
+	// TODO: Move to parallel test once API endpoint is fixed
+	resource.Test(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(firewall.ResourceType, firewall.ByID(t, &f)),
@@ -223,7 +226,8 @@ func TestFirewallResource_DestinationIPs_IPv6Comparison(t *testing.T) {
 	}, nil)
 	tmplMan := testtemplate.Manager{}
 
-	resource.ParallelTest(t, resource.TestCase{
+	// TODO: Move to parallel test once API endpoint is fixed
+	resource.Test(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(firewall.ResourceType, firewall.ByID(t, &f)),

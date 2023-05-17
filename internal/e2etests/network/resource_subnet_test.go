@@ -65,6 +65,8 @@ func TestNetworkSubnetResource_Basic(t *testing.T) {
 }
 
 func TestNetworkSubnetResource_VSwitch(t *testing.T) {
+	t.Skip("No VSwitch available in test account")
+
 	var nw hcloud.Network
 	vSwitchID := "15074"
 	resNetwork := &network.RData{

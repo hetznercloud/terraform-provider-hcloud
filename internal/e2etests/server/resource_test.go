@@ -242,7 +242,7 @@ func TestServerResource_ISO(t *testing.T) {
 		Type:     e2etests.TestServerType,
 		Image:    e2etests.TestImage,
 		UserData: "stuff",
-		ISO:      "3500",
+		ISO:      "15621", // ubuntu-22.04.1-live-server-amd64.iso
 		SSHKeys:  []string{sk.TFID() + ".id"},
 	}
 	res.SetRName("server-iso")

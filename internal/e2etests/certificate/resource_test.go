@@ -2,6 +2,7 @@ package certificate_test
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/certificate"
@@ -12,6 +13,12 @@ import (
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
+)
+
+var (
+	// Tests using this value should skip if empty.
+	// The domain specified here must be available in Hetzner DNS of the account running the tests.
+	certDomain = os.Getenv("CERT_DOMAIN")
 )
 
 func TestCertificateResource_Uploaded_Basic(t *testing.T) {
@@ -107,10 +114,14 @@ func TestCertificateResource_Uploaded_ChangeCertRequiresNewResource(t *testing.T
 }
 
 func TestCertificateResource_Managed_Basic(t *testing.T) {
+	if certDomain == "" {
+		t.Skip("Skipping because CERT_DOMAIN is not set")
+	}
+
 	var cert hcloud.Certificate
 
 	res := certificate.NewManagedRData(t, "basic-managed-cert", []string{
-		fmt.Sprintf("tftest-%d.hc-certs.de", acctest.RandInt()),
+		fmt.Sprintf("tftest-%d.%s", acctest.RandInt(), certDomain),
 	})
 	resRenamed := &certificate.RDataManaged{
 		Name:        res.Name + "-renamed",
