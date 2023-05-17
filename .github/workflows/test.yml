@@ -41,9 +41,19 @@ jobs:
           # Domain must be available in the account running the tests. This domain is available in the account
           # running the public integration tests.
           CERT_DOMAIN: hc-integrations-test.de
+
+          # Debug Logs
+          TF_LOG: DEBUG
+          TF_LOG_PATH: test.log
         run: |
           make testacc
           make
+
+      - uses: actions/upload-artifact@v3
+        if: always() # Also run if the tests failed
+        with:
+          name: debug-logs
+          path: internal/e2etests/**/test.log
 
   unit_tests:
     runs-on: ubuntu-latest
