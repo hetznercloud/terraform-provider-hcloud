@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/deprecation"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
@@ -25,7 +27,7 @@ const (
 
 // getCommonDataSchema returns a new common schema used by all server type data sources.
 func getCommonDataSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
+	return deprecation.AddToSchema(map[string]*schema.Schema{
 		"id": {
 			Type:     schema.TypeInt,
 			Optional: true,
@@ -68,7 +70,7 @@ func getCommonDataSchema() map[string]*schema.Schema {
 			Type:     schema.TypeInt,
 			Computed: true,
 		},
-	}
+	})
 }
 
 // DataSource creates a new Terraform schema for the hcloud_server_type data
@@ -152,6 +154,8 @@ func setServerTypeSchema(d *schema.ResourceData, t *hcloud.ServerType) {
 			d.Set(key, val)
 		}
 	}
+
+	deprecation.SetData(d, t)
 }
 
 func getServerTypeAttributes(t *hcloud.ServerType) map[string]interface{} {

@@ -279,6 +279,14 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.Errorf("server type %s not found", d.Get("server_type"))
 	}
 
+	if serverType.IsDeprecated() {
+		if time.Now().Before(serverType.UnavailableAfter()) {
+			tflog.Warn(ctx, fmt.Sprintf("Attention: The server plan %q is deprecated and will no longer be available for order as of %s. Existing servers of that plan will continue to work as before and no action is required on your part. It is possible to migrate this server to another server plan by using the \"hcloud server change-type\" command.\n\n", serverType.Name, serverType.UnavailableAfter().Format("2006-01-02")))
+		} else {
+			return diag.Errorf("Attention: The server plan %q is deprecated and can no longer be ordered. Existing servers of that plan will continue to work as before and no action is required on your part. It is possible to migrate this server to another server plan by using the \"hcloud server change-type\" command.\n\n", serverType.Name)
+		}
+	}
+
 	imageNameOrID := d.Get("image").(string)
 	image, _, err := c.Image.GetForArchitecture(ctx, imageNameOrID, serverType.Architecture)
 	if err != nil {
@@ -1080,7 +1088,10 @@ func setServerSchema(d *schema.ResourceData, s *hcloud.Server) {
 		case "id":
 			d.SetId(strconv.Itoa(val.(int)))
 		default:
-			d.Set(key, val)
+			err := d.Set(key, val)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 	}
 }
