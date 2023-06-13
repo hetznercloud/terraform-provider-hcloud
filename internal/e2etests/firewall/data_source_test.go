@@ -30,7 +30,8 @@ func TestAccHcloudDataSourceFirewallTest(t *testing.T) {
 	}
 	firewallBySel.SetRName("firewall_by_sel")
 
-	resource.ParallelTest(t, resource.TestCase{
+	// TODO: Move to parallel test once API endpoint is fixed
+	resource.Test(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(firewall.ResourceType, firewall.ByID(t, nil)),
@@ -75,7 +76,8 @@ func TestAccHcloudDataSourceFirewallListTest(t *testing.T) {
 	allFirewallsSel.SetRName("all_firewalls_sel")
 
 	tmplMan := testtemplate.Manager{}
-	resource.ParallelTest(t, resource.TestCase{
+	// TODO: Move to parallel test once API endpoint is fixed
+	resource.Test(t, resource.TestCase{
 		PreCheck:     e2etests.PreCheck(t),
 		Providers:    e2etests.Providers(),
 		CheckDestroy: testsupport.CheckResourcesDestroyed(firewall.ResourceType, firewall.ByID(t, nil)),
