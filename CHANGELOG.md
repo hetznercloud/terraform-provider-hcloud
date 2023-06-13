@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.40.0](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.39.0...v1.40.0) (2023-06-13)
+
+
+### Features
+
+* deprecation info for server types ([#691](https://github.com/hetznercloud/terraform-provider-hcloud/issues/691)) ([9e6a22c](https://github.com/hetznercloud/terraform-provider-hcloud/commit/9e6a22cf2d5cc1e1859ec622c649978b83207938))
+
+
+### Bug Fixes
+
+* **server:** invalid ipv6_address nil1 when no IPv6 is used ([#689](https://github.com/hetznercloud/terraform-provider-hcloud/issues/689)) ([2912f45](https://github.com/hetznercloud/terraform-provider-hcloud/commit/2912f459bbf47b2d9f90325056713a4eb9d99d1d))
+
 ## v1.39.0
 
 ### What's Changed
