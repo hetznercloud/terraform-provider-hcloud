@@ -24,6 +24,7 @@ func TestAccHcloudDataSourceNetworkTest(t *testing.T) {
 		Labels: map[string]string{
 			"key": strconv.Itoa(acctest.RandInt()),
 		},
+		ExposeRoutesToVSwitch: true,
 	}
 	res.SetRName("network-ds-test")
 	networkByName := &network.DData{
@@ -61,14 +62,17 @@ func TestAccHcloudDataSourceNetworkTest(t *testing.T) {
 					resource.TestCheckResourceAttr(networkByName.TFID(),
 						"name", fmt.Sprintf("%s--%d", res.Name, tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(networkByName.TFID(), "ip_range", res.IPRange),
+					resource.TestCheckResourceAttr(networkByName.TFID(), "expose_routes_to_vswitch", "true"),
 
 					resource.TestCheckResourceAttr(networkByID.TFID(),
 						"name", fmt.Sprintf("%s--%d", res.Name, tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(networkByID.TFID(), "ip_range", res.IPRange),
+					resource.TestCheckResourceAttr(networkByID.TFID(), "expose_routes_to_vswitch", "true"),
 
 					resource.TestCheckResourceAttr(networkBySel.TFID(),
 						"name", fmt.Sprintf("%s--%d", res.Name, tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(networkBySel.TFID(), "ip_range", res.IPRange),
+					resource.TestCheckResourceAttr(networkBySel.TFID(), "expose_routes_to_vswitch", "true"),
 				),
 			},
 		},

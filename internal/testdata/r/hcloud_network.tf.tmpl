@@ -17,4 +17,8 @@ resource "hcloud_network" "{{ .RName }}" {
   {{- if .DeleteProtection }}
   delete_protection = {{ .DeleteProtection }}
   {{ end }}
+
+  {{- if .ExposeRoutesToVSwitch }}
+  expose_routes_to_vswitch = {{ .ExposeRoutesToVSwitch }}
+  {{ end }}
 }

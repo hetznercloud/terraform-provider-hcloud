@@ -160,3 +160,63 @@ func TestNetworkResource_Protection(t *testing.T) {
 		},
 	})
 }
+
+func TestNetworkResource_ExposeRouteToVSwitch(t *testing.T) {
+	var (
+		cert hcloud.Network
+
+		res = &network.RData{
+			Name:                  "network-routes-vswitch",
+			IPRange:               "10.0.0.0/8",
+			ExposeRoutesToVSwitch: true,
+		}
+
+		updateExposure = func(d *network.RData, expose bool) *network.RData {
+			d.ExposeRoutesToVSwitch = expose
+			return d
+		}
+	)
+
+	tmplMan := testtemplate.Manager{}
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:     e2etests.PreCheck(t),
+		Providers:    e2etests.Providers(),
+		CheckDestroy: testsupport.CheckResourcesDestroyed(network.ResourceType, network.ByID(t, &cert)),
+		Steps: []resource.TestStep{
+			{
+				// Create a new Network using the required values only.
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_network", res,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(res.TFID(), network.ByID(t, &cert)),
+					resource.TestCheckResourceAttr(res.TFID(), "name",
+						fmt.Sprintf("network-routes-vswitch--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(res.TFID(), "ip_range", res.IPRange),
+					resource.TestCheckResourceAttr(res.TFID(), "expose_routes_to_vswitch", fmt.Sprintf("%t", res.ExposeRoutesToVSwitch)),
+				),
+			},
+			{
+				// Try to import the newly created Network
+				ResourceName:      res.TFID(),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				// Update expose_routes_to_vswitch
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_network", updateExposure(res, false),
+				),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(res.TFID(), "delete_protection", fmt.Sprintf("%t", res.ExposeRoutesToVSwitch)),
+				),
+			},
+			{
+				// Try to import the newly created Network
+				ResourceName:      res.TFID(),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
