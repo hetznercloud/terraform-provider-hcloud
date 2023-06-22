@@ -208,7 +208,7 @@ func TestNetworkResource_ExposeRouteToVSwitch(t *testing.T) {
 					"testdata/r/hcloud_network", updateExposure(res, false),
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(res.TFID(), "delete_protection", fmt.Sprintf("%t", res.ExposeRoutesToVSwitch)),
+					resource.TestCheckResourceAttr(res.TFID(), "expose_routes_to_vswitch", fmt.Sprintf("%t", res.ExposeRoutesToVSwitch)),
 				),
 			},
 			{
