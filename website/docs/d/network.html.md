@@ -31,3 +31,4 @@ data "hcloud_network" "network_3" {
 - `name` - Name of the Network.
 - `ip_range` - IPv4 prefix of the Network.
 - `delete_protection` - (bool) Whether delete protection is enabled.
+- `expose_routes_to_vswitch` - (bool) Indicates if the routes from this network should be exposed to the vSwitch connection. The exposing only takes effect if a vSwitch connection is active.

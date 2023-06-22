@@ -55,6 +55,12 @@ func Resource() *schema.Resource {
 				Optional: true,
 				Default:  false,
 			},
+			"expose_routes_to_vswitch": {
+				Type:        schema.TypeBool,
+				Description: "Enable or disable exposing the routes to the vSwitch connection. The exposing only takes effect if a vSwitch connection is active.",
+				Optional:    true,
+				Default:     false,
+			},
 		},
 	}
 }
@@ -68,8 +74,9 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 	}
 
 	opts := hcloud.NetworkCreateOpts{
-		Name:    d.Get("name").(string),
-		IPRange: ipRange,
+		Name:                  d.Get("name").(string),
+		IPRange:               ipRange,
+		ExposeRoutesToVSwitch: d.Get("expose_routes_to_vswitch").(bool),
 	}
 	if labels, ok := d.GetOk("labels"); ok {
 		tmpLabels := make(map[string]string)
@@ -156,6 +163,18 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interf
 		}
 	}
 
+	if d.HasChange("expose_routes_to_vswitch") {
+		_, _, err := client.Network.Update(ctx, network, hcloud.NetworkUpdateOpts{
+			ExposeRoutesToVSwitch: hcloud.Ptr(d.Get("expose_routes_to_vswitch").(bool)),
+		})
+		if err != nil {
+			if resourceNetworkIsNotFound(err, d) {
+				return nil
+			}
+			return hcclient.ErrorToDiag(err)
+		}
+	}
+
 	if d.HasChange("delete_protection") {
 		deletionProtection := d.Get("delete_protection").(bool)
 		if err := setProtection(ctx, client, network, deletionProtection); err != nil {
@@ -210,11 +229,12 @@ func setNetworkSchema(d *schema.ResourceData, n *hcloud.Network) {
 
 func getNetworkAttributes(n *hcloud.Network) map[string]interface{} {
 	return map[string]interface{}{
-		"id":                n.ID,
-		"ip_range":          n.IPRange.String(),
-		"name":              n.Name,
-		"labels":            n.Labels,
-		"delete_protection": n.Protection.Delete,
+		"id":                       n.ID,
+		"ip_range":                 n.IPRange.String(),
+		"name":                     n.Name,
+		"labels":                   n.Labels,
+		"delete_protection":        n.Protection.Delete,
+		"expose_routes_to_vswitch": n.ExposeRoutesToVSwitch,
 	}
 }
 

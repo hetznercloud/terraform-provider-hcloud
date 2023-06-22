@@ -47,6 +47,11 @@ func getCommonDataSchema() map[string]*schema.Schema {
 			Type:     schema.TypeBool,
 			Computed: true,
 		},
+		"expose_routes_to_vswitch": {
+			Type:        schema.TypeBool,
+			Description: "Indicates if the routes from this network should be exposed to the vSwitch connection. The exposing only takes effect if a vSwitch connection is active.",
+			Computed:    true,
+		},
 	}
 }
 

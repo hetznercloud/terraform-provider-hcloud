@@ -25,6 +25,7 @@ resource "hcloud_network" "privNet" {
 - `ip_range` - (Required, string) IP Range of the whole Network which must span all included subnets and route destinations. Must be one of the private ipv4 ranges of RFC1918.
 - `labels` - (Optional, map) User-defined labels (key-value pairs) should be created with.
 - `delete_protection` - (Optional, bool) Enable or disable delete protection.
+- `expose_routes_to_vswitch` - (Optional, bool) Enable or disable exposing the routes to the vSwitch connection. The exposing only takes effect if a vSwitch connection is active.
 
 ## Attributes Reference
 
@@ -33,6 +34,7 @@ resource "hcloud_network" "privNet" {
 - `ip_range` - (string) IPv4 Prefix of the whole Network.
 - `labels` - (map) User-defined labels (key-value pairs)
 - `delete_protection` - (bool) Whether delete protection is enabled.
+- `expose_routes_to_vswitch` - (bool) Indicates if the routes from this network should be exposed to the vSwitch connection. The exposing only takes effect if a vSwitch connection is active.
 
 ## Import
 
