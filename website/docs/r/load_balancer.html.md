@@ -52,7 +52,6 @@ resource "hcloud_load_balancer" "load_balancer" {
 - `ipv4` - (string) IPv4 Address of the Load Balancer.
 - `ipv6` - (string) IPv6 Address of the Load Balancer.
 - `algorithm` - (Optional) Configuration of the algorithm the Load Balancer use.
-- `service` - (list) List of services a Load Balancer provides.
 - `labels` - (map) User-defined labels (key-value pairs).
 - `delete_protection` - (bool) Whether delete protection is enabled.
 - `network_id` - (int) ID of the first private network that this Load Balancer is connected to.
