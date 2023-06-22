@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.41.0](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.40.0...v1.41.0) (2023-06-22)
+
+
+### Features
+
+* **network:** add support for exposing routes to vswitch connection ([#703](https://github.com/hetznercloud/terraform-provider-hcloud/issues/703)) ([f213550](https://github.com/hetznercloud/terraform-provider-hcloud/commit/f2135509328ff2418ddc5f5224872ccb68821f6c))
+
 ## [1.40.0](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.39.0...v1.40.0) (2023-06-13)
 
 
