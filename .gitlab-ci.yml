@@ -1,3 +1,8 @@
+include:
+  - project: cloud/integrations/ci
+    file:
+      - default.yml
+
 stages:
   - test
 
@@ -8,8 +13,6 @@ test:acceptance:
     - tags
   script:
     - make testacc
-  tags:
-    - hc-bladerunner
 
 test:golangci-lint:
   stage: test
@@ -19,5 +22,3 @@ test:golangci-lint:
   except:
     - tags
     - master
-  tags:
-    - hc-bladerunner
