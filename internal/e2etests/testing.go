@@ -44,6 +44,7 @@ func Providers() map[string]*schema.Provider {
 
 func ProviderFactories() map[string]func() (*schema.Provider, error) {
 	return map[string]func() (*schema.Provider, error){
+		//nolint:unparam
 		"hcloud": func() (*schema.Provider, error) {
 			return tfhcloud.Provider(), nil
 		},
