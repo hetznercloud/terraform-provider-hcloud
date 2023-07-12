@@ -32,6 +32,7 @@ resource "hcloud_server" "main" {
 - `most_recent` - (Optional, bool) If more than one result is returned, use the most recent Image.
 - `with_status` - (Optional, list) Select only images with the specified status, could contain `creating` or `available`.
 - `with_architecture` - (Optional, string) Select only images with this architecture, could be `x86` (default) or `arm`.
+- `include_deprecated` - (Optional, bool) Also return the image if it is marked as deprecated.
 
 ## Attributes Reference
 - `id` - (int) Unique ID of the Image.

@@ -26,6 +26,7 @@ data "hcloud_images" "image_3" {
 - `most_recent` - (Optional, bool) Sorts list by date.
 - `with_status` - (Optional, list) List only images with the specified status, could contain `creating` or `available`.
 - `with_architecture` - (Optional, list) List only images with this architecture, could contain `x86` or `arm`.
+- `include_deprecated` - (Optional, bool) Also list images that are marked as deprecated.
 
 ## Attributes Reference
 - `images` - (list) List of all matching images. See `data.hcloud_image` for schema.

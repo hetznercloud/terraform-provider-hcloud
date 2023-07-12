@@ -52,6 +52,37 @@ func TestAccHcloudDataSourceImageTest(t *testing.T) {
 	})
 }
 
+func TestAccHcloudDataSourceImageWithFiltersTest(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
+	imageByName := &image.DData{
+		ImageName:         TestImageName,
+		Architecture:      "arm",
+		IncludeDeprecated: true,
+	}
+	imageByName.SetRName("image_by_name")
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          e2etests.PreCheck(t),
+		ProviderFactories: e2etests.ProviderFactories(),
+		CheckDestroy:      testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
+		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t,
+					"testdata/d/hcloud_image", imageByName,
+				),
+
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(imageByName.TFID(),
+						"name", TestImageName),
+					resource.TestCheckResourceAttr(imageByName.TFID(),
+						"architecture", "arm"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccHcloudDataSourceImageListTest(t *testing.T) {
 	allImagesSel := &image.DDataList{}
 	allImagesSel.SetRName("all_images_sel")
