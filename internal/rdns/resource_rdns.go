@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"log"
 	"net"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-
 	"strconv"
 	"strings"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
@@ -74,6 +73,11 @@ func resourceReverseDNSRead(ctx context.Context, d *schema.ResourceData, m inter
 	if err != nil {
 		d.SetId("")
 		return hcclient.ErrorToDiag(err)
+	}
+	if rdns == nil {
+		// Resource does not exist
+		d.SetId("")
+		return nil
 	}
 	dns, err := rdns.GetDNSPtrForIP(ip)
 	if err != nil {
@@ -163,6 +167,11 @@ func resourceReverseDNSUpdate(ctx context.Context, d *schema.ResourceData, m int
 		d.SetId("")
 		return hcclient.ErrorToDiag(err)
 	}
+	if rdns == nil {
+		// Resource does not exist
+		d.SetId("")
+		return nil
+	}
 
 	ip := net.ParseIP(d.Get("ip_address").(string))
 	if ip == nil {
@@ -190,6 +199,11 @@ func resourceReverseDNSDelete(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		d.SetId("")
 		return hcclient.ErrorToDiag(err)
+	}
+	if rdns == nil {
+		// Resource does not exist
+		d.SetId("")
+		return nil
 	}
 
 	action, _, err := c.RDNS.ChangeDNSPtr(ctx, rdns, ip, nil)
@@ -273,7 +287,7 @@ func lookupRDNSID(ctx context.Context, terraformID string, client *hcloud.Client
 			return nil, nil, err
 		}
 		if srv == nil {
-			return nil, nil, InvalidRDNSIDError{terraformID}
+			return nil, nil, nil
 		}
 		rdns = srv
 	case "p":
@@ -282,7 +296,7 @@ func lookupRDNSID(ctx context.Context, terraformID string, client *hcloud.Client
 			return nil, nil, err
 		}
 		if pip == nil {
-			return nil, nil, InvalidRDNSIDError{terraformID}
+			return nil, nil, nil
 		}
 		rdns = pip
 	case "f":
@@ -291,7 +305,7 @@ func lookupRDNSID(ctx context.Context, terraformID string, client *hcloud.Client
 			return nil, nil, err
 		}
 		if fip == nil {
-			return nil, nil, InvalidRDNSIDError{terraformID}
+			return nil, nil, nil
 		}
 		rdns = fip
 	case "l":
@@ -300,7 +314,7 @@ func lookupRDNSID(ctx context.Context, terraformID string, client *hcloud.Client
 			return nil, nil, err
 		}
 		if lb == nil {
-			return nil, nil, InvalidRDNSIDError{terraformID}
+			return nil, nil, nil
 		}
 		rdns = lb
 	default:
