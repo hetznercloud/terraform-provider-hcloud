@@ -35,14 +35,16 @@ func NetworkResource() *schema.Resource {
 		},
 		Schema: map[string]*schema.Schema{
 			"network_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				ForceNew: true,
+				Type:         schema.TypeInt,
+				ExactlyOneOf: []string{"network_id", "subnet_id"},
+				Optional:     true,
+				ForceNew:     true,
 			},
 			"subnet_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+				Type:         schema.TypeString,
+				ExactlyOneOf: []string{"network_id", "subnet_id"},
+				Optional:     true,
+				ForceNew:     true,
 			},
 			"load_balancer_id": {
 				Type:     schema.TypeInt,
@@ -71,11 +73,8 @@ func resourceLoadBalancerNetworkCreate(ctx context.Context, d *schema.ResourceDa
 
 	ip := net.ParseIP(d.Get("ip").(string))
 
-	networkID, nwIDSet := d.GetOk("network_id")
+	networkID, _ := d.GetOk("network_id")
 	subNetID, snIDSet := d.GetOk("subnet_id")
-	if (nwIDSet && snIDSet) || (!nwIDSet && !snIDSet) {
-		return diag.Errorf("either network_id or subnet_id must be set")
-	}
 
 	if snIDSet {
 		nwID, _, err := network.ParseSubnetID(subNetID.(string))
