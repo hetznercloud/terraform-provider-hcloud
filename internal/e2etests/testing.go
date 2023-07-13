@@ -42,6 +42,15 @@ func Providers() map[string]*schema.Provider {
 	}
 }
 
+func ProviderFactories() map[string]func() (*schema.Provider, error) {
+	return map[string]func() (*schema.Provider, error){
+		//nolint:unparam
+		"hcloud": func() (*schema.Provider, error) {
+			return tfhcloud.Provider(), nil
+		},
+	}
+}
+
 // PreCheck checks if all conditions for an acceptance test are
 // met.
 func PreCheck(t *testing.T) func() {

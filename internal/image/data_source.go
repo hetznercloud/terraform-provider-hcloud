@@ -112,6 +112,11 @@ func DataSource() *schema.Resource {
 					Default:  hcloud.ArchitectureX86,
 					Optional: true,
 				},
+				"include_deprecated": {
+					Type:     schema.TypeBool,
+					Default:  false,
+					Optional: true,
+				},
 			},
 		),
 	}
@@ -148,6 +153,11 @@ func DataSourceList() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
+				Optional: true,
+			},
+			"include_deprecated": {
+				Type:     schema.TypeBool,
+				Default:  false,
 				Optional: true,
 			},
 		},
@@ -204,6 +214,10 @@ func dataSourceHcloudImageRead(ctx context.Context, d *schema.ResourceData, m in
 	architecture := hcloud.Architecture(d.Get("with_architecture").(string))
 	if architecture != "" {
 		opts.Architecture = []hcloud.Architecture{architecture}
+	}
+
+	if d.Get("include_deprecated").(bool) {
+		opts.IncludeDeprecated = true
 	}
 
 	allImages, err := client.Image.AllWithOpts(ctx, opts)

@@ -5,4 +5,5 @@ data "hcloud_image" "{{ .RName }}" {
   {{ if .ImageName -}} name          = "{{ .ImageName }}"{{ end -}}
   {{ if .LabelSelector -}}    with_selector = "{{ .LabelSelector }}"{{ end }}
   {{ if .Architecture -}}    with_architecture = "{{ .Architecture }}"{{ end }}
+  {{ if .IncludeDeprecated -}}    include_deprecated = {{ .IncludeDeprecated }}{{ end }}
 }
