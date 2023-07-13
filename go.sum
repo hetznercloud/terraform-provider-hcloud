@@ -293,6 +293,8 @@ github.com/hetznercloud/hcloud-go v1.46.0 h1:9KrR537ILzv2L8h2pZOh9/yMAWZBkcwARjb
 github.com/hetznercloud/hcloud-go v1.46.0/go.mod h1:aAUGxSfSnB8/lVXHNEDxtCT1jykaul8kqjD7f5KQXF8=
 github.com/hetznercloud/hcloud-go v1.47.0 h1:WMZDwLPtMZwOLWIgERHrrrTzRFdHx0hTygYVQ4VWHW4=
 github.com/hetznercloud/hcloud-go v1.47.0/go.mod h1:zSpmBnxIdb5oMdbpVg1Q977Cq2qiwERkjj3jqRbHH5U=
+github.com/hetznercloud/hcloud-go v1.48.0 h1:b6x0ABNYJr8zVX9sE1kCNMU/sndzI8vmZjxEWEr+Gn0=
+github.com/hetznercloud/hcloud-go v1.48.0/go.mod h1:VzDWThl47lOnZXY0q5/LPFD+M62pfe/52TV+mOrpp9Q=
 github.com/huandu/xstrings v1.3.1/go.mod h1:y5/lhBue+AyNmUVz9RLU9xbLR0o4KIIExikq4ovT0aE=
 github.com/huandu/xstrings v1.3.2/go.mod h1:y5/lhBue+AyNmUVz9RLU9xbLR0o4KIIExikq4ovT0aE=
 github.com/ianlancetaylor/demangle v0.0.0-20181102032728-5e5cf60278f6/go.mod h1:aSSvb/t6k1mPoxDqO4vJh6VOCGPwU4O0C2/Eqndh1Sc=
