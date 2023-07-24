@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.42.0](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.41.0...v1.42.0) (2023-07-13)
+
+
+### Features
+
+* **image:** add filter include_deprecated to datasources ([#685](https://github.com/hetznercloud/terraform-provider-hcloud/issues/685)) ([#717](https://github.com/hetznercloud/terraform-provider-hcloud/issues/717)) ([9f039ba](https://github.com/hetznercloud/terraform-provider-hcloud/commit/9f039ba35b9b0e94f4f5581099031e11f001a6d8))
+
+
+### Bug Fixes
+
+* **lb:** early validation for lb_target arguments ([#721](https://github.com/hetznercloud/terraform-provider-hcloud/issues/721)) ([10928d1](https://github.com/hetznercloud/terraform-provider-hcloud/commit/10928d1389f4f7e08f042c33101af03a4e78d155))
+* **rdns:** crash when resource was deleted outside of terraform ([#720](https://github.com/hetznercloud/terraform-provider-hcloud/issues/720)) ([aad0614](https://github.com/hetznercloud/terraform-provider-hcloud/commit/aad0614d4abbe2dfbed53630b2e29380e6b087c5)), closes [#710](https://github.com/hetznercloud/terraform-provider-hcloud/issues/710)
+
 ## [1.41.0](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.40.0...v1.41.0) (2023-06-22)
 
 
