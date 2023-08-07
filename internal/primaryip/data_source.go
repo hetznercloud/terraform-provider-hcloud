@@ -188,7 +188,7 @@ func dataSourceHcloudPrimaryIPListRead(ctx context.Context, d *schema.ResourceDa
 			LabelSelector: selector,
 		},
 	}
-	allIPs, _, err := client.PrimaryIP.List(ctx, opts)
+	allIPs, err := client.PrimaryIP.AllWithOpts(ctx, opts)
 	if err != nil {
 		return hcclient.ErrorToDiag(err)
 	}
