@@ -51,7 +51,7 @@ func Resource() *schema.Resource {
 				Optional: true,
 				Computed: true,
 				DiffSuppressFunc: func(_, _, _ string, d *schema.ResourceData) bool {
-					// Diff is only valid if "network" resource is set in
+					// Diff is only valid if "apply_to" argument is set in
 					// terraform configuration.
 					_, ok := d.GetOk("apply_to")
 					return !ok // Negate because we do **not** want to suppress the diff.
