@@ -4,10 +4,12 @@ import (
 	"errors"
 	"log"
 	"time"
+
+	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 
 // DefaultRetries is a constant for the maximum number of retries we usually do.
-// However callers of Retry are free to choose a different number.
+// However, callers of Retry are free to choose a different number.
 const DefaultRetries = 5
 
 type abortErr struct {
@@ -37,6 +39,8 @@ func AbortRetry(err error) error {
 func Retry(maxTries int, f func() error) error {
 	var err error
 
+	backoff := hcloud.ExponentialBackoff(2, 1*time.Second)
+
 	for try := 0; try < maxTries; try++ {
 		var aerr abortErr
 
@@ -45,9 +49,9 @@ func Retry(maxTries int, f func() error) error {
 			return aerr.Err
 		}
 		if err != nil {
-			d := time.Duration(try+1) * time.Second
-			log.Printf("[WARN] try %d/%d failed: retrying after %v: error: %v", try+1, maxTries, d, err)
-			time.Sleep(time.Duration(try) * time.Second)
+			sleep := backoff(try)
+			log.Printf("[WARN] try %d/%d failed: retrying after %v: error: %v", try+1, maxTries, sleep, err)
+			time.Sleep(sleep)
 			continue
 		}
 
