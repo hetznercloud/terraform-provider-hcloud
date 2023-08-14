@@ -92,7 +92,15 @@ func Resource() *schema.Resource {
 			"ssh_keys": {
 				Type:     schema.TypeList,
 				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Elem: &schema.Schema{Type: schema.TypeString,
+					ValidateDiagFunc: func(i interface{}, _ cty.Path) diag.Diagnostics {
+						s := i.(string)
+						if len(s) == 0 {
+							return diag.Errorf("Invalid ssh key passed. You need to pass a string with at least 1 character")
+						}
+
+						return nil
+					}},
 				ForceNew: true,
 			},
 			"keep_disk": {
