@@ -1117,7 +1117,6 @@ func getServerAttributes(d *schema.ResourceData, s *hcloud.Server) map[string]in
 		"location":           s.Datacenter.Location.Name,
 		"status":             s.Status,
 		"server_type":        s.ServerType.Name,
-		"ipv4_address":       s.PublicNet.IPv4.IP.String(),
 		"ipv6_network":       s.PublicNet.IPv6.Network.String(),
 		"backup_window":      s.BackupWindow,
 		"backups":            s.BackupWindow != "",
@@ -1126,10 +1125,15 @@ func getServerAttributes(d *schema.ResourceData, s *hcloud.Server) map[string]in
 		"rebuild_protection": s.Protection.Rebuild,
 		"firewall_ids":       firewallIDs,
 	}
+	if s.PublicNet.IPv4.IsUnspecified() {
+		res["ipv4_address"] = nil
+	} else {
+		res["ipv4_address"] = s.PublicNet.IPv4.IP.String()
+	}
 
 	if len(s.PublicNet.IPv6.IP) == 0 {
 		// No IPv6 Primary IP assigned
-		res["ipv6_address"] = s.PublicNet.IPv6.IP.String() // Will be just "<nil>"
+		res["ipv6_address"] = nil
 	} else {
 		// Set first IP in assigned subnet range
 		res["ipv6_address"] = s.PublicNet.IPv6.IP.String() + "1"
