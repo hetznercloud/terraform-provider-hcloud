@@ -916,6 +916,37 @@ func TestServerResource_Protection(t *testing.T) {
 	})
 }
 
+func TestServerResource_EmptySSHKey(t *testing.T) {
+	// Regression Test for https://github.com/hetznercloud/terraform-provider-hcloud/issues/727
+	var srv hcloud.Server
+
+	srvRes := &server.RData{
+		Name:    "server-empty-ssh-key",
+		Type:    e2etests.TestServerType,
+		Image:   e2etests.TestImage,
+		SSHKeys: []string{"\"\""},
+	}
+	srvRes.SetRName("server-empty-ssh-key")
+
+	tmplMan := testtemplate.Manager{}
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:          e2etests.PreCheck(t),
+		ProviderFactories: e2etests.ProviderFactories(),
+		CheckDestroy:      testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &srv)),
+		Steps: []resource.TestStep{
+			{
+				// Create a new Server using the required values
+				// only.
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_server", srvRes,
+				),
+				ExpectError: regexp.MustCompile("Invalid ssh key passed"),
+			},
+		},
+	})
+}
+
 func isRecreated(new, old *hcloud.Server) func() error {
 	return func() error {
 		if new.ID == old.ID {
