@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.42.1](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.42.0...v1.42.1) (2023-08-14)
+
+
+### Bug Fixes
+
+* **primary_ip:** list data source only returned first 25 IPs ([#729](https://github.com/hetznercloud/terraform-provider-hcloud/issues/729)) ([62e9781](https://github.com/hetznercloud/terraform-provider-hcloud/commit/62e97810df58d2eccaaed2e81d7833fff4e5d6ae))
+* **server:** panic when passing empty string as ssh key ([#736](https://github.com/hetznercloud/terraform-provider-hcloud/issues/736)) ([d57b386](https://github.com/hetznercloud/terraform-provider-hcloud/commit/d57b38606c4b052b7d8181074d0860bd35935145))
+* **server:** Return `nil` instead of  `"&lt;nil&gt;"` with IPv4/IPv6 disabled ([#723](https://github.com/hetznercloud/terraform-provider-hcloud/issues/723)) ([6cd2a37](https://github.com/hetznercloud/terraform-provider-hcloud/commit/6cd2a3753df03ebb6f3ebdb46899f2ff167d04ad))
+* use exponential backoff when retrying actions ([#735](https://github.com/hetznercloud/terraform-provider-hcloud/issues/735)) ([d51ee4a](https://github.com/hetznercloud/terraform-provider-hcloud/commit/d51ee4a46dd869320b90413d8e7806fab21dc419))
+
 ## [1.42.0](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.41.0...v1.42.0) (2023-07-13)
 
 
