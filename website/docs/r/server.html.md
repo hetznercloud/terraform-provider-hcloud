@@ -162,7 +162,7 @@ The following arguments are supported:
 - `location` - (Optional, string) The location name to create the server in. `nbg1`, `fsn1`, `hel1`, `ash` or `hil`
 - `datacenter` - (Optional, string) The datacenter name to create the server in. `nbg1-dc3`, `fsn1-dc14`, `hel1-dc2`, `ash-dc1` or `hil-dc1`
 - `user_data` - (Optional, string) Cloud-Init user data to use during server creation
-- `ssh_keys` - (Optional, list) SSH key IDs or names which should be injected into the server at creation time. Once the server is created you can not update the list of SSH Keys. If you do change this, you will be prompted to destroy and recreate the server. You can avoid this by setting [lifecycle.ignore_changes](https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle#ignore_changes) to `[ ssh_keys ]`.
+- `ssh_keys` - (Optional, list) SSH key IDs or names which should be injected into the server at creation time. Once the server is created, you can not update the list of SSH Keys. If you do change this, you will be prompted to destroy and recreate the server. You can avoid this by setting [lifecycle.ignore_changes](https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle#ignore_changes) to `[ ssh_keys ]`.
 - `public_net` - (Optional, block) In this block you can either enable / disable ipv4 and ipv6 or link existing primary IPs (checkout the examples).
   If this block is not defined, two primary (ipv4 & ipv6) ips getting auto generated.
 - `keep_disk` - (Optional, bool) If true, do not upgrade the disk. This allows downgrading the server type later.
