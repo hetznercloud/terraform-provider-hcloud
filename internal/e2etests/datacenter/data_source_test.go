@@ -6,7 +6,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/datacenter"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/e2etests"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
@@ -22,8 +22,8 @@ func TestAccHcloudDataSourceDatacenterTest(t *testing.T) {
 	}
 	dcByID.SetRName("dc_by_id")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  e2etests.PreCheck(t),
-		Providers: e2etests.Providers(),
+		PreCheck:          e2etests.PreCheck(t),
+		ProviderFactories: e2etests.ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
@@ -49,8 +49,8 @@ func TestAccHcloudDataSourceDatacentersTest(t *testing.T) {
 	datacentersD := &datacenter.DDataList{}
 	datacentersD.SetRName("ds")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  e2etests.PreCheck(t),
-		Providers: e2etests.Providers(),
+		PreCheck:          e2etests.PreCheck(t),
+		ProviderFactories: e2etests.ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
