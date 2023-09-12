@@ -47,7 +47,7 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeString,
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("HCLOUD_TOKEN", nil),
-				Description: "The API token to access the Hetzner cloud.",
+				Description: "This is the Hetzner Cloud API Token, can also be specified with the HCLOUD_TOKEN environment variable.",
 				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 					token := val.(string)
 					if len(token) != 64 {
@@ -61,11 +61,13 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("HCLOUD_ENDPOINT", nil),
+				Description: "Hetzner Cloud API endpoint, can be used to override the default API Endpoint https://api.hetzner.cloud/v1.",
 			},
 			"poll_interval": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "500ms",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "500ms",
+				Description: "Configures the interval in which actions are polled by the client. Default `500ms`. Increase this interval if you run into rate limiting errors.",
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
