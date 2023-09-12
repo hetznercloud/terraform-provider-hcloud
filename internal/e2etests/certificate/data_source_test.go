@@ -30,9 +30,9 @@ func TestAccHcloudDataSourceCertificateTest(t *testing.T) {
 	certificateBySel.SetRName("certificate_by_sel")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     e2etests.PreCheck(t),
-		Providers:    e2etests.Providers(),
-		CheckDestroy: testsupport.CheckResourcesDestroyed(certificate.ResourceType, certificate.ByID(t, nil)),
+		PreCheck:                 e2etests.PreCheck(t),
+		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(certificate.ResourceType, certificate.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
@@ -78,9 +78,9 @@ func TestAccHcloudDataSourceCertificateListTest(t *testing.T) {
 
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     e2etests.PreCheck(t),
-		Providers:    e2etests.Providers(),
-		CheckDestroy: testsupport.CheckResourcesDestroyed(certificate.ResourceType, certificate.ByID(t, nil)),
+		PreCheck:                 e2etests.PreCheck(t),
+		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(certificate.ResourceType, certificate.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,

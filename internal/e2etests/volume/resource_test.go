@@ -31,9 +31,9 @@ func TestVolumeResource_Basic(t *testing.T) {
 
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     e2etests.PreCheck(t),
-		Providers:    e2etests.Providers(),
-		CheckDestroy: testsupport.CheckResourcesDestroyed(volume.ResourceType, volume.ByID(t, &vol)),
+		PreCheck:                 e2etests.PreCheck(t),
+		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(volume.ResourceType, volume.ByID(t, &vol)),
 		Steps: []resource.TestStep{
 			{
 				// Create a new Volume using the required values
@@ -90,9 +90,9 @@ func TestVolumeResource_Resize(t *testing.T) {
 
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     e2etests.PreCheck(t),
-		Providers:    e2etests.Providers(),
-		CheckDestroy: testsupport.CheckResourcesDestroyed(volume.ResourceType, volume.ByID(t, &vol)),
+		PreCheck:                 e2etests.PreCheck(t),
+		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(volume.ResourceType, volume.ByID(t, &vol)),
 		Steps: []resource.TestStep{
 			{
 				// Create a new Volume using the required values
@@ -156,9 +156,9 @@ func TestVolumeResource_WithServer(t *testing.T) {
 	resAnotherServer.SetRName(res.RName())
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     e2etests.PreCheck(t),
-		Providers:    e2etests.Providers(),
-		CheckDestroy: testsupport.CheckResourcesDestroyed(volume.ResourceType, volume.ByID(t, &vol)),
+		PreCheck:                 e2etests.PreCheck(t),
+		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(volume.ResourceType, volume.ByID(t, &vol)),
 		Steps: []resource.TestStep{
 			{
 				// Create a new Volume using the required values
@@ -226,9 +226,9 @@ func TestVolumeResource_WithServerMultipleVolumes(t *testing.T) {
 	resAnotherVolume.SetRName("another-volume")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     e2etests.PreCheck(t),
-		Providers:    e2etests.Providers(),
-		CheckDestroy: testsupport.CheckResourcesDestroyed(volume.ResourceType, volume.ByID(t, &vol)),
+		PreCheck:                 e2etests.PreCheck(t),
+		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(volume.ResourceType, volume.ByID(t, &vol)),
 		Steps: []resource.TestStep{
 			{
 				// Create a new Volume using the required values
@@ -269,9 +269,9 @@ func TestVolumeResource_Protection(t *testing.T) {
 
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     e2etests.PreCheck(t),
-		Providers:    e2etests.Providers(),
-		CheckDestroy: testsupport.CheckResourcesDestroyed(volume.ResourceType, volume.ByID(t, &vol)),
+		PreCheck:                 e2etests.PreCheck(t),
+		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(volume.ResourceType, volume.ByID(t, &vol)),
 		Steps: []resource.TestStep{
 			{
 				// Create a new Volume using the required values

@@ -29,9 +29,9 @@ func TestFloatingIPResource_Basic(t *testing.T) {
 	resRenamed.SetRName(res.Name)
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     e2etests.PreCheck(t),
-		Providers:    e2etests.Providers(),
-		CheckDestroy: testsupport.CheckResourcesDestroyed(floatingip.ResourceType, floatingip.ByID(t, &fip)),
+		PreCheck:                 e2etests.PreCheck(t),
+		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(floatingip.ResourceType, floatingip.ByID(t, &fip)),
 		Steps: []resource.TestStep{
 			{
 				// Create a new Floating IP using the required values
@@ -89,9 +89,9 @@ func TestFloatingIPResource_WithServer(t *testing.T) {
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     e2etests.PreCheck(t),
-		Providers:    e2etests.Providers(),
-		CheckDestroy: testsupport.CheckResourcesDestroyed(floatingip.ResourceType, floatingip.ByID(t, &fip)),
+		PreCheck:                 e2etests.PreCheck(t),
+		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(floatingip.ResourceType, floatingip.ByID(t, &fip)),
 		Steps: []resource.TestStep{
 			{
 				// Create a new Floating IP using the required values
@@ -137,9 +137,9 @@ func TestFloatingIPResource_Protection(t *testing.T) {
 
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     e2etests.PreCheck(t),
-		Providers:    e2etests.Providers(),
-		CheckDestroy: testsupport.CheckResourcesDestroyed(floatingip.ResourceType, floatingip.ByID(t, &fip)),
+		PreCheck:                 e2etests.PreCheck(t),
+		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(floatingip.ResourceType, floatingip.ByID(t, &fip)),
 		Steps: []resource.TestStep{
 			{
 				// Create a new Floating IP using the required values

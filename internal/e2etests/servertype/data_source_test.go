@@ -22,8 +22,8 @@ func TestAccHcloudDataSourceServerTypeTest(t *testing.T) {
 	}
 	stByID.SetRName("st_by_id")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  e2etests.PreCheck(t),
-		Providers: e2etests.Providers(),
+		PreCheck:                 e2etests.PreCheck(t),
+		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
@@ -59,8 +59,8 @@ func TestAccHcloudDataSourceServerTypesTest(t *testing.T) {
 	servertypesD := &servertype.DDataList{}
 	servertypesD.SetRName("ds")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  e2etests.PreCheck(t),
-		Providers: e2etests.Providers(),
+		PreCheck:                 e2etests.PreCheck(t),
+		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,

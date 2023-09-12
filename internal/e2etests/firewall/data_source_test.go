@@ -32,9 +32,9 @@ func TestAccHcloudDataSourceFirewallTest(t *testing.T) {
 
 	// TODO: Move to parallel test once API endpoint is fixed
 	resource.Test(t, resource.TestCase{
-		PreCheck:     e2etests.PreCheck(t),
-		Providers:    e2etests.Providers(),
-		CheckDestroy: testsupport.CheckResourcesDestroyed(firewall.ResourceType, firewall.ByID(t, nil)),
+		PreCheck:                 e2etests.PreCheck(t),
+		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(firewall.ResourceType, firewall.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
@@ -78,9 +78,9 @@ func TestAccHcloudDataSourceFirewallListTest(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 	// TODO: Move to parallel test once API endpoint is fixed
 	resource.Test(t, resource.TestCase{
-		PreCheck:     e2etests.PreCheck(t),
-		Providers:    e2etests.Providers(),
-		CheckDestroy: testsupport.CheckResourcesDestroyed(firewall.ResourceType, firewall.ByID(t, nil)),
+		PreCheck:                 e2etests.PreCheck(t),
+		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(firewall.ResourceType, firewall.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,

@@ -21,9 +21,9 @@ func TestSSHKeyResource_Basic(t *testing.T) {
 	resRenamed := &sshkey.RData{Name: res.Name + "-renamed", PublicKey: res.PublicKey}
 	resRenamed.SetRName(res.Name)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     e2etests.PreCheck(t),
-		Providers:    e2etests.Providers(),
-		CheckDestroy: testsupport.CheckResourcesDestroyed(sshkey.ResourceType, sshkey.ByID(t, &sk)),
+		PreCheck:                 e2etests.PreCheck(t),
+		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(sshkey.ResourceType, sshkey.ByID(t, &sk)),
 		Steps: []resource.TestStep{
 			{
 				// Create a new SSH Key using the required values

@@ -47,9 +47,9 @@ func TestSnapshotResource_Basic(t *testing.T) {
 		}}
 	resRenamed.SetRName("snapshot-basic")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     e2etests.PreCheck(t),
-		Providers:    e2etests.Providers(),
-		CheckDestroy: testsupport.CheckResourcesDestroyed(snapshot.ResourceType, snapshot.ByID(t, &s)),
+		PreCheck:                 e2etests.PreCheck(t),
+		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(snapshot.ResourceType, snapshot.ByID(t, &s)),
 		Steps: []resource.TestStep{
 			{
 				// Create a new Snapshot using the required values

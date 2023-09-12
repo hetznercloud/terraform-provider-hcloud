@@ -30,9 +30,9 @@ func TestCertificateResource_Uploaded_Basic(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 	// Not parallel because number of certificates per domain is limited
 	resource.Test(t, resource.TestCase{
-		PreCheck:     e2etests.PreCheck(t),
-		Providers:    e2etests.Providers(),
-		CheckDestroy: testsupport.CheckResourcesDestroyed(certificate.UploadedResourceType, certificate.ByID(t, &cert)),
+		PreCheck:                 e2etests.PreCheck(t),
+		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(certificate.UploadedResourceType, certificate.ByID(t, &cert)),
 		Steps: []resource.TestStep{
 			{
 				// Create a new Certificate using the required values
@@ -77,9 +77,9 @@ func TestCertificateResource_Uploaded_ChangeCertRequiresNewResource(t *testing.T
 	tmplMan := testtemplate.Manager{}
 	// Not parallel because number of certificates per domain is limited
 	resource.Test(t, resource.TestCase{
-		PreCheck:     e2etests.PreCheck(t),
-		Providers:    e2etests.Providers(),
-		CheckDestroy: testsupport.CheckResourcesDestroyed(certificate.UploadedResourceType, certificate.ByID(t, &cert)),
+		PreCheck:                 e2etests.PreCheck(t),
+		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(certificate.UploadedResourceType, certificate.ByID(t, &cert)),
 		Steps: []resource.TestStep{
 			{
 				// Create a new Certificate using the required values
@@ -132,9 +132,9 @@ func TestCertificateResource_Managed_Basic(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 	// Not parallel because number of certificates per domain is limited
 	resource.Test(t, resource.TestCase{
-		PreCheck:     e2etests.PreCheck(t),
-		Providers:    e2etests.Providers(),
-		CheckDestroy: testsupport.CheckResourcesDestroyed(certificate.ManagedResourceType, certificate.ByID(t, &cert)),
+		PreCheck:                 e2etests.PreCheck(t),
+		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(certificate.ManagedResourceType, certificate.ByID(t, &cert)),
 		Steps: []resource.TestStep{
 			{
 				// Create a new Certificate using the required values

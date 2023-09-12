@@ -53,9 +53,9 @@ func TestAccHcloudServerNetwork_NetworkID(t *testing.T) {
 	}
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     e2etests.PreCheck(t),
-		Providers:    e2etests.Providers(),
-		CheckDestroy: testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, nil)),
+		PreCheck:                 e2etests.PreCheck(t),
+		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
@@ -116,9 +116,9 @@ func TestAccHcloudServerNetwork_SubNetID(t *testing.T) {
 
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     e2etests.PreCheck(t),
-		Providers:    e2etests.Providers(),
-		CheckDestroy: testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, nil)),
+		PreCheck:                 e2etests.PreCheck(t),
+		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,

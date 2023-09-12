@@ -34,9 +34,9 @@ func TestAccHcloudDataSourcePlacementGroupTest(t *testing.T) {
 	placementGroupBySel.SetRName("placement_group_by_sel")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     e2etests.PreCheck(t),
-		Providers:    e2etests.Providers(),
-		CheckDestroy: testsupport.CheckResourcesDestroyed(placementgroup.ResourceType, placementgroup.ByID(t, nil)),
+		PreCheck:                 e2etests.PreCheck(t),
+		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(placementgroup.ResourceType, placementgroup.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
@@ -80,9 +80,9 @@ func TestAccHcloudDataSourcePlacementGroupListTest(t *testing.T) {
 
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     e2etests.PreCheck(t),
-		Providers:    e2etests.Providers(),
-		CheckDestroy: testsupport.CheckResourcesDestroyed(placementgroup.ResourceType, placementgroup.ByID(t, nil)),
+		PreCheck:                 e2etests.PreCheck(t),
+		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(placementgroup.ResourceType, placementgroup.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,

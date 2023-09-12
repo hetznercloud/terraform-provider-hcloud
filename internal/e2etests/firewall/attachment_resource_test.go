@@ -31,8 +31,8 @@ func TestAttachmentResource_Servers(t *testing.T) {
 
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  e2etests.PreCheck(t),
-		Providers: e2etests.Providers(),
+		PreCheck:                 e2etests.PreCheck(t),
+		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &srv)),
 			testsupport.CheckResourcesDestroyed(firewall.ResourceType, firewall.ByID(t, &fw)),
@@ -76,8 +76,8 @@ func TestAttachmentResource_LabelSelectors(t *testing.T) {
 
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  e2etests.PreCheck(t),
-		Providers: e2etests.Providers(),
+		PreCheck:                 e2etests.PreCheck(t),
+		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &srv)),
 			testsupport.CheckResourcesDestroyed(firewall.ResourceType, firewall.ByID(t, &fw)),

@@ -64,9 +64,9 @@ func TestRDNSResource_Server(t *testing.T) {
 
 			// TODO: Debug issues that causes this to fail when running in parallel
 			resource.Test(t, resource.TestCase{
-				PreCheck:     e2etests.PreCheck(t),
-				Providers:    e2etests.Providers(),
-				CheckDestroy: testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
+				PreCheck:                 e2etests.PreCheck(t),
+				ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+				CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
 				Steps: []resource.TestStep{
 					{
 						// Create a new RDNS using the required values
@@ -130,9 +130,9 @@ func TestRDNSResource_PrimaryIP(t *testing.T) {
 
 			// TODO: Debug issues that causes this to fail when running in parallel
 			resource.Test(t, resource.TestCase{
-				PreCheck:     e2etests.PreCheck(t),
-				Providers:    e2etests.Providers(),
-				CheckDestroy: testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &primaryIP)),
+				PreCheck:                 e2etests.PreCheck(t),
+				ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+				CheckDestroy:             testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &primaryIP)),
 				Steps: []resource.TestStep{
 					{
 						// Create a new SSH Key using the required values
@@ -194,9 +194,9 @@ func TestRDNSResource_FloatingIP(t *testing.T) {
 
 			// TODO: Debug issues that causes this to fail when running in parallel
 			resource.Test(t, resource.TestCase{
-				PreCheck:     e2etests.PreCheck(t),
-				Providers:    e2etests.Providers(),
-				CheckDestroy: testsupport.CheckResourcesDestroyed(floatingip.ResourceType, floatingip.ByID(t, &fl)),
+				PreCheck:                 e2etests.PreCheck(t),
+				ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+				CheckDestroy:             testsupport.CheckResourcesDestroyed(floatingip.ResourceType, floatingip.ByID(t, &fl)),
 				Steps: []resource.TestStep{
 					{
 						// Create a new SSH Key using the required values
@@ -265,9 +265,9 @@ func TestRDNSResource_LoadBalancer(t *testing.T) {
 
 			// TODO: Debug issues that causes this to fail when running in parallel
 			resource.Test(t, resource.TestCase{
-				PreCheck:     e2etests.PreCheck(t),
-				Providers:    e2etests.Providers(),
-				CheckDestroy: testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, &lb)),
+				PreCheck:                 e2etests.PreCheck(t),
+				ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+				CheckDestroy:             testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, &lb)),
 				Steps: []resource.TestStep{
 					{
 						Config: tmplMan.Render(t,

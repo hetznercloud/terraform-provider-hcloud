@@ -31,9 +31,9 @@ func TestNetworkRouteResource_Basic(t *testing.T) {
 	res.SetRName("network-route-test")
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     e2etests.PreCheck(t),
-		Providers:    e2etests.Providers(),
-		CheckDestroy: testsupport.CheckResourcesDestroyed(network.ResourceType, network.ByID(t, &nw)),
+		PreCheck:                 e2etests.PreCheck(t),
+		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(network.ResourceType, network.ByID(t, &nw)),
 		Steps: []resource.TestStep{
 			{
 				// Create a new Network using the required values

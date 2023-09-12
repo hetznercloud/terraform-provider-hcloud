@@ -25,9 +25,9 @@ func TestNetworkResource_Basic(t *testing.T) {
 	resRenamed.SetRName(res.Name)
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     e2etests.PreCheck(t),
-		Providers:    e2etests.Providers(),
-		CheckDestroy: testsupport.CheckResourcesDestroyed(network.ResourceType, network.ByID(t, &cert)),
+		PreCheck:                 e2etests.PreCheck(t),
+		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(network.ResourceType, network.ByID(t, &cert)),
 		Steps: []resource.TestStep{
 			{
 				// Create a new Network using the required values
@@ -74,9 +74,9 @@ func TestNetworkResource_IncreaseNetwork(t *testing.T) {
 	resResized.SetRName(res.RName())
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     e2etests.PreCheck(t),
-		Providers:    e2etests.Providers(),
-		CheckDestroy: testsupport.CheckResourcesDestroyed(network.ResourceType, network.ByID(t, &cert)),
+		PreCheck:                 e2etests.PreCheck(t),
+		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(network.ResourceType, network.ByID(t, &cert)),
 		Steps: []resource.TestStep{
 			{
 				// Create a new Network using the required values
@@ -130,9 +130,9 @@ func TestNetworkResource_Protection(t *testing.T) {
 
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     e2etests.PreCheck(t),
-		Providers:    e2etests.Providers(),
-		CheckDestroy: testsupport.CheckResourcesDestroyed(network.ResourceType, network.ByID(t, &cert)),
+		PreCheck:                 e2etests.PreCheck(t),
+		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(network.ResourceType, network.ByID(t, &cert)),
 		Steps: []resource.TestStep{
 			{
 				// Create a new Network using the required values
@@ -179,9 +179,9 @@ func TestNetworkResource_ExposeRouteToVSwitch(t *testing.T) {
 
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     e2etests.PreCheck(t),
-		Providers:    e2etests.Providers(),
-		CheckDestroy: testsupport.CheckResourcesDestroyed(network.ResourceType, network.ByID(t, &cert)),
+		PreCheck:                 e2etests.PreCheck(t),
+		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(network.ResourceType, network.ByID(t, &cert)),
 		Steps: []resource.TestStep{
 			{
 				// Create a new Network using the required values only.

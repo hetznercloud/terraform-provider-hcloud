@@ -63,9 +63,9 @@ func TestFloatingIPAssignmentResource_Basic(t *testing.T) {
 		ServerID:     resServer2.TFID() + ".id",
 	}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:     e2etests.PreCheck(t),
-		Providers:    e2etests.Providers(),
-		CheckDestroy: testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
+		PreCheck:                 e2etests.PreCheck(t),
+		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
 		Steps: []resource.TestStep{
 			{
 				// Create a new RDNS using the required values
