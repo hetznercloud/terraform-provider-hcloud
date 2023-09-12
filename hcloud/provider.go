@@ -20,7 +20,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/certificate"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/datacenter"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/floatingip"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/image"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancer"
@@ -98,8 +97,6 @@ func Provider() *schema.Provider {
 		DataSourcesMap: map[string]*schema.Resource{
 			certificate.DataSourceType:        certificate.DataSource(),
 			certificate.DataSourceListType:    certificate.DataSourceList(),
-			datacenter.DataSourceListType:     datacenter.DataSourceList(),
-			datacenter.DataSourceType:         datacenter.DataSource(),
 			firewall.DataSourceType:           firewall.DataSource(),
 			firewall.DataSourceListType:       firewall.DataSourceList(),
 			floatingip.DataSourceType:         floatingip.DataSource(),

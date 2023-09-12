@@ -3,10 +3,10 @@ package datacenter_test
 import (
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/datacenter"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/e2etests"
-
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
@@ -38,6 +38,47 @@ func TestAccHcloudDataSourceDatacenterTest(t *testing.T) {
 					resource.TestCheckResourceAttr(dcByID.TFID(), "id", "4"),
 					resource.TestCheckResourceAttr(dcByID.TFID(), "name", "fsn1-dc14"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccHcloudDataSourceDatacenter_UpgradePluginFramework(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
+	dcByName := &datacenter.DData{
+		DatacenterName: "fsn1-dc14",
+	}
+	dcByName.SetRName("dc_by_name")
+	dcByID := &datacenter.DData{
+		DatacenterID: "4",
+	}
+	dcByID.SetRName("dc_by_id")
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: e2etests.PreCheck(t),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"hcloud": {
+						VersionConstraint: "1.42.1",
+						Source:            "hetznercloud/hcloud",
+					},
+				},
+
+				Config: tmplMan.Render(t,
+					"testdata/d/hcloud_datacenter", dcByName,
+					"testdata/d/hcloud_datacenter", dcByID,
+				),
+			},
+			{
+				ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+
+				Config: tmplMan.Render(t,
+					"testdata/d/hcloud_datacenter", dcByName,
+					"testdata/d/hcloud_datacenter", dcByID,
+				),
+
+				PlanOnly: true,
 			},
 		},
 	})
