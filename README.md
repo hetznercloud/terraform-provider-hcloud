@@ -9,7 +9,7 @@ Requirements
 ------------
 
 -	[Terraform](https://www.terraform.io/downloads.html) 1.2.x
--	[Go](https://golang.org/doc/install) 1.19.x (to build the provider plugin)
+-	[Go](https://golang.org/doc/install) 1.21.x (to build the provider plugin)
 
 API Stability
 -------------
