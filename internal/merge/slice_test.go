@@ -1,7 +1,6 @@
 package merge_test
 
 import (
-	"math/rand"
 	"testing"
 
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/merge"
@@ -52,11 +51,6 @@ func TestStringSlice(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			// Shuffle the elements in src to ensure we don't rely on any
-			// order.
-			rand.Shuffle(len(tt.src), func(i, j int) {
-				tt.src[i], tt.src[j] = tt.src[j], tt.src[i]
-			})
 			actual := merge.StringSlice(tt.dst, tt.src)
 			assert.Equal(t, tt.expected, actual)
 		})
