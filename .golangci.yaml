@@ -9,7 +9,6 @@ linters:
   disable-all: true
   enable:
     - bodyclose
-    - depguard
     - errcheck
     - exportloopref
     - gocritic

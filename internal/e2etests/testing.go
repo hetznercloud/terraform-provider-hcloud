@@ -1,10 +1,8 @@
 package e2etests
 
 import (
-	"math/rand"
 	"os"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
@@ -30,10 +28,6 @@ const (
 	// TestLocationName is the default location where we execute our tests.
 	TestLocationName = "hel1"
 )
-
-func init() {
-	rand.Seed(time.Now().UTC().UnixNano())
-}
 
 // Providers returns all providers used during acceptance testing.
 func Providers() map[string]*schema.Provider {
