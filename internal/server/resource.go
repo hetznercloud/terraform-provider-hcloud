@@ -256,7 +256,7 @@ func Resource() *schema.Resource {
 				Optional: true,
 				Default:  false,
 			},
-			"shutdown_before_destruction": {
+			"shutdown_before_deletion": {
 				Type:     schema.TypeBool,
 				Optional: true,
 				Default:  false,
@@ -857,7 +857,7 @@ func resourceServerDelete(ctx context.Context, d *schema.ResourceData, m interfa
 
 	var warnings diag.Diagnostics
 
-	if d.Get("shutdown_before_destruction").(bool) {
+	if d.Get("shutdown_before_deletion").(bool) {
 		// Try shutting down the server
 		shutdownResult, _, err := client.Server.Shutdown(ctx, &hcloud.Server{ID: serverID})
 		if err != nil {
