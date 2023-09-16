@@ -868,11 +868,11 @@ func resourceServerDelete(ctx context.Context, d *schema.ResourceData, m interfa
 			return hcclient.ErrorToDiag(err)
 		}
 
-		// We give the server some time to shut down
+		// Give the server some time to shut down
 		err = control.Retry(control.DefaultRetries, func() error {
 			server, _, err := client.Server.GetByID(ctx, serverID)
 
-			// If we are not able to get the server status, we probably do not need to retry
+			// If it is not possible to get the server status, it is probably futile to retry
 			if err != nil {
 				return control.AbortRetry(err)
 			}
