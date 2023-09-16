@@ -885,12 +885,14 @@ func resourceServerDelete(ctx context.Context, d *schema.ResourceData, m interfa
 			return nil
 		})
 		if err != nil {
+			// If shutting down does not work, add a warning and move on with deletion
 			warnings = append(warnings, diag.Diagnostic{
 				Severity: diag.Warning,
 				Summary:  fmt.Sprintf("Server id %d took longer than 30s to shut down gracefully, deleting it anyways.", serverID),
 			})
+
+			err = nil
 		}
-		err = nil
 	}
 
 	result, _, err := client.Server.DeleteWithResult(ctx, &hcloud.Server{ID: serverID})
