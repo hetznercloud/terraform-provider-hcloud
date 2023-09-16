@@ -256,6 +256,11 @@ func Resource() *schema.Resource {
 				Optional: true,
 				Default:  false,
 			},
+			"shutdown_before_destruction": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
 		},
 	}
 }
@@ -849,6 +854,44 @@ func resourceServerDelete(ctx context.Context, d *schema.ResourceData, m interfa
 		d.SetId("")
 		return nil
 	}
+
+	var warnings diag.Diagnostics
+
+	if d.Get("shutdown_before_destruction").(bool) {
+		// Try shutting down the server
+		shutdownResult, _, err := client.Server.Shutdown(ctx, &hcloud.Server{ID: serverID})
+		if err != nil {
+			return hcclient.ErrorToDiag(err)
+		}
+
+		if err = hcclient.WaitForAction(ctx, &client.Action, shutdownResult); err != nil {
+			return hcclient.ErrorToDiag(err)
+		}
+
+		// We give the server some time to shut down
+		err = control.Retry(control.DefaultRetries, func() error {
+			server, _, err := client.Server.GetByID(ctx, serverID)
+
+			// If we are not able to get the server status, we probably do not need to retry
+			if err != nil {
+				return control.AbortRetry(err)
+			}
+
+			if server.Status != hcloud.ServerStatusOff {
+				return fmt.Errorf("Server has not shut down yet")
+			}
+
+			// Server has shut down successfully
+			return nil
+		})
+		if err != nil {
+			warnings = append(warnings, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  fmt.Sprintf("[WARN] Server id %d took longer than 30s to shut down gracefully, deleting it anyways.", serverID),
+			})
+		}
+	}
+
 	result, _, err := client.Server.DeleteWithResult(ctx, &hcloud.Server{ID: serverID})
 	if err != nil {
 		return hcclient.ErrorToDiag(err)
@@ -859,7 +902,7 @@ func resourceServerDelete(ctx context.Context, d *schema.ResourceData, m interfa
 		return hcclient.ErrorToDiag(err)
 	}
 
-	return nil
+	return warnings
 }
 
 func resourceServerIsNotFound(err error, d *schema.ResourceData) bool {
