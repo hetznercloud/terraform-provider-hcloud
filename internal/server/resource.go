@@ -887,7 +887,7 @@ func resourceServerDelete(ctx context.Context, d *schema.ResourceData, m interfa
 		if err != nil {
 			warnings = append(warnings, diag.Diagnostic{
 				Severity: diag.Warning,
-				Summary:  fmt.Sprintf("[WARN] Server id %d took longer than 30s to shut down gracefully, deleting it anyways.", serverID),
+				Summary:  fmt.Sprintf("Server id %d took longer than 30s to shut down gracefully, deleting it anyways.", serverID),
 			})
 		}
 	}
