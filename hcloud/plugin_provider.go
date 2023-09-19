@@ -45,12 +45,6 @@ func (p *PluginProvider) Schema(_ context.Context, _ provider.SchemaRequest, res
 				Description: "This is the Hetzner Cloud API Token, can also be specified with the HCLOUD_TOKEN environment variable.",
 				Optional:    true,
 				Sensitive:   true,
-				// Validators:   []validator.String{
-				// 	stringvalidator.RegexMatches(
-				// 		regexp.MustCompile(`^[a-zA-Z0-9]{64}$`),
-				// 		"entered token is invalid (must be exactly 64 characters long)",
-				// 	),
-				// },
 			},
 			"endpoint": schema.StringAttribute{
 				Description: "Hetzner Cloud API endpoint, can be used to override the default API Endpoint https://api.hetzner.cloud/v1.",
