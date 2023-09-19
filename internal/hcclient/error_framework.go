@@ -9,7 +9,8 @@ import (
 	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 
-func APIErrorDiagnostic(resource string, err error) diag.Diagnostics {
+// APIErrorDiagnostics creates diagnostics from the errors that occurred during an API requests.
+func APIErrorDiagnostics(err error) diag.Diagnostics {
 	var diagnostics diag.Diagnostics
 	var hcloudErr hcloud.Error
 
@@ -20,36 +21,36 @@ func APIErrorDiagnostic(resource string, err error) diag.Diagnostics {
 				diagnostics.AddError(
 					"Invalid field in API request",
 					fmt.Sprintf(
-						`An invalid field was encountered while doing the request to %s. The field might not map 1:1 to your terraform resource.
-
-%s => %s
-
-Error code: %s
-`,
-						resource, field.Name, field.Messages, hcloudErr.Code,
+						"An invalid field was encountered during an API request. "+
+							"The field might not map 1:1 to your terraform resource.\n\n"+
+							"%s\n\n"+
+							"Field: %s\n"+
+							"Messages: %s\n"+
+							"Error code: %s\n",
+						err.Error(), field.Name, field.Messages, hcloudErr.Code,
 					))
 			}
 			return diagnostics
 		}
 
 		diagnostics.AddError(
-			fmt.Sprintf("Request to %s failed", resource),
+			"API request failed",
 			fmt.Sprintf(
-				`An unexpected error was encountered while doing the request to %s.
-%s
-
-Error code: %s`,
-				resource, hcloudErr.Message, hcloudErr.Code,
+				"An unexpected error was encountered during an API request.\n\n"+
+					"%s\n\n"+
+					"Error code: %s\n",
+				hcloudErr.Message, hcloudErr.Code,
 			),
 		)
 		return diagnostics
 	}
 
 	diagnostics.AddError(
-		fmt.Sprintf("Request to %s failed", resource),
+		"API request failed",
 		fmt.Sprintf(
-			"An unexpected error was encountered while doing the request to %s.\n\n%s\n",
-			resource, err.Error(),
+			"An unexpected error was encountered during an API request.\n\n"+
+				"%s\n",
+			err.Error(),
 		),
 	)
 	return diagnostics
