@@ -42,16 +42,16 @@ func (p *PluginProvider) Schema(_ context.Context, _ provider.SchemaRequest, res
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"token": schema.StringAttribute{
-				Description: "This is the Hetzner Cloud API Token, can also be specified with the HCLOUD_TOKEN environment variable.",
+				Description: "The Hetzner Cloud API token, can also be specified with the HCLOUD_TOKEN environment variable.",
 				Optional:    true,
 				Sensitive:   true,
 			},
 			"endpoint": schema.StringAttribute{
-				Description: "Hetzner Cloud API endpoint, can be used to override the default API Endpoint https://api.hetzner.cloud/v1.",
+				Description: "The Hetzner Cloud API endpoint, can be used to override the default API Endpoint https://api.hetzner.cloud/v1.",
 				Optional:    true,
 			},
 			"poll_interval": schema.StringAttribute{
-				Description: "Configures the interval in which actions are polled by the client. Default `500ms`. Increase this interval if you run into rate limiting errors.",
+				Description: "The interval at which actions are polled by the client. Default `500ms`. Increase this interval if you run into rate limiting errors.",
 				Optional:    true,
 			},
 		},
