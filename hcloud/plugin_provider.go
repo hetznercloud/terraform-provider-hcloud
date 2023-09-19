@@ -89,7 +89,7 @@ func (p *PluginProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	}
 
 	endpoint := os.Getenv("HCLOUD_ENDPOINT")
-	if !data.Endpoint.IsNull() {
+	if data.Endpoint.ValueString() != "" {
 		endpoint = data.Endpoint.String()
 	}
 	if endpoint != "" {
@@ -97,7 +97,7 @@ func (p *PluginProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	}
 
 	token := os.Getenv("HCLOUD_TOKEN")
-	if !data.Token.IsNull() {
+	if data.Token.ValueString() != "" {
 		token = data.Token.String()
 	}
 	if token != "" {
@@ -105,8 +105,8 @@ func (p *PluginProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	} else {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("token"),
-			"Missing Hetzner Cloud Token",
-			"No token for accessing Hetzner Cloud was provided. The provider requires a token to make any requests to the API.",
+			"Missing Hetzner Cloud API token",
+			"While configuring the provider, the Hetzner Cloud API token was not found in the HCLOUD_TOKEN environment variable or provider configuration block token attribute.",
 		)
 	}
 
@@ -115,8 +115,8 @@ func (p *PluginProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		if err != nil {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("poll_interval"),
-				"Unparseable poll interval value",
-				fmt.Sprintf("An unexpected error was encountered trying to parse the value.\nError: %s", err.Error()),
+				"Unparsable poll interval value",
+				fmt.Sprintf("An unexpected error was encountered trying to parse the value.\n\n%s", err.Error()),
 			)
 		}
 		opts = append(opts, hcloud.WithPollBackoffFunc(hcloud.ExponentialBackoff(2, pollInterval)))
