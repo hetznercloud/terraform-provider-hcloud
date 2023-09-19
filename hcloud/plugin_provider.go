@@ -79,7 +79,7 @@ type PluginProviderModel struct {
 // Terraform sends to the provider the values the user specified in the
 // provider configuration block. These are supplied in the
 // ConfigureProviderRequest argument.
-// Values from provider configuration are often used to initialise an
+// Values from provider configuration are often used to initialize an
 // API client, which should be stored on the struct to initialize an
 // Provider interface.
 func (p *PluginProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
