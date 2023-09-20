@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.43.0](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.42.1...v1.43.0) (2023-09-20)
+
+
+### Features
+
+* build with Go 1.21 ([#753](https://github.com/hetznercloud/terraform-provider-hcloud/issues/753)) ([f68e079](https://github.com/hetznercloud/terraform-provider-hcloud/commit/f68e0791307ee2cddce172f3bcd0f786fd2f2b32))
+* **server:** Optional graceful shutdown before deleting servers ([#755](https://github.com/hetznercloud/terraform-provider-hcloud/issues/755)) ([0c477a3](https://github.com/hetznercloud/terraform-provider-hcloud/commit/0c477a32b569c2cac455cf2d6131d8c62519803e))
+
 ## [1.42.1](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.42.0...v1.42.1) (2023-08-14)
 
 
