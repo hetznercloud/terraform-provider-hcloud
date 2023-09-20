@@ -181,6 +181,7 @@ The following arguments are supported:
 - `delete_protection` - (Optional, bool) Enable or disable delete protection (Needs to be the same as `rebuild_protection`).
 - `rebuild_protection` - (Optional, bool) Enable or disable rebuild protection (Needs to be the same as `delete_protection`).
 - `allow_deprecated_images` - (Optional, bool) Enable the use of deprecated images (default: false). **Note** Deprecated images will be removed after three months. Using them is then no longer possible.
+- `shutdown_before_deletion` - (bool) Whether to try shutting the server down gracefully before deleting it.
 
 `network` support the following fields:
 - `network_id` - (Required, int) ID of the network
@@ -218,6 +219,7 @@ The following attributes are exported:
 - `placement_group_id` - (Optional, string) Placement Group ID the server is assigned to.
 - `delete_protection` - (bool) Whether delete protection is enabled.
 - `rebuild_protection` - (bool) Whether rebuild protection is enabled.
+- `shutdown_before_deletion` - (bool) Whether the server will try to shut down gracefully before being deleted.
 
 a single entry in `network` support the following fields:
 - `network_id` - (Required, int) ID of the network
