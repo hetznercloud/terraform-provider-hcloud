@@ -890,8 +890,6 @@ func resourceServerDelete(ctx context.Context, d *schema.ResourceData, m interfa
 				Severity: diag.Warning,
 				Summary:  fmt.Sprintf("Server id %d did not finish shutting down gracefully in time, deleting it anyways.", serverID),
 			})
-
-			err = nil
 		}
 	}
 
