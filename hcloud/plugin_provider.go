@@ -139,8 +139,8 @@ func (p *PluginProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	resp.DataSourceData = client
 	resp.ResourceData = client
 
-	tflog.Info(ctx, "terraform-provider-hcloud version", map[string]any{"version": Version, "commit": Commit})
-	tflog.Info(ctx, "hcloud-go version", map[string]any{"version": hcloud.Version})
+	tflog.Info(ctx, "terraform-provider-hcloud info", map[string]any{"version": Version, "commit": Commit})
+	tflog.Info(ctx, "hcloud-go info", map[string]any{"version": hcloud.Version})
 }
 
 // DataSources returns a slice of functions to instantiate each DataSource
