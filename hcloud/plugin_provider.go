@@ -130,7 +130,7 @@ func (p *PluginProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	opts = append(opts,
 		hcloud.WithDebugWriter(
 			tflogutil.NewWriter(
-				tflog.NewSubsystem(ctx, "hcloud-go-http-logs", tflog.WithLevel(hclog.Debug)),
+				tflog.NewSubsystem(ctx, "hcloud-go", tflog.WithLevel(hclog.Debug)),
 			),
 		),
 	)
