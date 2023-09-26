@@ -3,6 +3,7 @@ package hcclient
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 
@@ -18,6 +19,11 @@ func APIErrorDiagnostics(err error) diag.Diagnostics {
 		if hcloud.IsError(hcloudErr, hcloud.ErrorCodeInvalidInput) {
 			invalidInput := hcloudErr.Details.(hcloud.ErrorDetailsInvalidInput)
 			for _, field := range invalidInput.Fields {
+				messages := make([]string, 0, len(field.Messages))
+				for _, message := range field.Messages {
+					messages = append(messages, fmt.Sprintf(" - %s", message))
+				}
+
 				diagnostics.AddError(
 					"Invalid field in API request",
 					fmt.Sprintf(
@@ -25,9 +31,9 @@ func APIErrorDiagnostics(err error) diag.Diagnostics {
 							"The field might not map 1:1 to your terraform resource.\n\n"+
 							"%s\n\n"+
 							"Field: %s\n"+
-							"Messages: %s\n"+
+							"Messages:\n%s\n"+
 							"Error code: %s\n",
-						err.Error(), field.Name, field.Messages, hcloudErr.Code,
+						err.Error(), field.Name, strings.Join(messages, "\n"), hcloudErr.Code,
 					))
 			}
 			return diagnostics
