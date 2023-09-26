@@ -90,7 +90,7 @@ func (p *PluginProvider) Configure(ctx context.Context, req provider.ConfigureRe
 
 	endpoint := os.Getenv("HCLOUD_ENDPOINT")
 	if data.Endpoint.ValueString() != "" {
-		endpoint = data.Endpoint.String()
+		endpoint = data.Endpoint.ValueString()
 	}
 	if endpoint != "" {
 		opts = append(opts, hcloud.WithEndpoint(endpoint))
@@ -98,7 +98,7 @@ func (p *PluginProvider) Configure(ctx context.Context, req provider.ConfigureRe
 
 	token := os.Getenv("HCLOUD_TOKEN")
 	if data.Token.ValueString() != "" {
-		token = data.Token.String()
+		token = data.Token.ValueString()
 	}
 	if token != "" {
 		opts = append(opts, hcloud.WithToken(token))
@@ -111,7 +111,7 @@ func (p *PluginProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	}
 
 	if !data.PollInterval.IsNull() {
-		pollInterval, err := time.ParseDuration(data.PollInterval.String())
+		pollInterval, err := time.ParseDuration(data.PollInterval.ValueString())
 		if err != nil {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("poll_interval"),
