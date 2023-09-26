@@ -110,7 +110,7 @@ func (p *PluginProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		)
 	}
 
-	if !data.PollInterval.IsNull() {
+	if data.PollInterval.ValueString() != "" {
 		pollInterval, err := time.ParseDuration(data.PollInterval.ValueString())
 		if err != nil {
 			resp.Diagnostics.AddAttributeError(
