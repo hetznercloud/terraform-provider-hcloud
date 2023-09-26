@@ -51,7 +51,7 @@ func main() {
 	}
 
 	err = tf6server.Serve(
-		"registry.terraform.io/<namespace>/<provider_name>",
+		"registry.terraform.io/hetznercloud/hcloud",
 		muxServer.ProviderServer,
 		serveOpts...,
 	)
