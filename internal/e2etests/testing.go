@@ -1,10 +1,14 @@
 package e2etests
 
 import (
+	"context"
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-framework/providerserver"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
+	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	tfhcloud "github.com/hetznercloud/terraform-provider-hcloud/hcloud"
 )
@@ -29,18 +33,34 @@ const (
 	TestLocationName = "hel1"
 )
 
-// Providers returns all providers used during acceptance testing.
-func Providers() map[string]*schema.Provider {
-	return map[string]*schema.Provider{
-		"hcloud": tfhcloud.Provider(),
-	}
-}
+func ProtoV6ProviderFactories() map[string]func() (tfprotov6.ProviderServer, error) {
+	return map[string]func() (tfprotov6.ProviderServer, error){
+		"hcloud": func() (tfprotov6.ProviderServer, error) {
+			ctx := context.Background()
 
-func ProviderFactories() map[string]func() (*schema.Provider, error) {
-	return map[string]func() (*schema.Provider, error){
-		//nolint:unparam
-		"hcloud": func() (*schema.Provider, error) {
-			return tfhcloud.Provider(), nil
+			upgradedSdkServer, err := tf5to6server.UpgradeServer(
+				ctx,
+				tfhcloud.Provider().GRPCProvider,
+			)
+
+			if err != nil {
+				return nil, err
+			}
+
+			providers := []func() tfprotov6.ProviderServer{
+				providerserver.NewProtocol6(tfhcloud.NewPluginProvider()),
+				func() tfprotov6.ProviderServer {
+					return upgradedSdkServer
+				},
+			}
+
+			muxServer, err := tf6muxserver.NewMuxServer(ctx, providers...)
+
+			if err != nil {
+				return nil, err
+			}
+
+			return muxServer.ProviderServer(), nil
 		},
 	}
 }

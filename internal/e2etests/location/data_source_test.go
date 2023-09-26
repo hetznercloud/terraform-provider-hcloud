@@ -6,7 +6,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/e2etests"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/location"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
@@ -22,8 +22,8 @@ func TestAccHcloudDataSourceLocationTest(t *testing.T) {
 	}
 	lByID.SetRName("l_by_id")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  e2etests.PreCheck(t),
-		Providers: e2etests.Providers(),
+		PreCheck:                 e2etests.PreCheck(t),
+		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
@@ -53,8 +53,8 @@ func TestAccHcloudDataSourceLocationsTest(t *testing.T) {
 	locationsDS := &location.DDataList{}
 	locationsDS.SetRName("ds")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:  e2etests.PreCheck(t),
-		Providers: e2etests.Providers(),
+		PreCheck:                 e2etests.PreCheck(t),
+		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,

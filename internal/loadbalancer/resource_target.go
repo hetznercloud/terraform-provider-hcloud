@@ -181,7 +181,7 @@ func resourceLoadBalancerCreateServerTarget(
 	}
 	action, _, err := client.LoadBalancer.AddServerTarget(ctx, lb, opts)
 	if err != nil {
-		if hcloud.IsError(err, "target_already_defined") { // TODO: use const when hcloud go is released
+		if hcloud.IsError(err, hcloud.ErrorCodeTargetAlreadyDefined) {
 			return nil, tgt, nil
 		}
 		return nil, tgt, fmt.Errorf("add server target: %v", err)
