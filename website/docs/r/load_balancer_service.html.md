@@ -20,20 +20,40 @@ resource "hcloud_load_balancer" "load_balancer" {
 }
 
 resource "hcloud_load_balancer_service" "load_balancer_service" {
-    load_balancer_id = hcloud_load_balancer.test_load_balancer.id
-    protocol         = "http"
+  load_balancer_id = hcloud_load_balancer.load_balancer.id
+  protocol         = "http"
+
+  http {
+    sticky_sessions = true
+    cookie_name     = "EXAMPLE_STICKY"
+  }
+
+  health_check {
+    protocol = "http"
+    port     = 80
+    interval = 10
+    timeout  = 5
+
+    http {
+      domain       = "example.com"
+      path         = "/healthz"
+      response     = "OK"
+      tls          = true
+      status_codes = ["200"]
+    }
+  }
 }
 ```
 
 ## Argument Reference
 
-- `load_balancer_id` - (Required, string) Id of the load balancer this service belongs to.
+- `load_balancer_id` - (Required, int) Id of the load balancer this service belongs to.
 - `protocol` - (Required, string) Protocol of the service. `http`, `https` or `tcp`
 - `listen_port` - (Optional, int) Port the service listen on, required if protocol is `tcp`. Can be everything between `1` and `65535`. Must be unique per Load Balancer.
 - `destination_port` - (Optional, int) Port the service connects to the targets on, required if protocol is `tcp`. Can be everything between `1` and `65535`.
 - `proxyprotocol` - (Optional, bool) Enable proxyprotocol.
-- `http` - (Optional, list) List of http configurations when `protocol` is `http` or `https`.
-- `health_check` - (Optional, list) List of health check configurations when `protocol` is `http` or `https`.
+- `http` - (Optional, block) HTTP configuration when `protocol` is `http` or `https`.
+- `health_check` - (Optional, block) Health Check configuration when `protocol` is `http` or `https`.
 
 `http` supports the following fields:
 
@@ -50,7 +70,7 @@ resource "hcloud_load_balancer_service" "load_balancer_service" {
 - `interval` - (Required, int) Interval how often the health check will be performed, in seconds.
 - `timeout` - (Required, int) Timeout when a health check try will be canceled if there is no response, in seconds.
 - `retries` - (Optional, int) Number of tries a health check will be performed until a target will be listed as `unhealthy`.
-- `http` - (Optional, list) List of http configurations. Required if `protocol` is `http`.
+- `http` - (Optional, block) HTTP configuration. Required if `protocol` is `http`.
 
 (health check) `http` supports the following fields:
 
