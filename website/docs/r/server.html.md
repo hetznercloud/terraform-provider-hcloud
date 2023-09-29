@@ -137,7 +137,7 @@ resource "hcloud_server" "server_test" {
   public_net {
     ipv4_enabled = true
     ipv4 = hcloud_primary_ip.primary_ip_1.id
-    ipv6_enabled = false
+    ipv6_enabled = true
   }
   //...
 }

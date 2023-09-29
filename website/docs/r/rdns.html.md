@@ -77,10 +77,10 @@ resource "hcloud_rdns" "load_balancer_master" {
 
 - `dns_ptr` - (Required, string) The DNS address the `ip_address` should resolve to.
 - `ip_address` - (Required, string) The IP address that should point to `dns_ptr`.
-- `server_id` - (Required, int) The server the `ip_address` belongs to. - `server_id` - (Required, int) The server the `ip_address` belongs to. Specify only one of `server_id`, `primary_ip_id`, `floating_ip_id` and `load_balancer_id`.
-- `primary_ip_id` - (Required, int) The Primary IP the `ip_address` belongs to. - `server_id` - (Required, int) The server the `ip_address` belongs to. Specify only one of `server_id`, `primary_ip_id`, `floating_ip_id` and `load_balancer_id`.
-- `floating_ip_id` - (Required, int) The Floating IP the `ip_address` belongs to. - `server_id` - (Required, int) The server the `ip_address` belongs to. Specify only one of `server_id`, `primary_ip_id`, `floating_ip_id` and `load_balancer_id`.
-- `load_balancer_id` - (Required, int) The Load Balancer the `ip_address` belongs to. - `server_id` - (Required, int) The server the `ip_address` belongs to. Specify only one of `server_id`, `primary_ip_id`, `floating_ip_id` and `load_balancer_id`.
+- `server_id` - (Required, int) The server the `ip_address` belongs to.
+- `primary_ip_id` - (Required, int) The Primary IP the `ip_address` belongs to.
+- `floating_ip_id` - (Required, int) The Floating IP the `ip_address` belongs to.
+- `load_balancer_id` - (Required, int) The Load Balancer the `ip_address` belongs to.
 
 ## Attributes Reference
 

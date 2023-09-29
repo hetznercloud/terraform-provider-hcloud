@@ -43,7 +43,7 @@ resource "hcloud_server" "server_test" {
 ```
 
 ## Argument Reference
-- `id` - (int) Unique ID of the Primary IP.
+
 - `type` - (string) Type of the Primary IP. `ipv4` or `ipv6`
 - `name` - (string) Name of the Primary IP.
 - `datacenter` - (string, optional) The datacenter name to create the resource in.
@@ -55,6 +55,7 @@ resource "hcloud_server" "server_test" {
 - `delete_protection` - (bool) Whether delete protection is enabled.
 
 ## Attributes Reference
+
 - `id` - (int) Unique ID of the Primary IP.
 - `type` - (string) Type of the Primary IP.
 - `datacenter` - (string, optional) The datacenter name to create the resource in.
