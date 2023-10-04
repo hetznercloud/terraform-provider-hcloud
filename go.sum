@@ -99,6 +99,8 @@ github.com/hashicorp/yamux v0.1.1 h1:yrQxtgseBDrq9Y652vSRDvsKCJKOUD+GzTS4Y0Y8pvE
 github.com/hashicorp/yamux v0.1.1/go.mod h1:CtWFDAQgb7dxtzFs4tWbplKIe2jSi3+5vKbgIO0SLnQ=
 github.com/hetznercloud/hcloud-go v1.49.0 h1:b/dKaptbbahWrkzYilWi42UgyfpiQ0Qh9ZFvyAgAVoo=
 github.com/hetznercloud/hcloud-go v1.49.0/go.mod h1:VzDWThl47lOnZXY0q5/LPFD+M62pfe/52TV+mOrpp9Q=
+github.com/hetznercloud/hcloud-go v1.51.0 h1:Gsjh+GeSH1ZZwOhVBLDxqRFEJSctDu6Jva9YDnNYlk4=
+github.com/hetznercloud/hcloud-go v1.51.0/go.mod h1:VzDWThl47lOnZXY0q5/LPFD+M62pfe/52TV+mOrpp9Q=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 h1:BQSFePA1RWJOlocH6Fxy8MmwDt+yVQYULKfN0RoTN8A=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99/go.mod h1:1lJo3i6rXxKeerYnT8Nvf0QmHCRC1n8sfWVwXF2Frvo=
 github.com/jhump/protoreflect v1.15.1 h1:HUMERORf3I3ZdX05WaQ6MIpd/NJ434hTp5YiKgfCL6c=
