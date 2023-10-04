@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.44.0](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.43.0...v1.44.0) (2023-10-04)
+
+
+### Features
+
+* setup initial plugin framework skaffolding ([#749](https://github.com/hetznercloud/terraform-provider-hcloud/issues/749)) ([5c284e2](https://github.com/hetznercloud/terraform-provider-hcloud/commit/5c284e293dd2e4a8ad83ae9b2784fd3b8261c323))
+
+
+### Bug Fixes
+
+* poll_interval not working as expected ([6ef7467](https://github.com/hetznercloud/terraform-provider-hcloud/commit/6ef7467b198ea1807715d7bc99e03fbad62688a2))
+
 ## [1.43.0](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.42.1...v1.43.0) (2023-09-20)
 
 
