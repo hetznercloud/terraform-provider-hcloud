@@ -45,7 +45,7 @@ func Provider() *schema.Provider {
 		Schema: map[string]*schema.Schema{
 			"token": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("HCLOUD_TOKEN", nil),
 				Description: "The Hetzner Cloud API token, can also be specified with the HCLOUD_TOKEN environment variable.",
 				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
