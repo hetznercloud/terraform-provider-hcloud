@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.44.1](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.44.0...v1.44.1) (2023-10-05)
+
+
+### Bug Fixes
+
+* failed to load plugin schemas ([#764](https://github.com/hetznercloud/terraform-provider-hcloud/issues/764)) ([b68a97c](https://github.com/hetznercloud/terraform-provider-hcloud/commit/b68a97cfef01f4f3cb5968ce866dd0e77e437684))
+
 ## [1.44.0](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.43.0...v1.44.0) (2023-10-04)
 
 
