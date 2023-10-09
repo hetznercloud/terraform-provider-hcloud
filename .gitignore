@@ -10,3 +10,4 @@
 /*.log
 /_output
 !.golangci.yaml
+!renovate.json
