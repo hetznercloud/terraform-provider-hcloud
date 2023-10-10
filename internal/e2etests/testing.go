@@ -5,10 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
-	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
-	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	tfhcloud "github.com/hetznercloud/terraform-provider-hcloud/hcloud"
 )
@@ -38,29 +35,12 @@ func ProtoV6ProviderFactories() map[string]func() (tfprotov6.ProviderServer, err
 		"hcloud": func() (tfprotov6.ProviderServer, error) {
 			ctx := context.Background()
 
-			upgradedSdkServer, err := tf5to6server.UpgradeServer(
-				ctx,
-				tfhcloud.Provider().GRPCProvider,
-			)
-
+			providerFactory, err := tfhcloud.GetMuxedProvider(ctx)
 			if err != nil {
 				return nil, err
 			}
 
-			providers := []func() tfprotov6.ProviderServer{
-				providerserver.NewProtocol6(tfhcloud.NewPluginProvider()),
-				func() tfprotov6.ProviderServer {
-					return upgradedSdkServer
-				},
-			}
-
-			muxServer, err := tf6muxserver.NewMuxServer(ctx, providers...)
-
-			if err != nil {
-				return nil, err
-			}
-
-			return muxServer.ProviderServer(), nil
+			return providerFactory(), nil
 		},
 	}
 }
