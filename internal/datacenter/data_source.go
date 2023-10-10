@@ -34,15 +34,16 @@ type datacenterResourceData struct {
 	AvailableServerTypeIds types.List   `tfsdk:"available_server_type_ids"`
 }
 
-func (o *datacenterResourceData) fromResponse(ctx context.Context, in *hcloud.Datacenter) diag.Diagnostics {
+func NewDatacenterResourceData(ctx context.Context, in *hcloud.Datacenter) (datacenterResourceData, diag.Diagnostics) {
+	var data datacenterResourceData
 	var diags diag.Diagnostics
 	var newDiags diag.Diagnostics
 
-	o.ID = types.Int64Value(int64(in.ID))
-	o.Name = types.StringValue(in.Name)
-	o.Description = types.StringValue(in.Description)
+	data.ID = types.Int64Value(int64(in.ID))
+	data.Name = types.StringValue(in.Name)
+	data.Description = types.StringValue(in.Description)
 
-	o.Location, newDiags = types.MapValue(types.StringType, map[string]attr.Value{
+	data.Location, newDiags = types.MapValue(types.StringType, map[string]attr.Value{
 		"id":          types.StringValue(strconv.Itoa(in.Location.ID)),
 		"name":        types.StringValue(in.Location.Name),
 		"description": types.StringValue(in.Location.Description),
@@ -64,12 +65,12 @@ func (o *datacenterResourceData) fromResponse(ctx context.Context, in *hcloud.Da
 	sort.Slice(supportedServerTypeIds, func(i, j int) bool { return supportedServerTypeIds[i] < supportedServerTypeIds[j] })
 	sort.Slice(availableServerTypeIds, func(i, j int) bool { return availableServerTypeIds[i] < availableServerTypeIds[j] })
 
-	o.SupportedServerTypeIds, newDiags = types.ListValueFrom(ctx, types.Int64Type, supportedServerTypeIds)
+	data.SupportedServerTypeIds, newDiags = types.ListValueFrom(ctx, types.Int64Type, supportedServerTypeIds)
 	diags.Append(newDiags...)
-	o.AvailableServerTypeIds, newDiags = types.ListValueFrom(ctx, types.Int64Type, availableServerTypeIds)
+	data.AvailableServerTypeIds, newDiags = types.ListValueFrom(ctx, types.Int64Type, availableServerTypeIds)
 	diags.Append(newDiags...)
 
-	return diags
+	return data, diags
 }
 
 func getCommonDataSchema() map[string]schema.Attribute {
@@ -215,7 +216,8 @@ func (d *datacenterDataSource) Read(ctx context.Context, req datasource.ReadRequ
 		return
 	}
 
-	data.fromResponse(ctx, result)
+	data, diags := NewDatacenterResourceData(ctx, result)
+	resp.Diagnostics.Append(diags...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
