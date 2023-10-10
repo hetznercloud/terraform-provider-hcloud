@@ -223,27 +223,27 @@ func (d *datacenterDataSource) Read(ctx context.Context, req datasource.ReadRequ
 }
 
 // List
-var _ datasource.DataSource = (*datacentersDataSource)(nil)
-var _ datasource.DataSourceWithConfigure = (*datacentersDataSource)(nil)
-var _ datasource.DataSourceWithConfigValidators = (*datacentersDataSource)(nil)
+var _ datasource.DataSource = (*datacenterListDataSource)(nil)
+var _ datasource.DataSourceWithConfigure = (*datacenterListDataSource)(nil)
+var _ datasource.DataSourceWithConfigValidators = (*datacenterListDataSource)(nil)
 
-type datacentersDataSource struct {
+type datacenterListDataSource struct {
 	client *hcloud.Client
 }
 
 func NewListDataSource() datasource.DataSource {
-	return &datacentersDataSource{}
+	return &datacenterListDataSource{}
 }
 
 // Metadata should return the full name of the data source.
-func (d *datacentersDataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (d *datacenterListDataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = DataSourceListType
 }
 
 // Configure enables provider-level data or clients to be set in the
 // provider-defined DataSource type. It is separately executed for each
 // ReadDataSource RPC.
-func (d *datacentersDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *datacenterListDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -262,7 +262,7 @@ func (d *datacentersDataSource) Configure(_ context.Context, req datasource.Conf
 }
 
 // Schema should return the schema for this data source.
-func (d *datacentersDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *datacenterListDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema.Attributes = map[string]schema.Attribute{
 		"datacenter_ids": schema.ListAttribute{
 			Optional:           true,
@@ -303,7 +303,7 @@ data "hcloud_datacenter" "ds_2" {
 }
 
 // ConfigValidators returns a list of ConfigValidators. Each ConfigValidator's Validate method will be called when validating the data source.
-func (d *datacentersDataSource) ConfigValidators(_ context.Context) []datasource.ConfigValidator {
+func (d *datacenterListDataSource) ConfigValidators(_ context.Context) []datasource.ConfigValidator {
 	return []datasource.ConfigValidator{
 		datasourcevalidator.ExactlyOneOf(
 			path.MatchRoot("id"),
@@ -312,7 +312,7 @@ func (d *datacentersDataSource) ConfigValidators(_ context.Context) []datasource
 	}
 }
 
-type datacentersResourceData struct {
+type datacenterListResourceData struct {
 	DatacenterIDs []types.String           `tfsdk:"datacenter_ids"`
 	Names         []types.String           `tfsdk:"names"`
 	Descriptions  []types.String           `tfsdk:"descriptions"`
@@ -322,8 +322,8 @@ type datacentersResourceData struct {
 // Read is called when the provider must read data source values in
 // order to update state. Config values should be read from the
 // ReadRequest and new state values set on the ReadResponse.
-func (d *datacentersDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data datacentersResourceData
+func (d *datacenterListDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data datacenterListResourceData
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
