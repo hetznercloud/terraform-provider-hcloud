@@ -319,6 +319,38 @@ type datacenterListResourceData struct {
 	Datacenters   []datacenterResourceData `tfsdk:"datacenters"`
 }
 
+func NewDatacenterListResourceData(ctx context.Context, in []*hcloud.Datacenter) (datacenterListResourceData, diag.Diagnostics) {
+	var data datacenterListResourceData
+	var diags diag.Diagnostics
+	var newDiags diag.Diagnostics
+
+	datacenterIDs := make([]string, len(in))
+	names := make([]string, len(in))
+	descriptions := make([]string, len(in))
+	datacenters := make([]datacenterResourceData, len(in))
+
+	for i, item := range in {
+		datacenterIDs[i] = strconv.Itoa(item.ID)
+		names[i] = item.Name
+		descriptions[i] = item.Description
+
+		datacenter, newDiags := NewDatacenterResourceData(ctx, item)
+		diags.Append(newDiags...)
+		datacenters[i] = datacenter
+	}
+
+	data.DatacenterIDs, newDiags = types.ListValueFrom(ctx, types.StringType, datacenterIDs)
+	diags.Append(newDiags...)
+	data.Names, newDiags = types.ListValueFrom(ctx, types.StringType, names)
+	diags.Append(newDiags...)
+	data.Descriptions, newDiags = types.ListValueFrom(ctx, types.StringType, descriptions)
+	diags.Append(newDiags...)
+	data.Datacenters, newDiags = types.ListValueFrom(ctx, types.ObjectType, names)
+	diags.Append(newDiags...)
+
+	return data, diags
+}
+
 // Read is called when the provider must read data source values in
 // order to update state. Config values should be read from the
 // ReadRequest and new state values set on the ReadResponse.
@@ -333,46 +365,16 @@ func (d *datacenterListDataSource) Read(ctx context.Context, req datasource.Read
 	var result []*hcloud.Datacenter
 	var err error
 
-	// 	dcs, err := client.Datacenter.All(ctx)
-	// 	if err != nil {
-	// 		return hcclient.ErrorToDiag(err)
-	// 	}
-
-	// func dataSourceHcloudDatacenterListRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	// 	client := m.(*hcloud.Client)
-	// 	dcs, err := client.Datacenter.All(ctx)
-	// 	if err != nil {
-	// 		return hcclient.ErrorToDiag(err)
-	// 	}
-
-	// 	names := make([]string, len(dcs))
-	// 	descriptions := make([]string, len(dcs))
-	// 	ids := make([]string, len(dcs))
-	// 	tfDatacenters := make([]map[string]interface{}, len(dcs))
-	// 	for i, datacenter := range dcs {
-	// 		ids[i] = strconv.Itoa(datacenter.ID)
-	// 		descriptions[i] = datacenter.Description
-	// 		names[i] = datacenter.Name
-
-	// 		tfDatacenters[i] = getDatacenterAttributes(datacenter)
-	// 	}
-	// 	d.SetId(fmt.Sprintf("%x", sha1.Sum([]byte(strings.Join(ids, "")))))
-	// 	d.Set("datacenter_ids", ids)
-	// 	d.Set("names", names)
-	// 	d.Set("descriptions", descriptions)
-	// 	d.Set("datacenters", tfDatacenters)
-
-	// 	return nil
-	// }
-
-	switch {
-	default:
-		// Should not happen, see [datacenterDataSource.ConfigValidators]
-		resp.Diagnostics.AddError("Unexpected internal error", "")
+	result, err = d.client.Datacenter.All(ctx)
+	if err != nil {
+		resp.Diagnostics.Append(hcclient.APIErrorDiagnostics(err)...)
 		return
 	}
 
-	data.fromResponse(ctx, result)
+	// 	d.SetId(fmt.Sprintf("%x", sha1.Sum([]byte(strings.Join(ids, "")))))
+
+	data, diags := NewDatacenterListResourceData(ctx, result)
+	resp.Diagnostics.Append(diags...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
