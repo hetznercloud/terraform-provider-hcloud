@@ -38,7 +38,7 @@ resource "hcloud_load_balancer" "load_balancer" {
 - `network_zone` - (Optional, string) The Network Zone of the Load Balancer. Require when no location is set.
 - `algorithm` - (Optional) Configuration of the algorithm the Load Balancer use.
 - `labels` - (Optional, map) User-defined labels (key-value pairs) should be created with.
-- `delete_protection` - (Optional, bool) Enable or disable delete protection.
+- `delete_protection` - (Optional, bool) Enable or disable delete protection. See ["Delete Protection"](../index.html.markdown#delete-protection) in the Provider Docs for details.
 
 `algorithm` support the following fields:
 - `type` - (Required, string) Type of the Load Balancer Algorithm. `round_robin` or `least_connections`

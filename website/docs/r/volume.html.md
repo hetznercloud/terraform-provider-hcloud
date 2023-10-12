@@ -36,7 +36,7 @@ resource "hcloud_volume" "master" {
 - `location` - (Optional, string) The location name of the volume to create, not allowed if server_id argument is passed.
 - `automount` - (Optional, bool) Automount the volume upon attaching it (server_id must be provided).
 - `format` - (Optional, string) Format volume after creation. `xfs` or `ext4`
-- `delete_protection` - (Optional, bool) Enable or disable delete protection.
+- `delete_protection` - (Optional, bool) Enable or disable delete protection. See ["Delete Protection"](../index.html.markdown#delete-protection) in the Provider Docs for details.
 
 **Note:** When you want to attach multiple volumes to a server, please use the `hcloud_volume_attachment` resource and the `location` argument instead of the `server_id` argument.
 

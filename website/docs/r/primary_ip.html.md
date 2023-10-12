@@ -52,7 +52,7 @@ resource "hcloud_server" "server_test" {
 - `labels` - (string) Description of the Primary IP.
 - `assignee_id` - (int) ID of the assigned resource
 - `assignee_type` - (string) The type of the assigned resource. Currently supported: `server`
-- `delete_protection` - (bool) Whether delete protection is enabled.
+- `delete_protection` - (bool) Whether delete protection is enabled. See ["Delete Protection"](../index.html.markdown#delete-protection) in the Provider Docs for details.
 
 ## Attributes Reference
 
