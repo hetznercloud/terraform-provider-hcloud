@@ -33,7 +33,7 @@ resource "hcloud_floating_ip" "master" {
 - `home_location` - (Optional, string) Name of home location (routing is optimized for that location). Optional if server_id argument is passed.
 - `description` - (Optional, string) Description of the Floating IP.
 - `labels` - (Optional, map) User-defined labels (key-value pairs) should be created with.
-- `delete_protection` - (Optional, bool) Enable or disable delete protection.
+- `delete_protection` - (Optional, bool) Enable or disable delete protection. See ["Delete Protection"](../index.html.markdown#delete-protection) in the Provider Docs for details.
 
 ## Attributes Reference
 

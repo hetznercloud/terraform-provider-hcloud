@@ -39,3 +39,11 @@ The following arguments are supported:
 - `token` - (Required, string) This is the Hetzner Cloud API Token, can also be specified with the `HCLOUD_TOKEN` environment variable.
 - `endpoint` - (Optional, string) Hetzner Cloud API endpoint, can be used to override the default API Endpoint `https://api.hetzner.cloud/v1`.
 - `poll_interval` -  (Optional, string) Configures the interval in which actions are polled by the client. Default `500ms`. Increase this interval if you run into rate limiting errors.
+
+## Delete Protection
+
+The Hetzner Cloud API allows to protect resources from deletion by putting a "lock" on them.
+This can also be configured through Terraform through the `delete_protection` argument on resources that support it.
+
+Please note, that this does not protect deletion from Terraform itself, as the Provider will lift the lock in that case.
+If you also want to protect your resources from deletion by Terraform, you can use the [`prevent_destroy` lifecycle attribute](https://developer.hashicorp.com/terraform/tutorials/state/resource-lifecycle#prevent-resource-deletion).

@@ -178,7 +178,7 @@ The following arguments are supported:
   argument.
 - `network` - (Optional)  Network the server should be attached to on creation. (Can be specified multiple times)
 - `placement_group_id` - (Optional, string) Placement Group ID the server added to on creation.
-- `delete_protection` - (Optional, bool) Enable or disable delete protection (Needs to be the same as `rebuild_protection`).
+- `delete_protection` - (Optional, bool) Enable or disable delete protection (Needs to be the same as `rebuild_protection`). See ["Delete Protection"](../index.html.markdown#delete-protection) in the Provider Docs for details.
 - `rebuild_protection` - (Optional, bool) Enable or disable rebuild protection (Needs to be the same as `delete_protection`).
 - `allow_deprecated_images` - (Optional, bool) Enable the use of deprecated images (default: false). **Note** Deprecated images will be removed after three months. Using them is then no longer possible.
 - `shutdown_before_deletion` - (bool) Whether to try shutting the server down gracefully before deleting it.
