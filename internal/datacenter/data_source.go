@@ -2,9 +2,11 @@ package datacenter
 
 import (
 	"context"
+	"crypto/sha1"
 	"fmt"
 	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -32,6 +34,15 @@ type datacenterResourceData struct {
 	Location               types.Map    `tfsdk:"location"`
 	SupportedServerTypeIds types.List   `tfsdk:"supported_server_type_ids"`
 	AvailableServerTypeIds types.List   `tfsdk:"available_server_type_ids"`
+}
+
+var datacenterResourceDataAttrTypes = map[string]attr.Type{
+	"id":                        types.Int64Type,
+	"name":                      types.StringType,
+	"description":               types.StringType,
+	"location":                  types.MapType{ElemType: types.StringType},
+	"supported_server_type_ids": types.ListType{ElemType: types.Int64Type},
+	"available_server_type_ids": types.ListType{ElemType: types.Int64Type},
 }
 
 func NewDatacenterResourceData(ctx context.Context, in *hcloud.Datacenter) (datacenterResourceData, diag.Diagnostics) {
@@ -225,7 +236,6 @@ func (d *datacenterDataSource) Read(ctx context.Context, req datasource.ReadRequ
 // List
 var _ datasource.DataSource = (*datacenterListDataSource)(nil)
 var _ datasource.DataSourceWithConfigure = (*datacenterListDataSource)(nil)
-var _ datasource.DataSourceWithConfigValidators = (*datacenterListDataSource)(nil)
 
 type datacenterListDataSource struct {
 	client *hcloud.Client
@@ -264,12 +274,15 @@ func (d *datacenterListDataSource) Configure(_ context.Context, req datasource.C
 // Schema should return the schema for this data source.
 func (d *datacenterListDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema.Attributes = map[string]schema.Attribute{
+		"id": schema.StringAttribute{
+			Optional: true,
+		},
 		"datacenter_ids": schema.ListAttribute{
 			Optional:           true,
 			DeprecationMessage: "Use datacenters list instead",
 			ElementType:        types.StringType,
 		},
-		"name": schema.ListAttribute{
+		"names": schema.ListAttribute{
 			Optional:           true,
 			DeprecationMessage: "Use datacenters list instead",
 			ElementType:        types.StringType,
@@ -302,21 +315,12 @@ data "hcloud_datacenter" "ds_2" {
 ` + "```"
 }
 
-// ConfigValidators returns a list of ConfigValidators. Each ConfigValidator's Validate method will be called when validating the data source.
-func (d *datacenterListDataSource) ConfigValidators(_ context.Context) []datasource.ConfigValidator {
-	return []datasource.ConfigValidator{
-		datasourcevalidator.ExactlyOneOf(
-			path.MatchRoot("id"),
-			path.MatchRoot("name"),
-		),
-	}
-}
-
 type datacenterListResourceData struct {
-	DatacenterIDs []types.String           `tfsdk:"datacenter_ids"`
-	Names         []types.String           `tfsdk:"names"`
-	Descriptions  []types.String           `tfsdk:"descriptions"`
-	Datacenters   []datacenterResourceData `tfsdk:"datacenters"`
+	ID            types.String `tfsdk:"id"`
+	DatacenterIDs types.List   `tfsdk:"datacenter_ids"`
+	Names         types.List   `tfsdk:"names"`
+	Descriptions  types.List   `tfsdk:"descriptions"`
+	Datacenters   types.List   `tfsdk:"datacenters"`
 }
 
 func NewDatacenterListResourceData(ctx context.Context, in []*hcloud.Datacenter) (datacenterListResourceData, diag.Diagnostics) {
@@ -339,13 +343,16 @@ func NewDatacenterListResourceData(ctx context.Context, in []*hcloud.Datacenter)
 		datacenters[i] = datacenter
 	}
 
+	data.ID = types.StringValue(fmt.Sprintf("%x", sha1.Sum([]byte(strings.Join(datacenterIDs, "")))))
+
 	data.DatacenterIDs, newDiags = types.ListValueFrom(ctx, types.StringType, datacenterIDs)
 	diags.Append(newDiags...)
 	data.Names, newDiags = types.ListValueFrom(ctx, types.StringType, names)
 	diags.Append(newDiags...)
 	data.Descriptions, newDiags = types.ListValueFrom(ctx, types.StringType, descriptions)
 	diags.Append(newDiags...)
-	data.Datacenters, newDiags = types.ListValueFrom(ctx, types.ObjectType, names)
+
+	data.Datacenters, newDiags = types.ListValueFrom(ctx, types.ObjectType{AttrTypes: datacenterResourceDataAttrTypes}, datacenters)
 	diags.Append(newDiags...)
 
 	return data, diags
@@ -370,8 +377,6 @@ func (d *datacenterListDataSource) Read(ctx context.Context, req datasource.Read
 		resp.Diagnostics.Append(hcclient.APIErrorDiagnostics(err)...)
 		return
 	}
-
-	// 	d.SetId(fmt.Sprintf("%x", sha1.Sum([]byte(strings.Join(ids, "")))))
 
 	data, diags := NewDatacenterListResourceData(ctx, result)
 	resp.Diagnostics.Append(diags...)
