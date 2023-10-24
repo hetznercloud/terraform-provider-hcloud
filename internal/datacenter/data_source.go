@@ -135,21 +135,13 @@ func (d *datacenterDataSource) Metadata(_ context.Context, _ datasource.Metadata
 // provider-defined DataSource type. It is separately executed for each
 // ReadDataSource RPC.
 func (d *datacenterDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
-	if req.ProviderData == nil {
+	var newDiags diag.Diagnostics
+
+	d.client, newDiags = hcclient.ConfigureClient(req.ProviderData)
+	resp.Diagnostics.Append(newDiags...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	// TODO: refactor to a reusable function
-	client, ok := req.ProviderData.(*hcloud.Client)
-	if !ok {
-		resp.Diagnostics.AddError(
-			"Unexpected Data Source Configure Type",
-			fmt.Sprintf("Expected *hcloud.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
-		)
-		return
-	}
-
-	d.client = client
 }
 
 // Schema should return the schema for this data source.
@@ -254,21 +246,13 @@ func (d *datacenterListDataSource) Metadata(_ context.Context, _ datasource.Meta
 // provider-defined DataSource type. It is separately executed for each
 // ReadDataSource RPC.
 func (d *datacenterListDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
-	if req.ProviderData == nil {
+	var newDiags diag.Diagnostics
+
+	d.client, newDiags = hcclient.ConfigureClient(req.ProviderData)
+	resp.Diagnostics.Append(newDiags...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	// TODO: refactor to a reusable function
-	client, ok := req.ProviderData.(*hcloud.Client)
-	if !ok {
-		resp.Diagnostics.AddError(
-			"Unexpected Data Source Configure Type",
-			fmt.Sprintf("Expected *hcloud.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
-		)
-		return
-	}
-
-	d.client = client
 }
 
 // Schema should return the schema for this data source.
