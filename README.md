@@ -1,23 +1,22 @@
-Terraform Provider for the Hetzner Cloud
-==================
+# Terraform Provider for the Hetzner Cloud
+
 [![GitHub release](https://img.shields.io/github/tag/hetznercloud/terraform-provider-hcloud.svg?label=release)](https://github.com/hetznercloud/terraform-provider-hcloud/releases/latest) [![Actions Status](https://github.com/hetznercloud/terraform-provider-hcloud/workflows/test/badge.svg)](https://github.com/hetznercloud/terraform-provider-hcloud/actions)[![Actions Status](https://github.com/hetznercloud/terraform-provider-hcloud/workflows/release/badge.svg)](https://github.com/hetznercloud/terraform-provider-hcloud/actions)
 
-- Website: https://www.terraform.io
-- Documentation: https://www.terraform.io/docs/providers/hcloud/index.html
+- Documentation: https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs
 
-Requirements
-------------
+## Requirements
 
--	[Terraform](https://www.terraform.io/downloads.html) 1.2.x
--	[Go](https://golang.org/doc/install) 1.21.x (to build the provider plugin)
+- [Terraform](https://developer.hashicorp.com/terraform/downloads)
+  - HashiCorp recommends to use the two latest terraform releases (1.5.x, 1.6.x). Our test suite validates that our provider works with these versions.
+  - This provider uses the [terraform plugin protocol version 6](https://developer.hashicorp.com/terraform/plugin/terraform-plugin-protocol#protocol-version-6), and should work with all tools (ie. Terraform & OpenTofu) that supports it.
+- [Go](https://go.dev/doc/install) 1.21.x (to build the provider plugin)
 
-API Stability
--------------
+## API Stability
 
 This Go module implements a Terraform Provider for Hetzner Cloud
 Services. We thus guarantee backwards compatibility only for use through
-Terraform HCL. The actual *Go code* in this repository *may change
-without a major version increase*.
+Terraform HCL. The actual _Go code_ in this repository _may change
+without a major version increase_.
 
 Currently the code is mostly located in the `hcloud` package. In the
 long term we want to move most of the `hcloud` package into individual
@@ -25,8 +24,11 @@ sub-packages located in the `internal` directory. The goal is a
 structure similar to HashiCorp's [Terraform Provider
 Scaffolding](https://github.com/hashicorp/terraform-provider-scaffolding)
 
-Building the provider
----------------------
+## Using the provider
+
+If you are building the provider, follow the instructions to [install it as a plugin](https://www.terraform.io/docs/plugins/basics.html#installing-a-plugin). After placing it into your plugins directory, run `terraform init` to initialize it.
+
+## Building the provider
 
 Clone repository to: `$GOPATH/src/github.com/hetznercloud/terraform-provider-hcloud`
 
@@ -42,15 +44,9 @@ $ cd $GOPATH/src/github.com/hetznercloud/terraform-provider-hcloud
 $ make build
 ```
 
-Using the provider
-----------------------
+## Developing the provider
 
-if you are building the provider, follow the instructions to [install it as a plugin](https://www.terraform.io/docs/plugins/basics.html#installing-a-plugin). After placing it into your plugins directory, run `terraform init` to initialize it.
-
-Developing the provider
----------------------------
-
-If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine (version 1.14+ is *required*). You'll also need to correctly setup a [GOPATH](http://golang.org/doc/code.html#GOPATH), as well as adding `$GOPATH/bin` to your `$PATH`.
+If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine (version 1.14+ is _required_). You'll also need to correctly setup a [GOPATH](http://golang.org/doc/code.html#GOPATH), as well as adding `$GOPATH/bin` to your `$PATH`.
 
 To compile the provider, run `make build`. This will build the provider and put the provider binary in the `$GOPATH/bin` directory.
 
@@ -69,7 +65,7 @@ $ make test
 
 In order to run the full suite of Acceptance tests run `make testacc`.
 
-*Note:* Acceptance tests create real resources, and often cost money to run.
+_Note:_ Acceptance tests create real resources, and often cost money to run.
 
 ```
 $ make testacc
