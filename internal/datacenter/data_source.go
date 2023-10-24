@@ -45,7 +45,7 @@ var datacenterResourceDataAttrTypes = map[string]attr.Type{
 	"available_server_type_ids": types.ListType{ElemType: types.Int64Type},
 }
 
-func NewDatacenterResourceData(ctx context.Context, in *hcloud.Datacenter) (datacenterResourceData, diag.Diagnostics) {
+func newDatacenterResourceData(ctx context.Context, in *hcloud.Datacenter) (datacenterResourceData, diag.Diagnostics) {
 	var data datacenterResourceData
 	var diags diag.Diagnostics
 	var newDiags diag.Diagnostics
@@ -227,7 +227,7 @@ func (d *datacenterDataSource) Read(ctx context.Context, req datasource.ReadRequ
 		return
 	}
 
-	data, diags := NewDatacenterResourceData(ctx, result)
+	data, diags := newDatacenterResourceData(ctx, result)
 	resp.Diagnostics.Append(diags...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -323,7 +323,7 @@ type datacenterListResourceData struct {
 	Datacenters   types.List   `tfsdk:"datacenters"`
 }
 
-func NewDatacenterListResourceData(ctx context.Context, in []*hcloud.Datacenter) (datacenterListResourceData, diag.Diagnostics) {
+func newDatacenterListResourceData(ctx context.Context, in []*hcloud.Datacenter) (datacenterListResourceData, diag.Diagnostics) {
 	var data datacenterListResourceData
 	var diags diag.Diagnostics
 	var newDiags diag.Diagnostics
@@ -338,7 +338,7 @@ func NewDatacenterListResourceData(ctx context.Context, in []*hcloud.Datacenter)
 		names[i] = item.Name
 		descriptions[i] = item.Description
 
-		datacenter, newDiags := NewDatacenterResourceData(ctx, item)
+		datacenter, newDiags := newDatacenterResourceData(ctx, item)
 		diags.Append(newDiags...)
 		datacenters[i] = datacenter
 	}
@@ -378,7 +378,7 @@ func (d *datacenterListDataSource) Read(ctx context.Context, req datasource.Read
 		return
 	}
 
-	data, diags := NewDatacenterListResourceData(ctx, result)
+	data, diags := newDatacenterListResourceData(ctx, result)
 	resp.Diagnostics.Append(diags...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
