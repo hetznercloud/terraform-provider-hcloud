@@ -1,13 +1,18 @@
-name: test
+name: Test
 
 on:
   pull_request:
 
 jobs:
-  integration_tests:
+  integration:
+    name: Integration ${{ matrix.terraform }}
     permissions:
       id-token: write
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        terraform: [ v1.5.x, v1.6.x ]
+      fail-fast: false
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -15,7 +20,7 @@ jobs:
         run: git fetch --prune --unshallow
       - uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: v1.5.x
+          terraform_version: ${{ matrix.terraform }}
           terraform_wrapper: false
       - name: Set up Go
         uses: actions/setup-go@v4
