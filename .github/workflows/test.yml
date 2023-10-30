@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Unshallow
         run: git fetch --prune --unshallow
-      - uses: hashicorp/setup-terraform@v2
+      - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ matrix.terraform }}
           terraform_wrapper: false
