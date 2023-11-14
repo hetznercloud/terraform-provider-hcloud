@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/datacenter"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/tflogutil"
@@ -152,7 +153,7 @@ func (p *PluginProvider) Configure(ctx context.Context, req provider.ConfigureRe
 func (p *PluginProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		datacenter.NewDataSource,
-		datacenter.NewListDataSource,
+		datacenter.NewDataSourceList,
 	}
 }
 

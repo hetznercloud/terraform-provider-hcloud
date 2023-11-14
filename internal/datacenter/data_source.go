@@ -227,26 +227,26 @@ func (d *datacenterDataSource) Read(ctx context.Context, req datasource.ReadRequ
 }
 
 // List
-var _ datasource.DataSource = (*datacenterListDataSource)(nil)
-var _ datasource.DataSourceWithConfigure = (*datacenterListDataSource)(nil)
+var _ datasource.DataSource = (*datacenterDataSourceList)(nil)
+var _ datasource.DataSourceWithConfigure = (*datacenterDataSourceList)(nil)
 
-type datacenterListDataSource struct {
+type datacenterDataSourceList struct {
 	client *hcloud.Client
 }
 
-func NewListDataSource() datasource.DataSource {
-	return &datacenterListDataSource{}
+func NewDataSourceList() datasource.DataSource {
+	return &datacenterDataSourceList{}
 }
 
 // Metadata should return the full name of the data source.
-func (d *datacenterListDataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (d *datacenterDataSourceList) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = DataSourceListType
 }
 
 // Configure enables provider-level data or clients to be set in the
 // provider-defined DataSource type. It is separately executed for each
 // ReadDataSource RPC.
-func (d *datacenterListDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *datacenterDataSourceList) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	var newDiags diag.Diagnostics
 
 	d.client, newDiags = hcclient.ConfigureClient(req.ProviderData)
@@ -257,7 +257,7 @@ func (d *datacenterListDataSource) Configure(_ context.Context, req datasource.C
 }
 
 // Schema should return the schema for this data source.
-func (d *datacenterListDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *datacenterDataSourceList) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema.Attributes = map[string]schema.Attribute{
 		"id": schema.StringAttribute{
 			Optional: true,
@@ -346,7 +346,7 @@ func newDatacenterListResourceData(ctx context.Context, in []*hcloud.Datacenter)
 // Read is called when the provider must read data source values in
 // order to update state. Config values should be read from the
 // ReadRequest and new state values set on the ReadResponse.
-func (d *datacenterListDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+func (d *datacenterDataSourceList) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var data datacenterListResourceData
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
