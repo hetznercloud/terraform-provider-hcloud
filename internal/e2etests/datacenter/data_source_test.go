@@ -63,19 +63,33 @@ func TestAccHcloudDataSourceDatacenter_UpgradePluginFramework(t *testing.T) {
 						VersionConstraint: "1.42.1",
 						Source:            "hetznercloud/hcloud",
 					},
+					"null": {
+						VersionConstraint: "3.2.1",
+						Source:            "hashicorp/null",
+					},
 				},
 
 				Config: tmplMan.Render(t,
 					"testdata/d/hcloud_datacenter", dcByName,
 					"testdata/d/hcloud_datacenter", dcByID,
+					"testdata/r/null_resource", dcByName,
+					"testdata/r/null_resource", dcByID,
 				),
 			},
 			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"null": {
+						VersionConstraint: "3.2.1",
+						Source:            "hashicorp/null",
+					},
+				},
 				ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
 
 				Config: tmplMan.Render(t,
 					"testdata/d/hcloud_datacenter", dcByName,
 					"testdata/d/hcloud_datacenter", dcByID,
+					"testdata/r/null_resource", dcByName,
+					"testdata/r/null_resource", dcByID,
 				),
 
 				PlanOnly: true,

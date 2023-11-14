@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
 )
@@ -155,7 +156,7 @@ Use this resource to get detailed information about specific datacenter.
 ## Example Usage
 ` + "```" + `hcl
 data "hcloud_datacenter" "ds_1" {
-  name = "fsn1-dc8"
+  name = "fsn1-dc14"
 }
 data "hcloud_datacenter" "ds_2" {
   id = 4
