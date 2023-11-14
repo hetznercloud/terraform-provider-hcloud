@@ -134,3 +134,48 @@ func TestAccHcloudDataSourceDatacentersTest(t *testing.T) {
 		},
 	})
 }
+
+func TestAccHcloudDataSourceDatacenters_UpgradePluginFramework(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
+	datacentersD := &datacenter.DDataList{}
+	datacentersD.SetRName("ds")
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: e2etests.PreCheck(t),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"hcloud": {
+						VersionConstraint: "1.44.1",
+						Source:            "hetznercloud/hcloud",
+					},
+					"null": {
+						VersionConstraint: "3.2.1",
+						Source:            "hashicorp/null",
+					},
+				},
+
+				Config: tmplMan.Render(t,
+					"testdata/d/hcloud_datacenters", datacentersD,
+					"testdata/r/null_resource", datacentersD,
+				),
+			},
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"null": {
+						VersionConstraint: "3.2.1",
+						Source:            "hashicorp/null",
+					},
+				},
+				ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+
+				Config: tmplMan.Render(t,
+					"testdata/d/hcloud_datacenters", datacentersD,
+					"testdata/r/null_resource", datacentersD,
+				),
+
+				PlanOnly: true,
+			},
+		},
+	})
+}
