@@ -14,7 +14,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+
 	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/datacenter"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/tflogutil"
 )
 
@@ -149,7 +151,10 @@ func (p *PluginProvider) Configure(ctx context.Context, req provider.ConfigureRe
 // The data source type name is determined by the DataSource implementing
 // the Metadata method. All data sources must have unique names.
 func (p *PluginProvider) DataSources(_ context.Context) []func() datasource.DataSource {
-	return []func() datasource.DataSource{}
+	return []func() datasource.DataSource{
+		datacenter.NewDataSource,
+		datacenter.NewDataSourceList,
+	}
 }
 
 // Resources returns a slice of functions to instantiate each Resource

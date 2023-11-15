@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	tfhcloud "github.com/hetznercloud/terraform-provider-hcloud/hcloud"
 )

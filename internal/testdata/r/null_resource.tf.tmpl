@@ -1,0 +1,9 @@
+// This template can be used to work around a bug/limitation in terraform-test-framework, which only checks for plan
+// changes in resources, not in datasources or outputs.
+// You can pass any [testtemplate.DataCommon] to it.
+
+resource "null_resource" "{{ .RName }}" {
+  triggers = {
+    resource = jsonencode({{ .TFID }})
+  }
+}

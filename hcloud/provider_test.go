@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/certificate"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/datacenter"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/firewall"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/floatingip"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/image"
@@ -69,8 +68,6 @@ func TestProvider_DataSources(t *testing.T) {
 	expectedDataSources := []string{
 		certificate.DataSourceType,
 		certificate.DataSourceListType,
-		datacenter.DataSourceType,
-		datacenter.DataSourceListType,
 		firewall.DataSourceType,
 		firewall.DataSourceListType,
 		floatingip.DataSourceType,
