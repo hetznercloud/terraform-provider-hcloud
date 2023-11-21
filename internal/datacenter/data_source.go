@@ -3,6 +3,7 @@ package datacenter
 import (
 	"context"
 	"crypto/sha1"
+	_ "embed"
 	"fmt"
 	"sort"
 	"strconv"
@@ -145,23 +146,13 @@ func (d *datacenterDataSource) Configure(_ context.Context, req datasource.Confi
 	}
 }
 
+//go:embed data_source.md
+var datacenterDataSourceMarkdownDescription string
+
 // Schema should return the schema for this data source.
 func (d *datacenterDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema.Attributes = getCommonDataSchema()
-
-	resp.Schema.MarkdownDescription = `
-Provides details about a specific Hetzner Cloud Datacenter.
-Use this resource to get detailed information about specific datacenter.
-
-## Example Usage
-` + "```" + `hcl
-data "hcloud_datacenter" "ds_1" {
-  name = "fsn1-dc14"
-}
-data "hcloud_datacenter" "ds_2" {
-  id = 4
-}
-` + "```"
+	resp.Schema.MarkdownDescription = datacenterDataSourceMarkdownDescription
 }
 
 // ConfigValidators returns a list of ConfigValidators. Each ConfigValidator's Validate method will be called when validating the data source.
@@ -256,6 +247,9 @@ func (d *datacenterDataSourceList) Configure(_ context.Context, req datasource.C
 	}
 }
 
+//go:embed data_source_list.md
+var datacenterDataSourceListMarkdownDescription string
+
 // Schema should return the schema for this data source.
 func (d *datacenterDataSourceList) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema.Attributes = map[string]schema.Attribute{
@@ -285,19 +279,7 @@ func (d *datacenterDataSourceList) Schema(_ context.Context, _ datasource.Schema
 		},
 	}
 
-	resp.Schema.MarkdownDescription = `
-Provides details about a specific Hetzner Cloud Datacenter.
-Use this resource to get detailed information about specific datacenter.
-
-## Example Usage
-` + "```" + `hcl
-data "hcloud_datacenter" "ds_1" {
-  name = "fsn1-dc8"
-}
-data "hcloud_datacenter" "ds_2" {
-  id = 4
-}
-` + "```"
+	resp.Schema.MarkdownDescription = datacenterDataSourceListMarkdownDescription
 }
 
 type datacenterListResourceData struct {
