@@ -28,7 +28,7 @@ const (
 	DataSourceListType = "hcloud_datacenters"
 )
 
-type datacenterResourceData struct {
+type resourceData struct {
 	ID                     types.Int64  `tfsdk:"id"`
 	Name                   types.String `tfsdk:"name"`
 	Description            types.String `tfsdk:"description"`
@@ -37,7 +37,7 @@ type datacenterResourceData struct {
 	AvailableServerTypeIds types.List   `tfsdk:"available_server_type_ids"`
 }
 
-var datacenterResourceDataAttrTypes = map[string]attr.Type{
+var resourceDataAttrTypes = map[string]attr.Type{
 	"id":                        types.Int64Type,
 	"name":                      types.StringType,
 	"description":               types.StringType,
@@ -46,8 +46,8 @@ var datacenterResourceDataAttrTypes = map[string]attr.Type{
 	"available_server_type_ids": types.ListType{ElemType: types.Int64Type},
 }
 
-func newDatacenterResourceData(ctx context.Context, in *hcloud.Datacenter) (datacenterResourceData, diag.Diagnostics) {
-	var data datacenterResourceData
+func newResourceData(ctx context.Context, in *hcloud.Datacenter) (resourceData, diag.Diagnostics) {
+	var data resourceData
 	var diags diag.Diagnostics
 	var newDiags diag.Diagnostics
 
@@ -115,27 +115,27 @@ func getCommonDataSchema() map[string]schema.Attribute {
 }
 
 // Single
-var _ datasource.DataSource = (*datacenterDataSource)(nil)
-var _ datasource.DataSourceWithConfigure = (*datacenterDataSource)(nil)
-var _ datasource.DataSourceWithConfigValidators = (*datacenterDataSource)(nil)
+var _ datasource.DataSource = (*dataSource)(nil)
+var _ datasource.DataSourceWithConfigure = (*dataSource)(nil)
+var _ datasource.DataSourceWithConfigValidators = (*dataSource)(nil)
 
-type datacenterDataSource struct {
+type dataSource struct {
 	client *hcloud.Client
 }
 
 func NewDataSource() datasource.DataSource {
-	return &datacenterDataSource{}
+	return &dataSource{}
 }
 
 // Metadata should return the full name of the data source.
-func (d *datacenterDataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (d *dataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = DataSourceType
 }
 
 // Configure enables provider-level data or clients to be set in the
 // provider-defined DataSource type. It is separately executed for each
 // ReadDataSource RPC.
-func (d *datacenterDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *dataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	var newDiags diag.Diagnostics
 
 	d.client, newDiags = hcclient.ConfigureClient(req.ProviderData)
@@ -146,7 +146,7 @@ func (d *datacenterDataSource) Configure(_ context.Context, req datasource.Confi
 }
 
 // Schema should return the schema for this data source.
-func (d *datacenterDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *dataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema.Attributes = getCommonDataSchema()
 
 	resp.Schema.MarkdownDescription = `
@@ -165,7 +165,7 @@ data "hcloud_datacenter" "ds_2" {
 }
 
 // ConfigValidators returns a list of ConfigValidators. Each ConfigValidator's Validate method will be called when validating the data source.
-func (d *datacenterDataSource) ConfigValidators(_ context.Context) []datasource.ConfigValidator {
+func (d *dataSource) ConfigValidators(_ context.Context) []datasource.ConfigValidator {
 	return []datasource.ConfigValidator{
 		datasourcevalidator.ExactlyOneOf(
 			path.MatchRoot("id"),
@@ -177,8 +177,8 @@ func (d *datacenterDataSource) ConfigValidators(_ context.Context) []datasource.
 // Read is called when the provider must read data source values in
 // order to update state. Config values should be read from the
 // ReadRequest and new state values set on the ReadResponse.
-func (d *datacenterDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data datacenterResourceData
+func (d *dataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data resourceData
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -220,33 +220,33 @@ func (d *datacenterDataSource) Read(ctx context.Context, req datasource.ReadRequ
 		return
 	}
 
-	data, diags := newDatacenterResourceData(ctx, result)
+	data, diags := newResourceData(ctx, result)
 	resp.Diagnostics.Append(diags...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 // List
-var _ datasource.DataSource = (*datacenterDataSourceList)(nil)
-var _ datasource.DataSourceWithConfigure = (*datacenterDataSourceList)(nil)
+var _ datasource.DataSource = (*dataSourceList)(nil)
+var _ datasource.DataSourceWithConfigure = (*dataSourceList)(nil)
 
-type datacenterDataSourceList struct {
+type dataSourceList struct {
 	client *hcloud.Client
 }
 
 func NewDataSourceList() datasource.DataSource {
-	return &datacenterDataSourceList{}
+	return &dataSourceList{}
 }
 
 // Metadata should return the full name of the data source.
-func (d *datacenterDataSourceList) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (d *dataSourceList) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = DataSourceListType
 }
 
 // Configure enables provider-level data or clients to be set in the
 // provider-defined DataSource type. It is separately executed for each
 // ReadDataSource RPC.
-func (d *datacenterDataSourceList) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *dataSourceList) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	var newDiags diag.Diagnostics
 
 	d.client, newDiags = hcclient.ConfigureClient(req.ProviderData)
@@ -257,7 +257,7 @@ func (d *datacenterDataSourceList) Configure(_ context.Context, req datasource.C
 }
 
 // Schema should return the schema for this data source.
-func (d *datacenterDataSourceList) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *dataSourceList) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema.Attributes = map[string]schema.Attribute{
 		"id": schema.StringAttribute{
 			Optional: true,
@@ -300,7 +300,7 @@ data "hcloud_datacenter" "ds_2" {
 ` + "```"
 }
 
-type datacenterListResourceData struct {
+type resourceDataList struct {
 	ID            types.String `tfsdk:"id"`
 	DatacenterIDs types.List   `tfsdk:"datacenter_ids"`
 	Names         types.List   `tfsdk:"names"`
@@ -308,22 +308,22 @@ type datacenterListResourceData struct {
 	Datacenters   types.List   `tfsdk:"datacenters"`
 }
 
-func newDatacenterListResourceData(ctx context.Context, in []*hcloud.Datacenter) (datacenterListResourceData, diag.Diagnostics) {
-	var data datacenterListResourceData
+func newResourceDataList(ctx context.Context, in []*hcloud.Datacenter) (resourceDataList, diag.Diagnostics) {
+	var data resourceDataList
 	var diags diag.Diagnostics
 	var newDiags diag.Diagnostics
 
 	datacenterIDs := make([]string, len(in))
 	names := make([]string, len(in))
 	descriptions := make([]string, len(in))
-	datacenters := make([]datacenterResourceData, len(in))
+	datacenters := make([]resourceData, len(in))
 
 	for i, item := range in {
 		datacenterIDs[i] = strconv.Itoa(item.ID)
 		names[i] = item.Name
 		descriptions[i] = item.Description
 
-		datacenter, newDiags := newDatacenterResourceData(ctx, item)
+		datacenter, newDiags := newResourceData(ctx, item)
 		diags.Append(newDiags...)
 		datacenters[i] = datacenter
 	}
@@ -337,7 +337,7 @@ func newDatacenterListResourceData(ctx context.Context, in []*hcloud.Datacenter)
 	data.Descriptions, newDiags = types.ListValueFrom(ctx, types.StringType, descriptions)
 	diags.Append(newDiags...)
 
-	data.Datacenters, newDiags = types.ListValueFrom(ctx, types.ObjectType{AttrTypes: datacenterResourceDataAttrTypes}, datacenters)
+	data.Datacenters, newDiags = types.ListValueFrom(ctx, types.ObjectType{AttrTypes: resourceDataAttrTypes}, datacenters)
 	diags.Append(newDiags...)
 
 	return data, diags
@@ -346,8 +346,8 @@ func newDatacenterListResourceData(ctx context.Context, in []*hcloud.Datacenter)
 // Read is called when the provider must read data source values in
 // order to update state. Config values should be read from the
 // ReadRequest and new state values set on the ReadResponse.
-func (d *datacenterDataSourceList) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data datacenterListResourceData
+func (d *dataSourceList) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data resourceDataList
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -363,7 +363,7 @@ func (d *datacenterDataSourceList) Read(ctx context.Context, req datasource.Read
 		return
 	}
 
-	data, diags := newDatacenterListResourceData(ctx, result)
+	data, diags := newResourceDataList(ctx, result)
 	resp.Diagnostics.Append(diags...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
