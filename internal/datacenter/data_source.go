@@ -147,12 +147,12 @@ func (d *dataSource) Configure(_ context.Context, req datasource.ConfigureReques
 }
 
 //go:embed data_source.md
-var datacenterDataSourceMarkdownDescription string
+var dataSourceMarkdownDescription string
 
 // Schema should return the schema for this data source.
 func (d *dataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema.Attributes = getCommonDataSchema()
-	resp.Schema.MarkdownDescription = datacenterDataSourceMarkdownDescription
+	resp.Schema.MarkdownDescription = dataSourceMarkdownDescription
 }
 
 // ConfigValidators returns a list of ConfigValidators. Each ConfigValidator's Validate method will be called when validating the data source.
@@ -248,7 +248,7 @@ func (d *dataSourceList) Configure(_ context.Context, req datasource.ConfigureRe
 }
 
 //go:embed data_source_list.md
-var datacenterDataSourceListMarkdownDescription string
+var dataSourceListMarkdownDescription string
 
 // Schema should return the schema for this data source.
 func (d *dataSourceList) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
@@ -279,7 +279,7 @@ func (d *dataSourceList) Schema(_ context.Context, _ datasource.SchemaRequest, r
 		},
 	}
 
-	resp.Schema.MarkdownDescription = datacenterDataSourceListMarkdownDescription
+	resp.Schema.MarkdownDescription = dataSourceListMarkdownDescription
 }
 
 type resourceDataList struct {
