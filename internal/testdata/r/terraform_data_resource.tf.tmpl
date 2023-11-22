@@ -3,7 +3,5 @@
 // You can pass any [testtemplate.DataCommon] to it.
 
 resource "terraform_data" "{{ .RName }}" {
-  triggers = {
-    resource = jsonencode({{ .TFID }})
-  }
+  input = {{ .TFID }}
 }
