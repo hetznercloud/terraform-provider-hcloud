@@ -68,6 +68,13 @@ func Provider() *schema.Provider {
 				Default:     "500ms",
 				Description: "The interval at which actions are polled by the client. Default `500ms`. Increase this interval if you run into rate limiting errors.",
 			},
+			"poll_function": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "exponential",
+				Description:  "The type of function to be used during the polling.",
+				ExactlyOneOf: []string{"constant", "exponential"},
+			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			certificate.UploadedResourceType:  certificate.UploadedResource(),
@@ -139,7 +146,12 @@ func providerConfigure(_ context.Context, d *schema.ResourceData) (interface{}, 
 		if err != nil {
 			return nil, hcclient.ErrorToDiag(err)
 		}
-		opts = append(opts, hcloud.WithPollBackoffFunc(hcloud.ExponentialBackoff(2, pollInterval)))
+		pollFunction, ok := d.GetOk("poll_function")
+		if ok && pollFunction == "constant" {
+			opts = append(opts, hcloud.WithPollBackoffFunc(hcloud.ConstantBackoff(pollInterval)))
+		} else {
+			opts = append(opts, hcloud.WithPollBackoffFunc(hcloud.ExponentialBackoff(2, pollInterval)))
+		}
 	}
 	if logging.LogLevel() != "" {
 		opts = append(opts, hcloud.WithDebugWriter(log.Writer()))
