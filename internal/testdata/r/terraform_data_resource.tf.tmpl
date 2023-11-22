@@ -2,8 +2,6 @@
 // changes in resources, not in datasources or outputs.
 // You can pass any [testtemplate.DataCommon] to it.
 
-resource "null_resource" "{{ .RName }}" {
-  triggers = {
-    resource = jsonencode({{ .TFID }})
-  }
+resource "terraform_data" "{{ .RName }}" {
+  input = {{ .TFID }}
 }
