@@ -22,6 +22,13 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/tflogutil"
 )
 
+const (
+	ConstantBackoff    string = "constant"
+	ExponentialBackoff string = "exponential"
+)
+
+var PollBackoffFuncs = []string{ConstantBackoff, ExponentialBackoff}
+
 type PluginProvider struct{}
 
 var _ provider.Provider = &PluginProvider{}
@@ -62,7 +69,7 @@ func (p *PluginProvider) Schema(_ context.Context, _ provider.SchemaRequest, res
 				Description: "The type of function to be used during the polling.",
 				Optional:    true,
 				Validators: []validator.String{
-					stringvalidator.OneOf([]string{"constant", "exponential"}...),
+					stringvalidator.OneOf(PollBackoffFuncs...),
 				},
 			},
 		},
@@ -131,9 +138,12 @@ func (p *PluginProvider) Configure(ctx context.Context, req provider.ConfigureRe
 				fmt.Sprintf("An unexpected error was encountered trying to parse the value.\n\n%s", err.Error()),
 			)
 		}
-		if data.PollFunction.ValueString() == "constant" {
+		switch data.PollFunction.ValueString() {
+		case ConstantBackoff:
 			opts = append(opts, hcloud.WithPollBackoffFunc(hcloud.ConstantBackoff(pollInterval)))
-		} else {
+		case ExponentialBackoff:
+			opts = append(opts, hcloud.WithPollBackoffFunc(hcloud.ExponentialBackoff(2, pollInterval)))
+		default:
 			opts = append(opts, hcloud.WithPollBackoffFunc(hcloud.ExponentialBackoff(2, pollInterval)))
 		}
 	}

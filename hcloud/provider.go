@@ -6,6 +6,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/firewall"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/placementgroup"
@@ -18,6 +20,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/certificate"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/floatingip"
@@ -73,7 +76,7 @@ func Provider() *schema.Provider {
 				Optional:     true,
 				Default:      "exponential",
 				Description:  "The type of function to be used during the polling.",
-				ExactlyOneOf: []string{"constant", "exponential"},
+				ValidateFunc: validation.StringInSlice(PollBackoffFuncs, false),
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
@@ -147,9 +150,15 @@ func providerConfigure(_ context.Context, d *schema.ResourceData) (interface{}, 
 			return nil, hcclient.ErrorToDiag(err)
 		}
 		pollFunction, ok := d.GetOk("poll_function")
-		if ok && pollFunction == "constant" {
+
+		if !ok {
+			opts = append(opts, hcloud.WithPollBackoffFunc(hcloud.ExponentialBackoff(2, pollInterval)))
+		}
+
+		switch pollFunction {
+		case ConstantBackoff:
 			opts = append(opts, hcloud.WithPollBackoffFunc(hcloud.ConstantBackoff(pollInterval)))
-		} else {
+		case ExponentialBackoff:
 			opts = append(opts, hcloud.WithPollBackoffFunc(hcloud.ExponentialBackoff(2, pollInterval)))
 		}
 	}
