@@ -105,6 +105,10 @@ func getCommonDataSchema() map[string]*schema.Schema {
 			Type:     schema.TypeBool,
 			Computed: true,
 		},
+		"primary_disk_size": {
+			Type:     schema.TypeInt,
+			Computed: true,
+		},
 	}
 }
 
