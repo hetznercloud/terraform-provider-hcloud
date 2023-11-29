@@ -73,7 +73,7 @@ func Provider() *schema.Provider {
 				Optional:     true,
 				Default:      "exponential",
 				Description:  "The type of function to be used during the polling.",
-				ExactlyOneOf: []string{"constant", "exponential"},
+				ValidateFunc: validation.StringInSlice([]string{"constant", "exponential"}, false),
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
