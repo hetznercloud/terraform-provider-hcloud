@@ -7,11 +7,13 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-hclog"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
@@ -56,6 +58,13 @@ func (p *PluginProvider) Schema(_ context.Context, _ provider.SchemaRequest, res
 				Description: "The interval at which actions are polled by the client. Default `500ms`. Increase this interval if you run into rate limiting errors.",
 				Optional:    true,
 			},
+			"poll_function": schema.StringAttribute{
+				Description: "The type of function to be used during the polling.",
+				Optional:    true,
+				Validators: []validator.String{
+					stringvalidator.OneOf([]string{"constant", "exponential"}...),
+				},
+			},
 		},
 		// TODO: Uncomment once we get rid of the SDK v2 Provider
 		// MarkdownDescription: `The Hetzner Cloud (hcloud) provider is used to interact with the resources supported by
@@ -69,6 +78,7 @@ type PluginProviderModel struct {
 	Token        types.String `tfsdk:"token"`
 	Endpoint     types.String `tfsdk:"endpoint"`
 	PollInterval types.String `tfsdk:"poll_interval"`
+	PollFunction types.String `tfsdk:"poll_function"`
 }
 
 // Configure is called at the beginning of the provider lifecycle, when
@@ -121,7 +131,11 @@ func (p *PluginProvider) Configure(ctx context.Context, req provider.ConfigureRe
 				fmt.Sprintf("An unexpected error was encountered trying to parse the value.\n\n%s", err.Error()),
 			)
 		}
-		opts = append(opts, hcloud.WithPollBackoffFunc(hcloud.ExponentialBackoff(2, pollInterval)))
+		if data.PollFunction.ValueString() == "constant" {
+			opts = append(opts, hcloud.WithPollBackoffFunc(hcloud.ConstantBackoff(pollInterval)))
+		} else {
+			opts = append(opts, hcloud.WithPollBackoffFunc(hcloud.ExponentialBackoff(2, pollInterval)))
+		}
 	}
 
 	if resp.Diagnostics.HasError() {

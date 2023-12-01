@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
@@ -67,6 +68,13 @@ func Provider() *schema.Provider {
 				Optional:    true,
 				Default:     "500ms",
 				Description: "The interval at which actions are polled by the client. Default `500ms`. Increase this interval if you run into rate limiting errors.",
+			},
+			"poll_function": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				Default:      "exponential",
+				Description:  "The type of function to be used during the polling.",
+				ValidateFunc: validation.StringInSlice([]string{"constant", "exponential"}, false),
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
@@ -139,7 +147,12 @@ func providerConfigure(_ context.Context, d *schema.ResourceData) (interface{}, 
 		if err != nil {
 			return nil, hcclient.ErrorToDiag(err)
 		}
-		opts = append(opts, hcloud.WithPollBackoffFunc(hcloud.ExponentialBackoff(2, pollInterval)))
+		pollFunction, ok := d.GetOk("poll_function")
+		if ok && pollFunction == "constant" {
+			opts = append(opts, hcloud.WithPollBackoffFunc(hcloud.ConstantBackoff(pollInterval)))
+		} else {
+			opts = append(opts, hcloud.WithPollBackoffFunc(hcloud.ExponentialBackoff(2, pollInterval)))
+		}
 	}
 	if logging.LogLevel() != "" {
 		opts = append(opts, hcloud.WithDebugWriter(log.Writer()))
