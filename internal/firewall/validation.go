@@ -2,6 +2,7 @@ package firewall
 
 import (
 	"net"
+	"strings"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -10,6 +11,13 @@ import (
 
 func validateIPDiag(i interface{}, _ cty.Path) diag.Diagnostics {
 	ipS := i.(string)
+	if !strings.Contains(ipS, "/") {
+		if strings.Contains(ipS, ":") {
+			ipS += "/64"
+		} else if strings.Contains(ipS, ".") {
+			ipS += "/32"
+		}
+	}
 	ip, n, err := net.ParseCIDR(ipS)
 	if err != nil {
 		return hcclient.ErrorToDiag(err)

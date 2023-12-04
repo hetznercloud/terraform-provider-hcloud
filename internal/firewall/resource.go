@@ -117,7 +117,15 @@ func Resource() *schema.Resource {
 								Type:             schema.TypeString,
 								ValidateDiagFunc: validateIPDiag,
 								StateFunc: func(i interface{}) string {
-									return strings.ToLower(i.(string))
+									ipS := strings.ToLower(i.(string))
+									if !strings.Contains(ipS, "/") {
+										if strings.Contains(ipS, ":") {
+											ipS += "/64"
+										} else if strings.Contains(ipS, ".") {
+											ipS += "/32"
+										}
+									}
+									return ipS
 								},
 							},
 							Optional: true,
@@ -128,7 +136,15 @@ func Resource() *schema.Resource {
 								Type:             schema.TypeString,
 								ValidateDiagFunc: validateIPDiag,
 								StateFunc: func(i interface{}) string {
-									return strings.ToLower(i.(string))
+									ipS := strings.ToLower(i.(string))
+									if !strings.Contains(ipS, "/") {
+										if strings.Contains(ipS, ":") {
+											ipS += "/64"
+										} else if strings.Contains(ipS, ".") {
+											ipS += "/32"
+										}
+									}
+									return ipS
 								},
 							},
 							Optional: true,
