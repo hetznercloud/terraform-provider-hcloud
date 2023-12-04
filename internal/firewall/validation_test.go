@@ -25,11 +25,6 @@ func TestValidateIPDiag(t *testing.T) {
 			err:  nil,
 		},
 		{
-			name: "Invalid IP",
-			ip:   "test",
-			err:  diag.Diagnostics{diag.Diagnostic{Severity: 0, Summary: "invalid CIDR address: test", Detail: "", AttributePath: cty.Path(nil)}},
-		},
-		{
 			name: "Host bit set (IPv4)",
 			ip:   "10.0.0.5/8",
 			err:  diag.Diagnostics{diag.Diagnostic{Severity: 0, Summary: "10.0.0.5/8 is not the start of the cidr block 10.0.0.0/8", Detail: "", AttributePath: cty.Path(nil)}},
@@ -48,6 +43,16 @@ func TestValidateIPDiag(t *testing.T) {
 			name: "Valid IP (IPv6)",
 			ip:   "fe80::",
 			err:  nil,
+		},
+		{
+			name: "Invalid IP (IPv4)",
+			ip:   "10.0.0.256",
+			err:  diag.Diagnostics{diag.Diagnostic{Severity: 0, Summary: "invalid IP address: 10.0.0.256", Detail: "", AttributePath: cty.Path(nil)}},
+		},
+		{
+			name: "Invalid IP (IPv6)",
+			ip:   "fe80::1337::",
+			err:  diag.Diagnostics{diag.Diagnostic{Severity: 0, Summary: "invalid IP address: fe80::1337::", Detail: "", AttributePath: cty.Path(nil)}},
 		},
 	}
 	for _, test := range tests {

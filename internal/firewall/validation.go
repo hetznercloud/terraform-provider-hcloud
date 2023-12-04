@@ -12,6 +12,9 @@ import (
 func validateIPDiag(i interface{}, _ cty.Path) diag.Diagnostics {
 	ipS := i.(string)
 	if !strings.Contains(ipS, "/") {
+		if net.ParseIP(ipS) == nil {
+			return diag.Errorf("invalid IP address: %s", ipS)
+		}
 		if strings.Contains(ipS, ":") {
 			ipS += "/64"
 		} else if strings.Contains(ipS, ".") {
