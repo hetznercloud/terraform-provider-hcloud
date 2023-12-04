@@ -220,6 +220,7 @@ The following attributes are exported:
 - `delete_protection` - (bool) Whether delete protection is enabled.
 - `rebuild_protection` - (bool) Whether rebuild protection is enabled.
 - `shutdown_before_deletion` - (bool) Whether the server will try to shut down gracefully before being deleted.
+- `primary_disk_size` - (int) The size of the primary disk in GB.
 
 a single entry in `network` support the following fields:
 - `network_id` - (Required, int) ID of the network

@@ -1168,6 +1168,7 @@ func getServerAttributes(d *schema.ResourceData, s *hcloud.Server) map[string]in
 		"delete_protection":  s.Protection.Delete,
 		"rebuild_protection": s.Protection.Rebuild,
 		"firewall_ids":       firewallIDs,
+		"primary_disk_size":  s.PrimaryDiskSize,
 	}
 	if s.PublicNet.IPv4.IsUnspecified() {
 		res["ipv4_address"] = nil
