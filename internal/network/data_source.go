@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/datasourceutil"
@@ -34,14 +35,17 @@ func getCommonDataSchema() map[string]*schema.Schema {
 		"name": {
 			Type:     schema.TypeString,
 			Optional: true,
+			Computed: true,
 		},
 		"ip_range": {
 			Type:     schema.TypeString,
 			Optional: true,
+			Computed: true,
 		},
 		"labels": {
 			Type:     schema.TypeMap,
 			Optional: true,
+			Computed: true,
 		},
 		"delete_protection": {
 			Type:     schema.TypeBool,
@@ -63,8 +67,9 @@ func DataSource() *schema.Resource {
 			getCommonDataSchema(),
 			map[string]*schema.Schema{
 				"most_recent": {
-					Type:     schema.TypeBool,
-					Optional: true,
+					Type:       schema.TypeBool,
+					Optional:   true,
+					Deprecated: "This attribute has no purpose.",
 				},
 				"with_selector": {
 					Type:     schema.TypeString,
