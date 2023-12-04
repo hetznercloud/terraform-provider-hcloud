@@ -226,6 +226,7 @@ a single entry in `network` support the following fields:
 - `ip` - (Optional, string) Specify the IP the server should get in the network
 - `alias_ips` - (Optional, list) Alias IPs the server should have in the Network.
 - `mac_address` - (Optional, string) The MAC address the private interface of the server has
+- `primary_disk_size` - (int) The size of the primary disk in GB.
 
 
 ## Import

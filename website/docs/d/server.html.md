@@ -47,3 +47,4 @@ data "hcloud_server" "s_3" {
 - `placement_group_id` - (Optional, string) Placement Group ID the server is assigned to.
 - `delete_protection` - (bool) Whether delete protection is enabled.
 - `rebuild_protection` - (bool) Whether rebuild protection is enabled.
+- `primary_disk_size` - (int) The size of the primary disk in GB.
