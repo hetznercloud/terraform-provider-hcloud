@@ -1,6 +1,6 @@
 module github.com/hetznercloud/terraform-provider-hcloud
 
-go 1.21.1
+go 1.21.5
 
 require (
 	github.com/hashicorp/go-cty v1.4.1-0.20200723130312-85980079f637
