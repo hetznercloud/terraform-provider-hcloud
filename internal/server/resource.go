@@ -261,6 +261,10 @@ func Resource() *schema.Resource {
 				Optional: true,
 				Default:  false,
 			},
+			"primary_disk_size": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
 		},
 	}
 }
