@@ -188,6 +188,8 @@ The following arguments are supported:
 - `ip` - (Optional, string) Specify the IP the server should get in the network
 - `alias_ips` - (Optional, list) Alias IPs the server should have in the Network.
 
+There is a bug with Terraform `1.4+` which causes the network to be detached & attached on every apply. Set `alias_ips = []` to avoid this. See [#650](https://github.com/hetznercloud/terraform-provider-hcloud/issues/650#issuecomment-1497160625) for details.
+
 
 ## Attributes Reference
 
