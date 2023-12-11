@@ -10,10 +10,11 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"golang.org/x/net/context"
+
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/datasourceutil"
-	"golang.org/x/net/context"
 )
 
 const (
@@ -29,6 +30,7 @@ func getCommonDataSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"id": {
 			Type:     schema.TypeInt,
+			Computed: true,
 			Optional: true,
 		},
 		"name": {
@@ -38,6 +40,7 @@ func getCommonDataSchema() map[string]*schema.Schema {
 		},
 		"labels": {
 			Type:     schema.TypeMap,
+			Computed: true,
 			Optional: true,
 		},
 		"servers": {
@@ -49,6 +52,7 @@ func getCommonDataSchema() map[string]*schema.Schema {
 		},
 		"type": {
 			Type:     schema.TypeString,
+			Computed: true,
 			Optional: true,
 		},
 	}
