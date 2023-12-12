@@ -50,7 +50,7 @@ var resourceDataAttrTypes = map[string]attr.Type{
 	"network_zone": types.StringType,
 }
 
-func newResourceData(ctx context.Context, in *hcloud.Location) (resourceData, diag.Diagnostics) {
+func newResourceData(_ context.Context, in *hcloud.Location) (resourceData, diag.Diagnostics) {
 	var data resourceData
 	var diags diag.Diagnostics
 
