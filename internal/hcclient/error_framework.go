@@ -16,6 +16,11 @@ func APIErrorDiagnostics(err error) diag.Diagnostics {
 	var hcloudErr hcloud.Error
 
 	if errors.As(err, &hcloudErr) {
+		statusCodeMessage := ""
+		if errResponse := hcloudErr.Response(); errResponse != nil {
+			statusCodeMessage = fmt.Sprintf("Status code: %d\n", errResponse.StatusCode)
+		}
+
 		if hcloud.IsError(hcloudErr, hcloud.ErrorCodeInvalidInput) {
 			invalidInput := hcloudErr.Details.(hcloud.ErrorDetailsInvalidInput)
 			for _, field := range invalidInput.Fields {
@@ -32,8 +37,9 @@ func APIErrorDiagnostics(err error) diag.Diagnostics {
 							"%s\n\n"+
 							"Field: %s\n"+
 							"Messages:\n%s\n"+
-							"Error code: %s\n",
-						err.Error(), field.Name, strings.Join(messages, "\n"), hcloudErr.Code,
+							"Error code: %s\n"+
+							"%s",
+						err.Error(), field.Name, strings.Join(messages, "\n"), hcloudErr.Code, statusCodeMessage,
 					))
 			}
 			return diagnostics
@@ -44,8 +50,9 @@ func APIErrorDiagnostics(err error) diag.Diagnostics {
 			fmt.Sprintf(
 				"An unexpected error was encountered during an API request.\n\n"+
 					"%s\n\n"+
-					"Error code: %s\n",
-				hcloudErr.Message, hcloudErr.Code,
+					"Error code: %s\n"+
+					"%s",
+				hcloudErr.Message, hcloudErr.Code, statusCodeMessage,
 			),
 		)
 		return diagnostics
