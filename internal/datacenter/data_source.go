@@ -197,6 +197,7 @@ func (d *dataSource) Read(ctx context.Context, req datasource.ReadRequest, resp 
 		result, _, err = d.client.Datacenter.GetByName(ctx, data.Name.ValueString())
 		if err != nil {
 			resp.Diagnostics.Append(hcclient.APIErrorDiagnostics(err)...)
+			return
 		}
 		if result == nil {
 			resp.Diagnostics.AddError(
