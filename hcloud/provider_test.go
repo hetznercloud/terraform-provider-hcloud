@@ -8,7 +8,6 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/floatingip"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/image"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancer"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/location"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/network"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/placementgroup"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/primaryip"
@@ -78,8 +77,6 @@ func TestProvider_DataSources(t *testing.T) {
 		image.DataSourceListType,
 		loadbalancer.DataSourceType,
 		loadbalancer.DataSourceListType,
-		location.DataSourceType,
-		location.DataSourceListType,
 		network.DataSourceType,
 		network.DataSourceListType,
 		placementgroup.DataSourceType,

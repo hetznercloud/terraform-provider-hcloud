@@ -24,7 +24,6 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/floatingip"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/image"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancer"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/location"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/network"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/rdns"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
@@ -115,8 +114,6 @@ func Provider() *schema.Provider {
 			image.DataSourceListType:          image.DataSourceList(),
 			loadbalancer.DataSourceType:       loadbalancer.DataSource(),
 			loadbalancer.DataSourceListType:   loadbalancer.DataSourceList(),
-			location.DataSourceType:           location.DataSource(),
-			location.DataSourceListType:       location.DataSourceList(),
 			network.DataSourceType:            network.DataSource(),
 			network.DataSourceListType:        network.DataSourceList(),
 			placementgroup.DataSourceType:     placementgroup.DataSource(),

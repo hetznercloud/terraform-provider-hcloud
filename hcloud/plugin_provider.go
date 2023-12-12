@@ -19,6 +19,7 @@ import (
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/datacenter"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/location"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/tflogutil"
 )
 
@@ -168,6 +169,8 @@ func (p *PluginProvider) DataSources(_ context.Context) []func() datasource.Data
 	return []func() datasource.DataSource{
 		datacenter.NewDataSource,
 		datacenter.NewDataSourceList,
+		location.NewDataSource,
+		location.NewDataSourceList,
 	}
 }
 

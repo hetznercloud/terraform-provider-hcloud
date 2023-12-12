@@ -3,13 +3,19 @@ package location
 import (
 	"context"
 	"crypto/sha1"
+	_ "embed"
 	"fmt"
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
 )
@@ -22,167 +28,307 @@ const (
 	DataSourceListType = "hcloud_locations"
 )
 
-// getCommonDataSchema returns a new common schema used by all location data sources.
-func getCommonDataSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"id": {
-			Type:     schema.TypeInt,
+type resourceData struct {
+	ID          types.Int64   `tfsdk:"id"`
+	Name        types.String  `tfsdk:"name"`
+	Description types.String  `tfsdk:"description"`
+	Country     types.String  `tfsdk:"country"`
+	City        types.String  `tfsdk:"city"`
+	Latitude    types.Float64 `tfsdk:"latitude"`
+	Longitude   types.Float64 `tfsdk:"longitude"`
+	NetworkZone types.String  `tfsdk:"network_zone"`
+}
+
+var resourceDataAttrTypes = map[string]attr.Type{
+	"id":           types.Int64Type,
+	"name":         types.StringType,
+	"description":  types.StringType,
+	"country":      types.StringType,
+	"city":         types.StringType,
+	"latitude":     types.Float64Type,
+	"longitude":    types.Float64Type,
+	"network_zone": types.StringType,
+}
+
+func newResourceData(_ context.Context, in *hcloud.Location) (resourceData, diag.Diagnostics) { // nolint:unparam // to keep the pattern consistent between all data sources
+	var data resourceData
+	var diags diag.Diagnostics
+
+	data.ID = types.Int64Value(int64(in.ID))
+	data.Name = types.StringValue(in.Name)
+	data.Description = types.StringValue(in.Description)
+	data.Country = types.StringValue(in.Country)
+	data.City = types.StringValue(in.City)
+	data.Latitude = types.Float64Value(in.Latitude)
+	data.Longitude = types.Float64Value(in.Longitude)
+	data.NetworkZone = types.StringValue(string(in.NetworkZone))
+
+	return data, diags
+}
+
+func getCommonDataSchema() map[string]schema.Attribute {
+	return map[string]schema.Attribute{
+		"id": schema.Int64Attribute{
 			Optional: true,
 			Computed: true,
 		},
-		"name": {
-			Type:     schema.TypeString,
+		"name": schema.StringAttribute{
 			Optional: true,
 			Computed: true,
 		},
-		"description": {
-			Type:     schema.TypeString,
+		"description": schema.StringAttribute{
 			Computed: true,
 		},
-		"country": {
-			Type:     schema.TypeString,
+		"country": schema.StringAttribute{
 			Computed: true,
 		},
-		"city": {
-			Type:     schema.TypeString,
+		"city": schema.StringAttribute{
 			Computed: true,
 		},
-		"latitude": {
-			Type:     schema.TypeFloat,
+		"latitude": schema.Float64Attribute{
 			Computed: true,
 		},
-		"longitude": {
-			Type:     schema.TypeFloat,
+		"longitude": schema.Float64Attribute{
 			Computed: true,
 		},
-		"network_zone": {
-			Type:     schema.TypeString,
+		"network_zone": schema.StringAttribute{
 			Computed: true,
 		},
 	}
 }
 
-// DataSource creates a new Terraform schema for the hcloud_location
-// datasource.
-func DataSource() *schema.Resource {
-	return &schema.Resource{
-		ReadContext: dataSourceHcloudLocationRead,
-		Schema:      getCommonDataSchema(),
+// Single
+var _ datasource.DataSource = (*dataSource)(nil)
+var _ datasource.DataSourceWithConfigure = (*dataSource)(nil)
+var _ datasource.DataSourceWithConfigValidators = (*dataSource)(nil)
+
+type dataSource struct {
+	client *hcloud.Client
+}
+
+func NewDataSource() datasource.DataSource {
+	return &dataSource{}
+}
+
+// Metadata should return the full name of the data source.
+func (d *dataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = DataSourceType
+}
+
+// Configure enables provider-level data or clients to be set in the
+// provider-defined DataSource type. It is separately executed for each
+// ReadDataSource RPC.
+func (d *dataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+	var newDiags diag.Diagnostics
+
+	d.client, newDiags = hcclient.ConfigureClient(req.ProviderData)
+	resp.Diagnostics.Append(newDiags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 }
 
-// DataSourceList creates a new Terraform schema for the hcloud_locations
-// datasource.
-func DataSourceList() *schema.Resource {
-	return &schema.Resource{
-		ReadContext: dataSourceHcloudLocationListRead,
-		Schema: map[string]*schema.Schema{
-			"location_ids": {
-				Type:       schema.TypeList,
-				Optional:   true,
-				Deprecated: "Use locations list instead",
-				Elem:       &schema.Schema{Type: schema.TypeString},
-			},
-			"names": {
-				Type:       schema.TypeList,
-				Computed:   true,
-				Deprecated: "Use locations list instead",
-				Elem:       &schema.Schema{Type: schema.TypeString},
-			},
-			"descriptions": {
-				Type:       schema.TypeList,
-				Computed:   true,
-				Deprecated: "Use locations list instead",
-				Elem:       &schema.Schema{Type: schema.TypeString},
-			},
-			"locations": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: getCommonDataSchema(),
-				},
-			},
-		},
+//go:embed data_source.md
+var dataSourceMarkdownDescription string
+
+// Schema should return the schema for this data source.
+func (d *dataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema.Attributes = getCommonDataSchema()
+	resp.Schema.MarkdownDescription = dataSourceMarkdownDescription
+}
+
+// ConfigValidators returns a list of ConfigValidators. Each ConfigValidator's Validate method will be called when validating the data source.
+func (d *dataSource) ConfigValidators(_ context.Context) []datasource.ConfigValidator {
+	return []datasource.ConfigValidator{
+		datasourcevalidator.ExactlyOneOf(
+			path.MatchRoot("id"),
+			path.MatchRoot("name"),
+		),
 	}
 }
 
-func dataSourceHcloudLocationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*hcloud.Client)
+// Read is called when the provider must read data source values in
+// order to update state. Config values should be read from the
+// ReadRequest and new state values set on the ReadResponse.
+func (d *dataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data resourceData
 
-	if id, ok := d.GetOk("id"); ok {
-		l, _, err := client.Location.GetByID(ctx, id.(int))
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var result *hcloud.Location
+	var err error
+
+	switch {
+	case !data.ID.IsNull():
+		result, _, err = d.client.Location.GetByID(ctx, int(data.ID.ValueInt64()))
 		if err != nil {
-			return hcclient.ErrorToDiag(err)
+			resp.Diagnostics.Append(hcclient.APIErrorDiagnostics(err)...)
+			return
 		}
-		if l == nil {
-			return diag.Errorf("no location found with id %d", id)
+		if result == nil {
+			resp.Diagnostics.AddError(
+				"Resource not found",
+				fmt.Sprintf("No location found with id %s.", data.ID.String()),
+			)
+			return
 		}
-		setLocationSchema(d, l)
-		return nil
-	}
-	if name, ok := d.GetOk("name"); ok {
-		l, _, err := client.Location.GetByName(ctx, name.(string))
+	case !data.Name.IsNull():
+		result, _, err = d.client.Location.GetByName(ctx, data.Name.ValueString())
 		if err != nil {
-			return hcclient.ErrorToDiag(err)
+			resp.Diagnostics.Append(hcclient.APIErrorDiagnostics(err)...)
 		}
-		if l == nil {
-			return diag.Errorf("no location found with name %v", name)
+		if result == nil {
+			resp.Diagnostics.AddError(
+				"Resource not found",
+				fmt.Sprintf("No location found with name %s.", data.Name.String()),
+			)
+			return
 		}
-		setLocationSchema(d, l)
-		return nil
+	default:
+		// Should not happen, see [dataSource.ConfigValidators]
+		resp.Diagnostics.AddError("Unexpected internal error", "")
+		return
 	}
 
-	return diag.Errorf("please specify an id, or a name to lookup for a location")
+	data, diags := newResourceData(ctx, result)
+	resp.Diagnostics.Append(diags...)
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func setLocationSchema(d *schema.ResourceData, l *hcloud.Location) {
-	for key, val := range getLocationAttributes(l) {
-		if key == "id" {
-			d.SetId(strconv.Itoa(val.(int)))
-		} else {
-			d.Set(key, val)
-		}
+// List
+var _ datasource.DataSource = (*dataSourceList)(nil)
+var _ datasource.DataSourceWithConfigure = (*dataSourceList)(nil)
+
+type dataSourceList struct {
+	client *hcloud.Client
+}
+
+func NewDataSourceList() datasource.DataSource {
+	return &dataSourceList{}
+}
+
+// Metadata should return the full name of the data source.
+func (d *dataSourceList) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = DataSourceListType
+}
+
+// Configure enables provider-level data or clients to be set in the
+// provider-defined DataSource type. It is separately executed for each
+// ReadDataSource RPC.
+func (d *dataSourceList) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+	var newDiags diag.Diagnostics
+
+	d.client, newDiags = hcclient.ConfigureClient(req.ProviderData)
+	resp.Diagnostics.Append(newDiags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 }
 
-func getLocationAttributes(l *hcloud.Location) map[string]interface{} {
-	return map[string]interface{}{
-		"id":           l.ID,
-		"name":         l.Name,
-		"description":  l.Description,
-		"country":      l.Country,
-		"city":         l.City,
-		"latitude":     l.Latitude,
-		"longitude":    l.Longitude,
-		"network_zone": l.NetworkZone,
+//go:embed data_source_list.md
+var dataSourceListMarkdownDescription string
+
+// Schema should return the schema for this data source.
+func (d *dataSourceList) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema.Attributes = map[string]schema.Attribute{
+		"id": schema.StringAttribute{
+			Optional: true,
+		},
+		"location_ids": schema.ListAttribute{
+			Optional:           true,
+			DeprecationMessage: "Use locations list instead",
+			ElementType:        types.StringType,
+		},
+		"names": schema.ListAttribute{
+			Optional:           true,
+			DeprecationMessage: "Use locations list instead",
+			ElementType:        types.StringType,
+		},
+		"descriptions": schema.ListAttribute{
+			Optional:           true,
+			DeprecationMessage: "Use locations list instead",
+			ElementType:        types.StringType,
+		},
+		"locations": schema.ListNestedAttribute{
+			NestedObject: schema.NestedAttributeObject{
+				Attributes: getCommonDataSchema(),
+			},
+			Computed: true,
+		},
 	}
+
+	resp.Schema.MarkdownDescription = dataSourceListMarkdownDescription
 }
 
-func dataSourceHcloudLocationListRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*hcloud.Client)
+type resourceDataList struct {
+	ID           types.String `tfsdk:"id"`
+	LocationIDs  types.List   `tfsdk:"location_ids"`
+	Names        types.List   `tfsdk:"names"`
+	Descriptions types.List   `tfsdk:"descriptions"`
+	Locations    types.List   `tfsdk:"locations"`
+}
 
-	allLocations, err := client.Location.All(ctx)
+func newResourceDataList(ctx context.Context, in []*hcloud.Location) (resourceDataList, diag.Diagnostics) {
+	var data resourceDataList
+	var diags diag.Diagnostics
+	var newDiags diag.Diagnostics
+
+	locationIDs := make([]string, len(in))
+	names := make([]string, len(in))
+	descriptions := make([]string, len(in))
+	locations := make([]resourceData, len(in))
+
+	for i, item := range in {
+		locationIDs[i] = strconv.Itoa(item.ID)
+		names[i] = item.Name
+		descriptions[i] = item.Description
+
+		location, newDiags := newResourceData(ctx, item)
+		diags.Append(newDiags...)
+		locations[i] = location
+	}
+
+	data.ID = types.StringValue(fmt.Sprintf("%x", sha1.Sum([]byte(strings.Join(locationIDs, "")))))
+
+	data.LocationIDs, newDiags = types.ListValueFrom(ctx, types.StringType, locationIDs)
+	diags.Append(newDiags...)
+	data.Names, newDiags = types.ListValueFrom(ctx, types.StringType, names)
+	diags.Append(newDiags...)
+	data.Descriptions, newDiags = types.ListValueFrom(ctx, types.StringType, descriptions)
+	diags.Append(newDiags...)
+
+	data.Locations, newDiags = types.ListValueFrom(ctx, types.ObjectType{AttrTypes: resourceDataAttrTypes}, locations)
+	diags.Append(newDiags...)
+
+	return data, diags
+}
+
+// Read is called when the provider must read data source values in
+// order to update state. Config values should be read from the
+// ReadRequest and new state values set on the ReadResponse.
+func (d *dataSourceList) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data resourceDataList
+
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var result []*hcloud.Location
+	var err error
+
+	result, err = d.client.Location.All(ctx)
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		resp.Diagnostics.Append(hcclient.APIErrorDiagnostics(err)...)
+		return
 	}
 
-	names := make([]string, len(allLocations))
-	descriptions := make([]string, len(allLocations))
-	ids := make([]string, len(allLocations))
-	tfLocations := make([]map[string]interface{}, len(allLocations))
-	for i, location := range allLocations {
-		ids[i] = strconv.Itoa(location.ID)
-		descriptions[i] = location.Description
-		names[i] = location.Name
+	data, diags := newResourceDataList(ctx, result)
+	resp.Diagnostics.Append(diags...)
 
-		tfLocations[i] = getLocationAttributes(location)
-	}
-
-	d.SetId(fmt.Sprintf("%x", sha1.Sum([]byte(strings.Join(ids, "")))))
-	d.Set("location_ids", ids)
-	d.Set("names", names)
-	d.Set("descriptions", descriptions)
-	d.Set("locations", tfLocations)
-
-	return nil
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
