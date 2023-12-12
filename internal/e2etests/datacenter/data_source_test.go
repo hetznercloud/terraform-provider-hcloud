@@ -60,7 +60,7 @@ func TestAccHcloudDataSourceDatacenter_UpgradePluginFramework(t *testing.T) {
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
 					"hcloud": {
-						VersionConstraint: "1.42.1",
+						VersionConstraint: "1.44.1",
 						Source:            "hetznercloud/hcloud",
 					},
 				},
