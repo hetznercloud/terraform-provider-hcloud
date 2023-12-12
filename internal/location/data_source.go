@@ -238,7 +238,7 @@ func (d *dataSourceList) Schema(_ context.Context, _ datasource.SchemaRequest, r
 		"id": schema.StringAttribute{
 			Optional: true,
 		},
-		"datacenter_ids": schema.ListAttribute{
+		"location_ids": schema.ListAttribute{
 			Optional:           true,
 			DeprecationMessage: "Use locations list instead",
 			ElementType:        types.StringType,

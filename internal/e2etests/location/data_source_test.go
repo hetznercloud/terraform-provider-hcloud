@@ -47,6 +47,52 @@ func TestAccHcloudDataSourceLocationTest(t *testing.T) {
 	})
 }
 
+func TestAccHcloudDataSourceLocation_UpgradePluginFramework(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
+	lByName := &location.DData{
+		LocationName: "fsn1",
+	}
+	lByName.SetRName("l_by_name")
+	lByID := &location.DData{
+		LocationID: "1",
+	}
+	lByID.SetRName("l_by_id")
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: e2etests.PreCheck(t),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"hcloud": {
+						VersionConstraint: "1.44.1",
+						Source:            "hetznercloud/hcloud",
+					},
+				},
+
+				Config: tmplMan.Render(t,
+					"testdata/d/hcloud_location", lByName,
+					"testdata/d/hcloud_location", lByID,
+					"testdata/r/terraform_data_resource", lByName,
+					"testdata/r/terraform_data_resource", lByID,
+				),
+			},
+			{
+				ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+
+				Config: tmplMan.Render(t,
+					"testdata/d/hcloud_location", lByName,
+					"testdata/d/hcloud_location", lByID,
+					"testdata/r/terraform_data_resource", lByName,
+					"testdata/r/terraform_data_resource", lByID,
+				),
+
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
 func TestAccHcloudDataSourceLocationsTest(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
@@ -87,6 +133,41 @@ func TestAccHcloudDataSourceLocationsTest(t *testing.T) {
 					resource.TestCheckResourceAttr(locationsDS.TFID(), "locations.4.name", "hil"),
 					resource.TestCheckResourceAttr(locationsDS.TFID(), "locations.4.network_zone", "us-west"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccHcloudDataSourceLocations_UpgradePluginFramework(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
+	locationsDS := &location.DDataList{}
+	locationsDS.SetRName("ds")
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: e2etests.PreCheck(t),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"hcloud": {
+						VersionConstraint: "1.44.1",
+						Source:            "hetznercloud/hcloud",
+					},
+				},
+
+				Config: tmplMan.Render(t,
+					"testdata/d/hcloud_locations", locationsDS,
+					"testdata/r/terraform_data_resource", locationsDS,
+				),
+			},
+			{
+				ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+
+				Config: tmplMan.Render(t,
+					"testdata/d/hcloud_locations", locationsDS,
+					"testdata/r/terraform_data_resource", locationsDS,
+				),
+
+				PlanOnly: true,
 			},
 		},
 	})
