@@ -46,22 +46,22 @@ jobs:
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       -
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
             name: darwin-amd64
             path: dist/*_darwin_amd64.zip
       -
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: darwin-arm64
           path: dist/*_darwin_arm64.zip
       -
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
             name: linux-amd64
             path: dist/*_linux_amd64.zip
       -
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
             name: windows-amd64
             path: dist/*_windows_amd64.zip
