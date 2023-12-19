@@ -1,0 +1,12 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "bootstrap-sha": "b6d42a6fbda9c0083a49ddb5d65a754274d52ccc",
+  "include-component-in-tag": false,
+  "include-v-in-tag": true,
+  "packages": {
+    ".": {
+      "release-type": "go",
+      "package-name": "terraform-provider-hcloud"
+    }
+  }
+}
