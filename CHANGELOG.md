@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.45.0](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.44.1...v1.45.0) (2023-12-19)
+
+
+### Features
+
+* **provider:** choose between constant & exponential backoff for actions ([#798](https://github.com/hetznercloud/terraform-provider-hcloud/issues/798)) ([fa7ea1f](https://github.com/hetznercloud/terraform-provider-hcloud/commit/fa7ea1f167750e64cc9ebbb26ce0eb8171d55df6))
+* **server:** add `primary_disk_size` attribute in resource and datasource ([#801](https://github.com/hetznercloud/terraform-provider-hcloud/issues/801)) ([98c2f2d](https://github.com/hetznercloud/terraform-provider-hcloud/commit/98c2f2d01bcdb08fcf5d564a774b1f2d60124296))
+
+
+### Bug Fixes
+
+* **network:** mark data source fields as computed ([#805](https://github.com/hetznercloud/terraform-provider-hcloud/issues/805)) ([63e157c](https://github.com/hetznercloud/terraform-provider-hcloud/commit/63e157c42185b06cb2f9714014f564e9383a6976))
+* **placement-group:** mark data source fields as computed ([#806](https://github.com/hetznercloud/terraform-provider-hcloud/issues/806)) ([53069ac](https://github.com/hetznercloud/terraform-provider-hcloud/commit/53069ac9f4df7d6dc18567c61a92eba11afebd53))
+* **server:** missing field primary_disk_size ([#811](https://github.com/hetznercloud/terraform-provider-hcloud/issues/811)) ([9bd0ef0](https://github.com/hetznercloud/terraform-provider-hcloud/commit/9bd0ef0c1d005f00436567f4520b3354940fc041))
+
 ## [1.44.1](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.44.0...v1.44.1) (2023-10-05)
 
 
