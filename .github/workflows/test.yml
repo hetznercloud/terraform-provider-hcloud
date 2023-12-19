@@ -57,7 +57,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always() # Also run if the tests failed
         with:
-          name: debug-logs
+          name: debug-logs-${{ matrix.terraform }}
           path: internal/e2etests/**/test.log
 
   unit_tests:
