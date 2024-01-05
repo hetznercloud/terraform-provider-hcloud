@@ -18,10 +18,6 @@ jobs:
       - run: make test
 
   integration:
-    # Do not run on forks.
-    if: github.repository == 'hetznercloud/terraform-provider-hcloud'
-
-    name: integration ${{ matrix.terraform }}
     runs-on: ubuntu-latest
 
     permissions:
