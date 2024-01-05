@@ -1,4 +1,4 @@
-TEST?=$$(go list ./... |grep -v 'vendor')
+TEST?=./...
 VERSION=$(shell ./scripts/git-version.sh)
 PKG_NAME=hcloud
 WEBSITE_REPO=github.com/hashicorp/terraform-website
@@ -59,13 +59,10 @@ lint:
 	golangci-lint run --fix
 
 test:
-	go test $(TEST) || exit 1
-	echo $(TEST) | \
-		xargs -t -n4 go test $(TESTARGS) -timeout=30s -parallel=8
+	go test $(TEST) $(TESTARGS) -v -timeout=30s -parallel=8
 
 testacc:
-	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 30m -parallel=8
-
+	TF_ACC=1 go test $(TEST) $(TESTARGS) -v -timeout=30m -parallel=8
 
 website:
 ifeq (,$(wildcard $(GOPATH)/src/$(WEBSITE_REPO)))
