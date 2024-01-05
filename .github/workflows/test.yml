@@ -1,76 +1,62 @@
 name: Test
 
 on:
+  push:
+    branches: [main]
   pull_request:
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - run: make test
+
   integration:
-    name: Integration ${{ matrix.terraform }}
+    # Do not run on forks.
+    if: github.repository == 'hetznercloud/terraform-provider-hcloud'
+
+    name: integration ${{ matrix.terraform }}
+    runs-on: ubuntu-latest
+
     permissions:
       id-token: write
-    runs-on: ubuntu-latest
+
     strategy:
       matrix:
-        terraform: [ v1.5.x, v1.6.x ]
+        terraform: [v1.5.x, v1.6.x]
       fail-fast: false
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Unshallow
-        run: git fetch --prune --unshallow
+      - uses: actions/checkout@v4
+
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ matrix.terraform }}
           terraform_wrapper: false
-      - name: Set up Go
-        uses: actions/setup-go@v5
+
+      - uses: actions/setup-go@v5
         with:
-          go-version: "1.21"
-      - name: HCLOUD_TOKEN
-        env:
-          HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
-        run: |
-          echo "HCLOUD_TOKEN=$HCLOUD_TOKEN" >> "$GITHUB_ENV"
+          go-version-file: go.mod
 
       - uses: hetznercloud/tps-action@main
-        if: ${{ vars.USE_TPS }}
 
-      - name: check HCLOUD_TOKEN
-        run: |
-          if [[ "${HCLOUD_TOKEN:-}" == "" ]]; then
-            echo "::error ::Couldn't determine HCLOUD_TOKEN. Are repository secrets correctly set?"
-            exit 1
-          fi
-      - name: Run tests
+      - run: make testacc
         env:
-          # Domain must be available in the account running the tests. This domain is available in the account
-          # running the public integration tests.
+          # Domain must be available in the account running the tests. This domain is
+          # available in the account running the public integration tests.
           CERT_DOMAIN: hc-integrations-test.de
 
-          # Debug Logs
           TF_LOG: DEBUG
           TF_LOG_PATH: test.log
-        run: |
-          make testacc
-          make
-
+        
       - uses: actions/upload-artifact@v4
-        if: always() # Also run if the tests failed
+        if: always()
         with:
           name: debug-logs-${{ matrix.terraform }}
           path: internal/e2etests/**/test.log
-
-  unit_tests:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Unshallow
-        run: git fetch --prune --unshallow
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: "1.21"
-      - name: Run tests
-        run: |
-          make test
