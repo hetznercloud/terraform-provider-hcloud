@@ -1,13 +1,15 @@
 ---
 linters-settings:
   errcheck:
-    exclude: ./.errcheck_excludes.txt
+    exclude-functions:
+      - (*github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema.ResourceData).Set
   misspell:
-    locale: "US"
+    locale: US
 
 linters:
   disable-all: true
   enable:
+    - gofmt
     - bodyclose
     - errcheck
     - exportloopref
@@ -33,8 +35,5 @@ issues:
         - exportloopref
         - gosec
         - errcheck
-    - path: testing.go
+    - path: testing\.go
       text: unused-parameter
-    - linters:
-        - gosec
-      text: "G401:"
