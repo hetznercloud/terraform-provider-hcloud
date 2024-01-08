@@ -15,7 +15,9 @@ jobs:
         with:
           go-version-file: go.mod
 
-      - run: make test
+      - run: make test TESTARGS=-coverprofile=coverage.txt
+
+      - uses: codecov/codecov-action@v3
 
   integration:
     runs-on: ubuntu-latest
@@ -42,7 +44,7 @@ jobs:
 
       - uses: hetznercloud/tps-action@main
 
-      - run: make testacc
+      - run: make testacc TESTARGS=-coverprofile=coverage.txt
         env:
           # Domain must be available in the account running the tests. This domain is
           # available in the account running the public integration tests.
@@ -50,6 +52,8 @@ jobs:
 
           TF_LOG: DEBUG
           TF_LOG_PATH: test.log
+
+      - uses: codecov/codecov-action@v3
 
       - uses: actions/upload-artifact@v4
         if: always()

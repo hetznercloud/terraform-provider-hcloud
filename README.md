@@ -1,6 +1,7 @@
 # Terraform Provider for the Hetzner Cloud
 
 [![GitHub release](https://img.shields.io/github/tag/hetznercloud/terraform-provider-hcloud.svg?label=release)](https://github.com/hetznercloud/terraform-provider-hcloud/releases/latest) [![Actions Status](https://github.com/hetznercloud/terraform-provider-hcloud/workflows/test/badge.svg)](https://github.com/hetznercloud/terraform-provider-hcloud/actions)[![Actions Status](https://github.com/hetznercloud/terraform-provider-hcloud/workflows/release/badge.svg)](https://github.com/hetznercloud/terraform-provider-hcloud/actions)
+[![Codecov](https://codecov.io/gh/hetznercloud/terraform-provider-hcloud/graph/badge.svg?token=og7OhpoV5W)](https://codecov.io/gh/hetznercloud/terraform-provider-hcloud/tree/main)
 
 - Documentation: https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs
 
