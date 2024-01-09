@@ -51,7 +51,7 @@ jobs:
           CERT_DOMAIN: hc-integrations-test.de
 
           TF_LOG: DEBUG
-          TF_LOG_PATH: test.log
+          TF_LOG_PATH_MASK: test-%s.log
 
       - uses: codecov/codecov-action@v3
 
@@ -59,4 +59,4 @@ jobs:
         if: always()
         with:
           name: debug-logs-${{ matrix.terraform }}
-          path: internal/e2etests/**/test.log
+          path: internal/e2etests/**/*.log
