@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/e2etests"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/firewall"
@@ -30,7 +31,8 @@ func TestAttachmentResource_Servers(t *testing.T) {
 	fwAttRes.ServerIDRefs = append(fwAttRes.ServerIDRefs, srvRes.TFID()+".id")
 
 	tmplMan := testtemplate.Manager{}
-	resource.ParallelTest(t, resource.TestCase{
+	// TODO: Move to parallel test once API endpoint supports higher parallelism
+	resource.Test(t, resource.TestCase{
 		PreCheck:                 e2etests.PreCheck(t),
 		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
@@ -75,7 +77,8 @@ func TestAttachmentResource_LabelSelectors(t *testing.T) {
 	fwAttRes.LabelSelectors = append(fwAttRes.LabelSelectors, "firewall-attachment=test-server")
 
 	tmplMan := testtemplate.Manager{}
-	resource.ParallelTest(t, resource.TestCase{
+	// TODO: Move to parallel test once API endpoint supports higher parallelism
+	resource.Test(t, resource.TestCase{
 		PreCheck:                 e2etests.PreCheck(t),
 		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
