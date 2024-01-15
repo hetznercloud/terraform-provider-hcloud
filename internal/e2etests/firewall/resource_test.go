@@ -66,7 +66,7 @@ func TestFirewallResource_Basic(t *testing.T) {
 	}, nil)
 	updated.SetRName(res.RName())
 	tmplMan := testtemplate.Manager{}
-	// TODO: Move to parallel test once API endpoint is fixed
+	// TODO: Move to parallel test once API endpoint supports higher parallelism
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 e2etests.PreCheck(t),
 		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
@@ -192,7 +192,7 @@ func TestFirewallResource_SourceIPs_IPv6Comparison(t *testing.T) {
 	}, nil)
 	tmplMan := testtemplate.Manager{}
 
-	// TODO: Move to parallel test once API endpoint is fixed
+	// TODO: Move to parallel test once API endpoint supports higher parallelism
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 e2etests.PreCheck(t),
 		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
@@ -225,7 +225,7 @@ func TestFirewallResource_DestinationIPs_IPv6Comparison(t *testing.T) {
 	}, nil)
 	tmplMan := testtemplate.Manager{}
 
-	// TODO: Move to parallel test once API endpoint is fixed
+	// TODO: Move to parallel test once API endpoint supports higher parallelism
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 e2etests.PreCheck(t),
 		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),

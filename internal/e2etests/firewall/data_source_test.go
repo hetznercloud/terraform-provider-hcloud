@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/e2etests"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/firewall"
-
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
@@ -30,7 +30,7 @@ func TestAccHcloudDataSourceFirewallTest(t *testing.T) {
 	}
 	firewallBySel.SetRName("firewall_by_sel")
 
-	// TODO: Move to parallel test once API endpoint is fixed
+	// TODO: Move to parallel test once API endpoint supports higher parallelism
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 e2etests.PreCheck(t),
 		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
@@ -76,7 +76,7 @@ func TestAccHcloudDataSourceFirewallListTest(t *testing.T) {
 	allFirewallsSel.SetRName("all_firewalls_sel")
 
 	tmplMan := testtemplate.Manager{}
-	// TODO: Move to parallel test once API endpoint is fixed
+	// TODO: Move to parallel test once API endpoint supports higher parallelism
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 e2etests.PreCheck(t),
 		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
