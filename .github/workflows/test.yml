@@ -86,4 +86,4 @@ jobs:
         if: always()
         with:
           name: debug-logs-${{ matrix.tool }}-${{ matrix.version }}
-          path: internal/e2etests/**/*.log
+          path: internal/**/test-*.log
