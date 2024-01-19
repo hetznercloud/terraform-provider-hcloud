@@ -27,7 +27,7 @@ jobs:
 
     strategy:
       matrix:
-        terraform: [v1.5.x, v1.6.x]
+        terraform: [v1.6.x, v1.7.x]
       fail-fast: false
 
     steps:
