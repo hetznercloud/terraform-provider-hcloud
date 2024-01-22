@@ -27,6 +27,10 @@ jobs:
     permissions:
       id-token: write
 
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}-${{ matrix.terraform }}
+      cancel-in-progress: true
+
     strategy:
       matrix:
         terraform: [v1.6.x, v1.7.x]
