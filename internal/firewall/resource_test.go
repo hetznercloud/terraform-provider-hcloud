@@ -1,4 +1,4 @@
-package firewall
+package firewall_test
 
 import (
 	"fmt"

@@ -1,4 +1,4 @@
-package placementgroup
+package placementgroup_test
 
 import (
 	"fmt"
