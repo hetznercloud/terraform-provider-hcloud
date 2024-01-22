@@ -18,6 +18,8 @@ jobs:
       - run: make test TESTARGS=-coverprofile=coverage.txt
 
       - uses: codecov/codecov-action@v3
+        with:
+          flags: unit
 
   integration:
     runs-on: ubuntu-latest
@@ -44,7 +46,7 @@ jobs:
 
       - uses: hetznercloud/tps-action@main
 
-      - run: make testacc TESTARGS=-coverprofile=coverage.txt
+      - run: make testacc TESTARGS="-coverprofile=coverage.txt -coverpkg=./..."
         env:
           # Domain must be available in the account running the tests. This domain is
           # available in the account running the public integration tests.
@@ -54,6 +56,8 @@ jobs:
           TF_LOG_PATH_MASK: test-%s.log
 
       - uses: codecov/codecov-action@v3
+        with:
+          flags: e2e
 
       - uses: actions/upload-artifact@v4
         if: always()
