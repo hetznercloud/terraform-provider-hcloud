@@ -6,7 +6,7 @@ on:
   pull_request:
 
 jobs:
-  test:
+  unit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -21,30 +21,53 @@ jobs:
         with:
           flags: unit
 
-  integration:
+  e2e:
     runs-on: ubuntu-latest
 
     permissions:
       id-token: write
 
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}-${{ matrix.tool }}-${{ matrix.version }}
+      cancel-in-progress: true
+
     strategy:
-      matrix:
-        terraform: [v1.6.x, v1.7.x]
       fail-fast: false
+      matrix:
+        include:
+          - tool: opentofu
+            version: v1.6.x
+          - tool: terraform
+            version: v1.6.x
+          - tool: terraform
+            version: v1.7.x
 
     steps:
       - uses: actions/checkout@v4
 
-      - uses: hashicorp/setup-terraform@v3
+      - if: matrix.tool == 'terraform'
+        uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: ${{ matrix.terraform }}
+          terraform_version: ${{ matrix.version }}
           terraform_wrapper: false
+
+      - if: matrix.tool == 'opentofu'
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: ${{ matrix.version }}
+          tofu_wrapper: false
 
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
 
       - uses: hetznercloud/tps-action@main
+
+      - if: matrix.tool == 'opentofu'
+        run: |
+          echo TF_ACC_TERRAFORM_PATH="$(which tofu)" >> $GITHUB_ENV
+          echo TF_ACC_PROVIDER_NAMESPACE="hashicorp" >> $GITHUB_ENV
+          echo TF_ACC_PROVIDER_HOST="registry.opentofu.org" >> $GITHUB_ENV
 
       - run: make testacc TESTARGS="-coverprofile=coverage.txt -coverpkg=./..."
         env:
@@ -62,5 +85,5 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: debug-logs-${{ matrix.terraform }}
+          name: debug-logs-${{ matrix.tool }}-${{ matrix.version }}
           path: internal/e2etests/**/*.log
