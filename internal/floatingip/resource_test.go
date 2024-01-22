@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/e2etests"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/floatingip"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
@@ -23,14 +23,14 @@ func TestFloatingIPResource_Basic(t *testing.T) {
 		Name:             "floatingip-test",
 		Type:             "ipv4",
 		Labels:           nil,
-		HomeLocationName: e2etests.TestLocationName,
+		HomeLocationName: teste2e.TestLocationName,
 	}
 	resRenamed := &floatingip.RData{Name: res.Name + "-renamed", Type: res.Type, HomeLocationName: res.HomeLocationName}
 	resRenamed.SetRName(res.Name)
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(floatingip.ResourceType, floatingip.ByID(t, &fip)),
 		Steps: []resource.TestStep{
 			{
@@ -72,8 +72,8 @@ func TestFloatingIPResource_WithServer(t *testing.T) {
 	resSSHKey := sshkey.NewRData(t, "server-floating-ip-withserver")
 	resServer := &server.RData{
 		Name:  "floating-ip-test",
-		Type:  e2etests.TestServerType,
-		Image: e2etests.TestImage,
+		Type:  teste2e.TestServerType,
+		Image: teste2e.TestImage,
 		Labels: map[string]string{
 			"tf-test": fmt.Sprintf("tf-test-fip-assignment-%d", tmplMan.RandInt),
 		},
@@ -89,8 +89,8 @@ func TestFloatingIPResource_WithServer(t *testing.T) {
 	}
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(floatingip.ResourceType, floatingip.ByID(t, &fip)),
 		Steps: []resource.TestStep{
 			{
@@ -125,7 +125,7 @@ func TestFloatingIPResource_Protection(t *testing.T) {
 			Name:             "floatingip-protection",
 			Type:             "ipv4",
 			Labels:           nil,
-			HomeLocationName: e2etests.TestLocationName,
+			HomeLocationName: teste2e.TestLocationName,
 			DeleteProtection: true,
 		}
 
@@ -137,8 +137,8 @@ func TestFloatingIPResource_Protection(t *testing.T) {
 
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(floatingip.ResourceType, floatingip.ByID(t, &fip)),
 		Steps: []resource.TestStep{
 			{

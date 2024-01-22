@@ -1,4 +1,4 @@
-package e2etests
+package teste2e
 
 import (
 	"context"

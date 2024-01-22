@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/e2etests"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/volume"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -20,7 +20,7 @@ func TestVolumeResource_Basic(t *testing.T) {
 	res := volume.Basic
 	resRenamed := &volume.RData{
 		Name:         res.Name + "-renamed",
-		LocationName: e2etests.TestLocationName,
+		LocationName: teste2e.TestLocationName,
 		Size:         10,
 		Labels: map[string]string{
 			"key1": "value1",
@@ -31,8 +31,8 @@ func TestVolumeResource_Basic(t *testing.T) {
 
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(volume.ResourceType, volume.ByID(t, &vol)),
 		Steps: []resource.TestStep{
 			{
@@ -79,7 +79,7 @@ func TestVolumeResource_Resize(t *testing.T) {
 	res.Name = "resized-volume"
 	resResized := &volume.RData{
 		Name:         res.Name,
-		LocationName: e2etests.TestLocationName,
+		LocationName: teste2e.TestLocationName,
 		Size:         25,
 		Labels: map[string]string{
 			"key1": "value1",
@@ -90,8 +90,8 @@ func TestVolumeResource_Resize(t *testing.T) {
 
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(volume.ResourceType, volume.ByID(t, &vol)),
 		Steps: []resource.TestStep{
 			{
@@ -130,17 +130,17 @@ func TestVolumeResource_WithServer(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 	resServer1 := &server.RData{
 		Name:         "some-server",
-		Type:         e2etests.TestServerType,
-		Image:        e2etests.TestImage,
-		LocationName: e2etests.TestLocationName,
+		Type:         teste2e.TestServerType,
+		Image:        teste2e.TestImage,
+		LocationName: teste2e.TestLocationName,
 	}
 	resServer1.SetRName("some-server")
 
 	resServer2 := &server.RData{
 		Name:         "another-server",
-		Type:         e2etests.TestServerType,
-		Image:        e2etests.TestImage,
-		LocationName: e2etests.TestLocationName,
+		Type:         teste2e.TestServerType,
+		Image:        teste2e.TestImage,
+		LocationName: teste2e.TestLocationName,
 	}
 	resServer2.SetRName("another-server")
 
@@ -156,8 +156,8 @@ func TestVolumeResource_WithServer(t *testing.T) {
 	resAnotherServer.SetRName(res.RName())
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(volume.ResourceType, volume.ByID(t, &vol)),
 		Steps: []resource.TestStep{
 			{
@@ -207,7 +207,7 @@ func TestVolumeResource_WithServerMultipleVolumes(t *testing.T) {
 		Name:         "some-server",
 		Type:         "cx11",
 		Image:        "ubuntu-20.04",
-		LocationName: e2etests.TestLocationName,
+		LocationName: teste2e.TestLocationName,
 	}
 	resServer1.SetRName("some-server")
 
@@ -226,8 +226,8 @@ func TestVolumeResource_WithServerMultipleVolumes(t *testing.T) {
 	resAnotherVolume.SetRName("another-volume")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(volume.ResourceType, volume.ByID(t, &vol)),
 		Steps: []resource.TestStep{
 			{
@@ -269,8 +269,8 @@ func TestVolumeResource_Protection(t *testing.T) {
 
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(volume.ResourceType, volume.ByID(t, &vol)),
 		Steps: []resource.TestStep{
 			{

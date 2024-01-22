@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/e2etests"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hetznercloud/hcloud-go/hcloud"
@@ -21,8 +21,8 @@ func TestSSHKeyResource_Basic(t *testing.T) {
 	resRenamed := &sshkey.RData{Name: res.Name + "-renamed", PublicKey: res.PublicKey}
 	resRenamed.SetRName(res.Name)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(sshkey.ResourceType, sshkey.ByID(t, &sk)),
 		Steps: []resource.TestStep{
 			{

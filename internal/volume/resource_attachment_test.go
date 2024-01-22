@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/e2etests"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/volume"
@@ -26,8 +26,8 @@ func TestVolumeAssignmentResource_Basic(t *testing.T) {
 	resSSHKey := sshkey.NewRData(t, "server-vol")
 	resServer := &server.RData{
 		Name:  "vol-attachment",
-		Type:  e2etests.TestServerType,
-		Image: e2etests.TestImage,
+		Type:  teste2e.TestServerType,
+		Image: teste2e.TestImage,
 		Labels: map[string]string{
 			"tf-test": fmt.Sprintf("tf-test-vol-attachment-%d", tmplMan.RandInt),
 		},
@@ -37,8 +37,8 @@ func TestVolumeAssignmentResource_Basic(t *testing.T) {
 
 	resServer2 := &server.RData{
 		Name:  "vol-attachment-2",
-		Type:  e2etests.TestServerType,
-		Image: e2etests.TestImage,
+		Type:  teste2e.TestServerType,
+		Image: teste2e.TestImage,
 		Labels: map[string]string{
 			"tf-test": fmt.Sprintf("tf-test-vol-attachment-%d", tmplMan.RandInt),
 		},
@@ -64,8 +64,8 @@ func TestVolumeAssignmentResource_Basic(t *testing.T) {
 		ServerID: resServer2.TFID() + ".id",
 	}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
 		Steps: []resource.TestStep{
 			{

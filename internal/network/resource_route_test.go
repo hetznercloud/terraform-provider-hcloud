@@ -6,8 +6,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/e2etests"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/network"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hetznercloud/hcloud-go/hcloud"
@@ -31,8 +31,8 @@ func TestNetworkRouteResource_Basic(t *testing.T) {
 	res.SetRName("network-route-test")
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(network.ResourceType, network.ByID(t, &nw)),
 		Steps: []resource.TestStep{
 			{

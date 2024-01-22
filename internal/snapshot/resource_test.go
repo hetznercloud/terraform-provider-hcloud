@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/e2etests"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/snapshot"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
 
@@ -23,8 +23,8 @@ func TestSnapshotResource_Basic(t *testing.T) {
 	sk := sshkey.NewRData(t, "snapshot-basic")
 	resServer := &server.RData{
 		Name:  "snapshot-test",
-		Type:  e2etests.TestServerType,
-		Image: e2etests.TestImage,
+		Type:  teste2e.TestServerType,
+		Image: teste2e.TestImage,
 		Labels: map[string]string{
 			"tf-test": fmt.Sprintf("tf-test-snapshot-%d", tmplMan.RandInt),
 		},
@@ -47,8 +47,8 @@ func TestSnapshotResource_Basic(t *testing.T) {
 		}}
 	resRenamed.SetRName("snapshot-basic")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(snapshot.ResourceType, snapshot.ByID(t, &s)),
 		Steps: []resource.TestStep{
 			{

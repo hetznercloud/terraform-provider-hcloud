@@ -8,13 +8,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/e2etests"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/floatingip"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancer"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/primaryip"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/rdns"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
@@ -52,8 +52,8 @@ func TestRDNSResource_Server(t *testing.T) {
 			sk := sshkey.NewRData(t, tt.name)
 			resServer := &server.RData{
 				Name:  tt.name,
-				Type:  e2etests.TestServerType,
-				Image: e2etests.TestImage,
+				Type:  teste2e.TestServerType,
+				Image: teste2e.TestImage,
 				Labels: map[string]string{
 					"tf-test": fmt.Sprintf("tf-test-rdns-%d", tmplMan.RandInt),
 				},
@@ -64,8 +64,8 @@ func TestRDNSResource_Server(t *testing.T) {
 
 			// TODO: Debug issues that causes this to fail when running in parallel
 			resource.Test(t, resource.TestCase{
-				PreCheck:                 e2etests.PreCheck(t),
-				ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+				PreCheck:                 teste2e.PreCheck(t),
+				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 				CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
 				Steps: []resource.TestStep{
 					{
@@ -123,15 +123,15 @@ func TestRDNSResource_PrimaryIP(t *testing.T) {
 				Name:         tt.name,
 				Type:         tt.primaryIPType,
 				AssigneeType: "server",
-				Datacenter:   e2etests.TestDataCenter,
+				Datacenter:   teste2e.TestDataCenter,
 			}
 			restPrimaryIP.SetRName(tt.name)
 			resRDNS := rdns.NewRDataPrimaryIP(t, tt.name, restPrimaryIP.TFID()+".id", restPrimaryIP.TFID()+".ip_address", tt.dns)
 
 			// TODO: Debug issues that causes this to fail when running in parallel
 			resource.Test(t, resource.TestCase{
-				PreCheck:                 e2etests.PreCheck(t),
-				ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+				PreCheck:                 teste2e.PreCheck(t),
+				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 				CheckDestroy:             testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &primaryIP)),
 				Steps: []resource.TestStep{
 					{
@@ -187,15 +187,15 @@ func TestRDNSResource_FloatingIP(t *testing.T) {
 			restFloatingIP := &floatingip.RData{
 				Name:             tt.name,
 				Type:             tt.floatingIPType,
-				HomeLocationName: e2etests.TestLocationName,
+				HomeLocationName: teste2e.TestLocationName,
 			}
 			restFloatingIP.SetRName(tt.name)
 			resRDNS := rdns.NewRDataFloatingIP(t, tt.name, restFloatingIP.TFID()+".id", restFloatingIP.TFID()+".ip_address", tt.dns)
 
 			// TODO: Debug issues that causes this to fail when running in parallel
 			resource.Test(t, resource.TestCase{
-				PreCheck:                 e2etests.PreCheck(t),
-				ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+				PreCheck:                 teste2e.PreCheck(t),
+				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 				CheckDestroy:             testsupport.CheckResourcesDestroyed(floatingip.ResourceType, floatingip.ByID(t, &fl)),
 				Steps: []resource.TestStep{
 					{
@@ -257,7 +257,7 @@ func TestRDNSResource_LoadBalancer(t *testing.T) {
 			tmplMan := testtemplate.Manager{}
 			restLoadBalancer := &loadbalancer.RData{
 				Name:         tt.name,
-				LocationName: e2etests.TestLocationName,
+				LocationName: teste2e.TestLocationName,
 			}
 			restLoadBalancer.SetRName(tt.name)
 
@@ -265,8 +265,8 @@ func TestRDNSResource_LoadBalancer(t *testing.T) {
 
 			// TODO: Debug issues that causes this to fail when running in parallel
 			resource.Test(t, resource.TestCase{
-				PreCheck:                 e2etests.PreCheck(t),
-				ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+				PreCheck:                 teste2e.PreCheck(t),
+				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 				CheckDestroy:             testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, &lb)),
 				Steps: []resource.TestStep{
 					{

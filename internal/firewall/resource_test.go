@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/e2etests"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/firewall"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
@@ -68,8 +68,8 @@ func TestFirewallResource_Basic(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 	// TODO: Move to parallel test once API endpoint supports higher parallelism
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(firewall.ResourceType, firewall.ByID(t, &f)),
 		Steps: []resource.TestStep{
 			{
@@ -146,8 +146,8 @@ func TestFirewallResource_ApplyTo(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 	// TODO: Move to parallel test once API endpoint is fixed
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(firewall.ResourceType, firewall.ByID(t, &f)),
 		Steps: []resource.TestStep{
 			{
@@ -194,8 +194,8 @@ func TestFirewallResource_SourceIPs_IPv6Comparison(t *testing.T) {
 
 	// TODO: Move to parallel test once API endpoint supports higher parallelism
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(firewall.ResourceType, firewall.ByID(t, &f)),
 		Steps: []resource.TestStep{
 			{
@@ -227,8 +227,8 @@ func TestFirewallResource_DestinationIPs_IPv6Comparison(t *testing.T) {
 
 	// TODO: Move to parallel test once API endpoint supports higher parallelism
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(firewall.ResourceType, firewall.ByID(t, &f)),
 		Steps: []resource.TestStep{
 			{

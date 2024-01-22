@@ -8,8 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/e2etests"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancer"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
@@ -19,7 +19,7 @@ func TestAccHcloudDataSourceLoadBalancerTest(t *testing.T) {
 
 	res := &loadbalancer.RData{
 		Name:         "some-load-balancer",
-		LocationName: e2etests.TestLocationName,
+		LocationName: teste2e.TestLocationName,
 		Labels: map[string]string{
 			"key": strconv.Itoa(acctest.RandInt()),
 		},
@@ -38,8 +38,8 @@ func TestAccHcloudDataSourceLoadBalancerTest(t *testing.T) {
 	lbBySel.SetRName("lb_by_sel")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
@@ -82,7 +82,7 @@ func TestAccHcloudDataSourceLoadBalancerTest(t *testing.T) {
 func TestAccHcloudDataSourceLoadBalancerListTest(t *testing.T) {
 	res := &loadbalancer.RData{
 		Name:         "some-load-balancer",
-		LocationName: e2etests.TestLocationName,
+		LocationName: teste2e.TestLocationName,
 		Labels: map[string]string{
 			"key": strconv.Itoa(acctest.RandInt()),
 		},
@@ -98,8 +98,8 @@ func TestAccHcloudDataSourceLoadBalancerListTest(t *testing.T) {
 
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{

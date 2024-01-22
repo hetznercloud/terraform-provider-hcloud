@@ -6,9 +6,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/e2etests"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/firewall"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
@@ -22,8 +22,8 @@ func TestAttachmentResource_Servers(t *testing.T) {
 	fwRes := firewall.NewRData(t, "basic_firewall", nil, nil)
 	srvRes := &server.RData{
 		Name:  "test-server",
-		Type:  e2etests.TestServerType,
-		Image: e2etests.TestImage,
+		Type:  teste2e.TestServerType,
+		Image: teste2e.TestImage,
 	}
 	srvRes.SetRName("test_server")
 
@@ -33,8 +33,8 @@ func TestAttachmentResource_Servers(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 	// TODO: Move to parallel test once API endpoint supports higher parallelism
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &srv)),
 			testsupport.CheckResourcesDestroyed(firewall.ResourceType, firewall.ByID(t, &fw)),
@@ -65,8 +65,8 @@ func TestAttachmentResource_LabelSelectors(t *testing.T) {
 	fwRes := firewall.NewRData(t, "basic_firewall", nil, nil)
 	srvRes := &server.RData{
 		Name:  "test-server",
-		Type:  e2etests.TestServerType,
-		Image: e2etests.TestImage,
+		Type:  teste2e.TestServerType,
+		Image: teste2e.TestImage,
 		Labels: map[string]string{
 			"firewall-attachment": "test-server",
 		},
@@ -79,8 +79,8 @@ func TestAttachmentResource_LabelSelectors(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 	// TODO: Move to parallel test once API endpoint supports higher parallelism
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &srv)),
 			testsupport.CheckResourcesDestroyed(firewall.ResourceType, firewall.ByID(t, &fw)),

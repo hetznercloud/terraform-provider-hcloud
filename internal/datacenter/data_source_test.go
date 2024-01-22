@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/datacenter"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/e2etests"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
@@ -22,8 +22,8 @@ func TestAccHcloudDataSourceDatacenterTest(t *testing.T) {
 	}
 	dcByID.SetRName("dc_by_id")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
@@ -55,7 +55,7 @@ func TestAccHcloudDataSourceDatacenter_UpgradePluginFramework(t *testing.T) {
 	}
 	dcByID.SetRName("dc_by_id")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: e2etests.PreCheck(t),
+		PreCheck: teste2e.PreCheck(t),
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
@@ -73,7 +73,7 @@ func TestAccHcloudDataSourceDatacenter_UpgradePluginFramework(t *testing.T) {
 				),
 			},
 			{
-				ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 
 				Config: tmplMan.Render(t,
 					"testdata/d/hcloud_datacenter", dcByName,
@@ -94,8 +94,8 @@ func TestAccHcloudDataSourceDatacentersTest(t *testing.T) {
 	datacentersD := &datacenter.DDataList{}
 	datacentersD.SetRName("ds")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
@@ -131,7 +131,7 @@ func TestAccHcloudDataSourceDatacenters_UpgradePluginFramework(t *testing.T) {
 	datacentersD := &datacenter.DDataList{}
 	datacentersD.SetRName("ds")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: e2etests.PreCheck(t),
+		PreCheck: teste2e.PreCheck(t),
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
@@ -147,7 +147,7 @@ func TestAccHcloudDataSourceDatacenters_UpgradePluginFramework(t *testing.T) {
 				),
 			},
 			{
-				ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 
 				Config: tmplMan.Render(t,
 					"testdata/d/hcloud_datacenters", datacentersD,

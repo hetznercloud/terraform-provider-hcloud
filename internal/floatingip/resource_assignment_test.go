@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/e2etests"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/floatingip"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
@@ -26,8 +26,8 @@ func TestFloatingIPAssignmentResource_Basic(t *testing.T) {
 	resSSHKey := sshkey.NewRData(t, "server-floating-ip-basic")
 	resServer := &server.RData{
 		Name:  "fip-assignment",
-		Type:  e2etests.TestServerType,
-		Image: e2etests.TestImage,
+		Type:  teste2e.TestServerType,
+		Image: teste2e.TestImage,
 		Labels: map[string]string{
 			"tf-test": fmt.Sprintf("tf-test-fip-assignment-%d", tmplMan.RandInt),
 		},
@@ -37,8 +37,8 @@ func TestFloatingIPAssignmentResource_Basic(t *testing.T) {
 
 	resServer2 := &server.RData{
 		Name:  "fip-assignment-2",
-		Type:  e2etests.TestServerType,
-		Image: e2etests.TestImage,
+		Type:  teste2e.TestServerType,
+		Image: teste2e.TestImage,
 		Labels: map[string]string{
 			"tf-test": fmt.Sprintf("tf-test-fip-assignment-%d", tmplMan.RandInt),
 		},
@@ -49,7 +49,7 @@ func TestFloatingIPAssignmentResource_Basic(t *testing.T) {
 	resFloatingIP := &floatingip.RData{
 		Name:             "fip-assignment",
 		Type:             "ipv4",
-		HomeLocationName: e2etests.TestLocationName,
+		HomeLocationName: teste2e.TestLocationName,
 	}
 	resFloatingIP.SetRName("floating_ip_assignment")
 
@@ -63,8 +63,8 @@ func TestFloatingIPAssignmentResource_Basic(t *testing.T) {
 		ServerID:     resServer2.TFID() + ".id",
 	}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
 		Steps: []resource.TestStep{
 			{

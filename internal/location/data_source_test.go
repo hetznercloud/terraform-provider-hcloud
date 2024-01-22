@@ -3,8 +3,8 @@ package location_test
 import (
 	"testing"
 
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/e2etests"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/location"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
@@ -22,8 +22,8 @@ func TestAccHcloudDataSourceLocationTest(t *testing.T) {
 	}
 	lByID.SetRName("l_by_id")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
@@ -60,7 +60,7 @@ func TestAccHcloudDataSourceLocation_UpgradePluginFramework(t *testing.T) {
 	lByID.SetRName("l_by_id")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: e2etests.PreCheck(t),
+		PreCheck: teste2e.PreCheck(t),
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
@@ -78,7 +78,7 @@ func TestAccHcloudDataSourceLocation_UpgradePluginFramework(t *testing.T) {
 				),
 			},
 			{
-				ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 
 				Config: tmplMan.Render(t,
 					"testdata/d/hcloud_location", lByName,
@@ -99,8 +99,8 @@ func TestAccHcloudDataSourceLocationsTest(t *testing.T) {
 	locationsDS := &location.DDataList{}
 	locationsDS.SetRName("ds")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
@@ -144,7 +144,7 @@ func TestAccHcloudDataSourceLocations_UpgradePluginFramework(t *testing.T) {
 	locationsDS := &location.DDataList{}
 	locationsDS.SetRName("ds")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: e2etests.PreCheck(t),
+		PreCheck: teste2e.PreCheck(t),
 		Steps: []resource.TestStep{
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
@@ -160,7 +160,7 @@ func TestAccHcloudDataSourceLocations_UpgradePluginFramework(t *testing.T) {
 				),
 			},
 			{
-				ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 
 				Config: tmplMan.Render(t,
 					"testdata/d/hcloud_locations", locationsDS,

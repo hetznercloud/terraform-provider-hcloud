@@ -14,7 +14,6 @@ import (
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	tfhcloud "github.com/hetznercloud/terraform-provider-hcloud/hcloud"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/e2etests"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/firewall"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/image"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/network"
@@ -22,6 +21,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/primaryip"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
@@ -32,8 +32,8 @@ func TestServerResource_Basic(t *testing.T) {
 	sk := sshkey.NewRData(t, "server-basic")
 	res := &server.RData{
 		Name:    "server-basic",
-		Type:    e2etests.TestServerType,
-		Image:   e2etests.TestImage,
+		Type:    teste2e.TestServerType,
+		Image:   teste2e.TestImage,
 		SSHKeys: []string{sk.TFID() + ".id"},
 	}
 	res.SetRName("server-basic")
@@ -41,8 +41,8 @@ func TestServerResource_Basic(t *testing.T) {
 	resRenamed.SetRName(res.Name)
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
 		Steps: []resource.TestStep{
 			{
@@ -91,21 +91,21 @@ func TestServerResource_ImageID(t *testing.T) {
 
 	sk := sshkey.NewRData(t, "server-image-id")
 	img := &image.DData{
-		ImageName:    e2etests.TestImage,
+		ImageName:    teste2e.TestImage,
 		Architecture: hcloud.ArchitectureX86,
 	}
 	img.SetRName("server-image-id")
 	res := &server.RData{
 		Name:    "server-image-id",
-		Type:    e2etests.TestServerType,
+		Type:    teste2e.TestServerType,
 		Image:   fmt.Sprintf("${%s.id}", img.TFID()),
 		SSHKeys: []string{sk.TFID() + ".id"},
 	}
 	res.SetRName("server-image-id")
 	tmplMan := testtemplate.Manager{}
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
 		Steps: []resource.TestStep{
 			{
@@ -130,8 +130,8 @@ func TestServerResource_Resize(t *testing.T) {
 	sk := sshkey.NewRData(t, "server-resize")
 	res := &server.RData{
 		Name:    "server-resize",
-		Type:    e2etests.TestServerType,
-		Image:   e2etests.TestImage,
+		Type:    teste2e.TestServerType,
+		Image:   teste2e.TestImage,
 		SSHKeys: []string{sk.TFID() + ".id"},
 	}
 	res.SetRName("server-resize")
@@ -139,8 +139,8 @@ func TestServerResource_Resize(t *testing.T) {
 	resResized.SetRName(res.Name)
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
 		Steps: []resource.TestStep{
 			{
@@ -182,8 +182,8 @@ func TestServerResource_ChangeUserData(t *testing.T) {
 	sk := sshkey.NewRData(t, "server-userdata")
 	res := &server.RData{
 		Name:     "server-userdata",
-		Type:     e2etests.TestServerType,
-		Image:    e2etests.TestImage,
+		Type:     teste2e.TestServerType,
+		Image:    teste2e.TestImage,
 		UserData: "stuff",
 		SSHKeys:  []string{sk.TFID() + ".id"},
 	}
@@ -192,8 +192,8 @@ func TestServerResource_ChangeUserData(t *testing.T) {
 	resChangedUserdata.SetRName(res.Name)
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
 		Steps: []resource.TestStep{
 			{
@@ -239,8 +239,8 @@ func TestServerResource_ISO(t *testing.T) {
 	sk := sshkey.NewRData(t, "server-iso")
 	res := &server.RData{
 		Name:     "server-iso",
-		Type:     e2etests.TestServerType,
-		Image:    e2etests.TestImage,
+		Type:     teste2e.TestServerType,
+		Image:    teste2e.TestImage,
 		UserData: "stuff",
 		ISO:      "15621", // ubuntu-22.04.1-live-server-amd64.iso
 		SSHKeys:  []string{sk.TFID() + ".id"},
@@ -248,8 +248,8 @@ func TestServerResource_ISO(t *testing.T) {
 	res.SetRName("server-iso")
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
 		Steps: []resource.TestStep{
 			{
@@ -318,9 +318,9 @@ func TestServerResource_DirectAttachToNetwork(t *testing.T) {
 	snwRes.SetRName("test-network-subnet")
 	sRes := &server.RData{
 		Name:       "server-direct-attach",
-		Type:       e2etests.TestServerType,
-		Datacenter: e2etests.TestDataCenter,
-		Image:      e2etests.TestImage,
+		Type:       teste2e.TestServerType,
+		Datacenter: teste2e.TestDataCenter,
+		Image:      teste2e.TestImage,
 		SSHKeys:    []string{sk.TFID() + ".id"},
 	}
 	sRes.SetRName(sRes.Name)
@@ -342,8 +342,8 @@ func TestServerResource_DirectAttachToNetwork(t *testing.T) {
 
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
@@ -450,7 +450,7 @@ func TestServerResource_PrimaryIPNetworkTests(t *testing.T) {
 		Name:         "primaryip-v4-test",
 		Type:         "ipv4",
 		Labels:       nil,
-		Datacenter:   e2etests.TestDataCenter,
+		Datacenter:   teste2e.TestDataCenter,
 		AssigneeType: "server",
 		AutoDelete:   false,
 	}
@@ -460,7 +460,7 @@ func TestServerResource_PrimaryIPNetworkTests(t *testing.T) {
 		Name:         "primaryip-v6-test",
 		Type:         "ipv6",
 		Labels:       nil,
-		Datacenter:   e2etests.TestDataCenter,
+		Datacenter:   teste2e.TestDataCenter,
 		AssigneeType: "server",
 		AutoDelete:   false,
 	}
@@ -468,9 +468,9 @@ func TestServerResource_PrimaryIPNetworkTests(t *testing.T) {
 
 	sResWithNetAndPublicNet := &server.RData{
 		Name:       "server-primaryIP-network-test",
-		Type:       e2etests.TestServerType,
-		Datacenter: e2etests.TestDataCenter,
-		Image:      e2etests.TestImage,
+		Type:       teste2e.TestServerType,
+		Datacenter: teste2e.TestDataCenter,
+		Image:      teste2e.TestImage,
 		SSHKeys:    []string{sk.TFID() + ".id"},
 		Networks: []server.RDataInlineNetwork{{
 			NetworkID: nwRes.TFID() + ".id",
@@ -581,7 +581,7 @@ func TestServerResource_PrimaryIPNetworkTests(t *testing.T) {
 
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: e2etests.PreCheck(t),
+		PreCheck: teste2e.PreCheck(t),
 		ProviderFactories: map[string]func() (*schema.Provider, error){
 			//nolint:unparam
 			"hcloud": func() (*schema.Provider, error) {
@@ -758,22 +758,22 @@ func TestServerResource_Firewalls(t *testing.T) {
 	}, nil)
 	res := &server.RData{
 		Name:        "server-firewall",
-		Type:        e2etests.TestServerType,
-		Image:       e2etests.TestImage,
+		Type:        teste2e.TestServerType,
+		Image:       teste2e.TestImage,
 		FirewallIDs: []string{fw.TFID() + ".id"},
 	}
 	res.SetRName("server-firewall")
 	res2 := &server.RData{
 		Name:        "server-firewall",
-		Type:        e2etests.TestServerType,
-		Image:       e2etests.TestImage,
+		Type:        teste2e.TestServerType,
+		Image:       teste2e.TestImage,
 		FirewallIDs: []string{fw2.TFID() + ".id"},
 	}
 	res2.SetRName(res.RName())
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
 		Steps: []resource.TestStep{
 			{
@@ -823,8 +823,8 @@ func TestServerResource_PlacementGroup(t *testing.T) {
 
 	srvRes := &server.RData{
 		Name:             "server-placement-group",
-		Type:             e2etests.TestServerType,
-		Image:            e2etests.TestImage,
+		Type:             teste2e.TestServerType,
+		Image:            teste2e.TestImage,
 		PlacementGroupID: pgRes.TFID() + ".id",
 	}
 	srvRes.SetRName("server-placement-group")
@@ -832,8 +832,8 @@ func TestServerResource_PlacementGroup(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &srv)),
 		Steps: []resource.TestStep{
 			{
@@ -872,8 +872,8 @@ func TestServerResource_Protection(t *testing.T) {
 
 	srvRes := &server.RData{
 		Name:              "server-protection",
-		Type:              e2etests.TestServerType,
-		Image:             e2etests.TestImage,
+		Type:              teste2e.TestServerType,
+		Image:             teste2e.TestImage,
 		DeleteProtection:  true,
 		RebuildProtection: true,
 	}
@@ -882,8 +882,8 @@ func TestServerResource_Protection(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &srv)),
 		Steps: []resource.TestStep{
 			{
@@ -922,8 +922,8 @@ func TestServerResource_EmptySSHKey(t *testing.T) {
 
 	srvRes := &server.RData{
 		Name:    "server-empty-ssh-key",
-		Type:    e2etests.TestServerType,
-		Image:   e2etests.TestImage,
+		Type:    teste2e.TestServerType,
+		Image:   teste2e.TestImage,
 		SSHKeys: []string{"\"\""},
 	}
 	srvRes.SetRName("server-empty-ssh-key")
@@ -931,8 +931,8 @@ func TestServerResource_EmptySSHKey(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &srv)),
 		Steps: []resource.TestStep{
 			{

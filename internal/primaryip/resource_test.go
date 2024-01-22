@@ -11,9 +11,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	tfhcloud "github.com/hetznercloud/terraform-provider-hcloud/hcloud"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/e2etests"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/primaryip"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
@@ -25,7 +25,7 @@ func TestPrimaryIPResource_Basic(t *testing.T) {
 		Name:         "primaryip-test",
 		Type:         "ipv4",
 		Labels:       nil,
-		Datacenter:   e2etests.TestDataCenter,
+		Datacenter:   teste2e.TestDataCenter,
 		AssigneeType: "server",
 		AutoDelete:   false,
 	}
@@ -39,7 +39,7 @@ func TestPrimaryIPResource_Basic(t *testing.T) {
 	resRenamed.SetRName(res.Name)
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: e2etests.PreCheck(t),
+		PreCheck: teste2e.PreCheck(t),
 		ProviderFactories: map[string]func() (*schema.Provider, error){
 			//nolint:unparam
 			"hcloud": func() (*schema.Provider, error) {
@@ -90,7 +90,7 @@ func TestPrimaryIPResource_with_server(t *testing.T) {
 		Name:         "primaryip-test-v4-one",
 		Type:         "ipv4",
 		Labels:       nil,
-		Datacenter:   e2etests.TestDataCenter,
+		Datacenter:   teste2e.TestDataCenter,
 		AssigneeType: "server",
 		AutoDelete:   false,
 	}
@@ -100,7 +100,7 @@ func TestPrimaryIPResource_with_server(t *testing.T) {
 		Name:         "primaryip-test-v6-one",
 		Type:         "ipv6",
 		Labels:       nil,
-		Datacenter:   e2etests.TestDataCenter,
+		Datacenter:   teste2e.TestDataCenter,
 		AssigneeType: "server",
 		AutoDelete:   false,
 	}
@@ -110,7 +110,7 @@ func TestPrimaryIPResource_with_server(t *testing.T) {
 		Name:         "primaryip-test-v4-two",
 		Type:         "ipv4",
 		Labels:       nil,
-		Datacenter:   e2etests.TestDataCenter,
+		Datacenter:   teste2e.TestDataCenter,
 		AssigneeType: "server",
 		AutoDelete:   true,
 	}
@@ -118,9 +118,9 @@ func TestPrimaryIPResource_with_server(t *testing.T) {
 
 	testServerRes := &server.RData{
 		Name:       "server-test",
-		Type:       e2etests.TestServerType,
-		Image:      e2etests.TestImage,
-		Datacenter: e2etests.TestDataCenter,
+		Type:       teste2e.TestServerType,
+		Image:      teste2e.TestImage,
+		Datacenter: teste2e.TestDataCenter,
 		Labels:     nil,
 		PublicNet: map[string]interface{}{
 			"ipv4_enabled": true,
@@ -145,7 +145,7 @@ func TestPrimaryIPResource_with_server(t *testing.T) {
 
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: e2etests.PreCheck(t),
+		PreCheck: teste2e.PreCheck(t),
 		ProviderFactories: map[string]func() (*schema.Provider, error){
 			//nolint:unparam
 			"hcloud": func() (*schema.Provider, error) {
@@ -223,7 +223,7 @@ func TestPrimaryIPResource_FieldUpdates(t *testing.T) {
 			Name:             "primaryip-protection",
 			Type:             "ipv4",
 			Labels:           nil,
-			Datacenter:       e2etests.TestDataCenter,
+			Datacenter:       teste2e.TestDataCenter,
 			AssigneeType:     "server",
 			DeleteProtection: true,
 			AutoDelete:       true,
@@ -238,7 +238,7 @@ func TestPrimaryIPResource_FieldUpdates(t *testing.T) {
 
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: e2etests.PreCheck(t),
+		PreCheck: teste2e.PreCheck(t),
 		ProviderFactories: map[string]func() (*schema.Provider, error){
 			//nolint:unparam
 			"hcloud": func() (*schema.Provider, error) {

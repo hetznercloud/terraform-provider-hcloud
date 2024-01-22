@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/e2etests"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -29,14 +29,14 @@ func TestAccHcloudLoadBalancerTarget_ServerTarget(t *testing.T) {
 	resSSHKey := sshkey.NewRData(t, "lb-server-target")
 	resServer := &server.RData{
 		Name:    "lb-server-target",
-		Type:    e2etests.TestServerType,
-		Image:   e2etests.TestImage,
+		Type:    teste2e.TestServerType,
+		Image:   teste2e.TestImage,
 		SSHKeys: []string{resSSHKey.TFID() + ".id"},
 	}
 	resServer.SetRName("lb-server-target")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
@@ -45,7 +45,7 @@ func TestAccHcloudLoadBalancerTarget_ServerTarget(t *testing.T) {
 					"testdata/r/hcloud_server", resServer,
 					"testdata/r/hcloud_load_balancer", &loadbalancer.RData{
 						Name:        "target-test-lb",
-						Type:        e2etests.TestLoadBalancerType,
+						Type:        teste2e.TestLoadBalancerType,
 						NetworkZone: "eu-central",
 					},
 					"testdata/r/hcloud_load_balancer_target", &loadbalancer.RDataTarget{
@@ -93,8 +93,8 @@ func TestAccHcloudLoadBalancerTarget_ServerTarget_UsePrivateIP(t *testing.T) {
 	resSSHKey := sshkey.NewRData(t, "lb-server-target-pi")
 	resServer := &server.RData{
 		Name:    "lb-server-target-pi",
-		Type:    e2etests.TestServerType,
-		Image:   e2etests.TestImage,
+		Type:    teste2e.TestServerType,
+		Image:   teste2e.TestImage,
 		SSHKeys: []string{resSSHKey.TFID() + ".id"},
 	}
 	resServer.SetRName("lb-server-target")
@@ -105,8 +105,8 @@ func TestAccHcloudLoadBalancerTarget_ServerTarget_UsePrivateIP(t *testing.T) {
 	}
 	resNetwork.SetRName("lb-target-test-network")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
@@ -127,7 +127,7 @@ func TestAccHcloudLoadBalancerTarget_ServerTarget_UsePrivateIP(t *testing.T) {
 					},
 					"testdata/r/hcloud_load_balancer", &loadbalancer.RData{
 						Name:        "target-test-lb",
-						Type:        e2etests.TestLoadBalancerType,
+						Type:        teste2e.TestLoadBalancerType,
 						NetworkZone: "eu-central",
 					},
 					"testdata/r/hcloud_load_balancer_network", &loadbalancer.RDataNetwork{
@@ -178,8 +178,8 @@ func TestAccHcloudLoadBalancerTarget_LabelSelectorTarget(t *testing.T) {
 	resSSHKey := sshkey.NewRData(t, "lb-label-target")
 	resServer := &server.RData{
 		Name:  "lb-server-target",
-		Type:  e2etests.TestServerType,
-		Image: e2etests.TestImage,
+		Type:  teste2e.TestServerType,
+		Image: teste2e.TestImage,
 		Labels: map[string]string{
 			"tf-test": fmt.Sprintf("tf-test-%d", tmplMan.RandInt),
 		},
@@ -187,8 +187,8 @@ func TestAccHcloudLoadBalancerTarget_LabelSelectorTarget(t *testing.T) {
 	}
 	resServer.SetRName("lb-server-target")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
@@ -197,7 +197,7 @@ func TestAccHcloudLoadBalancerTarget_LabelSelectorTarget(t *testing.T) {
 					"testdata/r/hcloud_server", resServer,
 					"testdata/r/hcloud_load_balancer", &loadbalancer.RData{
 						Name:        "target-test-lb",
-						Type:        e2etests.TestLoadBalancerType,
+						Type:        teste2e.TestLoadBalancerType,
 						NetworkZone: "eu-central",
 					},
 					"testdata/r/hcloud_load_balancer_target", &loadbalancer.RDataTarget{
@@ -238,8 +238,8 @@ func TestAccHcloudLoadBalancerTarget_LabelSelectorTarget_UsePrivateIP(t *testing
 	resSSHKey := sshkey.NewRData(t, "lb-label-target")
 	resServer := &server.RData{
 		Name:  "lb-server-target",
-		Type:  e2etests.TestServerType,
-		Image: e2etests.TestImage,
+		Type:  teste2e.TestServerType,
+		Image: teste2e.TestImage,
 		Labels: map[string]string{
 			"tf-test": fmt.Sprintf("tf-test-%d", tmplMan.RandInt),
 		},
@@ -263,8 +263,8 @@ func TestAccHcloudLoadBalancerTarget_LabelSelectorTarget_UsePrivateIP(t *testing
 
 	selector := fmt.Sprintf("tf-test=tf-test-%d", tmplMan.RandInt)
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
@@ -280,7 +280,7 @@ func TestAccHcloudLoadBalancerTarget_LabelSelectorTarget_UsePrivateIP(t *testing
 					},
 					"testdata/r/hcloud_load_balancer", &loadbalancer.RData{
 						Name:        "target-test-lb",
-						Type:        e2etests.TestLoadBalancerType,
+						Type:        teste2e.TestLoadBalancerType,
 						NetworkZone: "eu-central",
 					},
 					"testdata/r/hcloud_load_balancer_network", &loadbalancer.RDataNetwork{
@@ -338,15 +338,15 @@ func TestAccHcloudLoadBalancerTarget_IPTarget(t *testing.T) {
 	ip := "213.239.214.25"
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_load_balancer", &loadbalancer.RData{
 						Name:        "target-test-lb",
-						Type:        e2etests.TestLoadBalancerType,
+						Type:        teste2e.TestLoadBalancerType,
 						NetworkZone: "eu-central",
 					},
 					"testdata/r/hcloud_load_balancer_target", &loadbalancer.RDataTarget{

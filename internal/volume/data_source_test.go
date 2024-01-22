@@ -9,8 +9,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hetznercloud/hcloud-go/hcloud"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/e2etests"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/volume"
@@ -22,7 +22,7 @@ func TestAccHcloudDataSourceVolumeTest(t *testing.T) {
 	res := &volume.RData{
 		Name:         "some-volume",
 		Size:         10,
-		LocationName: e2etests.TestLocationName,
+		LocationName: teste2e.TestLocationName,
 		Labels: map[string]string{
 			"key": strconv.Itoa(acctest.RandInt()),
 		},
@@ -45,8 +45,8 @@ func TestAccHcloudDataSourceVolumeTest(t *testing.T) {
 	volBySel.SetRName("vol_by_sel")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(volume.ResourceType, volume.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
@@ -88,8 +88,8 @@ func TestAccHcloudDataSourceAttachedVolumeTest(t *testing.T) {
 
 	resServer := &server.RData{
 		Name:  "volume-ds-test",
-		Type:  e2etests.TestServerType,
-		Image: e2etests.TestImage,
+		Type:  teste2e.TestServerType,
+		Image: teste2e.TestImage,
 		Labels: map[string]string{
 			"key": strconv.Itoa(acctest.RandInt()),
 		},
@@ -123,8 +123,8 @@ func TestAccHcloudDataSourceAttachedVolumeTest(t *testing.T) {
 
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(volume.ResourceType, volume.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
@@ -175,7 +175,7 @@ func TestAccHcloudDataSourceVolumeListTest(t *testing.T) {
 	res := &volume.RData{
 		Name:         "volume-ds-test",
 		Size:         10,
-		LocationName: e2etests.TestLocationName,
+		LocationName: teste2e.TestLocationName,
 		Labels: map[string]string{
 			"key": strconv.Itoa(acctest.RandInt()),
 		},
@@ -192,8 +192,8 @@ func TestAccHcloudDataSourceVolumeListTest(t *testing.T) {
 
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(volume.ResourceType, volume.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{

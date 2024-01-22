@@ -9,8 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	tfhcloud "github.com/hetznercloud/terraform-provider-hcloud/hcloud"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/e2etests"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/primaryip"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
@@ -48,7 +48,7 @@ func TestAccHcloudDataSourcePrimaryIPTest(t *testing.T) {
 	primaryIPBySel.SetRName("primaryip_by_sel")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: e2etests.PreCheck(t),
+		PreCheck: teste2e.PreCheck(t),
 		ProviderFactories: map[string]func() (*schema.Provider, error){
 			//nolint:unparam
 			"hcloud": func() (*schema.Provider, error) {
@@ -111,7 +111,7 @@ func TestAccHcloudDataSourcePrimaryIPListTest(t *testing.T) {
 
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: e2etests.PreCheck(t),
+		PreCheck: teste2e.PreCheck(t),
 		ProviderFactories: map[string]func() (*schema.Provider, error){
 			//nolint:unparam
 			"hcloud": func() (*schema.Provider, error) {

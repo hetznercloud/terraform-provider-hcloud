@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/e2etests"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/floatingip"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
@@ -23,7 +23,7 @@ func TestAccHcloudDataSourceFloatingIPTest(t *testing.T) {
 		Labels: map[string]string{
 			"key": strconv.Itoa(acctest.RandInt()),
 		},
-		HomeLocationName: e2etests.TestLocationName,
+		HomeLocationName: teste2e.TestLocationName,
 	}
 	res.SetRName("floatingip-ds-test")
 	floatingipByName := &floatingip.DData{
@@ -40,8 +40,8 @@ func TestAccHcloudDataSourceFloatingIPTest(t *testing.T) {
 	floatingipBySel.SetRName("floatingip_by_sel")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(floatingip.ResourceType, floatingip.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
@@ -82,7 +82,7 @@ func TestAccHcloudDataSourceFloatingIPListTest(t *testing.T) {
 		Labels: map[string]string{
 			"key": strconv.Itoa(acctest.RandInt()),
 		},
-		HomeLocationName: e2etests.TestLocationName,
+		HomeLocationName: teste2e.TestLocationName,
 	}
 	res.SetRName("floatingip-ds-test")
 
@@ -96,8 +96,8 @@ func TestAccHcloudDataSourceFloatingIPListTest(t *testing.T) {
 
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(floatingip.ResourceType, floatingip.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{

@@ -3,8 +3,8 @@ package servertype_test
 import (
 	"testing"
 
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/e2etests"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/servertype"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
@@ -14,7 +14,7 @@ func TestAccHcloudDataSourceServerTypeTest(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	stByName := &servertype.DData{
-		ServerTypeName: e2etests.TestServerType,
+		ServerTypeName: teste2e.TestServerType,
 	}
 	stByName.SetRName("st_by_name")
 	stByID := &servertype.DData{
@@ -22,8 +22,8 @@ func TestAccHcloudDataSourceServerTypeTest(t *testing.T) {
 	}
 	stByID.SetRName("st_by_id")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
@@ -59,8 +59,8 @@ func TestAccHcloudDataSourceServerTypesTest(t *testing.T) {
 	servertypesD := &servertype.DDataList{}
 	servertypesD.SetRName("ds")
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,

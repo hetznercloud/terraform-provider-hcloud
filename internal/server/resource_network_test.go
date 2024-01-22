@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/e2etests"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hetznercloud/hcloud-go/hcloud"
@@ -38,9 +38,9 @@ func TestAccHcloudServerNetwork_NetworkID(t *testing.T) {
 	subNetRes.SetRName("test-network-subnet")
 	sRes := &server.RData{
 		Name:       "s-network-test",
-		Type:       e2etests.TestServerType,
-		Datacenter: e2etests.TestDataCenter,
-		Image:      e2etests.TestImage,
+		Type:       teste2e.TestServerType,
+		Datacenter: teste2e.TestDataCenter,
+		Image:      teste2e.TestImage,
 		SSHKeys:    []string{sk.TFID() + ".id"},
 	}
 	sRes.SetRName("s-network-test")
@@ -53,8 +53,8 @@ func TestAccHcloudServerNetwork_NetworkID(t *testing.T) {
 	}
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
@@ -107,17 +107,17 @@ func TestAccHcloudServerNetwork_SubNetID(t *testing.T) {
 	subNetRes.SetRName("test-network-subnet")
 	sRes := &server.RData{
 		Name:       "s-network-test",
-		Type:       e2etests.TestServerType,
-		Datacenter: e2etests.TestDataCenter,
-		Image:      e2etests.TestImage,
+		Type:       teste2e.TestServerType,
+		Datacenter: teste2e.TestDataCenter,
+		Image:      teste2e.TestImage,
 		SSHKeys:    []string{sk.TFID() + ".id"},
 	}
 	sRes.SetRName("s-network-test")
 
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{

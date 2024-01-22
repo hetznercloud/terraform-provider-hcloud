@@ -9,9 +9,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hetznercloud/hcloud-go/hcloud"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/e2etests"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancer"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/network"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 	"github.com/stretchr/testify/assert"
@@ -37,14 +37,14 @@ func TestAccHcloudLoadBalancerNetwork_NetworkID(t *testing.T) {
 	subNetRes.SetRName("test-network-subnet")
 	lbRes := &loadbalancer.RData{
 		Name:        "lb-network-test",
-		Type:        e2etests.TestLoadBalancerType,
+		Type:        teste2e.TestLoadBalancerType,
 		NetworkZone: "eu-central",
 	}
 
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
@@ -121,14 +121,14 @@ func TestAccHcloudLoadBalancerNetwork_SubNetID(t *testing.T) {
 	subNetRes.SetRName("test-network-subnet")
 	lbRes := &loadbalancer.RData{
 		Name:        "lb-network-test",
-		Type:        e2etests.TestLoadBalancerType,
+		Type:        teste2e.TestLoadBalancerType,
 		NetworkZone: "eu-central",
 	}
 
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
@@ -174,14 +174,14 @@ func TestAccHcloudLoadBalancerNetwork_CannotAttachToTwoNetworks(t *testing.T) {
 
 	lbRes := &loadbalancer.RData{
 		Name:        "lb-double-attach-test",
-		Type:        e2etests.TestLoadBalancerType,
+		Type:        teste2e.TestLoadBalancerType,
 		NetworkZone: "eu-central",
 	}
 
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 e2etests.PreCheck(t),
-		ProtoV6ProviderFactories: e2etests.ProtoV6ProviderFactories(),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
