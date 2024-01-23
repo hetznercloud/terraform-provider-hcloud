@@ -450,7 +450,7 @@ func TestServerResource_PrimaryIPNetworkTests(t *testing.T) {
 		Name:         "primaryip-v4-test",
 		Type:         "ipv4",
 		Labels:       nil,
-		Datacenter:   "hel1-dc2",
+		Datacenter:   e2etests.TestDataCenter,
 		AssigneeType: "server",
 		AutoDelete:   false,
 	}
@@ -460,7 +460,7 @@ func TestServerResource_PrimaryIPNetworkTests(t *testing.T) {
 		Name:         "primaryip-v6-test",
 		Type:         "ipv6",
 		Labels:       nil,
-		Datacenter:   "hel1-dc2",
+		Datacenter:   e2etests.TestDataCenter,
 		AssigneeType: "server",
 		AutoDelete:   false,
 	}

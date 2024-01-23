@@ -11,24 +11,27 @@ import (
 	tfhcloud "github.com/hetznercloud/terraform-provider-hcloud/hcloud"
 )
 
-const (
+var (
 	// TestImage is the system image that is used in all tests
-	TestImage = "ubuntu-20.04"
+	TestImage = getEnv("TEST_IMAGE", "ubuntu-22.04")
+
+	// TestImage is the system image ID that is used in all tests
+	TestImageID = getEnv("TEST_IMAGE_ID", "67794396")
 
 	// TestServerType is the default server type used in all tests
-	TestServerType = "cx11"
+	TestServerType = getEnv("TEST_SERVER_TYPE", "cx11")
 
 	// TestArchitecture is the default architecture used in all tests, should match the architecture of the TestServerType.
-	TestArchitecture = hcloud.ArchitectureX86
+	TestArchitecture = getEnv("TEST_ARCHITECTURE", string(hcloud.ArchitectureX86))
 
 	// TestLoadBalancerType is the default Load Balancer type used in all tests
 	TestLoadBalancerType = "lb11"
 
 	// TestDataCenter is the default datacenter where we execute our tests.
-	TestDataCenter = "hel1-dc2"
+	TestDataCenter = getEnv("TEST_DATACENTER", "nbg1-dc3")
 
 	// TestLocationName is the default location where we execute our tests.
-	TestLocationName = "hel1"
+	TestLocationName = getEnv("TEST_LOCATION", "nbg1")
 )
 
 func ProtoV6ProviderFactories() map[string]func() (tfprotov6.ProviderServer, error) {
@@ -54,4 +57,11 @@ func PreCheck(t *testing.T) func() {
 			t.Fatal("HCLOUD_TOKEN must be set for acceptance tests")
 		}
 	}
+}
+
+func getEnv(key, fallback string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	return fallback
 }

@@ -12,18 +12,15 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-const TestImageName = e2etests.TestImage
-const TestImageID = "15512617"
-
 func TestAccHcloudDataSourceImageTest(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	imageByName := &image.DData{
-		ImageName: TestImageName,
+		ImageName: e2etests.TestImage,
 	}
 	imageByName.SetRName("image_by_name")
 	imageByID := &image.DData{
-		ImageID: TestImageID,
+		ImageID: e2etests.TestImageID,
 	}
 	imageByID.SetRName("image_by_id")
 
@@ -40,12 +37,12 @@ func TestAccHcloudDataSourceImageTest(t *testing.T) {
 
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(imageByName.TFID(),
-						"name", TestImageName),
-					resource.TestCheckResourceAttr(imageByName.TFID(), "id", TestImageID),
+						"name", e2etests.TestImage),
+					resource.TestCheckResourceAttr(imageByName.TFID(), "id", e2etests.TestImageID),
 
 					resource.TestCheckResourceAttr(imageByID.TFID(),
-						"name", TestImageName),
-					resource.TestCheckResourceAttr(imageByID.TFID(), "id", TestImageID),
+						"name", e2etests.TestImage),
+					resource.TestCheckResourceAttr(imageByID.TFID(), "id", e2etests.TestImageID),
 				),
 			},
 		},
@@ -56,7 +53,7 @@ func TestAccHcloudDataSourceImageWithFiltersTest(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	imageByName := &image.DData{
-		ImageName:         TestImageName,
+		ImageName:         e2etests.TestImage,
 		Architecture:      "arm",
 		IncludeDeprecated: true,
 	}
@@ -74,7 +71,7 @@ func TestAccHcloudDataSourceImageWithFiltersTest(t *testing.T) {
 
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(imageByName.TFID(),
-						"name", TestImageName),
+						"name", e2etests.TestImage),
 					resource.TestCheckResourceAttr(imageByName.TFID(),
 						"architecture", "arm"),
 				),
@@ -101,8 +98,8 @@ func TestAccHcloudDataSourceImageListTest(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckTypeSetElemNestedAttrs(allImagesSel.TFID(), "images.*",
 						map[string]string{
-							"name": TestImageName,
-							"id":   TestImageID,
+							"name": e2etests.TestImage,
+							"id":   e2etests.TestImageID,
 						},
 					),
 				),
