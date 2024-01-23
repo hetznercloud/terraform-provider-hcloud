@@ -28,10 +28,10 @@ var (
 	TestLoadBalancerType = "lb11"
 
 	// TestDataCenter is the default datacenter where we execute our tests.
-	TestDataCenter = getEnv("TEST_DATACENTER", "ash-dc1")
+	TestDataCenter = getEnv("TEST_DATACENTER", "nbg1-dc3")
 
 	// TestLocationName is the default location where we execute our tests.
-	TestLocationName = getEnv("TEST_LOCATION", "ash")
+	TestLocationName = getEnv("TEST_LOCATION", "nbg")
 )
 
 func ProtoV6ProviderFactories() map[string]func() (tfprotov6.ProviderServer, error) {
