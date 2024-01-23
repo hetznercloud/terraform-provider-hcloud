@@ -1,0 +1,3 @@
+ignore:
+  - "**/test*/" # Ignore test packages that start with 'test'
+  - "**/testing.go" # Ignore resource shared test functions
