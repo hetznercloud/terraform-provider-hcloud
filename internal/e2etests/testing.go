@@ -31,7 +31,7 @@ var (
 	TestDataCenter = getEnv("TEST_DATACENTER", "nbg1-dc3")
 
 	// TestLocationName is the default location where we execute our tests.
-	TestLocationName = getEnv("TEST_LOCATION", "nbg")
+	TestLocationName = getEnv("TEST_LOCATION", "nbg1")
 )
 
 func ProtoV6ProviderFactories() map[string]func() (tfprotov6.ProviderServer, error) {
