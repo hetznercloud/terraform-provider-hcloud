@@ -36,7 +36,8 @@ func (l labelsValidator) ValidateMap(_ context.Context, req validator.MapRequest
 	}
 }
 
-func GetLabelsSchema() schema.MapAttribute {
+// LabelsSchema returns a map attribute schema with validation for the labels field shared by multiple resources.
+func LabelsSchema() schema.MapAttribute {
 	return schema.MapAttribute{
 		MarkdownDescription: "User-defined [labels](https://docs.hetzner.cloud/#labels) (key-value pairs) for the resource.",
 		Optional:            true,
