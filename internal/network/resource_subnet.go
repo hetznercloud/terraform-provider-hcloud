@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/control"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
 // SubnetResourceType is the type name of the Hetzner Cloud Network Subnet resource.
@@ -78,7 +78,7 @@ func resourceNetworkSubnetCreate(ctx context.Context, d *schema.ResourceData, m 
 
 	_, ipRange, err := net.ParseCIDR(d.Get("ip_range").(string))
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 	networkID := d.Get("network_id")
 	network := &hcloud.Network{ID: networkID.(int)}
@@ -110,12 +110,12 @@ func resourceNetworkSubnetCreate(ctx context.Context, d *schema.ResourceData, m 
 		return control.AbortRetry(err)
 	})
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 	d.SetId(generateNetworkSubnetID(network, ipRange.String()))
 
-	if err := hcclient.WaitForAction(ctx, &c.Action, a); err != nil {
-		return hcclient.ErrorToDiag(err)
+	if err := hcloudutil.WaitForAction(ctx, &c.Action, a); err != nil {
+		return hcloudutil.ErrorToDiag(err)
 	}
 
 	return resourceNetworkSubnetRead(ctx, d, m)
@@ -131,7 +131,7 @@ func resourceNetworkSubnetRead(ctx context.Context, d *schema.ResourceData, m in
 		return nil
 	}
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 	if network == nil {
 		log.Printf("[WARN] Network Subnet (%s) not found, removing from state", d.Id())
@@ -183,10 +183,10 @@ func resourceNetworkSubnetDelete(ctx context.Context, d *schema.ResourceData, m 
 		return nil
 	}
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
-	if err := hcclient.WaitForAction(ctx, &c.Action, a); err != nil {
-		return hcclient.ErrorToDiag(err)
+	if err := hcloudutil.WaitForAction(ctx, &c.Action, a); err != nil {
+		return hcloudutil.ErrorToDiag(err)
 	}
 	return nil
 }

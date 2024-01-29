@@ -19,8 +19,8 @@ import (
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/control"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/primaryip"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
 // ResourceType is the type name of the Hetzner Cloud Server resource.
@@ -290,7 +290,7 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	// Get server type to select correct image (based on arch)
 	serverType, _, err := c.ServerType.Get(ctx, d.Get("server_type").(string))
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 	if serverType == nil {
 		return diag.Errorf("server type %s not found", d.Get("server_type"))
@@ -307,7 +307,7 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	imageNameOrID := d.Get("image").(string)
 	image, _, err := c.Image.GetForArchitecture(ctx, imageNameOrID, serverType.Architecture)
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 
 	if image == nil {
@@ -332,7 +332,7 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 
 	opts.SSHKeys, err = getSSHkeys(ctx, c, d)
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 
 	if datacenter, ok := d.GetOk("datacenter"); ok {
@@ -359,7 +359,7 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	if placementGroupID, ok := d.GetOk("placement_group_id"); ok {
 		placementGroup, err := getPlacementGroup(ctx, c, placementGroupID.(int))
 		if err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 
 		opts.PlacementGroup = placementGroup
@@ -395,16 +395,16 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 	res, _, err := c.Server.Create(ctx, opts)
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 	d.SetId(strconv.Itoa(res.Server.ID))
 
-	if err := hcclient.WaitForAction(ctx, &c.Action, res.Action); err != nil {
-		return hcclient.ErrorToDiag(err)
+	if err := hcloudutil.WaitForAction(ctx, &c.Action, res.Action); err != nil {
+		return hcloudutil.ErrorToDiag(err)
 	}
 	for _, nextAction := range res.NextActions {
-		if err := hcclient.WaitForAction(ctx, &c.Action, nextAction); err != nil {
-			return hcclient.ErrorToDiag(err)
+		if err := hcloudutil.WaitForAction(ctx, &c.Action, nextAction); err != nil {
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 
@@ -412,7 +412,7 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		for _, item := range nwSet.(*schema.Set).List() {
 			nwData := item.(map[string]interface{})
 			if err := inlineAttachServerToNetwork(ctx, c, res.Server, nwData); err != nil {
-				return hcclient.ErrorToDiag(err)
+				return hcloudutil.ErrorToDiag(err)
 			}
 		}
 		// if the server was created without public net, the server is now still offline and has to be powered on after
@@ -427,7 +427,7 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 			if err != nil {
 				return err
 			}
-			if err := hcclient.WaitForAction(ctx, &c.Action, powerOffTwo); err != nil {
+			if err := hcloudutil.WaitForAction(ctx, &c.Action, powerOffTwo); err != nil {
 				return fmt.Errorf("power off server: %v", err)
 			}
 			return powerOnServer(ctx, c, res.Server)
@@ -438,18 +438,18 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 
 	backups := d.Get("backups").(bool)
 	if err := setBackups(ctx, c, res.Server, backups); err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 
 	if iso, ok := d.GetOk("iso"); ok {
 		if err := setISO(ctx, c, res.Server, iso.(string)); err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 
 	if rescue, ok := d.GetOk("rescue"); ok {
 		if err := setRescue(ctx, c, res.Server, rescue.(string), opts.SSHKeys); err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 
@@ -457,7 +457,7 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	rebuildProtection := d.Get("rebuild_protection").(bool)
 	if deleteProtection || rebuildProtection {
 		if err := setProtection(ctx, c, res.Server, deleteProtection, rebuildProtection); err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 
@@ -472,7 +472,7 @@ func resourceServerRead(ctx context.Context, d *schema.ResourceData, m interface
 		if resourceServerIsNotFound(err, d) {
 			return nil
 		}
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 	if server == nil {
 		d.SetId("")
@@ -493,7 +493,7 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 
 	server, _, err := c.Server.Get(ctx, d.Id())
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 	if server == nil {
 		d.SetId("")
@@ -510,7 +510,7 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 			if resourceServerIsNotFound(err, d) {
 				return nil
 			}
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 	if d.HasChange("labels") {
@@ -526,7 +526,7 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 			if resourceServerIsNotFound(err, d) {
 				return nil
 			}
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 	if d.HasChange("server_type") {
@@ -536,10 +536,10 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		if server.Status == hcloud.ServerStatusRunning {
 			action, _, err := c.Server.Poweroff(ctx, server)
 			if err != nil {
-				return hcclient.ErrorToDiag(err)
+				return hcloudutil.ErrorToDiag(err)
 			}
-			if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
-				return hcclient.ErrorToDiag(err)
+			if err := hcloudutil.WaitForAction(ctx, &c.Action, action); err != nil {
+				return hcloudutil.ErrorToDiag(err)
 			}
 		}
 
@@ -548,24 +548,24 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 			UpgradeDisk: !keepDisk,
 		})
 		if err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
-		if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
-			return hcclient.ErrorToDiag(err)
+		if err := hcloudutil.WaitForAction(ctx, &c.Action, action); err != nil {
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 
 	if d.HasChange("backups") {
 		backups := d.Get("backups").(bool)
 		if err := setBackups(ctx, c, server, backups); err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 
 	if d.HasChange("iso") {
 		iso := d.Get("iso").(string)
 		if err := setISO(ctx, c, server, iso); err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 
@@ -573,17 +573,17 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		rescue := d.Get("rescue").(string)
 		sshKeys, err := getSSHkeys(ctx, c, d)
 		if err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 		if err := setRescue(ctx, c, server, rescue, sshKeys); err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 
 	if d.HasChange("network") {
 		data := d.Get("network").(*schema.Set)
 		if err := updateServerInlineNetworkAttachments(ctx, c, data, server); err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 
@@ -611,11 +611,11 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 					},
 				)
 				if err != nil {
-					return hcclient.ErrorToDiag(err)
+					return hcloudutil.ErrorToDiag(err)
 				}
-				err = hcclient.WaitForActions(ctx, &c.Action, a)
+				err = hcloudutil.WaitForActions(ctx, &c.Action, a)
 				if err != nil {
-					return hcclient.ErrorToDiag(err)
+					return hcloudutil.ErrorToDiag(err)
 				}
 			}
 		}
@@ -642,11 +642,11 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 					},
 				)
 				if err != nil {
-					return hcclient.ErrorToDiag(err)
+					return hcloudutil.ErrorToDiag(err)
 				}
-				err = hcclient.WaitForActions(ctx, &c.Action, a)
+				err = hcloudutil.WaitForActions(ctx, &c.Action, a)
 				if err != nil {
-					return hcclient.ErrorToDiag(err)
+					return hcloudutil.ErrorToDiag(err)
 				}
 			}
 		}
@@ -662,7 +662,7 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 	if d.HasChange("placement_group") {
 		placementGroupID := d.Get("placement_group").(int)
 		if err := setPlacementGroup(ctx, c, server, placementGroupID); err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 
@@ -670,7 +670,7 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		deletionProtection := d.Get("delete_protection").(bool)
 		rebuild := d.Get("rebuild_protection").(bool)
 		if err := setProtection(ctx, c, server, deletionProtection, rebuild); err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 
@@ -700,11 +700,11 @@ func updatePublicNet(ctx context.Context, o interface{}, n interface{}, c *hclou
 
 	shutdown, _, err := c.Server.Poweroff(ctx, &hcloud.Server{ID: server.ID})
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 
-	if err := hcclient.WaitForAction(ctx, &c.Action, shutdown); err != nil {
-		return hcclient.ErrorToDiag(err)
+	if err := hcloudutil.WaitForAction(ctx, &c.Action, shutdown); err != nil {
+		return hcloudutil.ErrorToDiag(err)
 	}
 
 	// if public net block is removed, auto generate primary ips & remove existing
@@ -760,7 +760,7 @@ func updatePublicNet(ctx context.Context, o interface{}, n interface{}, c *hclou
 	}
 
 	if err := powerOnServer(ctx, c, server); err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 
 	return nil
@@ -786,7 +786,7 @@ func publicNetUpdateDecision(ctx context.Context,
 			if ipIDInRemoveDiff == 0 {
 				if err := primaryip.DeletePrimaryIP(ctx, c, &hcloud.PrimaryIP{ID: serverIPID}); err != nil {
 					if err := powerOnServer(ctx, c, server); err != nil {
-						return hcclient.ErrorToDiag(err)
+						return hcloudutil.ErrorToDiag(err)
 					}
 					return err
 				}
@@ -794,7 +794,7 @@ func publicNetUpdateDecision(ctx context.Context,
 		}
 		if err := primaryip.AssignPrimaryIP(ctx, c, ipID, server.ID); err != nil {
 			if err := powerOnServer(ctx, c, server); err != nil {
-				return hcclient.ErrorToDiag(err)
+				return hcloudutil.ErrorToDiag(err)
 			}
 			return err
 		}
@@ -803,14 +803,14 @@ func publicNetUpdateDecision(ctx context.Context,
 		if serverIPID != 0 {
 			if err := primaryip.UnassignPrimaryIP(ctx, c, serverIPID); err != nil {
 				if err := powerOnServer(ctx, c, server); err != nil {
-					return hcclient.ErrorToDiag(err)
+					return hcloudutil.ErrorToDiag(err)
 				}
 				return err
 			}
 			if ipIDInRemoveDiff == 0 {
 				if err := primaryip.DeletePrimaryIP(ctx, c, &hcloud.PrimaryIP{ID: serverIPID}); err != nil {
 					if err := powerOnServer(ctx, c, server); err != nil {
-						return hcclient.ErrorToDiag(err)
+						return hcloudutil.ErrorToDiag(err)
 					}
 					return err
 				}
@@ -823,7 +823,7 @@ func publicNetUpdateDecision(ctx context.Context,
 		if ipEnabledInRemoveDiff && ipIDInRemoveDiff != 0 {
 			if err := primaryip.UnassignPrimaryIP(ctx, c, ipIDInRemoveDiff); err != nil {
 				if err := powerOnServer(ctx, c, server); err != nil {
-					return hcclient.ErrorToDiag(err)
+					return hcloudutil.ErrorToDiag(err)
 				}
 				return err
 			}
@@ -832,7 +832,7 @@ func publicNetUpdateDecision(ctx context.Context,
 			ipEnabledInRemoveDiff && ipIDInRemoveDiff != 0 {
 			if err := primaryip.CreateRandomPrimaryIP(ctx, c, server, ipType); err != nil {
 				if err := powerOnServer(ctx, c, server); err != nil {
-					return hcclient.ErrorToDiag(err)
+					return hcloudutil.ErrorToDiag(err)
 				}
 				return err
 			}
@@ -841,9 +841,9 @@ func publicNetUpdateDecision(ctx context.Context,
 	// error on ip set from true -> false + ipv4 ID provided
 	case !ipEnabled && ipID != 0:
 		if err := powerOnServer(ctx, c, server); err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
-		return hcclient.ErrorToDiag(
+		return hcloudutil.ErrorToDiag(
 			fmt.Errorf("this operation is not allowed: ipv4_enabled = false | ipv4 = %d", ipID))
 	}
 	return nil
@@ -865,11 +865,11 @@ func resourceServerDelete(ctx context.Context, d *schema.ResourceData, m interfa
 		// Try shutting down the server
 		shutdownResult, _, err := client.Server.Shutdown(ctx, &hcloud.Server{ID: serverID})
 		if err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 
-		if err = hcclient.WaitForAction(ctx, &client.Action, shutdownResult); err != nil {
-			return hcclient.ErrorToDiag(err)
+		if err = hcloudutil.WaitForAction(ctx, &client.Action, shutdownResult); err != nil {
+			return hcloudutil.ErrorToDiag(err)
 		}
 
 		// Give the server some time to shut down
@@ -899,12 +899,12 @@ func resourceServerDelete(ctx context.Context, d *schema.ResourceData, m interfa
 
 	result, _, err := client.Server.DeleteWithResult(ctx, &hcloud.Server{ID: serverID})
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 
-	err = hcclient.WaitForAction(ctx, &client.Action, result.Action)
+	err = hcloudutil.WaitForAction(ctx, &client.Action, result.Action)
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 
 	return warnings
@@ -926,7 +926,7 @@ func setBackups(ctx context.Context, c *hcloud.Client, server *hcloud.Server, ba
 			return err
 		}
 
-		return hcclient.WaitForAction(ctx, &c.Action, action)
+		return hcloudutil.WaitForAction(ctx, &c.Action, action)
 	}
 
 	if server.BackupWindow == "" && backups {
@@ -934,7 +934,7 @@ func setBackups(ctx context.Context, c *hcloud.Client, server *hcloud.Server, ba
 		if err != nil {
 			return err
 		}
-		return hcclient.WaitForAction(ctx, &c.Action, action)
+		return hcloudutil.WaitForAction(ctx, &c.Action, action)
 	}
 
 	return nil
@@ -948,7 +948,7 @@ func setISO(ctx context.Context, c *hcloud.Client, server *hcloud.Server, isoIDO
 		if err != nil {
 			return err
 		}
-		if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
+		if err := hcloudutil.WaitForAction(ctx, &c.Action, action); err != nil {
 			return err
 		}
 	}
@@ -974,7 +974,7 @@ func setISO(ctx context.Context, c *hcloud.Client, server *hcloud.Server, isoIDO
 		if err != nil {
 			return err
 		}
-		if err := hcclient.WaitForAction(ctx, &c.Action, a); err != nil {
+		if err := hcloudutil.WaitForAction(ctx, &c.Action, a); err != nil {
 			return err
 		}
 	}
@@ -984,7 +984,7 @@ func setISO(ctx context.Context, c *hcloud.Client, server *hcloud.Server, isoIDO
 		if err != nil {
 			return err
 		}
-		if err := hcclient.WaitForAction(ctx, &c.Action, a); err != nil {
+		if err := hcloudutil.WaitForAction(ctx, &c.Action, a); err != nil {
 			return err
 		}
 	}
@@ -1001,7 +1001,7 @@ func setRescue(ctx context.Context, c *hcloud.Client, server *hcloud.Server, res
 		if err != nil {
 			return fmt.Errorf("%s: %v", op, err)
 		}
-		if err := hcclient.WaitForAction(ctx, &c.Action, a); err != nil {
+		if err := hcloudutil.WaitForAction(ctx, &c.Action, a); err != nil {
 			return fmt.Errorf("%s: %v", op, err)
 		}
 	}
@@ -1015,7 +1015,7 @@ func setRescue(ctx context.Context, c *hcloud.Client, server *hcloud.Server, res
 			if err != nil {
 				return err
 			}
-			return hcclient.WaitForAction(ctx, &c.Action, res.Action)
+			return hcloudutil.WaitForAction(ctx, &c.Action, res.Action)
 		})
 		if err != nil {
 			return fmt.Errorf("%s: %v", op, err)
@@ -1027,7 +1027,7 @@ func setRescue(ctx context.Context, c *hcloud.Client, server *hcloud.Server, res
 			if err != nil {
 				return fmt.Errorf("%s: %v", op, err)
 			}
-			return hcclient.WaitForAction(ctx, &c.Action, action)
+			return hcloudutil.WaitForAction(ctx, &c.Action, action)
 		})
 		if err != nil {
 			return fmt.Errorf("%s: %v", op, err)
@@ -1253,7 +1253,7 @@ func setPlacementGroup(ctx context.Context, c *hcloud.Client, server *hcloud.Ser
 		if err != nil {
 			return err
 		}
-		if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
+		if err := hcloudutil.WaitForAction(ctx, &c.Action, action); err != nil {
 			return err
 		}
 	}
@@ -1268,7 +1268,7 @@ func setPlacementGroup(ctx context.Context, c *hcloud.Client, server *hcloud.Ser
 		if err != nil {
 			return err
 		}
-		if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
+		if err := hcloudutil.WaitForAction(ctx, &c.Action, action); err != nil {
 			return err
 		}
 	}
@@ -1287,7 +1287,7 @@ func setProtection(ctx context.Context, c *hcloud.Client, server *hcloud.Server,
 		return err
 	}
 
-	return hcclient.WaitForAction(ctx, &c.Action, action)
+	return hcloudutil.WaitForAction(ctx, &c.Action, action)
 }
 
 func toServerPublicNet[V int | bool](field map[string]interface{}, key string) (V, error) {
@@ -1324,7 +1324,7 @@ func onServerCreateWithoutPublicNet(opts *hcloud.ServerCreateOpts, d *schema.Res
 	if _, ok := d.GetOk("network"); ok && opts.PublicNet != nil {
 		if !opts.PublicNet.EnableIPv6 && !opts.PublicNet.EnableIPv4 {
 			if err := fn(opts); err != nil {
-				return hcclient.ErrorToDiag(err)
+				return hcloudutil.ErrorToDiag(err)
 			}
 		}
 		return nil
@@ -1339,7 +1339,7 @@ func powerOnServer(ctx context.Context, c *hcloud.Client, server *hcloud.Server)
 			return err
 		}
 
-		return hcclient.WaitForAction(ctx, &c.Action, powerOn)
+		return hcloudutil.WaitForAction(ctx, &c.Action, powerOn)
 	})
 	if err != nil {
 		return err

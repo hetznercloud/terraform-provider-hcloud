@@ -11,8 +11,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/datasourceutil"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
 const (
@@ -263,7 +263,7 @@ func dataSourceHcloudLoadBalancerRead(ctx context.Context, d *schema.ResourceDat
 	if id, ok := d.GetOk("id"); ok {
 		lb, _, err := client.LoadBalancer.GetByID(ctx, id.(int))
 		if err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 		if lb == nil {
 			return diag.Errorf("no Load Balancer found with id %d", id)
@@ -274,7 +274,7 @@ func dataSourceHcloudLoadBalancerRead(ctx context.Context, d *schema.ResourceDat
 	if name, ok := d.GetOk("name"); ok {
 		lb, _, err := client.LoadBalancer.GetByName(ctx, name.(string))
 		if err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 		if lb == nil {
 			return diag.Errorf("no Load Balancer found with name %s", name)
@@ -294,7 +294,7 @@ func dataSourceHcloudLoadBalancerRead(ctx context.Context, d *schema.ResourceDat
 		}
 		allLoadBalancers, err := client.LoadBalancer.AllWithOpts(ctx, opts)
 		if err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 		if len(allLoadBalancers) == 0 {
 			return diag.Errorf("no Load Balancer found for selector %q", selector)
@@ -316,7 +316,7 @@ func dataSourceHcloudLoadBalancerListRead(ctx context.Context, d *schema.Resourc
 	opts := hcloud.LoadBalancerListOpts{ListOpts: hcloud.ListOpts{LabelSelector: selector}}
 	allLoadBalancers, err := client.LoadBalancer.AllWithOpts(ctx, opts)
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 
 	ids := make([]string, len(allLoadBalancers))

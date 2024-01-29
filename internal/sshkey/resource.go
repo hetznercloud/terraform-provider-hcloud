@@ -11,7 +11,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -86,7 +86,7 @@ func resourceSSHKeyCreate(ctx context.Context, d *schema.ResourceData, m interfa
 
 	sshKey, _, err := client.SSHKey.Create(ctx, opts)
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 	d.SetId(strconv.Itoa(sshKey.ID))
 
@@ -105,7 +105,7 @@ func resourceSSHKeyRead(ctx context.Context, d *schema.ResourceData, m interface
 
 	sshKey, _, err := client.SSHKey.GetByID(ctx, sshKeyID)
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 	if sshKey == nil {
 		log.Printf("[WARN] SSH key (%s) not found, removing from state", d.Id())
@@ -139,7 +139,7 @@ func resourceSSHKeyUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 				d.SetId("")
 				return nil
 			}
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 	if d.HasChange("labels") {
@@ -156,7 +156,7 @@ func resourceSSHKeyUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 				d.SetId("")
 				return nil
 			}
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 
@@ -177,7 +177,7 @@ func resourceSSHKeyDelete(ctx context.Context, d *schema.ResourceData, m interfa
 			// SSH key has already been deleted
 			return nil
 		}
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 
 	return nil

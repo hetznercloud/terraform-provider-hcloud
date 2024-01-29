@@ -12,7 +12,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
 // ResourceType is the type name of the Hetzner Cloud SSH Key resource.
@@ -72,7 +72,7 @@ func resourceReverseDNSRead(ctx context.Context, d *schema.ResourceData, m inter
 	rdns, ip, err := lookupRDNSID(ctx, d.Id(), c)
 	if err != nil {
 		d.SetId("")
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 	if rdns == nil {
 		// Resource does not exist
@@ -82,7 +82,7 @@ func resourceReverseDNSRead(ctx context.Context, d *schema.ResourceData, m inter
 	dns, err := rdns.GetDNSPtrForIP(ip)
 	if err != nil {
 		d.SetId("")
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 
 	d.SetId(generateRDNSID(rdns, ip))
@@ -115,7 +115,7 @@ func resourceReverseDNSCreate(ctx context.Context, d *schema.ResourceData, m int
 
 	ip := net.ParseIP(d.Get("ip_address").(string))
 	if ip == nil {
-		return hcclient.ErrorToDiag(fmt.Errorf("could not parse ip %s", d.Get("ip_address").(string)))
+		return hcloudutil.ErrorToDiag(fmt.Errorf("could not parse ip %s", d.Get("ip_address").(string)))
 	}
 	ptr := d.Get("dns_ptr").(string)
 
@@ -138,7 +138,7 @@ func resourceReverseDNSCreate(ctx context.Context, d *schema.ResourceData, m int
 		resourceName = "Load Balancer"
 	}
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 
 	if rdns == nil {
@@ -150,10 +150,10 @@ func resourceReverseDNSCreate(ctx context.Context, d *schema.ResourceData, m int
 	d.SetId(generateRDNSID(rdns, ip))
 	action, _, err := c.RDNS.ChangeDNSPtr(ctx, rdns, ip, &ptr)
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
-	if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
-		return hcclient.ErrorToDiag(err)
+	if err := hcloudutil.WaitForAction(ctx, &c.Action, action); err != nil {
+		return hcloudutil.ErrorToDiag(err)
 	}
 
 	return resourceReverseDNSRead(ctx, d, m)
@@ -165,7 +165,7 @@ func resourceReverseDNSUpdate(ctx context.Context, d *schema.ResourceData, m int
 	rdns, _, err := lookupRDNSID(ctx, d.Id(), c)
 	if err != nil {
 		d.SetId("")
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 	if rdns == nil {
 		// Resource does not exist
@@ -175,18 +175,18 @@ func resourceReverseDNSUpdate(ctx context.Context, d *schema.ResourceData, m int
 
 	ip := net.ParseIP(d.Get("ip_address").(string))
 	if ip == nil {
-		return hcclient.ErrorToDiag(fmt.Errorf("could not parse ip %s", d.Get("ip_address").(string)))
+		return hcloudutil.ErrorToDiag(fmt.Errorf("could not parse ip %s", d.Get("ip_address").(string)))
 	}
 	ptr := d.Get("dns_ptr").(string)
 
 	if d.HasChange("dns_ptr") {
 		action, _, err := c.RDNS.ChangeDNSPtr(ctx, rdns, ip, &ptr)
 		if err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 
-		if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
-			return hcclient.ErrorToDiag(err)
+		if err := hcloudutil.WaitForAction(ctx, &c.Action, action); err != nil {
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 	return resourceReverseDNSRead(ctx, d, m)
@@ -198,7 +198,7 @@ func resourceReverseDNSDelete(ctx context.Context, d *schema.ResourceData, m int
 	rdns, ip, err := lookupRDNSID(ctx, d.Id(), c)
 	if err != nil {
 		d.SetId("")
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 	if rdns == nil {
 		// Resource does not exist
@@ -213,11 +213,11 @@ func resourceReverseDNSDelete(ctx context.Context, d *schema.ResourceData, m int
 			// resource has already been deleted
 			return nil
 		}
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 
-	if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
-		return hcclient.ErrorToDiag(err)
+	if err := hcloudutil.WaitForAction(ctx, &c.Action, action); err != nil {
+		return hcloudutil.ErrorToDiag(err)
 	}
 
 	return nil

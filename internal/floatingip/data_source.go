@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/datasourceutil"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
@@ -121,7 +121,7 @@ func dataSourceHcloudFloatingIPRead(ctx context.Context, d *schema.ResourceData,
 	if id, ok := d.GetOk("id"); ok {
 		f, _, err := client.FloatingIP.GetByID(ctx, id.(int))
 		if err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 		if f == nil {
 			return diag.Errorf("no Floating IP found with id %d", id)
@@ -132,7 +132,7 @@ func dataSourceHcloudFloatingIPRead(ctx context.Context, d *schema.ResourceData,
 	if name, ok := d.GetOk("name"); ok {
 		f, _, err := client.FloatingIP.GetByName(ctx, name.(string))
 		if err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 		if f == nil {
 			return diag.Errorf("no Floating IP found with name %s", name)
@@ -144,7 +144,7 @@ func dataSourceHcloudFloatingIPRead(ctx context.Context, d *schema.ResourceData,
 		var allIPs []*hcloud.FloatingIP
 		allIPs, err := client.FloatingIP.All(ctx)
 		if err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 
 		// Find by 'ip_address'
@@ -172,7 +172,7 @@ func dataSourceHcloudFloatingIPRead(ctx context.Context, d *schema.ResourceData,
 		}
 		allIPs, err := client.FloatingIP.AllWithOpts(ctx, opts)
 		if err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 		if len(allIPs) == 0 {
 			return diag.Errorf("no Floating IP found for selector %q", selector)
@@ -200,7 +200,7 @@ func dataSourceHcloudFloatingIPListRead(ctx context.Context, d *schema.ResourceD
 	}
 	allIPs, err := client.FloatingIP.AllWithOpts(ctx, opts)
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 
 	ids := make([]string, len(allIPs))

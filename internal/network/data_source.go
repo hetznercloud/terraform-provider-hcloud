@@ -12,8 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/datasourceutil"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
 const (
@@ -105,7 +105,7 @@ func dataSourceHcloudNetworkRead(ctx context.Context, d *schema.ResourceData, m 
 	if id, ok := d.GetOk("id"); ok {
 		n, _, err := client.Network.GetByID(ctx, id.(int))
 		if err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 		if n == nil {
 			return diag.Errorf("no network found with id %d", id)
@@ -116,7 +116,7 @@ func dataSourceHcloudNetworkRead(ctx context.Context, d *schema.ResourceData, m 
 	if name, ok := d.GetOk("name"); ok {
 		n, _, err := client.Network.GetByName(ctx, name.(string))
 		if err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 		if n == nil {
 			return diag.Errorf("no network found with name %s", name)
@@ -136,7 +136,7 @@ func dataSourceHcloudNetworkRead(ctx context.Context, d *schema.ResourceData, m 
 		}
 		allNetworks, err := client.Network.AllWithOpts(ctx, opts)
 		if err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 		if len(allNetworks) == 0 {
 			return diag.Errorf("no network found for selector %q", selector)
@@ -162,7 +162,7 @@ func dataSourceHcloudNetworkListRead(ctx context.Context, d *schema.ResourceData
 	}
 	allNetworks, err := client.Network.AllWithOpts(ctx, opts)
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 
 	ids := make([]string, len(allNetworks))

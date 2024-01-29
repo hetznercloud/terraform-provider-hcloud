@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/control"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
 // ResourceType is the type name of the Hetzner Cloud Volume resource.
@@ -114,25 +114,25 @@ func resourceVolumeCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		if hcloud.IsError(err, hcloud.ErrorCodeLocked) {
 			return resourceVolumeCreate(ctx, d, m)
 		}
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 	d.SetId(strconv.Itoa(result.Volume.ID))
 
-	if err := hcclient.WaitForAction(ctx, &c.Action, result.Action); err != nil {
-		return hcclient.ErrorToDiag(err)
+	if err := hcloudutil.WaitForAction(ctx, &c.Action, result.Action); err != nil {
+		return hcloudutil.ErrorToDiag(err)
 	}
 	for _, nextAction := range result.NextActions {
-		if err := hcclient.WaitForAction(ctx, &c.Action, nextAction); err != nil {
+		if err := hcloudutil.WaitForAction(ctx, &c.Action, nextAction); err != nil {
 			var aerr hcloud.ActionError
 
 			if nextAction.Command != "attach_volume" {
-				return hcclient.ErrorToDiag(err)
+				return hcloudutil.ErrorToDiag(err)
 			}
 			if !errors.As(err, &aerr) {
-				return hcclient.ErrorToDiag(err)
+				return hcloudutil.ErrorToDiag(err)
 			}
 			if !strings.Contains(aerr.Message, string(hcloud.ErrorCodeLocked)) {
-				return hcclient.ErrorToDiag(err)
+				return hcloudutil.ErrorToDiag(err)
 			}
 
 			// Sometimes, when multiple volumes are created (for the same server)
@@ -153,10 +153,10 @@ func resourceVolumeCreate(ctx context.Context, d *schema.ResourceData, m interfa
 						if err != nil {
 							return err
 						}
-						return hcclient.WaitForAction(ctx, &c.Action, a)
+						return hcloudutil.WaitForAction(ctx, &c.Action, a)
 					})
 					if err != nil {
-						return hcclient.ErrorToDiag(err)
+						return hcloudutil.ErrorToDiag(err)
 					}
 				}
 			}
@@ -166,7 +166,7 @@ func resourceVolumeCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	deleteProtection := d.Get("delete_protection").(bool)
 	if deleteProtection {
 		if err := setProtection(ctx, c, result.Volume, deleteProtection); err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 
@@ -185,7 +185,7 @@ func resourceVolumeRead(ctx context.Context, d *schema.ResourceData, m interface
 
 	volume, _, err := client.Volume.GetByID(ctx, id)
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 	if volume == nil {
 		log.Printf("[WARN] volume (%s) not found, removing from state", d.Id())
@@ -211,7 +211,7 @@ func resourceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		if resourceVolumeIsNotFound(err, d) {
 			return nil
 		}
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 
 	d.Partial(true)
@@ -225,7 +225,7 @@ func resourceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 			if resourceVolumeIsNotFound(err, d) {
 				return nil
 			}
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 
@@ -241,10 +241,10 @@ func resourceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 					return err
 				}
 
-				return hcclient.WaitForAction(ctx, &c.Action, a)
+				return hcloudutil.WaitForAction(ctx, &c.Action, a)
 			})
 			if err != nil {
-				return hcclient.ErrorToDiag(err)
+				return hcloudutil.ErrorToDiag(err)
 			}
 		} else {
 			if volume.Server != nil {
@@ -257,10 +257,10 @@ func resourceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 						return err
 					}
 
-					return hcclient.WaitForAction(ctx, &c.Action, action)
+					return hcloudutil.WaitForAction(ctx, &c.Action, action)
 				})
 				if err != nil {
-					return hcclient.ErrorToDiag(err)
+					return hcloudutil.ErrorToDiag(err)
 				}
 			}
 			err := control.Retry(control.DefaultRetries, func() error {
@@ -277,10 +277,10 @@ func resourceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 					return err
 				}
 
-				return hcclient.WaitForAction(ctx, &c.Action, action)
+				return hcloudutil.WaitForAction(ctx, &c.Action, action)
 			})
 			if err != nil {
-				return hcclient.ErrorToDiag(err)
+				return hcloudutil.ErrorToDiag(err)
 			}
 		}
 	}
@@ -292,11 +292,11 @@ func resourceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 			if resourceVolumeIsNotFound(err, d) {
 				return nil
 			}
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 
-		if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
-			return hcclient.ErrorToDiag(err)
+		if err := hcloudutil.WaitForAction(ctx, &c.Action, action); err != nil {
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 
@@ -313,14 +313,14 @@ func resourceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 			if resourceVolumeIsNotFound(err, d) {
 				return nil
 			}
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 
 	if d.HasChange("delete_protection") {
 		deletionProtection := d.Get("delete_protection").(bool)
 		if err := setProtection(ctx, c, volume, deletionProtection); err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 
@@ -339,7 +339,7 @@ func resourceVolumeDelete(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 	volume, _, err := c.Volume.GetByID(ctx, volumeID)
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 
 	if volume.Server != nil {
@@ -352,10 +352,10 @@ func resourceVolumeDelete(ctx context.Context, d *schema.ResourceData, m interfa
 				return err
 			}
 
-			return hcclient.WaitForAction(ctx, &c.Action, a)
+			return hcloudutil.WaitForAction(ctx, &c.Action, a)
 		})
 		if err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 	err = control.Retry(control.DefaultRetries, func() error {
@@ -368,7 +368,7 @@ func resourceVolumeDelete(ctx context.Context, d *schema.ResourceData, m interfa
 		return nil
 	})
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 
 	return nil
@@ -421,5 +421,5 @@ func setProtection(ctx context.Context, c *hcloud.Client, v *hcloud.Volume, dele
 		return err
 	}
 
-	return hcclient.WaitForAction(ctx, &c.Action, action)
+	return hcloudutil.WaitForAction(ctx, &c.Action, action)
 }

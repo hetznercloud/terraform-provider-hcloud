@@ -15,7 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/control"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
 // TargetResourceType is the type name of the Hetzner Cloud Load Balancer
@@ -112,10 +112,10 @@ func resourceLoadBalancerTargetCreate(ctx context.Context, d *schema.ResourceDat
 		return diag.Errorf("unsupported target type: %s", tgtType)
 	}
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 	if a != nil {
-		if err := hcclient.WaitForAction(ctx, &c.Action, a); err != nil {
+		if err := hcloudutil.WaitForAction(ctx, &c.Action, a); err != nil {
 			return diag.Errorf("add load balancer target: %v", err)
 		}
 	}
@@ -268,7 +268,7 @@ func resourceLoadBalancerTargetRead(ctx context.Context, d *schema.ResourceData,
 		return nil
 	}
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 
 	setLoadBalancerTarget(d, lbID, tgt)
@@ -343,10 +343,10 @@ func resourceLoadBalancerTargetUpdate(ctx context.Context, d *schema.ResourceDat
 		return nil
 	}
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 	if err := removeLoadBalancerTarget(ctx, client, lb, tgt); err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 	return resourceLoadBalancerTargetCreate(ctx, d, m)
 }
@@ -361,10 +361,10 @@ func resourceLoadBalancerTargetDelete(ctx context.Context, d *schema.ResourceDat
 		return nil
 	}
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 	if err := removeLoadBalancerTarget(ctx, client, lb, tgt); err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 	return nil
 }
@@ -401,7 +401,7 @@ func removeLoadBalancerTarget(ctx context.Context, c *hcloud.Client, lb *hcloud.
 		return fmt.Errorf("remove server target: %v", err)
 	}
 
-	if err := hcclient.WaitForAction(ctx, &c.Action, a); err != nil {
+	if err := hcloudutil.WaitForAction(ctx, &c.Action, a); err != nil {
 		return fmt.Errorf("remove server target: wait for action: %v", err)
 	}
 	return nil

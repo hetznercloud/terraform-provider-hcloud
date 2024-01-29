@@ -1,4 +1,4 @@
-package hcclient
+package hcloudutil
 
 import (
 	"fmt"

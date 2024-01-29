@@ -10,7 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
 // ResourceType is the type name of the Hetzner Cloud FloatingIP resource.
@@ -105,21 +105,21 @@ func resourceFloatingIPCreate(ctx context.Context, d *schema.ResourceData, m int
 
 	res, _, err := client.FloatingIP.Create(ctx, opts)
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 
 	d.SetId(strconv.Itoa(res.FloatingIP.ID))
 	if res.Action != nil {
 		_, errCh := client.Action.WatchProgress(ctx, res.Action)
 		if err := <-errCh; err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 
 	deleteProtection := d.Get("delete_protection").(bool)
 	if deleteProtection {
 		if err := setProtection(ctx, client, res.FloatingIP, deleteProtection); err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 
@@ -138,7 +138,7 @@ func resourceFloatingIPRead(ctx context.Context, d *schema.ResourceData, m inter
 
 	floatingIP, _, err := client.FloatingIP.GetByID(ctx, id)
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 	if floatingIP == nil {
 		log.Printf("[WARN] Floating IP (%s) not found, removing from state", d.Id())
@@ -172,7 +172,7 @@ func resourceFloatingIPUpdate(ctx context.Context, d *schema.ResourceData, m int
 			if resourceFloatingIPIsNotFound(err, d) {
 				return nil
 			}
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 
@@ -185,7 +185,7 @@ func resourceFloatingIPUpdate(ctx context.Context, d *schema.ResourceData, m int
 			if resourceFloatingIPIsNotFound(err, d) {
 				return nil
 			}
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 
@@ -197,10 +197,10 @@ func resourceFloatingIPUpdate(ctx context.Context, d *schema.ResourceData, m int
 				if resourceFloatingIPIsNotFound(err, d) {
 					return nil
 				}
-				return hcclient.ErrorToDiag(err)
+				return hcloudutil.ErrorToDiag(err)
 			}
-			if err := hcclient.WaitForAction(ctx, &client.Action, action); err != nil {
-				return hcclient.ErrorToDiag(err)
+			if err := hcloudutil.WaitForAction(ctx, &client.Action, action); err != nil {
+				return hcloudutil.ErrorToDiag(err)
 			}
 		} else {
 			a, _, err := client.FloatingIP.Assign(ctx, floatingIP, &hcloud.Server{ID: serverID})
@@ -208,10 +208,10 @@ func resourceFloatingIPUpdate(ctx context.Context, d *schema.ResourceData, m int
 				if resourceFloatingIPIsNotFound(err, d) {
 					return nil
 				}
-				return hcclient.ErrorToDiag(err)
+				return hcloudutil.ErrorToDiag(err)
 			}
-			if err := hcclient.WaitForAction(ctx, &client.Action, a); err != nil {
-				return hcclient.ErrorToDiag(err)
+			if err := hcloudutil.WaitForAction(ctx, &client.Action, a); err != nil {
+				return hcloudutil.ErrorToDiag(err)
 			}
 		}
 	}
@@ -228,14 +228,14 @@ func resourceFloatingIPUpdate(ctx context.Context, d *schema.ResourceData, m int
 			if resourceFloatingIPIsNotFound(err, d) {
 				return nil
 			}
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 
 	if d.HasChange("delete_protection") {
 		deletionProtection := d.Get("delete_protection").(bool)
 		if err := setProtection(ctx, client, floatingIP, deletionProtection); err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 
@@ -258,7 +258,7 @@ func resourceFloatingIPDelete(ctx context.Context, d *schema.ResourceData, m int
 			// server has already been deleted
 			return nil
 		}
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 
 	return nil
@@ -315,5 +315,5 @@ func setProtection(ctx context.Context, c *hcloud.Client, f *hcloud.FloatingIP, 
 		return err
 	}
 
-	return hcclient.WaitForAction(ctx, &c.Action, action)
+	return hcloudutil.WaitForAction(ctx, &c.Action, action)
 }

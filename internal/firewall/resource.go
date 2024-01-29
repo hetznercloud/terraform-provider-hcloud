@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/control"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
 // ResourceType is the type name of the Hetzner Cloud Firewall resource.
@@ -175,12 +175,12 @@ func resourceFirewallCreate(ctx context.Context, d *schema.ResourceData, m inter
 
 	res, _, err := client.Firewall.Create(ctx, opts)
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 
 	for _, nextAction := range res.Actions {
-		if err := hcclient.WaitForAction(ctx, &client.Action, nextAction); err != nil {
-			return hcclient.ErrorToDiag(err)
+		if err := hcloudutil.WaitForAction(ctx, &client.Action, nextAction); err != nil {
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 	d.SetId(strconv.Itoa(res.Firewall.ID))
@@ -266,7 +266,7 @@ func resourceFirewallRead(ctx context.Context, d *schema.ResourceData, m interfa
 
 	firewall, _, err := client.Firewall.GetByID(ctx, id)
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 	if firewall == nil {
 		log.Printf("[WARN] firewall (%s) not found, removing from state", d.Id())
@@ -292,7 +292,7 @@ func resourceFirewallUpdate(ctx context.Context, d *schema.ResourceData, m inter
 		if resourceFirewallIsNotFound(err, d) {
 			return nil
 		}
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 
 	d.Partial(true)
@@ -306,7 +306,7 @@ func resourceFirewallUpdate(ctx context.Context, d *schema.ResourceData, m inter
 			if resourceFirewallIsNotFound(err, d) {
 				return nil
 			}
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 
@@ -323,10 +323,10 @@ func resourceFirewallUpdate(ctx context.Context, d *schema.ResourceData, m inter
 				if resourceFirewallIsNotFound(err, d) {
 					return nil
 				}
-				return hcclient.ErrorToDiag(err)
+				return hcloudutil.ErrorToDiag(err)
 			}
 			if err := waitForFirewallActions(ctx, client, actions, firewall); err != nil {
-				return hcclient.ErrorToDiag(err)
+				return hcloudutil.ErrorToDiag(err)
 			}
 		}
 	}
@@ -344,7 +344,7 @@ func resourceFirewallUpdate(ctx context.Context, d *schema.ResourceData, m inter
 			if resourceFirewallIsNotFound(err, d) {
 				return nil
 			}
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 
@@ -387,10 +387,10 @@ func syncApplyTo(ctx context.Context, d *schema.ResourceData, client *hcloud.Cli
 			if resourceFirewallIsNotFound(err, d) {
 				return nil
 			}
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 		if err := waitForFirewallActions(ctx, client, actions, firewall); err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 
@@ -400,10 +400,10 @@ func syncApplyTo(ctx context.Context, d *schema.ResourceData, client *hcloud.Cli
 			if resourceFirewallIsNotFound(err, d) {
 				return nil
 			}
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 		if err := waitForFirewallActions(ctx, client, actions, firewall); err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 	return nil
@@ -430,12 +430,12 @@ func resourceFirewallDelete(ctx context.Context, d *schema.ResourceData, m inter
 	}
 	firewall, _, err := client.Firewall.GetByID(ctx, firewallID)
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 	// Detach all Resources of the firewall before trying to delete it.
 	if len(firewall.AppliedTo) > 0 {
 		if err := removeFromResources(ctx, client, d, firewall); err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 	// Removing resources from the firewall can sometimes take longer. We
@@ -457,7 +457,7 @@ func resourceFirewallDelete(ctx context.Context, d *schema.ResourceData, m inter
 		return nil
 	})
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 
 	return nil

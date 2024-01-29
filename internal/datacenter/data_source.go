@@ -18,7 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
 const (
@@ -139,7 +139,7 @@ func (d *dataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, r
 func (d *dataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	var newDiags diag.Diagnostics
 
-	d.client, newDiags = hcclient.ConfigureClient(req.ProviderData)
+	d.client, newDiags = hcloudutil.ConfigureClient(req.ProviderData)
 	resp.Diagnostics.Append(newDiags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -183,7 +183,7 @@ func (d *dataSource) Read(ctx context.Context, req datasource.ReadRequest, resp 
 	case !data.ID.IsNull():
 		result, _, err = d.client.Datacenter.GetByID(ctx, int(data.ID.ValueInt64()))
 		if err != nil {
-			resp.Diagnostics.Append(hcclient.APIErrorDiagnostics(err)...)
+			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
 			return
 		}
 		if result == nil {
@@ -196,7 +196,7 @@ func (d *dataSource) Read(ctx context.Context, req datasource.ReadRequest, resp 
 	case !data.Name.IsNull():
 		result, _, err = d.client.Datacenter.GetByName(ctx, data.Name.ValueString())
 		if err != nil {
-			resp.Diagnostics.Append(hcclient.APIErrorDiagnostics(err)...)
+			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
 			return
 		}
 		if result == nil {
@@ -241,7 +241,7 @@ func (d *dataSourceList) Metadata(_ context.Context, _ datasource.MetadataReques
 func (d *dataSourceList) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	var newDiags diag.Diagnostics
 
-	d.client, newDiags = hcclient.ConfigureClient(req.ProviderData)
+	d.client, newDiags = hcloudutil.ConfigureClient(req.ProviderData)
 	resp.Diagnostics.Append(newDiags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -342,7 +342,7 @@ func (d *dataSourceList) Read(ctx context.Context, req datasource.ReadRequest, r
 
 	result, err = d.client.Datacenter.All(ctx)
 	if err != nil {
-		resp.Diagnostics.Append(hcclient.APIErrorDiagnostics(err)...)
+		resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
 		return
 	}
 

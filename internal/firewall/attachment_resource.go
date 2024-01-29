@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
 // AttachmentResourceType is the type of the hcloud_firewall_attachment resource.
@@ -59,7 +59,7 @@ func readAttachment(ctx context.Context, d *schema.ResourceData, m interface{}) 
 	client := m.(*hcloud.Client)
 	fw, _, err := client.Firewall.GetByID(ctx, att.FirewallID)
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 	if fw == nil {
 		log.Printf("[WARN] firewall (%s) not found, removing from state", d.Id())
@@ -88,10 +88,10 @@ func createAttachment(ctx context.Context, d *schema.ResourceData, m interface{}
 		return readAttachment(ctx, d, m)
 	}
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
-	if err := hcclient.WaitForActions(ctx, &client.Action, action); err != nil {
-		return hcclient.ErrorToDiag(err)
+	if err := hcloudutil.WaitForActions(ctx, &client.Action, action); err != nil {
+		return hcloudutil.ErrorToDiag(err)
 	}
 
 	return readAttachment(ctx, d, m)
@@ -110,7 +110,7 @@ func updateAttachment(ctx context.Context, d *schema.ResourceData, m interface{}
 	client := m.(*hcloud.Client)
 	fw, _, err := client.Firewall.GetByID(ctx, tf.FirewallID)
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 	if fw == nil {
 		log.Printf("[WARN] firewall (%s) not found, removing from state", d.Id())
@@ -124,18 +124,18 @@ func updateAttachment(ctx context.Context, d *schema.ResourceData, m interface{}
 	less, more := tf.DiffResources(hc)
 	as, _, err := client.Firewall.RemoveResources(ctx, fw, less)
 	if err != nil && !hcloud.IsError(err, hcloud.ErrorCodeFirewallAlreadyRemoved) {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 	actions = append(actions, as...)
 
 	as, _, err = client.Firewall.ApplyResources(ctx, fw, more)
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 	actions = append(actions, as...)
 
-	if err := hcclient.WaitForActions(ctx, &client.Action, actions); err != nil {
-		return hcclient.ErrorToDiag(err)
+	if err := hcloudutil.WaitForActions(ctx, &client.Action, actions); err != nil {
+		return hcloudutil.ErrorToDiag(err)
 	}
 
 	return readAttachment(ctx, d, m)
@@ -160,10 +160,10 @@ func deleteAttachment(ctx context.Context, d *schema.ResourceData, m interface{}
 		return nil
 	}
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
-	if err := hcclient.WaitForActions(ctx, &client.Action, action); err != nil {
-		return hcclient.ErrorToDiag(err)
+	if err := hcloudutil.WaitForActions(ctx, &client.Action, action); err != nil {
+		return hcloudutil.ErrorToDiag(err)
 	}
 	return nil
 }

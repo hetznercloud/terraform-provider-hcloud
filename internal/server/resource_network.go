@@ -14,9 +14,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/control"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/merge"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/network"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
 // NetworkResourceType is the type name of the Hetzner Cloud Server
@@ -82,7 +82,7 @@ func resourceServerNetworkCreate(ctx context.Context, d *schema.ResourceData, m 
 	if snIDSet {
 		nwID, _, err := network.ParseSubnetID(subNetID.(string))
 		if err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 		networkID = nwID
 	}
@@ -97,7 +97,7 @@ func resourceServerNetworkCreate(ctx context.Context, d *schema.ResourceData, m 
 
 	err := attachServerToNetwork(ctx, client, server, n, ip, aliasIPs)
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 	d.SetId(generateServerNetworkID(server, n))
 
@@ -113,7 +113,7 @@ func resourceServerNetworkUpdate(ctx context.Context, d *schema.ResourceData, m 
 		return nil
 	}
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 	if server == nil {
 		log.Printf("[WARN] Server (%s) not found, removing from state", d.Id())
@@ -128,7 +128,7 @@ func resourceServerNetworkUpdate(ctx context.Context, d *schema.ResourceData, m 
 
 	if d.HasChange("alias_ips") {
 		if err := updateServerAliasIPs(ctx, client, server, network, d.Get("alias_ips").(*schema.Set)); err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 	return resourceServerNetworkRead(ctx, d, m)
@@ -144,7 +144,7 @@ func resourceServerNetworkRead(ctx context.Context, d *schema.ResourceData, m in
 		return nil
 	}
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 	if server == nil {
 		log.Printf("[WARN] Server (%s) not found, removing from state", d.Id())
@@ -176,7 +176,7 @@ func resourceServerNetworkDelete(ctx context.Context, d *schema.ResourceData, m 
 		return nil
 	}
 	if err := detachServerFromNetwork(ctx, client, server, network); err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 	return nil
 }
@@ -240,7 +240,7 @@ func attachServerToNetwork(ctx context.Context, c *hcloud.Client, srv *hcloud.Se
 	if err != nil {
 		return fmt.Errorf("attach server to network: %v", err)
 	}
-	if err := hcclient.WaitForAction(ctx, &c.Action, a); err != nil {
+	if err := hcloudutil.WaitForAction(ctx, &c.Action, a); err != nil {
 		return fmt.Errorf("attach server to network: %v", err)
 	}
 	return nil
@@ -320,7 +320,7 @@ func updateServerAliasIPs(ctx context.Context, c *hcloud.Client, s *hcloud.Serve
 	if err != nil {
 		return fmt.Errorf("%s: %v", op, err)
 	}
-	if err := hcclient.WaitForAction(ctx, &c.Action, a); err != nil {
+	if err := hcloudutil.WaitForAction(ctx, &c.Action, a); err != nil {
 		return fmt.Errorf("%s: %v", op, err)
 	}
 	return nil
@@ -349,7 +349,7 @@ func detachServerFromNetwork(ctx context.Context, c *hcloud.Client, s *hcloud.Se
 		return fmt.Errorf("%s: %v", op, err)
 	}
 
-	if err := hcclient.WaitForAction(ctx, &c.Action, a); err != nil {
+	if err := hcloudutil.WaitForAction(ctx, &c.Action, a); err != nil {
 		return fmt.Errorf("%s: %v", op, err)
 	}
 	return nil

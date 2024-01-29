@@ -1,4 +1,4 @@
-package hcclient
+package hcloudutil
 
 import (
 	"context"
@@ -21,7 +21,7 @@ func WaitForAction(ctx context.Context, w ProgressWatcher, a *hcloud.Action) err
 
 // WaitForActions uses ProgressWatcher to wait for the completion of all actions.
 func WaitForActions(ctx context.Context, w ProgressWatcher, a []*hcloud.Action) error {
-	const op = "hcclient/WaitForActions"
+	const op = "hcloudutil/WaitForActions"
 
 	progC, errC := w.WatchOverallProgress(ctx, a)
 	for {

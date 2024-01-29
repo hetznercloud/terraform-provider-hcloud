@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/control"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
 // RouteResourceType is the type name of the Hetzner Cloud Network Route resource.
@@ -57,7 +57,7 @@ func resourceNetworkRouteCreate(ctx context.Context, d *schema.ResourceData, m i
 
 	_, destination, err := net.ParseCIDR(d.Get("destination").(string))
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 
 	gateway := net.ParseIP(d.Get("gateway").(string))
@@ -85,11 +85,11 @@ func resourceNetworkRouteCreate(ctx context.Context, d *schema.ResourceData, m i
 		return control.AbortRetry(err)
 	})
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 	d.SetId(generateNetworkRouteID(network, destination.String()))
-	if err := hcclient.WaitForAction(ctx, &c.Action, a); err != nil {
-		return hcclient.ErrorToDiag(err)
+	if err := hcloudutil.WaitForAction(ctx, &c.Action, a); err != nil {
+		return hcloudutil.ErrorToDiag(err)
 	}
 
 	return resourceNetworkRouteRead(ctx, d, m)
@@ -105,7 +105,7 @@ func resourceNetworkRouteRead(ctx context.Context, d *schema.ResourceData, m int
 		return nil
 	}
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 	if network == nil {
 		log.Printf("[WARN] Network Route (%s) not found, removing from state", d.Id())
@@ -144,11 +144,11 @@ func resourceNetworkRouteDelete(ctx context.Context, d *schema.ResourceData, m i
 		return nil
 	}
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 
-	if err := hcclient.WaitForAction(ctx, &c.Action, action); err != nil {
-		return hcclient.ErrorToDiag(err)
+	if err := hcloudutil.WaitForAction(ctx, &c.Action, action); err != nil {
+		return hcloudutil.ErrorToDiag(err)
 	}
 	return nil
 }

@@ -5,14 +5,14 @@ import (
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
 func validateIPDiag(i interface{}, _ cty.Path) diag.Diagnostics {
 	ipS := i.(string)
 	ip, n, err := net.ParseCIDR(ipS)
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 	if ip.String() != n.IP.String() {
 		return diag.Errorf("%s is not the start of the cidr block %s", ipS, n)

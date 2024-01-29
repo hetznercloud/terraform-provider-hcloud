@@ -8,8 +8,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/datasourceutil"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
 const (
@@ -100,7 +100,7 @@ func dataSourceHcloudSSHKeyRead(ctx context.Context, d *schema.ResourceData, m i
 	if id, ok := d.GetOk("id"); ok {
 		s, _, err := client.SSHKey.GetByID(ctx, id.(int))
 		if err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 		if s == nil {
 			return diag.Errorf("no sshkey found with id %d", id)
@@ -111,7 +111,7 @@ func dataSourceHcloudSSHKeyRead(ctx context.Context, d *schema.ResourceData, m i
 	if name, ok := d.GetOk("name"); ok {
 		s, _, err := client.SSHKey.GetByName(ctx, name.(string))
 		if err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 		if s == nil {
 			return diag.Errorf("no sshkey found with name %v", name)
@@ -122,7 +122,7 @@ func dataSourceHcloudSSHKeyRead(ctx context.Context, d *schema.ResourceData, m i
 	if fingerprint, ok := d.GetOk("fingerprint"); ok {
 		s, _, err := client.SSHKey.GetByFingerprint(ctx, fingerprint.(string))
 		if err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 		if s == nil {
 			return diag.Errorf("no sshkey found with fingerprint %v", fingerprint)
@@ -146,7 +146,7 @@ func dataSourceHcloudSSHKeyRead(ctx context.Context, d *schema.ResourceData, m i
 		}
 		allKeys, err := client.SSHKey.AllWithOpts(ctx, opts)
 		if err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 		if len(allKeys) == 0 {
 			return diag.Errorf("no sshkey found for selector %q", selector)
@@ -173,7 +173,7 @@ func dataSourceHcloudSSHKeyListRead(ctx context.Context, d *schema.ResourceData,
 	}
 	allKeys, err := client.SSHKey.AllWithOpts(ctx, opts)
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 
 	id := ""

@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
 const (
@@ -123,7 +123,7 @@ func dataSourceHcloudServerTypeRead(ctx context.Context, data *schema.ResourceDa
 	if id, ok := data.GetOk("id"); ok {
 		d, _, err := client.ServerType.GetByID(ctx, id.(int))
 		if err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 		if d == nil {
 			return diag.Errorf("no server type found with id %d", id)
@@ -134,7 +134,7 @@ func dataSourceHcloudServerTypeRead(ctx context.Context, data *schema.ResourceDa
 	if name, ok := data.GetOk("name"); ok {
 		d, _, err := client.ServerType.GetByName(ctx, name.(string))
 		if err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 		if d == nil {
 			return diag.Errorf("no server type found with name %v", name)
@@ -177,7 +177,7 @@ func dataSourceHcloudServerTypeListRead(ctx context.Context, d *schema.ResourceD
 	client := m.(*hcloud.Client)
 	allServerTypes, err := client.ServerType.All(ctx)
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 
 	names := make([]string, len(allServerTypes))

@@ -1,4 +1,4 @@
-package hcclient_test
+package hcloudutil_test
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
 func TestWaitForAction(t *testing.T) {
@@ -29,10 +29,10 @@ func TestWaitForAction(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var a hcloud.Action
 
-			w := hcclient.NewMockProgressWatcher(t)
+			w := hcloudutil.NewMockProgressWatcher(t)
 			ctx := context.Background()
 			done := w.MockWatchOverallProgress(ctx, []*hcloud.Action{&a}, tt.err)
-			err := hcclient.WaitForActions(ctx, w, []*hcloud.Action{&a})
+			err := hcloudutil.WaitForActions(ctx, w, []*hcloud.Action{&a})
 			if !errors.Is(err, tt.err) {
 				t.Errorf("Expected error %v; got %v", tt.err, err)
 			}
@@ -68,10 +68,10 @@ func TestWaitForActions(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var a hcloud.Action
 
-			w := hcclient.NewMockProgressWatcher(t)
+			w := hcloudutil.NewMockProgressWatcher(t)
 			ctx := context.Background()
 			done := w.MockWatchOverallProgress(ctx, []*hcloud.Action{&a}, tt.err)
-			err := hcclient.WaitForActions(ctx, w, []*hcloud.Action{&a})
+			err := hcloudutil.WaitForActions(ctx, w, []*hcloud.Action{&a})
 			if !errors.Is(err, tt.err) {
 				t.Errorf("Expected error %v; got %v", tt.err, err)
 			}

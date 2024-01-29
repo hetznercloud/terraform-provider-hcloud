@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
 const ResourceType = "hcloud_placement_group"
@@ -80,13 +80,13 @@ func resourcePlacementGroupCreate(ctx context.Context, d *schema.ResourceData, m
 
 	res, _, err := client.PlacementGroup.Create(ctx, opts)
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 	d.SetId(strconv.Itoa(res.PlacementGroup.ID))
 
 	if res.Action != nil {
-		if err := hcclient.WaitForAction(ctx, &client.Action, res.Action); err != nil {
-			return hcclient.ErrorToDiag(err)
+		if err := hcloudutil.WaitForAction(ctx, &client.Action, res.Action); err != nil {
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 
@@ -105,7 +105,7 @@ func resourcePlacementGroupRead(ctx context.Context, d *schema.ResourceData, m i
 
 	placementGroup, _, err := client.PlacementGroup.GetByID(ctx, id)
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 	if placementGroup == nil {
 		log.Printf("[WARN] placement group (%s) not found, removing from state", d.Id())
@@ -132,7 +132,7 @@ func resourcePlacementGroupUpdate(ctx context.Context, d *schema.ResourceData, m
 		if handleNotFound(err, d) {
 			return nil
 		}
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 
 	d.Partial(true)
@@ -146,7 +146,7 @@ func resourcePlacementGroupUpdate(ctx context.Context, d *schema.ResourceData, m
 			if handleNotFound(err, d) {
 				return nil
 			}
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 
@@ -163,7 +163,7 @@ func resourcePlacementGroupUpdate(ctx context.Context, d *schema.ResourceData, m
 			if handleNotFound(err, d) {
 				return nil
 			}
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 	d.Partial(false)
@@ -181,7 +181,7 @@ func resourcePlacementGroupDelete(ctx context.Context, d *schema.ResourceData, m
 		return nil
 	}
 	if _, err := client.PlacementGroup.Delete(ctx, &hcloud.PlacementGroup{ID: id}); err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 
 	return nil

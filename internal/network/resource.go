@@ -12,7 +12,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
 // ResourceType is the type name of the Hetzner Cloud Network resource.
@@ -70,7 +70,7 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 
 	_, ipRange, err := net.ParseCIDR(d.Get("ip_range").(string))
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 
 	opts := hcloud.NetworkCreateOpts{
@@ -88,7 +88,7 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 
 	network, _, err := client.Network.Create(ctx, opts)
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 
 	d.SetId(strconv.Itoa(network.ID))
@@ -96,7 +96,7 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 	deleteProtection := d.Get("delete_protection").(bool)
 	if deleteProtection {
 		if err := setProtection(ctx, client, network, deleteProtection); err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 
@@ -111,7 +111,7 @@ func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interfac
 		if resourceNetworkIsNotFound(err, d) {
 			return nil
 		}
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 	if network == nil {
 		d.SetId("")
@@ -126,7 +126,7 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interf
 
 	network, _, err := client.Network.Get(ctx, d.Id())
 	if err != nil {
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 	if network == nil {
 		d.SetId("")
@@ -143,7 +143,7 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interf
 			if resourceNetworkIsNotFound(err, d) {
 				return nil
 			}
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 	if d.HasChange("labels") {
@@ -159,7 +159,7 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interf
 			if resourceNetworkIsNotFound(err, d) {
 				return nil
 			}
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 
@@ -171,14 +171,14 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interf
 			if resourceNetworkIsNotFound(err, d) {
 				return nil
 			}
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 
 	if d.HasChange("delete_protection") {
 		deletionProtection := d.Get("delete_protection").(bool)
 		if err := setProtection(ctx, client, network, deletionProtection); err != nil {
-			return hcclient.ErrorToDiag(err)
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 
@@ -202,7 +202,7 @@ func resourceNetworkDelete(ctx context.Context, d *schema.ResourceData, m interf
 			// network has already been deleted
 			return nil
 		}
-		return hcclient.ErrorToDiag(err)
+		return hcloudutil.ErrorToDiag(err)
 	}
 
 	return nil
@@ -248,5 +248,5 @@ func setProtection(ctx context.Context, c *hcloud.Client, n *hcloud.Network, del
 		return err
 	}
 
-	return hcclient.WaitForAction(ctx, &c.Action, action)
+	return hcloudutil.WaitForAction(ctx, &c.Action, action)
 }
