@@ -2,6 +2,7 @@ package resourceutil
 
 import (
 	"context"
+	"sort"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -64,6 +65,11 @@ func TestLabelsValidator_ValidateMap(t *testing.T) {
 			}
 			response := validator.MapResponse{}
 			labelsValidator{}.ValidateMap(context.Background(), request, &response)
+
+			// Diagnostics might be unordered, which add flakiness to the diff below.
+			sort.Slice(response.Diagnostics, func(i, j int) bool {
+				return response.Diagnostics[i].Summary() < response.Diagnostics[j].Summary()
+			})
 
 			if diff := cmp.Diff(response.Diagnostics, test.expected); diff != "" {
 				t.Errorf("unexpected diagnostics difference: %s", diff)
