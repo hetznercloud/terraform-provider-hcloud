@@ -68,7 +68,9 @@ func TestLabelsValidator_ValidateMap(t *testing.T) {
 
 			// Diagnostics might be unordered, which add flakiness to the diff below.
 			sort.Slice(response.Diagnostics, func(i, j int) bool {
-				return response.Diagnostics[i].Summary() < response.Diagnostics[j].Summary()
+				iPath := response.Diagnostics[i].(diag.DiagnosticWithPath).Path()
+				jPath := response.Diagnostics[j].(diag.DiagnosticWithPath).Path()
+				return iPath.String() < jPath.String()
 			})
 
 			if diff := cmp.Diff(response.Diagnostics, test.expected); diff != "" {
