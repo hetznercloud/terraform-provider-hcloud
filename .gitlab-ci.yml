@@ -16,7 +16,7 @@ test:acceptance:
 
 test:golangci-lint:
   stage: test
-  image: golangci/golangci-lint:v1.56.0
+  image: golangci/golangci-lint:v1.56.2
   script:
     - golangci-lint run -v
   except:
