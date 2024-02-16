@@ -179,48 +179,37 @@ func TestFirewallResource_ApplyTo(t *testing.T) {
 	})
 }
 
-func TestFirewallResource_SourceIPs_IPv6Comparison(t *testing.T) {
+func TestFirewallResource_Normalization(t *testing.T) {
 	var f hcloud.Firewall
 
 	res := firewall.NewRData(t, "ipv6-firewall", []firewall.RDataRule{
 		{
 			Direction: "in",
 			Protocol:  "tcp",
+			// Uppercase
 			SourceIPs: []string{"Aaaa:aaaa:aaaa:aaaa::/64"},
 			Port:      "22",
 		},
-	}, nil)
-	tmplMan := testtemplate.Manager{}
-
-	// TODO: Move to parallel test once API endpoint supports higher parallelism
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
-		CheckDestroy:             testsupport.CheckResourcesDestroyed(firewall.ResourceType, firewall.ByID(t, &f)),
-		Steps: []resource.TestStep{
-			{
-				Config: tmplMan.Render(t, "testdata/r/hcloud_firewall", res),
-				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(res.TFID(), firewall.ByID(t, &f)),
-				),
-			},
-			{
-				Config:   tmplMan.Render(t, "testdata/r/hcloud_firewall", res),
-				PlanOnly: true,
-			},
-		},
-	})
-}
-
-func TestFirewallResource_DestinationIPs_IPv6Comparison(t *testing.T) {
-	var f hcloud.Firewall
-
-	res := firewall.NewRData(t, "ipv6-firewall", []firewall.RDataRule{
 		{
-			Direction:      "out",
-			Protocol:       "tcp",
+			Direction: "out",
+			Protocol:  "tcp",
+			// Uppercase
 			DestinationIPs: []string{"Aaaa:aaaa:aaaa:aaaa::/64"},
 			Port:           "22",
+		},
+		{
+			Direction: "in",
+			Protocol:  "tcp",
+			// Avoidable 0
+			SourceIPs: []string{"aaaa:aaaa:aaaa:0::/64"},
+			Port:      "80",
+		},
+		{
+			Direction: "out",
+			Protocol:  "tcp",
+			// Avoidable 0
+			DestinationIPs: []string{"aaaa:aaaa:aaaa:0::/64"},
+			Port:           "80",
 		},
 	}, nil)
 	tmplMan := testtemplate.Manager{}

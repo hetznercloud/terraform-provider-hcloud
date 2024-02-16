@@ -7,11 +7,11 @@ import (
 	"log"
 	"net"
 	"strconv"
-	"strings"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/control"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
@@ -116,9 +116,7 @@ func Resource() *schema.Resource {
 							Elem: &schema.Schema{
 								Type:             schema.TypeString,
 								ValidateDiagFunc: validateIPDiag,
-								StateFunc: func(i interface{}) string {
-									return strings.ToLower(i.(string))
-								},
+								StateFunc:        normalizeIP,
 							},
 							Optional: true,
 						},
@@ -127,9 +125,7 @@ func Resource() *schema.Resource {
 							Elem: &schema.Schema{
 								Type:             schema.TypeString,
 								ValidateDiagFunc: validateIPDiag,
-								StateFunc: func(i interface{}) string {
-									return strings.ToLower(i.(string))
-								},
+								StateFunc:        normalizeIP,
 							},
 							Optional: true,
 						},
