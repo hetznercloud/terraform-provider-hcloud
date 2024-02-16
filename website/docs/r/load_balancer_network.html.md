@@ -35,6 +35,14 @@ resource "hcloud_load_balancer_network" "srvnetwork" {
   load_balancer_id = hcloud_load_balancer.lb1.id
   network_id       = hcloud_network.mynet.id
   ip               = "10.0.1.5"
+
+  # **Note**: the depends_on is important when directly attaching the
+  # server to a network. Otherwise Terraform will attempt to create
+  # server and sub-network in parallel. This may result in the server
+  # creation failing randomly.
+  depends_on = [
+    hcloud_network_subnet.srvnetwork
+  ]
 }
 ```
 
