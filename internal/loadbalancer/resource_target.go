@@ -13,6 +13,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/control"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
@@ -252,7 +253,7 @@ func resourceLoadBalancerCreateIPTarget(
 		return nil, tgt, nil
 	}
 	if err != nil {
-		return nil, tgt, fmt.Errorf("add label selector target: %v", err)
+		return nil, tgt, fmt.Errorf("add ip target: %v", err)
 	}
 	return action, tgt, nil
 }
