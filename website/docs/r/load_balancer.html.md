@@ -8,12 +8,12 @@ description: |-
 
 # hcloud_load_balancer
 
-  Provides a Hetzner Cloud Load Balancer to represent a Load Balancer in the Hetzner Cloud.
+Provides a Hetzner Cloud Load Balancer to represent a Load Balancer in the Hetzner Cloud.
 
 ## Example Usage
 
 ```hcl
-resource "hcloud_server" "myserver" {
+resource "hcloud_server" "my_server" {
   name        = "server-%d"
   server_type = "cx11"
   image       = "ubuntu-18.04"
@@ -23,10 +23,12 @@ resource "hcloud_load_balancer" "load_balancer" {
   name               = "my-load-balancer"
   load_balancer_type = "lb11"
   location           = "nbg1"
-  target {
-    type      = "server"
-    server_id = hcloud_server.myserver.id
-  }
+}
+
+resource "hcloud_load_balancer_target" "load_balancer_target" {
+  type             = "server"
+  load_balancer_id = hcloud_load_balancer.load_balancer.id
+  server_id        = hcloud_server.my_server.id
 }
 ```
 
