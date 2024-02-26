@@ -69,7 +69,7 @@ func UploadedResource() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
-				DiffSuppressFunc: func(_, certOld, certNew string, d *schema.ResourceData) bool {
+				DiffSuppressFunc: func(_, certOld, certNew string, d *schema.ResourceData) bool { // nolint:revive
 					res, err := EqualCert(certOld, certNew)
 					if err != nil {
 						log.Printf("[ERROR] compare certificates for equality: %v", err)
@@ -82,7 +82,7 @@ func UploadedResource() *schema.Resource {
 				Type:     schema.TypeMap,
 				Optional: true,
 				Elem:     schema.TypeString,
-				ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics {
+				ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics { // nolint:revive
 					if ok, err := hcloud.ValidateResourceLabels(i.(map[string]interface{})); !ok {
 						return diag.Errorf(err.Error())
 					}

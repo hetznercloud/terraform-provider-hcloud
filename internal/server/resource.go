@@ -150,7 +150,7 @@ func Resource() *schema.Resource {
 			"labels": {
 				Type:     schema.TypeMap,
 				Optional: true,
-				ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics {
+				ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics { // nolint:revive
 					if ok, err := hcloud.ValidateResourceLabels(i.(map[string]interface{})); !ok {
 						return diag.Errorf(err.Error())
 					}
@@ -234,7 +234,7 @@ func Resource() *schema.Resource {
 				Optional: true,
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeInt},
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool { // nolint:revive
 					sup := d.Get("ignore_remote_firewall_ids").(bool)
 					if sup && old != "" && new != "" {
 						return true
@@ -417,7 +417,7 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		}
 		// if the server was created without public net, the server is now still offline and has to be powered on after
 		// network assignment
-		if err := onServerCreateWithoutPublicNet(&opts, d, func(opts *hcloud.ServerCreateOpts) error {
+		if err := onServerCreateWithoutPublicNet(&opts, d, func(_ *hcloud.ServerCreateOpts) error {
 			if err := powerOnServer(ctx, c, res.Server); err != nil {
 				return err
 			}
@@ -588,10 +588,10 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 
 	if d.HasChange("firewall_ids") {
-		firewallIds := d.Get("firewall_ids").(*schema.Set).List()
+		firewallIDs := d.Get("firewall_ids").(*schema.Set).List()
 		for _, f := range server.PublicNet.Firewalls {
 			found := false
-			for _, i := range firewallIds {
+			for _, i := range firewallIDs {
 				fID := i.(int)
 				if f.Firewall.ID == fID {
 					found = true
@@ -620,7 +620,7 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 			}
 		}
 
-		for _, i := range firewallIds {
+		for _, i := range firewallIDs {
 			fID := i.(int)
 			found := false
 			for _, f := range server.PublicNet.Firewalls {

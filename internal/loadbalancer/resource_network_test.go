@@ -76,7 +76,7 @@ func TestAccHcloudLoadBalancerNetwork_NetworkID(t *testing.T) {
 				ResourceName:      loadbalancer.NetworkResourceType + ".test-network",
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateIdFunc: func(state *terraform.State) (string, error) {
+				ImportStateIdFunc: func(_ *terraform.State) (string, error) {
 					return fmt.Sprintf("%d-%d", lb.ID, nw.ID), nil
 				},
 			},

@@ -58,7 +58,7 @@ func TestAccHcloudLoadBalancerService_TCP(t *testing.T) {
 				ResourceName:      svcResName,
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateIdFunc: func(state *terraform.State) (string, error) {
+				ImportStateIdFunc: func(_ *terraform.State) (string, error) {
 					return fmt.Sprintf("%d__%d", lb.ID, 70), nil
 				},
 			},

@@ -56,7 +56,7 @@ func TestNetworkSubnetResource_Basic(t *testing.T) {
 				ResourceName:      res.TFID(),
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateIdFunc: func(state *terraform.State) (string, error) {
+				ImportStateIdFunc: func(_ *terraform.State) (string, error) {
 					return fmt.Sprintf("%d-%s", nw.ID, res.IPRange), nil
 				},
 			},
