@@ -7,7 +7,9 @@
 /*.sh
 /*.json
 /*.yaml
-/*.log
+*.log
 /_output
 !.golangci.yaml
 !renovate.json
+
+.env*
