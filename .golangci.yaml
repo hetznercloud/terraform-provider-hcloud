@@ -26,6 +26,7 @@ linters:
     - typecheck
     - unparam
     - unused
+    - unconvert
     - whitespace
 
 issues:
