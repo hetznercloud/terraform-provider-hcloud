@@ -117,7 +117,7 @@ func hcloudErrorFromErrorAndStatus(errRaw map[string]interface{}, statusCode int
 		hcloud.WithToken("token"),
 	)
 
-	mux.HandleFunc("/actions/1", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/actions/1", func(w http.ResponseWriter, r *http.Request) { // nolint:revive
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(statusCode)
 		err := json.NewEncoder(w).Encode(errRaw)

@@ -234,7 +234,7 @@ func Resource() *schema.Resource {
 				Optional: true,
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeInt},
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool { // nolint:revive
 					sup := d.Get("ignore_remote_firewall_ids").(bool)
 					if sup && old != "" && new != "" {
 						return true
@@ -417,7 +417,7 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		}
 		// if the server was created without public net, the server is now still offline and has to be powered on after
 		// network assignment
-		if err := onServerCreateWithoutPublicNet(&opts, d, func(opts *hcloud.ServerCreateOpts) error {
+		if err := onServerCreateWithoutPublicNet(&opts, d, func(_ *hcloud.ServerCreateOpts) error {
 			if err := powerOnServer(ctx, c, res.Server); err != nil {
 				return err
 			}

@@ -78,7 +78,7 @@ func TestAccHcloudServerNetwork_NetworkID(t *testing.T) {
 				ResourceName:      server.NetworkResourceType + ".test-network",
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateIdFunc: func(state *terraform.State) (string, error) {
+				ImportStateIdFunc: func(_ *terraform.State) (string, error) {
 					return fmt.Sprintf("%d-%d", s.ID, nw.ID), nil
 				},
 			},

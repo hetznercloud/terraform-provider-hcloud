@@ -84,7 +84,7 @@ func TestRDNSResource_Server(t *testing.T) {
 					{
 						// Try to import the newly created RDNS
 						ResourceName: resRDNS.TFID(),
-						ImportStateIdFunc: func(state *terraform.State) (string, error) {
+						ImportStateIdFunc: func(_ *terraform.State) (string, error) {
 							return fmt.Sprintf("s-%d-%s", s.ID, tt.ipAsStrFunc(&s)), nil
 						},
 						ImportState:       true,
@@ -149,7 +149,7 @@ func TestRDNSResource_PrimaryIP(t *testing.T) {
 					{
 						// Try to import the newly created RDNS
 						ResourceName: resRDNS.TFID(),
-						ImportStateIdFunc: func(state *terraform.State) (string, error) {
+						ImportStateIdFunc: func(_ *terraform.State) (string, error) {
 							return fmt.Sprintf("p-%d-%s", primaryIP.ID, primaryIP.IP.String()), nil
 						},
 						ImportState:       true,
@@ -213,7 +213,7 @@ func TestRDNSResource_FloatingIP(t *testing.T) {
 					{
 						// Try to import the newly created RDNS
 						ResourceName: resRDNS.TFID(),
-						ImportStateIdFunc: func(state *terraform.State) (string, error) {
+						ImportStateIdFunc: func(_ *terraform.State) (string, error) {
 							return fmt.Sprintf("f-%d-%s", fl.ID, fl.IP.String()), nil
 						},
 						ImportState:       true,
@@ -282,7 +282,7 @@ func TestRDNSResource_LoadBalancer(t *testing.T) {
 					{
 						// Try to import the newly created RDNS
 						ResourceName: resRDNS.TFID(),
-						ImportStateIdFunc: func(state *terraform.State) (string, error) {
+						ImportStateIdFunc: func(_ *terraform.State) (string, error) {
 							return fmt.Sprintf("l-%d-%s", lb.ID, tt.ipAsStrFunc(&lb)), nil
 						},
 						ImportState:       true,
