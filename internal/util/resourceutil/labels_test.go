@@ -2,6 +2,7 @@ package resourceutil
 
 import (
 	"context"
+	"reflect"
 	"sort"
 	"testing"
 
@@ -75,6 +76,39 @@ func TestLabelsValidator_ValidateMap(t *testing.T) {
 
 			if diff := cmp.Diff(response.Diagnostics, test.expected); diff != "" {
 				t.Errorf("unexpected diagnostics difference: %s", diff)
+			}
+		})
+	}
+}
+
+func TestLabelsMapValueFrom(t *testing.T) {
+	tests := []struct {
+		name  string
+		in    map[string]string
+		want  types.Map
+		diags diag.Diagnostics
+	}{
+		{
+			name:  "Map with Labels",
+			in:    map[string]string{"foo": "bar"},
+			want:  types.MapValueMust(types.StringType, map[string]attr.Value{"foo": types.StringValue("bar")}),
+			diags: nil,
+		},
+		{
+			name:  "Empty Map",
+			in:    map[string]string{},
+			want:  types.MapNull(types.StringType),
+			diags: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			labels, diags := LabelsMapValueFrom(context.Background(), tt.in)
+			if !reflect.DeepEqual(labels, tt.want) {
+				t.Errorf("LabelsMapValueFrom() got = %v, want %v", labels, tt.want)
+			}
+			if !reflect.DeepEqual(diags, tt.diags) {
+				t.Errorf("LabelsMapValueFrom() got1 = %v, want %v", diags, tt.diags)
 			}
 		})
 	}
