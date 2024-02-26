@@ -20,6 +20,7 @@ import (
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/datacenter"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/location"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/tflogutil"
 )
 
@@ -171,6 +172,8 @@ func (p *PluginProvider) DataSources(_ context.Context) []func() datasource.Data
 		datacenter.NewDataSourceList,
 		location.NewDataSource,
 		location.NewDataSourceList,
+		sshkey.NewDataSource,
+		sshkey.NewDataSourceList,
 	}
 }
 
@@ -180,5 +183,7 @@ func (p *PluginProvider) DataSources(_ context.Context) []func() datasource.Data
 // The resource type name is determined by the Resource implementing
 // the Metadata method. All resources must have unique names.
 func (p *PluginProvider) Resources(_ context.Context) []func() resource.Resource {
-	return []func() resource.Resource{}
+	return []func() resource.Resource{
+		sshkey.NewResource,
+	}
 }

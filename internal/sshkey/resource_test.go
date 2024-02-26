@@ -31,9 +31,10 @@ func TestSSHKeyResource_Basic(t *testing.T) {
 				Config: tmplMan.Render(t, "testdata/r/hcloud_ssh_key", res),
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckResourceExists(res.TFID(), sshkey.ByID(t, &sk)),
-					resource.TestCheckResourceAttr(res.TFID(), "name",
-						fmt.Sprintf("basic-ssh-key--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(res.TFID(), "name", fmt.Sprintf("basic-ssh-key--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(res.TFID(), "public_key", res.PublicKey),
+					resource.TestCheckResourceAttrSet(res.TFID(), "fingerprint"),
+					resource.TestCheckResourceAttr(res.TFID(), "labels.key", res.Labels["key"]),
 				),
 			},
 			{
@@ -50,10 +51,42 @@ func TestSSHKeyResource_Basic(t *testing.T) {
 					"testdata/r/hcloud_ssh_key", resRenamed,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resRenamed.TFID(), "name",
-						fmt.Sprintf("basic-ssh-key-renamed--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(resRenamed.TFID(), "name", fmt.Sprintf("basic-ssh-key-renamed--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(resRenamed.TFID(), "public_key", res.PublicKey),
 				),
+			},
+		},
+	})
+}
+
+func TestAccSSHKeyResource_UpgradePluginFramework(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
+	res := sshkey.NewRData(t, "upgrade-plugin-framework-test")
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: teste2e.PreCheck(t),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"hcloud": {
+						VersionConstraint: "1.45.0",
+						Source:            "hetznercloud/hcloud",
+					},
+				},
+
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", res,
+				),
+			},
+			{
+				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", res,
+				),
+
+				PlanOnly: true,
 			},
 		},
 	})

@@ -28,7 +28,6 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/rdns"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/servertype"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/volume"
 )
 
@@ -96,7 +95,6 @@ func Provider() *schema.Provider {
 			server.NetworkResourceType:        server.NetworkResource(),
 			server.ResourceType:               server.Resource(),
 			snapshot.ResourceType:             snapshot.Resource(),
-			sshkey.ResourceType:               sshkey.Resource(),
 			volume.AttachmentResourceType:     volume.AttachmentResource(),
 			volume.ResourceType:               volume.Resource(),
 			placementgroup.ResourceType:       placementgroup.Resource(),
@@ -122,8 +120,6 @@ func Provider() *schema.Provider {
 			server.DataSourceListType:         server.DataSourceList(),
 			servertype.DataSourceType:         servertype.DataSource(),
 			servertype.DataSourceListType:     servertype.ServerTypesDataSource(),
-			sshkey.DataSourceType:             sshkey.DataSource(),
-			sshkey.DataSourceListType:         sshkey.DataSourceList(),
 			volume.DataSourceType:             volume.DataSource(),
 			volume.DataSourceListType:         volume.DataSourceList(),
 		},
