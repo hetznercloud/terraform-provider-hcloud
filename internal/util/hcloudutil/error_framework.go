@@ -68,3 +68,12 @@ func APIErrorDiagnostics(err error) diag.Diagnostics {
 	)
 	return diagnostics
 }
+
+// APIErrorIsNotFound check whether the error is an API request Not Found error.
+func APIErrorIsNotFound(err error) bool {
+	var hcloudErr hcloud.Error
+	if errors.As(err, &hcloudErr) {
+		return hcloud.IsError(hcloudErr, hcloud.ErrorCodeNotFound)
+	}
+	return false
+}
