@@ -34,8 +34,8 @@ type resourceData struct {
 	Name                   types.String `tfsdk:"name"`
 	Description            types.String `tfsdk:"description"`
 	Location               types.Map    `tfsdk:"location"`
-	SupportedServerTypeIds types.List   `tfsdk:"supported_server_type_ids"`
-	AvailableServerTypeIds types.List   `tfsdk:"available_server_type_ids"`
+	SupportedServerTypeIDs types.List   `tfsdk:"supported_server_type_ids"`
+	AvailableServerTypeIDs types.List   `tfsdk:"available_server_type_ids"`
 }
 
 var resourceDataAttrTypes = map[string]attr.Type{
@@ -67,20 +67,20 @@ func newResourceData(ctx context.Context, in *hcloud.Datacenter) (resourceData, 
 	})
 	diags.Append(newDiags...)
 
-	supportedServerTypeIds := make([]int64, len(in.ServerTypes.Supported))
+	supportedServerTypeIDs := make([]int64, len(in.ServerTypes.Supported))
 	for i, v := range in.ServerTypes.Supported {
-		supportedServerTypeIds[i] = int64(v.ID)
+		supportedServerTypeIDs[i] = int64(v.ID)
 	}
-	availableServerTypeIds := make([]int64, len(in.ServerTypes.Available))
+	availableServerTypeIDs := make([]int64, len(in.ServerTypes.Available))
 	for i, v := range in.ServerTypes.Available {
-		availableServerTypeIds[i] = int64(v.ID)
+		availableServerTypeIDs[i] = int64(v.ID)
 	}
-	sort.Slice(supportedServerTypeIds, func(i, j int) bool { return supportedServerTypeIds[i] < supportedServerTypeIds[j] })
-	sort.Slice(availableServerTypeIds, func(i, j int) bool { return availableServerTypeIds[i] < availableServerTypeIds[j] })
+	sort.Slice(supportedServerTypeIDs, func(i, j int) bool { return supportedServerTypeIDs[i] < supportedServerTypeIDs[j] })
+	sort.Slice(availableServerTypeIDs, func(i, j int) bool { return availableServerTypeIDs[i] < availableServerTypeIDs[j] })
 
-	data.SupportedServerTypeIds, newDiags = types.ListValueFrom(ctx, types.Int64Type, supportedServerTypeIds)
+	data.SupportedServerTypeIDs, newDiags = types.ListValueFrom(ctx, types.Int64Type, supportedServerTypeIDs)
 	diags.Append(newDiags...)
-	data.AvailableServerTypeIds, newDiags = types.ListValueFrom(ctx, types.Int64Type, availableServerTypeIds)
+	data.AvailableServerTypeIDs, newDiags = types.ListValueFrom(ctx, types.Int64Type, availableServerTypeIDs)
 	diags.Append(newDiags...)
 
 	return data, diags
