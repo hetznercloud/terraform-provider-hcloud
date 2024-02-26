@@ -7,10 +7,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
 	"github.com/hetznercloud/hcloud-go/hcloud"
-	tfhcloud "github.com/hetznercloud/terraform-provider-hcloud/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/primaryip"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
@@ -39,14 +38,9 @@ func TestPrimaryIPResource_Basic(t *testing.T) {
 	resRenamed.SetRName(res.Name)
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: teste2e.PreCheck(t),
-		ProviderFactories: map[string]func() (*schema.Provider, error){
-			//nolint:unparam
-			"hcloud": func() (*schema.Provider, error) {
-				return tfhcloud.Provider(), nil
-			},
-		},
-		CheckDestroy: testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &pip)),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &pip)),
 		Steps: []resource.TestStep{
 			{
 				// Create a new primary IP using the required values
@@ -145,13 +139,8 @@ func TestPrimaryIPResource_with_server(t *testing.T) {
 
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: teste2e.PreCheck(t),
-		ProviderFactories: map[string]func() (*schema.Provider, error){
-			//nolint:unparam
-			"hcloud": func() (*schema.Provider, error) {
-				return tfhcloud.Provider(), nil
-			},
-		},
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &srv)),
 			testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &primaryIPv4One)),
@@ -238,14 +227,9 @@ func TestPrimaryIPResource_FieldUpdates(t *testing.T) {
 
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: teste2e.PreCheck(t),
-		ProviderFactories: map[string]func() (*schema.Provider, error){
-			//nolint:unparam
-			"hcloud": func() (*schema.Provider, error) {
-				return tfhcloud.Provider(), nil
-			},
-		},
-		CheckDestroy: testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &pip)),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &pip)),
 		Steps: []resource.TestStep{
 			{
 				// Create a new primary IP using the required values

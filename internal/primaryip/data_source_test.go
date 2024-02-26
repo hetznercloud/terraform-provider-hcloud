@@ -5,10 +5,9 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	tfhcloud "github.com/hetznercloud/terraform-provider-hcloud/hcloud"
+
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/primaryip"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
@@ -48,14 +47,9 @@ func TestAccHcloudDataSourcePrimaryIPTest(t *testing.T) {
 	primaryIPBySel.SetRName("primaryip_by_sel")
 
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: teste2e.PreCheck(t),
-		ProviderFactories: map[string]func() (*schema.Provider, error){
-			//nolint:unparam
-			"hcloud": func() (*schema.Provider, error) {
-				return tfhcloud.Provider(), nil
-			},
-		},
-		CheckDestroy: testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, nil)),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
@@ -111,14 +105,9 @@ func TestAccHcloudDataSourcePrimaryIPListTest(t *testing.T) {
 
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: teste2e.PreCheck(t),
-		ProviderFactories: map[string]func() (*schema.Provider, error){
-			//nolint:unparam
-			"hcloud": func() (*schema.Provider, error) {
-				return tfhcloud.Provider(), nil
-			},
-		},
-		CheckDestroy: testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, nil)),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
