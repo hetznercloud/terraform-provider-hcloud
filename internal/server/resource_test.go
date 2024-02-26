@@ -8,12 +8,10 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
-	tfhcloud "github.com/hetznercloud/terraform-provider-hcloud/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/firewall"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/image"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/network"
@@ -581,14 +579,9 @@ func TestServerResource_PrimaryIPNetworkTests(t *testing.T) {
 
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: teste2e.PreCheck(t),
-		ProviderFactories: map[string]func() (*schema.Provider, error){
-			//nolint:unparam
-			"hcloud": func() (*schema.Provider, error) {
-				return tfhcloud.Provider(), nil
-			},
-		},
-		CheckDestroy: testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, nil)),
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
 				// Create a new server with unmanaged primary IPs + network
