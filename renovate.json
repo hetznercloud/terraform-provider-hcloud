@@ -1,4 +1,10 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>hetznercloud/.github//renovate/default"]
+  "extends": ["github>hetznercloud/.github//renovate/default"],
+  "packageRules": [
+    {
+      "matchPackagePrefixes": ["github.com/hashicorp/"],
+      "groupName": "hashicorp"
+    }
+  ]
 }
