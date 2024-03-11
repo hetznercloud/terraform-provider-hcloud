@@ -2,192 +2,225 @@ package sshkey
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
+	"maps"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/datasourceutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
-const (
-	// DataSourceType is the type name of the Hetzner Cloud SSH Key data source.
-	DataSourceType = "hcloud_ssh_key"
+// DataSourceType is the type name of the Hetzner Cloud SSH Key data source.
+const DataSourceType = "hcloud_ssh_key"
 
-	// DataSourceListType is the type name of the Hetzner Cloud SSH Keys data source.
-	DataSourceListType = "hcloud_ssh_keys"
-)
+type resourceDataWithSelector struct {
+	ID          types.Int64  `tfsdk:"id"`
+	Name        types.String `tfsdk:"name"`
+	Fingerprint types.String `tfsdk:"fingerprint"`
+	PublicKey   types.String `tfsdk:"public_key"`
+	Labels      types.Map    `tfsdk:"labels"`
 
-// getCommonDataSchema returns a new common schema used by all ssh key data sources.
-func getCommonDataSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"id": {
-			Type:     schema.TypeInt,
-			Optional: true,
-			Computed: true,
+	Selector     types.String `tfsdk:"selector"`
+	WithSelector types.String `tfsdk:"with_selector"`
+}
+
+func populateResourceDataWithSelector(ctx context.Context, data *resourceDataWithSelector, in *hcloud.SSHKey) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	var resourceDataWithoutSelector resourceData
+	diags.Append(populateResourceData(ctx, &resourceDataWithoutSelector, in)...)
+
+	data.ID = types.Int64Value(int64(in.ID))
+	data.Name = resourceDataWithoutSelector.Name
+	data.Fingerprint = resourceDataWithoutSelector.Fingerprint
+	data.PublicKey = resourceDataWithoutSelector.PublicKey
+	data.Labels = resourceDataWithoutSelector.Labels
+
+	return diags
+}
+
+func getCommonDataSourceSchema() map[string]schema.Attribute {
+	return map[string]schema.Attribute{
+		"id": schema.Int64Attribute{
+			MarkdownDescription: "ID of the SSH key.",
+			Optional:            true,
+			Computed:            true,
 		},
-		"name": {
-			Type:     schema.TypeString,
-			Computed: true,
-			Optional: true,
+		"name": schema.StringAttribute{
+			MarkdownDescription: "Name of the SSH key.",
+			Optional:            true,
+			Computed:            true,
 		},
-		"fingerprint": {
-			Type:     schema.TypeString,
-			Computed: true,
-			Optional: true,
+		"fingerprint": schema.StringAttribute{
+			MarkdownDescription: "Fingerprint of the SSH key.",
+			Optional:            true,
+			Computed:            true,
 		},
-		"public_key": {
-			Type:     schema.TypeString,
-			Computed: true,
+		"public_key": schema.StringAttribute{
+			MarkdownDescription: "Public key of the SSH key pair.",
+			Optional:            true,
+			Computed:            true,
 		},
-		"labels": {
-			Type:     schema.TypeMap,
-			Computed: true,
+		"labels": schema.MapAttribute{
+			MarkdownDescription: "User-defined [labels](https://docs.hetzner.cloud/#labels) (key-value pairs) for the resource.",
+			ElementType:         types.StringType,
+			Optional:            true,
+			Computed:            true,
 		},
 	}
 }
 
-// DataSource creates a new Terraform schema for the hcloud_ssh_key data
-// source.
-func DataSource() *schema.Resource {
-	return &schema.Resource{
-		ReadContext: dataSourceHcloudSSHKeyRead,
-		Schema: datasourceutil.MergeSchema(
-			getCommonDataSchema(),
-			map[string]*schema.Schema{
-				"selector": {
-					Type:          schema.TypeString,
-					Optional:      true,
-					Deprecated:    "Please use the with_selector property instead.",
-					ConflictsWith: []string{"with_selector"},
-				},
-				"with_selector": {
-					Type:          schema.TypeString,
-					Optional:      true,
-					ConflictsWith: []string{"selector"},
-				},
-			},
+// Single
+var _ datasource.DataSource = (*dataSource)(nil)
+var _ datasource.DataSourceWithConfigure = (*dataSource)(nil)
+var _ datasource.DataSourceWithConfigValidators = (*dataSource)(nil)
+
+type dataSource struct {
+	client *hcloud.Client
+}
+
+func NewDataSource() datasource.DataSource {
+	return &dataSource{}
+}
+
+// Metadata should return the full name of the data source.
+func (d *dataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = DataSourceType
+}
+
+// Configure enables provider-level data or clients to be set in the
+// provider-defined DataSource type. It is separately executed for each
+// ReadDataSource RPC.
+func (d *dataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+	var newDiags diag.Diagnostics
+
+	d.client, newDiags = hcloudutil.ConfigureClient(req.ProviderData)
+	resp.Diagnostics.Append(newDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+}
+
+//go:embed data_source.md
+var dataSourceMarkdownDescription string
+
+// Schema should return the schema for this data source.
+func (d *dataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema.Attributes = getCommonDataSourceSchema()
+	maps.Copy(resp.Schema.Attributes, map[string]schema.Attribute{
+		"selector": schema.StringAttribute{
+			Optional:           true,
+			DeprecationMessage: "Please use the with_selector property instead.",
+		},
+		"with_selector": schema.StringAttribute{
+			Optional: true,
+		},
+	})
+	resp.Schema.MarkdownDescription = dataSourceMarkdownDescription
+}
+
+// ConfigValidators returns a list of ConfigValidators. Each ConfigValidator's Validate method will be called when validating the data source.
+func (d *dataSource) ConfigValidators(_ context.Context) []datasource.ConfigValidator {
+	return []datasource.ConfigValidator{
+		datasourcevalidator.ExactlyOneOf(
+			path.MatchRoot("id"),
+			path.MatchRoot("name"),
+			path.MatchRoot("fingerprint"),
+			path.MatchRoot("selector"),
+			path.MatchRoot("with_selector"),
 		),
 	}
 }
 
-// DataSourceList creates a new Terraform schema for the hcloud_ssh_keys data
-// source.
-func DataSourceList() *schema.Resource {
-	return &schema.Resource{
-		ReadContext: dataSourceHcloudSSHKeyListRead,
-		Schema: map[string]*schema.Schema{
-			"with_selector": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
-			"ssh_keys": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: getCommonDataSchema(),
-				},
-			},
-		},
+// Read is called when the provider must read data source values in
+// order to update state. Config values should be read from the
+// ReadRequest and new state values set on the ReadResponse.
+func (d *dataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data resourceDataWithSelector
+
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-}
 
-func dataSourceHcloudSSHKeyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*hcloud.Client)
+	var result *hcloud.SSHKey
+	var err error
 
-	if id, ok := d.GetOk("id"); ok {
-		s, _, err := client.SSHKey.GetByID(ctx, id.(int))
+	switch {
+	case !data.ID.IsNull():
+		result, _, err = d.client.SSHKey.GetByID(ctx, int(data.ID.ValueInt64()))
 		if err != nil {
-			return hcloudutil.ErrorToDiag(err)
+			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+			return
 		}
-		if s == nil {
-			return diag.Errorf("no sshkey found with id %d", id)
+		if result == nil {
+			resp.Diagnostics.AddError(
+				"Resource not found",
+				fmt.Sprintf("No ssh key found with id %s.", data.ID.String()),
+			)
+			return
 		}
-		setSSHKeySchema(d, s)
-		return nil
-	}
-	if name, ok := d.GetOk("name"); ok {
-		s, _, err := client.SSHKey.GetByName(ctx, name.(string))
+	case !data.Name.IsNull():
+		result, _, err = d.client.SSHKey.GetByName(ctx, data.Name.ValueString())
 		if err != nil {
-			return hcloudutil.ErrorToDiag(err)
+			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+			return
 		}
-		if s == nil {
-			return diag.Errorf("no sshkey found with name %v", name)
+		if result == nil {
+			resp.Diagnostics.AddError(
+				"Resource not found",
+				fmt.Sprintf("No ssh key found with name %s.", data.Name.String()),
+			)
+			return
 		}
-		setSSHKeySchema(d, s)
-		return nil
-	}
-	if fingerprint, ok := d.GetOk("fingerprint"); ok {
-		s, _, err := client.SSHKey.GetByFingerprint(ctx, fingerprint.(string))
+	case !data.Fingerprint.IsNull():
+		result, _, err = d.client.SSHKey.GetByFingerprint(ctx, data.Fingerprint.ValueString())
 		if err != nil {
-			return hcloudutil.ErrorToDiag(err)
+			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+			return
 		}
-		if s == nil {
-			return diag.Errorf("no sshkey found with fingerprint %v", fingerprint)
+		if result == nil {
+			resp.Diagnostics.AddError(
+				"Resource not found",
+				fmt.Sprintf("No ssh key found with fingerprint %s.", data.Fingerprint.String()),
+			)
+			return
 		}
-		setSSHKeySchema(d, s)
-		return nil
-	}
+	case !data.WithSelector.IsNull() || !data.Selector.IsNull():
+		opts := hcloud.SSHKeyListOpts{}
 
-	var selector string
-	if v := d.Get("with_selector").(string); v != "" {
-		selector = v
-	} else if v := d.Get("selector").(string); v != "" {
-		selector = v
-	}
-	if selector != "" {
-		var allKeys []*hcloud.SSHKey
-		opts := hcloud.SSHKeyListOpts{
-			ListOpts: hcloud.ListOpts{
-				LabelSelector: selector,
-			},
+		if !data.WithSelector.IsNull() {
+			opts.LabelSelector = data.WithSelector.ValueString()
+		} else if !data.Selector.IsNull() {
+			opts.LabelSelector = data.Selector.ValueString()
 		}
-		allKeys, err := client.SSHKey.AllWithOpts(ctx, opts)
+
+		allKeys, err := d.client.SSHKey.AllWithOpts(ctx, opts)
 		if err != nil {
-			return hcloudutil.ErrorToDiag(err)
+			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+			return
 		}
-		if len(allKeys) == 0 {
-			return diag.Errorf("no sshkey found for selector %q", selector)
+
+		var newDiag diag.Diagnostic
+		result, newDiag = datasourceutil.GetOneResultForLabelSelector("ssh key", allKeys, opts.LabelSelector)
+		if newDiag != nil {
+			resp.Diagnostics.Append(newDiag)
+			return
 		}
-		if len(allKeys) > 1 {
-			return diag.Errorf("more than one sshkey found for selector %q", selector)
-		}
-		setSSHKeySchema(d, allKeys[0])
-		return nil
-	}
-	return diag.Errorf("please specify a id, a name, a fingerprint or a selector to lookup the sshkey")
-}
-
-func dataSourceHcloudSSHKeyListRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*hcloud.Client)
-
-	labelSelector := d.Get("with_selector")
-	labelSelectorStr, _ := labelSelector.(string)
-
-	opts := hcloud.SSHKeyListOpts{
-		ListOpts: hcloud.ListOpts{
-			LabelSelector: labelSelectorStr,
-		},
-	}
-	allKeys, err := client.SSHKey.AllWithOpts(ctx, opts)
-	if err != nil {
-		return hcloudutil.ErrorToDiag(err)
 	}
 
-	id := ""
-	tfKeys := make([]map[string]interface{}, len(allKeys))
-	for i, key := range allKeys {
-		if id != "" {
-			id += "-"
-		}
-		id += fmt.Sprintf("%d", key.ID)
-		tfKeys[i] = getSSHKeyAttributes(key)
+	resp.Diagnostics.Append(populateResourceDataWithSelector(ctx, &data, result)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	d.SetId(id)
-	d.Set("ssh_keys", tfKeys)
-
-	return nil
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

@@ -15,7 +15,6 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/servertype"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/snapshot"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/volume"
 	"github.com/stretchr/testify/assert"
 )
@@ -48,7 +47,6 @@ func TestProvider_Resources(t *testing.T) {
 		server.NetworkResourceType,
 		server.ResourceType,
 		snapshot.ResourceType,
-		sshkey.ResourceType,
 		volume.AttachmentResourceType,
 		volume.ResourceType,
 		placementgroup.ResourceType,
@@ -85,8 +83,6 @@ func TestProvider_DataSources(t *testing.T) {
 		server.DataSourceListType,
 		servertype.DataSourceType,
 		servertype.DataSourceListType,
-		sshkey.DataSourceType,
-		sshkey.DataSourceListType,
 		volume.DataSourceType,
 		volume.DataSourceListType,
 	}

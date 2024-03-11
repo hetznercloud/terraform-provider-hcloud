@@ -2,203 +2,214 @@ package sshkey
 
 import (
 	"context"
-	"log"
-	"strconv"
-	"strings"
+	_ "embed"
 
-	"github.com/hashicorp/go-cty/cty"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
-	"golang.org/x/crypto/ssh"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/resourceutil"
 )
 
 // ResourceType is the type name of the Hetzner Cloud SSH Key resource.
 const ResourceType = "hcloud_ssh_key"
 
-// Resource creates a Terraform schema for the hcloud_ssh_key resource.
-func Resource() *schema.Resource {
-	return &schema.Resource{
-		CreateContext: resourceSSHKeyCreate,
-		ReadContext:   resourceSSHKeyRead,
-		UpdateContext: resourceSSHKeyUpdate,
-		DeleteContext: resourceSSHKeyDelete,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
+var _ resource.Resource = (*resourceImpl)(nil)
+var _ resource.ResourceWithConfigure = (*resourceImpl)(nil)
+var _ resource.ResourceWithImportState = (*resourceImpl)(nil)
 
-		Schema: map[string]*schema.Schema{
-			"name": {
-				Type:     schema.TypeString,
-				Required: true,
-			},
-			"public_key": {
-				Type:             schema.TypeString,
-				Required:         true,
-				ForceNew:         true,
-				DiffSuppressFunc: resourceSSHKeyPublicKeyDiffSuppress,
-			},
-			"fingerprint": {
-				Type:     schema.TypeString,
-				Computed: true,
-			},
-			"labels": {
-				Type:     schema.TypeMap,
-				Optional: true,
-				ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics { // nolint:revive
-					if ok, err := hcloud.ValidateResourceLabels(i.(map[string]interface{})); !ok {
-						return diag.Errorf(err.Error())
-					}
-					return nil
-				},
-			},
-		},
+type resourceImpl struct {
+	client *hcloud.Client
+}
+
+func NewResource() resource.Resource {
+	return &resourceImpl{}
+}
+
+// Metadata should return the full name of the data source.
+func (r *resourceImpl) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = ResourceType
+}
+
+// Configure enables provider-level data or clients to be set in the
+// provider-defined DataSource type. It is separately executed for each
+// ReadDataSource RPC.
+func (r *resourceImpl) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+	var newDiags diag.Diagnostics
+
+	r.client, newDiags = hcloudutil.ConfigureClient(req.ProviderData)
+	resp.Diagnostics.Append(newDiags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 }
 
-func resourceSSHKeyPublicKeyDiffSuppress(_, old, new string, d *schema.ResourceData) bool {
-	fingerprint := d.Get("fingerprint").(string)
-	if new != "" && fingerprint != "" {
-		publicKey, _, _, _, err := ssh.ParseAuthorizedKey([]byte(new))
-		if err != nil {
-			return false
-		}
-		return ssh.FingerprintLegacyMD5(publicKey) == fingerprint
+//go:embed resource.md
+var resourceMarkdownDescription string
+
+func (r *resourceImpl) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema.Attributes = map[string]schema.Attribute{
+		"id": schema.StringAttribute{
+			MarkdownDescription: "ID of the SSH key.",
+			Computed:            true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
+		},
+		"name": schema.StringAttribute{
+			MarkdownDescription: "Name of the SSH key.",
+			Required:            true,
+		},
+		"public_key": schema.StringAttribute{
+			MarkdownDescription: "Public key of the SSH key pair. If this is a file, it can be read using the `file` interpolation function.",
+			Required:            true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.RequiresReplace(),
+			},
+		},
+		"fingerprint": schema.StringAttribute{
+			MarkdownDescription: "Fingerprint of the SSH public key.",
+			Computed:            true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
+		},
+		"labels": resourceutil.LabelsSchema(),
 	}
-	return strings.TrimSpace(old) == strings.TrimSpace(new)
+	resp.Schema.MarkdownDescription = resourceMarkdownDescription
 }
 
-func resourceSSHKeyCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*hcloud.Client)
+func (r *resourceImpl) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data resourceData
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	opts := hcloud.SSHKeyCreateOpts{
-		Name:      d.Get("name").(string),
-		PublicKey: d.Get("public_key").(string),
+		Name:      data.Name.ValueString(),
+		PublicKey: data.PublicKey.ValueString(),
 	}
-	if labels, ok := d.GetOk("labels"); ok {
-		tmpLabels := make(map[string]string)
-		for k, v := range labels.(map[string]interface{}) {
-			tmpLabels[k] = v.(string)
-		}
-		opts.Labels = tmpLabels
+	if !data.Labels.IsNull() {
+		hcloudutil.TerraformLabelsToHCloud(ctx, data.Labels, &opts.Labels)
 	}
 
-	sshKey, _, err := client.SSHKey.Create(ctx, opts)
+	in, _, err := r.client.SSHKey.Create(ctx, opts)
 	if err != nil {
-		return hcloudutil.ErrorToDiag(err)
+		resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+		return
 	}
-	d.SetId(strconv.Itoa(sshKey.ID))
 
-	return resourceSSHKeyRead(ctx, d, m)
+	resp.Diagnostics.Append(populateResourceData(ctx, &data, in)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func resourceSSHKeyRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*hcloud.Client)
+func (r *resourceImpl) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var data resourceData
 
-	sshKeyID, err := strconv.Atoi(d.Id())
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	id, newDiags := resourceutil.ParseID(data.ID)
+	resp.Diagnostics.Append(newDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	in, _, err := r.client.SSHKey.GetByID(ctx, id)
 	if err != nil {
-		log.Printf("[WARN] invalid SSH key id (%s), removing from state: %v", d.Id(), err)
-		d.SetId("")
-		return nil
+		resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+		return
 	}
 
-	sshKey, _, err := client.SSHKey.GetByID(ctx, sshKeyID)
-	if err != nil {
-		return hcloudutil.ErrorToDiag(err)
-	}
-	if sshKey == nil {
-		log.Printf("[WARN] SSH key (%s) not found, removing from state", d.Id())
-		d.SetId("")
-		return nil
+	if in == nil {
+		resp.State.RemoveResource(ctx)
+		return
 	}
 
-	setSSHKeySchema(d, sshKey)
+	resp.Diagnostics.Append(populateResourceData(ctx, &data, in)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-	return nil
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func resourceSSHKeyUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*hcloud.Client)
+func (r *resourceImpl) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var data, plan resourceData
 
-	sshKeyID, err := strconv.Atoi(d.Id())
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	opts := hcloud.SSHKeyUpdateOpts{}
+
+	if !plan.Name.Equal(data.Name) {
+		opts.Name = plan.Name.ValueString()
+	}
+
+	if !plan.Labels.Equal(data.Labels) {
+		hcloudutil.TerraformLabelsToHCloud(ctx, plan.Labels, &opts.Labels)
+	}
+
+	id, newDiags := resourceutil.ParseID(data.ID)
+	resp.Diagnostics.Append(newDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	in, _, err := r.client.SSHKey.Update(ctx, &hcloud.SSHKey{ID: id}, opts)
 	if err != nil {
-		log.Printf("[WARN] invalid SSH key id (%s), removing from state: %v", d.Id(), err)
-		d.SetId("")
-		return nil
+		resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+		return
 	}
 
-	if d.HasChange("name") {
-		name := d.Get("name").(string)
-		_, _, err := client.SSHKey.Update(ctx, &hcloud.SSHKey{ID: sshKeyID}, hcloud.SSHKeyUpdateOpts{
-			Name: name,
-		})
-		if err != nil {
-			if hcerr, ok := err.(hcloud.Error); ok && hcerr.Code == hcloud.ErrorCodeNotFound {
-				log.Printf("[WARN] SSH key (%s) not found, removing from state", d.Id())
-				d.SetId("")
-				return nil
-			}
-			return hcloudutil.ErrorToDiag(err)
-		}
-	}
-	if d.HasChange("labels") {
-		labels := make(map[string]string)
-		for k, v := range d.Get("labels").(map[string]interface{}) {
-			labels[k] = v.(string)
-		}
-		_, _, err := client.SSHKey.Update(ctx, &hcloud.SSHKey{ID: sshKeyID}, hcloud.SSHKeyUpdateOpts{
-			Labels: labels,
-		})
-		if err != nil {
-			if hcerr, ok := err.(hcloud.Error); ok && hcerr.Code == hcloud.ErrorCodeNotFound {
-				log.Printf("[WARN] SSH key (%s) not found, removing from state", d.Id())
-				d.SetId("")
-				return nil
-			}
-			return hcloudutil.ErrorToDiag(err)
-		}
+	resp.Diagnostics.Append(populateResourceData(ctx, &data, in)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	return resourceSSHKeyRead(ctx, d, m)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func resourceSSHKeyDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*hcloud.Client)
+func (r *resourceImpl) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var data resourceData
 
-	sshKeyID, err := strconv.Atoi(d.Id())
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	id, newDiags := resourceutil.ParseID(data.ID)
+	resp.Diagnostics.Append(newDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	_, err := r.client.SSHKey.Delete(ctx, &hcloud.SSHKey{ID: id})
 	if err != nil {
-		log.Printf("[WARN] invalid SSH key id (%s), removing from state: %v", d.Id(), err)
-		d.SetId("")
-		return nil
-	}
-	if _, err := client.SSHKey.Delete(ctx, &hcloud.SSHKey{ID: sshKeyID}); err != nil {
-		if hcerr, ok := err.(hcloud.Error); ok && hcerr.Code == hcloud.ErrorCodeNotFound {
-			// SSH key has already been deleted
-			return nil
+		if hcloudutil.APIErrorIsNotFound(err) { // SSH key does not exist
+			return
 		}
-		return hcloudutil.ErrorToDiag(err)
-	}
 
-	return nil
-}
-
-func setSSHKeySchema(d *schema.ResourceData, s *hcloud.SSHKey) {
-	for key, val := range getSSHKeyAttributes(s) {
-		if key == "id" {
-			d.SetId(strconv.Itoa(val.(int)))
-		} else {
-			d.Set(key, val)
-		}
+		resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+		return
 	}
 }
-
-func getSSHKeyAttributes(s *hcloud.SSHKey) map[string]interface{} {
-	return map[string]interface{}{
-		"id":          s.ID,
-		"name":        s.Name,
-		"fingerprint": s.Fingerprint,
-		"public_key":  s.PublicKey,
-		"labels":      s.Labels,
-	}
+func (r *resourceImpl) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
