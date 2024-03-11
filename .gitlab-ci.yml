@@ -8,7 +8,7 @@ stages:
 
 test:acceptance:
   stage: test
-  image: golang:1.21
+  image: golang:1.22
   except:
     - tags
   script:
