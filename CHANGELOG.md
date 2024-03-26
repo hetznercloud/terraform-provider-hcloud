@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.46.0](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.45.0...v1.46.0) (2024-03-26)
+
+
+### Features
+
+* **firewall:** set IPs without prefix directly ([#874](https://github.com/hetznercloud/terraform-provider-hcloud/issues/874)) ([40df28d](https://github.com/hetznercloud/terraform-provider-hcloud/commit/40df28d79dd192ef39edb51dfd6c4a6626d6413b)), closes [#807](https://github.com/hetznercloud/terraform-provider-hcloud/issues/807) [#715](https://github.com/hetznercloud/terraform-provider-hcloud/issues/715)
+* support terraform v1.7.x ([#845](https://github.com/hetznercloud/terraform-provider-hcloud/issues/845)) ([a5229f4](https://github.com/hetznercloud/terraform-provider-hcloud/commit/a5229f492c5cee0bede74354ad697c452bd55211))
+
+
+### Bug Fixes
+
+* add api request status code in error diagnostics ([#839](https://github.com/hetznercloud/terraform-provider-hcloud/issues/839)) ([3689ade](https://github.com/hetznercloud/terraform-provider-hcloud/commit/3689ade53f2706f48bda4b3c14577b5bc9deadf3))
+* **firewall:** unnecessary diff if user specified non-minimal IPv6 ([40df28d](https://github.com/hetznercloud/terraform-provider-hcloud/commit/40df28d79dd192ef39edb51dfd6c4a6626d6413b)), closes [#870](https://github.com/hetznercloud/terraform-provider-hcloud/issues/870)
+* return after error in datacenter data source ([#847](https://github.com/hetznercloud/terraform-provider-hcloud/issues/847)) ([bfac734](https://github.com/hetznercloud/terraform-provider-hcloud/commit/bfac734e1eefc135e3e1001c70904e93a7927859))
+* **server:** unable to attach two new networks ([#901](https://github.com/hetznercloud/terraform-provider-hcloud/issues/901)) ([df177e2](https://github.com/hetznercloud/terraform-provider-hcloud/commit/df177e285aba803ca117a639097f0745baa54a05)), closes [#899](https://github.com/hetznercloud/terraform-provider-hcloud/issues/899)
+
 ## [1.45.0](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.44.1...v1.45.0) (2024-01-11)
 
 
