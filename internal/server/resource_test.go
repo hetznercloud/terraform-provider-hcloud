@@ -272,8 +272,9 @@ func TestServerResource_ISO(t *testing.T) {
 
 func TestServerResource_DirectAttachToNetwork(t *testing.T) {
 	var (
-		nw hcloud.Network
-		s  hcloud.Server
+		nw  hcloud.Network
+		nw2 hcloud.Network
+		s   hcloud.Server
 
 		// Helper functions to modify the test data. Those functions modify
 		// the passed in server on purpose. Calling them once to change the
@@ -301,19 +302,36 @@ func TestServerResource_DirectAttachToNetwork(t *testing.T) {
 		}
 	)
 
-	sk := sshkey.NewRData(t, "server-iso")
+	sk := sshkey.NewRData(t, "server-direct-attach-network")
+
+	// Network 1
 	nwRes := &network.RData{
-		Name:    "test-network",
+		Name:    "test-network-1",
 		IPRange: "10.0.0.0/16",
 	}
-	nwRes.SetRName("test-network")
+	nwRes.SetRName("test-network-1")
 	snwRes := &network.RDataSubnet{
 		Type:        "cloud",
 		NetworkID:   nwRes.TFID() + ".id",
 		NetworkZone: "eu-central",
 		IPRange:     "10.0.1.0/24",
 	}
-	snwRes.SetRName("test-network-subnet")
+	snwRes.SetRName("test-network-subnet-1")
+
+	// Network 2
+	nw2Res := &network.RData{
+		Name:    "test-network-2",
+		IPRange: "10.1.0.0/16",
+	}
+	nw2Res.SetRName("test-network-2")
+	snw2Res := &network.RDataSubnet{
+		Type:        "cloud",
+		NetworkID:   nw2Res.TFID() + ".id",
+		NetworkZone: "eu-central",
+		IPRange:     "10.1.1.0/24",
+	}
+	snw2Res.SetRName("test-network-subnet-2")
+
 	sRes := &server.RData{
 		Name:       "server-direct-attach",
 		Type:       teste2e.TestServerType,
@@ -337,6 +355,28 @@ func TestServerResource_DirectAttachToNetwork(t *testing.T) {
 		DependsOn: []string{snwRes.TFID()},
 	}
 	sResWithNet.SetRName(sResWithNet.Name)
+
+	sResWithTwoNets := &server.RData{
+		Name:         sRes.Name,
+		Type:         sRes.Type,
+		LocationName: sRes.LocationName,
+		Image:        sRes.Image,
+		SSHKeys:      sRes.SSHKeys,
+		Networks: []server.RDataInlineNetwork{
+			{
+				NetworkID: nwRes.TFID() + ".id",
+				IP:        "10.0.1.5",
+				AliasIPs:  []string{"10.0.1.6", "10.0.1.7"},
+			},
+			{
+				NetworkID: nw2Res.TFID() + ".id",
+				IP:        "10.1.1.5",
+				AliasIPs:  []string{"10.1.1.6", "10.1.1.7"},
+			},
+		},
+		DependsOn: []string{snwRes.TFID(), snw2Res.TFID()},
+	}
+	sResWithTwoNets.SetRName(sResWithTwoNets.Name)
 
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
@@ -418,6 +458,42 @@ func TestServerResource_DirectAttachToNetwork(t *testing.T) {
 					}),
 				),
 				ExpectError: regexp.MustCompile(`server is only allowed to be attached to each network once: \d+`),
+			},
+
+			{
+				// Remove networks and test to attach to two new networks at the same time
+				// Fail when using conflicting networks
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_server", sRes,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(sRes.TFID(), server.ByID(t, &s)),
+					testsupport.LiftTCF(func() error {
+						t.Log("Checking if server has no private network")
+						assert.Empty(t, s.PrivateNet)
+						return nil
+					}),
+				),
+			},
+
+			{
+				// Continuation of above test
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_network", nwRes,
+					"testdata/r/hcloud_network_subnet", snwRes,
+					"testdata/r/hcloud_network", nw2Res,
+					"testdata/r/hcloud_network_subnet", snw2Res,
+					"testdata/r/hcloud_server", sResWithTwoNets,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(sRes.TFID(), server.ByID(t, &s)),
+					testsupport.CheckResourceExists(nwRes.TFID(), network.ByID(t, &nw)),
+					testsupport.CheckResourceExists(nw2Res.TFID(), network.ByID(t, &nw2)),
+					testsupport.LiftTCF(hasServerNetwork(t, &s, &nw, "10.0.1.5", "10.0.1.6", "10.0.1.7")),
+					testsupport.LiftTCF(hasServerNetwork(t, &s, &nw2, "10.1.1.5", "10.1.1.6", "10.1.1.7")),
+				),
 			},
 		},
 	})

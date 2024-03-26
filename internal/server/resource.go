@@ -1388,6 +1388,16 @@ func validateUniqueNetworkIDs(d *schema.ResourceDiff) error {
 			if !ok {
 				continue
 			}
+			if networkID == 0 {
+				// ID is 0 if Network will be created in same apply, we are unable to reliably detect if the
+				// "to-be-created" networks are the same.
+				// See https://github.com/hetznercloud/terraform-provider-hcloud/issues/899
+
+				// We should revisit this after moving to the Plugin Framework,
+				// as it allows more introspection for the plan/changes made.
+				// See https://github.com/hetznercloud/terraform-provider-hcloud/issues/752
+				continue
+			}
 
 			id, ok := networkID.(int)
 			if !ok {
