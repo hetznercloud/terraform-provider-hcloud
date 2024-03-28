@@ -17,6 +17,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// Need new tests for:
+// - Any updates
+// - Alias IPs
+// - ErrorCodeServerAlreadyAttached
+
 func TestAccHcloudServerNetwork_NetworkID(t *testing.T) {
 	var (
 		nw hcloud.Network

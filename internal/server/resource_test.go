@@ -24,6 +24,13 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
+// Need new tests for:
+// - Updating  "iso"
+// - Setting & Updating Placement group
+// - Setting & Updating rescue system
+// - Primary IP Migrations (to and from explicit resources)
+// - Delete with `shutdown_before_deletion`
+
 func TestServerResource_Basic(t *testing.T) {
 	var s hcloud.Server
 
@@ -35,7 +42,14 @@ func TestServerResource_Basic(t *testing.T) {
 		SSHKeys: []string{sk.TFID() + ".id"},
 	}
 	res.SetRName("server-basic")
-	resRenamed := &server.RData{Name: res.Name + "-renamed", Type: res.Type, Image: res.Image}
+	resRenamed := &server.RData{
+		Name:    res.Name + "-renamed",
+		Type:    res.Type,
+		Image:   res.Image, // TODO: Other Image => new test?
+		SSHKeys: []string{sk.TFID() + ".id"},
+		Labels:  map[string]string{"foo": "bar"},
+		Backups: true,
+	}
 	resRenamed.SetRName(res.Name)
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
@@ -44,18 +58,25 @@ func TestServerResource_Basic(t *testing.T) {
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
 		Steps: []resource.TestStep{
 			{
-				// Create a new Server using the required values
-				// only.
+				// Create a new Server using the required values only.
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_ssh_key", sk,
 					"testdata/r/hcloud_server", res,
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s)),
-					resource.TestCheckResourceAttr(res.TFID(), "name",
-						fmt.Sprintf("server-basic--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(res.TFID(), "name", fmt.Sprintf("server-basic--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(res.TFID(), "server_type", res.Type),
 					resource.TestCheckResourceAttr(res.TFID(), "image", res.Image),
+					resource.TestCheckResourceAttrSet(res.TFID(), "location"),
+					resource.TestCheckResourceAttrSet(res.TFID(), "datacenter"),
+					resource.TestCheckResourceAttrPair(sk.TFID(), "id", res.TFID(), "ssh_keys.0"),
+					resource.TestCheckResourceAttrSet(res.TFID(), "ipv4_address"),
+					resource.TestCheckResourceAttrSet(res.TFID(), "ipv6_address"),
+					resource.TestCheckResourceAttrSet(res.TFID(), "ipv6_network"),
+					resource.TestCheckResourceAttr(res.TFID(), "status", string(hcloud.ServerStatusRunning)),
+					resource.TestCheckResourceAttrSet(res.TFID(), "primary_disk_size"),
+					resource.TestCheckResourceAttr(res.TFID(), "placement_group_id", "0"),
 				),
 			},
 			{
@@ -71,13 +92,15 @@ func TestServerResource_Basic(t *testing.T) {
 				// Update the Server created in the previous step by
 				// setting all optional fields and renaming the Server.
 				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
 					"testdata/r/hcloud_server", resRenamed,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resRenamed.TFID(), "name",
-						fmt.Sprintf("server-basic-renamed--%d", tmplMan.RandInt)),
-					resource.TestCheckResourceAttr(resRenamed.TFID(), "server_type", res.Type),
-					resource.TestCheckResourceAttr(resRenamed.TFID(), "image", res.Image),
+					resource.TestCheckResourceAttr(resRenamed.TFID(), "name", fmt.Sprintf("server-basic-renamed--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(resRenamed.TFID(), "server_type", resRenamed.Type),
+					resource.TestCheckResourceAttr(resRenamed.TFID(), "image", resRenamed.Image),
+					resource.TestCheckResourceAttr(resRenamed.TFID(), "labels.foo", "bar"),
+					resource.TestCheckResourceAttr(resRenamed.TFID(), "backups", "true"),
 				),
 			},
 		},
@@ -133,7 +156,7 @@ func TestServerResource_Resize(t *testing.T) {
 		SSHKeys: []string{sk.TFID() + ".id"},
 	}
 	res.SetRName("server-resize")
-	resResized := &server.RData{Name: res.Name, Type: "cx21", Image: res.Image, KeepDisk: true}
+	resResized := &server.RData{Name: res.Name, Type: teste2e.TestServerTypeUpgrade, Image: res.Image, KeepDisk: true}
 	resResized.SetRName(res.Name)
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
@@ -150,8 +173,7 @@ func TestServerResource_Resize(t *testing.T) {
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s)),
-					resource.TestCheckResourceAttr(res.TFID(), "name",
-						fmt.Sprintf("server-resize--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(res.TFID(), "name", fmt.Sprintf("server-resize--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(res.TFID(), "server_type", res.Type),
 					resource.TestCheckResourceAttr(res.TFID(), "image", res.Image),
 				),
@@ -164,8 +186,7 @@ func TestServerResource_Resize(t *testing.T) {
 					"testdata/r/hcloud_server", resResized,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resResized.TFID(), "name",
-						fmt.Sprintf("server-resize--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(resResized.TFID(), "name", fmt.Sprintf("server-resize--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(resResized.TFID(), "server_type", resResized.Type),
 					resource.TestCheckResourceAttr(resResized.TFID(), "image", res.Image),
 				),
