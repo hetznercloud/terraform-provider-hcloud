@@ -71,3 +71,17 @@ _Note:_ Acceptance tests create real resources, and often cost money to run.
 ```
 $ make testacc
 ```
+
+You may save your acceptance tests environment variables in the `.env` file, for example:
+
+```sh
+$ cat .env
+HCLOUD_TOKEN=YOUR_API_TEST_TOKEN
+TF_ACC=1
+TF_LOG=DEBUG
+TF_LOG_PATH_MASK=test-%s.log
+
+$ go test -v -timeout=30m -parallel=8 ./internal/server
+=== RUN   TestAccHcloudDataSourceServerTest
+# ...
+```
