@@ -898,6 +898,13 @@ func TestServerResource_PlacementGroup(t *testing.T) {
 	}
 	srvRes.SetRName("server-placement-group")
 
+	srvResNoPG := &server.RData{
+		Name:  srvRes.Name,
+		Type:  srvRes.Type,
+		Image: srvRes.Image,
+	}
+	srvResNoPG.SetRName("server-placement-group")
+
 	tmplMan := testtemplate.Manager{}
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -915,10 +922,33 @@ func TestServerResource_PlacementGroup(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckResourceExists(srvRes.TFID(), server.ByID(t, &srv)),
 					testsupport.CheckResourceExists(pgRes.TFID(), placementgroup.ByID(t, &pg)),
-					resource.TestCheckResourceAttr(srvRes.TFID(), "name",
-						fmt.Sprintf("server-placement-group--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(srvRes.TFID(), "name", fmt.Sprintf("server-placement-group--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(srvRes.TFID(), "server_type", srvRes.Type),
 					resource.TestCheckResourceAttr(srvRes.TFID(), "image", srvRes.Image),
+					testsupport.CheckResourceAttrFunc(srvRes.TFID(), "placement_group_id", func() string {
+						return strconv.Itoa(pg.ID)
+					}),
+				),
+			},
+			{
+				// Remove Placement Group
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_placement_group", pgRes,
+					"testdata/r/hcloud_server", srvResNoPG,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(srvResNoPG.TFID(), "status", "running"),
+					resource.TestCheckResourceAttr(srvResNoPG.TFID(), "placement_group_id", "0"),
+				),
+			},
+			{
+				// Add Placement Group back
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_placement_group", pgRes,
+					"testdata/r/hcloud_server", srvRes,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(srvResNoPG.TFID(), "status", "running"),
 					testsupport.CheckResourceAttrFunc(srvRes.TFID(), "placement_group_id", func() string {
 						return strconv.Itoa(pg.ID)
 					}),

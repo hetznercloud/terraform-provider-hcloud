@@ -659,8 +659,8 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		}
 	}
 
-	if d.HasChange("placement_group") {
-		placementGroupID := d.Get("placement_group").(int)
+	if d.HasChange("placement_group_id") {
+		placementGroupID := d.Get("placement_group_id").(int)
 		if err := setPlacementGroup(ctx, c, server, placementGroupID); err != nil {
 			return hcloudutil.ErrorToDiag(err)
 		}
@@ -1212,6 +1212,8 @@ func getServerAttributes(d *schema.ResourceData, s *hcloud.Server) map[string]in
 
 	if s.PlacementGroup != nil {
 		res["placement_group_id"] = s.PlacementGroup.ID
+	} else {
+		res["placement_group_id"] = nil
 	}
 
 	return res
