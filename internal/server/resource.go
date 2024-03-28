@@ -659,8 +659,8 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		}
 	}
 
-	if d.HasChange("placement_group") {
-		placementGroupID := d.Get("placement_group").(int)
+	if d.HasChange("placement_group_id") {
+		placementGroupID := d.Get("placement_group_id").(int)
 		if err := setPlacementGroup(ctx, c, server, placementGroupID); err != nil {
 			return hcloudutil.ErrorToDiag(err)
 		}
@@ -1212,6 +1212,8 @@ func getServerAttributes(d *schema.ResourceData, s *hcloud.Server) map[string]in
 
 	if s.PlacementGroup != nil {
 		res["placement_group_id"] = s.PlacementGroup.ID
+	} else {
+		res["placement_group_id"] = nil
 	}
 
 	return res
@@ -1249,6 +1251,14 @@ func getPlacementGroup(ctx context.Context, c *hcloud.Client, id int) (*hcloud.P
 
 func setPlacementGroup(ctx context.Context, c *hcloud.Client, server *hcloud.Server, id int) error {
 	if server.PlacementGroup != nil {
+		if server.Status != hcloud.ServerStatusOff {
+			// Removing PG requires the server to be shut down before, this is an invasive operation. We do not currently
+			// warn the user about this, so we prefer to forbid the operation until we have a proper framework for
+			// shutting down + warning in place.
+			return fmt.Errorf("removing a running server from a placement group is currently not supported in the provider. " +
+				"You can shutdown the server yourself, apply the changes again and then start the server manually as a workaround")
+		}
+
 		action, _, err := c.Server.RemoveFromPlacementGroup(ctx, server)
 		if err != nil {
 			return err
