@@ -26,6 +26,11 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
+// Need new tests for:
+// - Setting & Updating rescue system
+// - Primary IP Migrations (to and from explicit resources)
+// - Delete with `shutdown_before_deletion`
+
 func TestServerResource_Basic(t *testing.T) {
 	var s hcloud.Server
 
@@ -37,7 +42,14 @@ func TestServerResource_Basic(t *testing.T) {
 		SSHKeys: []string{sk.TFID() + ".id"},
 	}
 	res.SetRName("server-basic")
-	resRenamed := &server.RData{Name: res.Name + "-renamed", Type: res.Type, Image: res.Image}
+	resRenamed := &server.RData{
+		Name:    res.Name + "-renamed",
+		Type:    res.Type,
+		Image:   res.Image, // TODO: Other Image => new test?
+		SSHKeys: []string{sk.TFID() + ".id"},
+		Labels:  map[string]string{"foo": "bar"},
+		Backups: true,
+	}
 	resRenamed.SetRName(res.Name)
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
@@ -46,18 +58,25 @@ func TestServerResource_Basic(t *testing.T) {
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
 		Steps: []resource.TestStep{
 			{
-				// Create a new Server using the required values
-				// only.
+				// Create a new Server using the required values only.
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_ssh_key", sk,
 					"testdata/r/hcloud_server", res,
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s)),
-					resource.TestCheckResourceAttr(res.TFID(), "name",
-						fmt.Sprintf("server-basic--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(res.TFID(), "name", fmt.Sprintf("server-basic--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(res.TFID(), "server_type", res.Type),
 					resource.TestCheckResourceAttr(res.TFID(), "image", res.Image),
+					resource.TestCheckResourceAttrSet(res.TFID(), "location"),
+					resource.TestCheckResourceAttrSet(res.TFID(), "datacenter"),
+					resource.TestCheckResourceAttrPair(sk.TFID(), "id", res.TFID(), "ssh_keys.0"),
+					resource.TestCheckResourceAttrSet(res.TFID(), "ipv4_address"),
+					resource.TestCheckResourceAttrSet(res.TFID(), "ipv6_address"),
+					resource.TestCheckResourceAttrSet(res.TFID(), "ipv6_network"),
+					resource.TestCheckResourceAttr(res.TFID(), "status", string(hcloud.ServerStatusRunning)),
+					resource.TestCheckResourceAttrSet(res.TFID(), "primary_disk_size"),
+					resource.TestCheckResourceAttr(res.TFID(), "placement_group_id", "0"),
 				),
 			},
 			{
@@ -73,13 +92,15 @@ func TestServerResource_Basic(t *testing.T) {
 				// Update the Server created in the previous step by
 				// setting all optional fields and renaming the Server.
 				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
 					"testdata/r/hcloud_server", resRenamed,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resRenamed.TFID(), "name",
-						fmt.Sprintf("server-basic-renamed--%d", tmplMan.RandInt)),
-					resource.TestCheckResourceAttr(resRenamed.TFID(), "server_type", res.Type),
-					resource.TestCheckResourceAttr(resRenamed.TFID(), "image", res.Image),
+					resource.TestCheckResourceAttr(resRenamed.TFID(), "name", fmt.Sprintf("server-basic-renamed--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(resRenamed.TFID(), "server_type", resRenamed.Type),
+					resource.TestCheckResourceAttr(resRenamed.TFID(), "image", resRenamed.Image),
+					resource.TestCheckResourceAttr(resRenamed.TFID(), "labels.foo", "bar"),
+					resource.TestCheckResourceAttr(resRenamed.TFID(), "backups", "true"),
 				),
 			},
 		},
@@ -242,14 +263,23 @@ func TestServerResource_ISO(t *testing.T) {
 
 	sk := sshkey.NewRData(t, "server-iso")
 	res := &server.RData{
-		Name:     "server-iso",
-		Type:     teste2e.TestServerType,
-		Image:    teste2e.TestImage,
-		UserData: "stuff",
-		ISO:      "8637", // Windows Server 2022 English
-		SSHKeys:  []string{sk.TFID() + ".id"},
+		Name:  "server-iso",
+		Type:  teste2e.TestServerType,
+		Image: teste2e.TestImage,
+		ISO:   "8637", // Windows Server 2022 English
+
+		SSHKeys: []string{sk.TFID() + ".id"},
 	}
 	res.SetRName("server-iso")
+	resUpdatedISO := &server.RData{
+		Name:    res.Name,
+		Type:    res.Type,
+		Image:   res.Image,
+		ISO:     "8638", // Windows Server 2022 German
+		SSHKeys: res.SSHKeys,
+	}
+	resUpdatedISO.SetRName(res.RName())
+
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
@@ -270,6 +300,17 @@ func TestServerResource_ISO(t *testing.T) {
 					resource.TestCheckResourceAttr(res.TFID(), "server_type", res.Type),
 					resource.TestCheckResourceAttr(res.TFID(), "image", res.Image),
 					resource.TestCheckResourceAttr(res.TFID(), "iso", res.ISO),
+				),
+			},
+			{
+				// Update ISO
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_server", resUpdatedISO,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s)),
+					resource.TestCheckResourceAttr(res.TFID(), "iso", resUpdatedISO.ISO),
 				),
 			},
 		},
