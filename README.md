@@ -77,7 +77,7 @@ You may save your acceptance tests environment variables in the `.env` file, for
 ```sh
 $ cat .env
 HCLOUD_TOKEN=YOUR_API_TEST_TOKEN
-TF_ACC=1
+#TF_ACC=1
 TF_LOG=DEBUG
 TF_LOG_PATH_MASK=test-%s.log
 
