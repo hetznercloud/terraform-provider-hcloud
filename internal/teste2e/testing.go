@@ -2,8 +2,13 @@ package teste2e
 
 import (
 	"context"
+	"errors"
 	"os"
+	"path/filepath"
 	"testing"
+
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
+	"github.com/joho/godotenv"
 
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 
@@ -52,11 +57,25 @@ func ProtoV6ProviderFactories() map[string]func() (tfprotov6.ProviderServer, err
 // PreCheck checks if all conditions for an acceptance test are
 // met.
 func PreCheck(t *testing.T) func() {
+	// We load the environment variables file before the test case starts (for example
+	// to load the TF_ACC=1 variable need by the acceptance tests)
+	if err := loadEnvFile(filepath.Join(testsupport.ProjectRoot(t), ".env")); err != nil {
+		t.Fatalf("Could not load .env file: %v", err)
+	}
+
 	return func() {
 		if v := os.Getenv("HCLOUD_TOKEN"); v == "" {
 			t.Fatal("HCLOUD_TOKEN must be set for acceptance tests")
 		}
 	}
+}
+
+func loadEnvFile(filename string) error {
+	if _, err := os.Stat(filename); errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+
+	return godotenv.Load(filename)
 }
 
 func getEnv(key, fallback string) string {
