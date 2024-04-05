@@ -1,6 +1,7 @@
 package server_test
 
 import (
+	"context"
 	"crypto/sha1"
 	"encoding/base64"
 	"fmt"
@@ -22,6 +23,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
 func TestServerResource_Basic(t *testing.T) {
@@ -898,6 +900,13 @@ func TestServerResource_PlacementGroup(t *testing.T) {
 	}
 	srvRes.SetRName("server-placement-group")
 
+	srvResNoPG := &server.RData{
+		Name:  srvRes.Name,
+		Type:  srvRes.Type,
+		Image: srvRes.Image,
+	}
+	srvResNoPG.SetRName("server-placement-group")
+
 	tmplMan := testtemplate.Manager{}
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -915,10 +924,60 @@ func TestServerResource_PlacementGroup(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckResourceExists(srvRes.TFID(), server.ByID(t, &srv)),
 					testsupport.CheckResourceExists(pgRes.TFID(), placementgroup.ByID(t, &pg)),
-					resource.TestCheckResourceAttr(srvRes.TFID(), "name",
-						fmt.Sprintf("server-placement-group--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(srvRes.TFID(), "name", fmt.Sprintf("server-placement-group--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(srvRes.TFID(), "server_type", srvRes.Type),
 					resource.TestCheckResourceAttr(srvRes.TFID(), "image", srvRes.Image),
+					testsupport.CheckResourceAttrFunc(srvRes.TFID(), "placement_group_id", func() string {
+						return strconv.Itoa(pg.ID)
+					}),
+				),
+			},
+			{
+				// Try to remove PG of running server -> error
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_placement_group", pgRes,
+					"testdata/r/hcloud_server", srvResNoPG,
+				),
+				ExpectError: regexp.MustCompile("removing a running server from a placement group is currently not supported in the provider.*"),
+			},
+			{
+				// Remove Placement Group
+				PreConfig: func() {
+					ctx := context.TODO()
+					// Removing PG is not support only in TF, we need to shut down the server manually beforehand
+					client, err := testsupport.CreateClient()
+					if err != nil {
+						t.Errorf("PreConfig: failed to create client: %v", err)
+						return
+					}
+					action, _, err := client.Server.Poweroff(ctx, &srv)
+					if err != nil {
+						t.Errorf("PreConfig: failed to power off server: %v", err)
+						return
+					}
+					err = hcloudutil.WaitForAction(ctx, &client.Action, action)
+					if err != nil {
+						t.Errorf("PreConfig: power off server action failed: %v", err)
+						return
+					}
+				},
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_placement_group", pgRes,
+					"testdata/r/hcloud_server", srvResNoPG,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(srvResNoPG.TFID(), "status", "off"),
+					resource.TestCheckResourceAttr(srvResNoPG.TFID(), "placement_group_id", "0"),
+				),
+			},
+			{
+				// Add Placement Group back
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_placement_group", pgRes,
+					"testdata/r/hcloud_server", srvRes,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(srvResNoPG.TFID(), "status", "running"),
 					testsupport.CheckResourceAttrFunc(srvRes.TFID(), "placement_group_id", func() string {
 						return strconv.Itoa(pg.ID)
 					}),
