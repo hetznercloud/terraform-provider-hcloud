@@ -27,7 +27,6 @@ import (
 )
 
 // Need new tests for:
-// - Setting & Updating rescue system
 // - Primary IP Migrations (to and from explicit resources)
 // - Delete with `shutdown_before_deletion`
 
@@ -311,6 +310,69 @@ func TestServerResource_ISO(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s)),
 					resource.TestCheckResourceAttr(res.TFID(), "iso", resUpdatedISO.ISO),
+				),
+			},
+		},
+	})
+}
+
+func TestServerResource_Rescue(t *testing.T) {
+	var s hcloud.Server
+
+	sk := sshkey.NewRData(t, "server-rescue")
+	res := &server.RData{
+		Name:    "server-rescue",
+		Type:    teste2e.TestServerType,
+		Image:   teste2e.TestImage,
+		SSHKeys: []string{sk.TFID() + ".id"},
+	}
+	res.SetRName("server-rescue")
+	resRescue := &server.RData{
+		Name:    res.Name,
+		Type:    res.Type,
+		Image:   res.Image,
+		SSHKeys: res.SSHKeys,
+		Rescue:  string(hcloud.ServerRescueTypeLinux64),
+	}
+	resRescue.SetRName(res.RName())
+
+	tmplMan := testtemplate.Manager{}
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
+		Steps: []resource.TestStep{
+			{
+				// Create a new Server with rescue.
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_server", resRescue,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(resRescue.TFID(), server.ByID(t, &s)),
+					resource.TestCheckResourceAttr(resRescue.TFID(), "rescue", resRescue.Rescue),
+				),
+			},
+			{
+				// Disable server rescue.
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_server", res,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s)),
+					resource.TestCheckResourceAttr(res.TFID(), "rescue", ""),
+				),
+			},
+			{
+				// Enable rescue on existing server.
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_server", resRescue,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s)),
+					resource.TestCheckResourceAttr(res.TFID(), "rescue", resRescue.Rescue),
 				),
 			},
 		},
