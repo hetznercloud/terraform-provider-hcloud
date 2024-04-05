@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.46.1](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.46.0...v1.46.1) (2024-04-05)
+
+
+### Bug Fixes
+
+* **server:** cannot update placement group ([#902](https://github.com/hetznercloud/terraform-provider-hcloud/issues/902)) ([fa5f98c](https://github.com/hetznercloud/terraform-provider-hcloud/commit/fa5f98cf4e0c62249b14694ad2db59a5baf8fe30))
+
 ## [1.46.0](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.45.0...v1.46.0) (2024-03-26)
 
 
