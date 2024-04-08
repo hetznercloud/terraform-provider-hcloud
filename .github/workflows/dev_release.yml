@@ -1,67 +1,52 @@
-# This GitHub action can publish assets for release when a tag is created.
-# Currently its setup to run on any tag that matches the pattern "v*" (ie. v0.1.0).
-#
-# This uses an action (paultyng/ghaction-import-gpg) that assumes you set your
-# private key in the `GPG_PRIVATE_KEY` secret and passphrase in the `PASSPHRASE`
-# secret. If you would rather own your own GPG handling, please fork this action
-# or use an alternative one for key handling.
-#
-# You will need to pass the `--batch` flag to `gpg` in your signing step
-# in `goreleaser` to indicate this is being used in a non-interactive mode.
-#
-name: dev_release
+name: Build
 
 on:
   push:
 
 jobs:
-  goreleaser:
+  build:
     runs-on: ubuntu-latest
     steps:
-      -
-        name: Checkout
+      - name: Checkout
         uses: actions/checkout@v4
-      -
-        name: Unshallow
-        run: git fetch --prune --unshallow
-      -
-        name: Set up Go
+
+      - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
-      -
-        name: Import GPG key
+
+      - name: Import GPG key
         id: import_gpg
         uses: crazy-max/ghaction-import-gpg@v6
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
-      -
-        name: Run GoReleaser
+
+      - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v5
         with:
           version: latest
-          args: release --rm-dist --snapshot
+          args: release --clean --snapshot
         env:
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      -
-        uses: actions/upload-artifact@v4
+
+      - uses: actions/upload-artifact@v4
         with:
-            name: darwin-amd64
-            path: dist/*_darwin_amd64.zip
-      -
-        uses: actions/upload-artifact@v4
+          name: darwin-amd64
+          path: dist/*_darwin_amd64.zip
+
+      - uses: actions/upload-artifact@v4
         with:
           name: darwin-arm64
           path: dist/*_darwin_arm64.zip
-      -
-        uses: actions/upload-artifact@v4
+
+      - uses: actions/upload-artifact@v4
         with:
-            name: linux-amd64
-            path: dist/*_linux_amd64.zip
-      -
-        uses: actions/upload-artifact@v4
+          name: linux-amd64
+          path: dist/*_linux_amd64.zip
+
+      - uses: actions/upload-artifact@v4
         with:
-            name: windows-amd64
-            path: dist/*_windows_amd64.zip
+          name: windows-amd64
+          path: dist/*_windows_amd64.zip
