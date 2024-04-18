@@ -2,6 +2,7 @@ package testsupport
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
@@ -15,6 +16,8 @@ func CreateClient() (*hcloud.Client, error) {
 	}
 	opts := []hcloud.ClientOption{
 		hcloud.WithToken(os.Getenv("HCLOUD_TOKEN")),
+		hcloud.WithApplication("hcloud-terraform", "testing"),
+		hcloud.WithDebugWriter(log.Writer()),
 	}
 	return hcloud.NewClient(opts...), nil
 }
