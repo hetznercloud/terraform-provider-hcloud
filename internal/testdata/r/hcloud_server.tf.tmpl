@@ -89,4 +89,8 @@ resource "hcloud_server" "{{ .RName }}" {
   {{- if .RebuildProtection }}
   rebuild_protection = {{ .RebuildProtection }}
   {{ end }}
+
+  {{- if .ShutdownBeforeDeletion }}
+  shutdown_before_deletion = {{ .ShutdownBeforeDeletion }}
+  {{ end }}
 }

@@ -28,26 +28,27 @@ import (
 
 // Need new tests for:
 // - Primary IP Migrations (to and from explicit resources)
-// - Delete with `shutdown_before_deletion`
 
 func TestServerResource_Basic(t *testing.T) {
 	var s hcloud.Server
 
 	sk := sshkey.NewRData(t, "server-basic")
 	res := &server.RData{
-		Name:    "server-basic",
-		Type:    teste2e.TestServerType,
-		Image:   teste2e.TestImage,
-		SSHKeys: []string{sk.TFID() + ".id"},
+		Name:                   "server-basic",
+		Type:                   teste2e.TestServerType,
+		Image:                  teste2e.TestImage,
+		SSHKeys:                []string{sk.TFID() + ".id"},
+		ShutdownBeforeDeletion: true,
 	}
 	res.SetRName("server-basic")
 	resRenamed := &server.RData{
-		Name:    res.Name + "-renamed",
-		Type:    res.Type,
-		Image:   res.Image, // TODO: Other Image => new test?
-		SSHKeys: []string{sk.TFID() + ".id"},
-		Labels:  map[string]string{"foo": "bar"},
-		Backups: true,
+		Name:                   res.Name + "-renamed",
+		Type:                   res.Type,
+		Image:                  res.Image, // TODO: Other Image => new test?
+		SSHKeys:                res.SSHKeys,
+		ShutdownBeforeDeletion: res.ShutdownBeforeDeletion,
+		Labels:                 map[string]string{"foo": "bar"},
+		Backups:                true,
 	}
 	resRenamed.SetRName(res.Name)
 	tmplMan := testtemplate.Manager{}
