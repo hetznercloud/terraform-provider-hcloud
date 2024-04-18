@@ -103,6 +103,20 @@ func TestServerResource_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resRenamed.TFID(), "backups", "true"),
 				),
 			},
+			{
+				// Revert the server to the original state to test the other direction for various options
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_server", res,
+				),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resRenamed.TFID(), "name", fmt.Sprintf("server-basic--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(resRenamed.TFID(), "server_type", res.Type),
+					resource.TestCheckResourceAttr(resRenamed.TFID(), "image", res.Image),
+					resource.TestCheckNoResourceAttr(resRenamed.TFID(), "labels.foo"),
+					resource.TestCheckResourceAttr(resRenamed.TFID(), "backups", "false"),
+				),
+			},
 		},
 	})
 }
