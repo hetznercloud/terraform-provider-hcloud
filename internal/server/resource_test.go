@@ -814,6 +814,94 @@ func TestServerResource_PrimaryIPNetworkTests(t *testing.T) {
 	})
 }
 
+func TestServerResource_PrivateNetworkBastion(t *testing.T) {
+	name := "server-private-network-bastion"
+
+	sshKeyRes := sshkey.NewRData(t, name)
+
+	networkRes := &network.RData{Name: name, IPRange: "10.0.0.0/16"}
+	networkRes.SetRName("network")
+
+	subnetRes := &network.RDataSubnet{
+		Type:        "cloud",
+		NetworkID:   networkRes.TFID() + ".id",
+		NetworkZone: "eu-central",
+		IPRange:     "10.0.1.0/24",
+	}
+	subnetRes.SetRName("network")
+
+	bastionRes := &server.RData{
+		Name:         name + "-bastion",
+		Type:         teste2e.TestServerType,
+		LocationName: teste2e.TestLocationName,
+		Image:        teste2e.TestImage,
+		SSHKeys:      []string{sshKeyRes.TFID() + ".id"},
+		Networks: []server.RDataInlineNetwork{{
+			NetworkID: networkRes.TFID() + ".id",
+		}},
+		PublicNet: map[string]interface{}{
+			"ipv4_enabled": true,
+			"ipv6_enabled": true,
+		},
+		DependsOn: []string{subnetRes.TFID()},
+	}
+	bastionRes.SetRName("bastion")
+
+	hostRes := &server.RData{
+		Name:         name + "-host",
+		Type:         teste2e.TestServerType,
+		LocationName: teste2e.TestLocationName,
+		Image:        teste2e.TestImage,
+		SSHKeys:      []string{sshKeyRes.TFID() + ".id"},
+		Networks: []server.RDataInlineNetwork{{
+			NetworkID: networkRes.TFID() + ".id",
+		}},
+		PublicNet: map[string]interface{}{
+			"ipv4_enabled": false,
+			"ipv6_enabled": false,
+		},
+		DependsOn: []string{subnetRes.TFID()},
+
+		Connection: fmt.Sprintf(`
+			connection {
+				type         = "ssh"
+				user         = "root"
+				host         = one(self.network[*].ip)
+				private_key  = %q
+
+				bastion_user = "root"
+				bastion_host = %s
+			}
+		`,
+			sshKeyRes.PrivateKey,
+			bastionRes.TFID()+".ipv4_address",
+		),
+		Provisioners: `
+			provisioner "remote-exec" {
+				inline = [ "cloud-init status --wait --long" ]
+			}
+		`,
+	}
+	hostRes.SetRName("host")
+
+	tmplMan := testtemplate.Manager{}
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sshKeyRes,
+					"testdata/r/hcloud_network", networkRes,
+					"testdata/r/hcloud_network_subnet", subnetRes,
+					"testdata/r/hcloud_server", bastionRes,
+					"testdata/r/hcloud_server", hostRes,
+				),
+			},
+		},
+	})
+}
+
 func TestServerResource_Firewalls(t *testing.T) {
 	var s hcloud.Server
 

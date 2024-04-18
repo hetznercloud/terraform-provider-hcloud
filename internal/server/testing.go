@@ -109,6 +109,9 @@ type RData struct {
 	DeleteProtection      bool
 	RebuildProtection     bool
 	AllowDeprecatedImages bool
+
+	Connection   string
+	Provisioners string
 }
 
 // RDataInlineNetwork defines the information required to attach a server
