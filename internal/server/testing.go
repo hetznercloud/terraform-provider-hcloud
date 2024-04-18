@@ -90,26 +90,27 @@ func (d *DDataList) TFID() string {
 type RData struct {
 	testtemplate.DataCommon
 
-	Name                  string
-	Type                  string
-	Image                 string
-	LocationName          string
-	Datacenter            string
-	PublicNet             map[string]interface{}
-	SSHKeys               []string
-	KeepDisk              bool
-	Rescue                string
-	Backups               bool
-	ISO                   string
-	Labels                map[string]string
-	UserData              string
-	Networks              []RDataInlineNetwork
-	FirewallIDs           []string
-	DependsOn             []string
-	PlacementGroupID      string
-	DeleteProtection      bool
-	RebuildProtection     bool
-	AllowDeprecatedImages bool
+	Name                   string
+	Type                   string
+	Image                  string
+	LocationName           string
+	Datacenter             string
+	PublicNet              map[string]interface{}
+	SSHKeys                []string
+	KeepDisk               bool
+	Rescue                 string
+	Backups                bool
+	ISO                    string
+	Labels                 map[string]string
+	UserData               string
+	Networks               []RDataInlineNetwork
+	FirewallIDs            []string
+	DependsOn              []string
+	PlacementGroupID       string
+	DeleteProtection       bool
+	RebuildProtection      bool
+	AllowDeprecatedImages  bool
+	ShutdownBeforeDeletion bool
 }
 
 // RDataInlineNetwork defines the information required to attach a server
