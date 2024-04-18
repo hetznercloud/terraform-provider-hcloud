@@ -26,6 +26,9 @@ var (
 	// TestServerType is the default server type used in all tests
 	TestServerType = getEnv("TEST_SERVER_TYPE", "cx11")
 
+	// TestServerTypeUpgrade is the upgrade server type used in all tests
+	TestServerTypeUpgrade = getEnv("TEST_SERVER_TYPE_UPGRADE", "cx21")
+
 	// TestArchitecture is the default architecture used in all tests, should match the architecture of the TestServerType.
 	TestArchitecture = getEnv("TEST_ARCHITECTURE", string(hcloud.ArchitectureX86))
 
