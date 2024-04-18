@@ -339,11 +339,11 @@ func TestServerResource_DirectAttachToNetwork(t *testing.T) {
 	snw2Res.SetRName("test-network-subnet-2")
 
 	sRes := &server.RData{
-		Name:       "server-direct-attach",
-		Type:       teste2e.TestServerType,
-		Datacenter: teste2e.TestDataCenter,
-		Image:      teste2e.TestImage,
-		SSHKeys:    []string{sk.TFID() + ".id"},
+		Name:         "server-direct-attach",
+		Type:         teste2e.TestServerType,
+		LocationName: teste2e.TestLocationName,
+		Image:        teste2e.TestImage,
+		SSHKeys:      []string{sk.TFID() + ".id"},
 	}
 	sRes.SetRName(sRes.Name)
 
