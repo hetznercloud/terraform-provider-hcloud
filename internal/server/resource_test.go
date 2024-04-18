@@ -931,6 +931,87 @@ func TestServerResource_PrimaryIPNetworkTests(t *testing.T) {
 	})
 }
 
+func TestServerResource_PrivateNetworkBastion(t *testing.T) {
+	// Regression test for ...
+	sk := sshkey.NewRData(t, "server-private-network-bastion")
+	nwRes := &network.RData{
+		Name:    "server-private-network-bastion",
+		IPRange: "10.0.0.0/16",
+	}
+	nwRes.SetRName("test-network")
+	snwRes := &network.RDataSubnet{
+		Type:        "cloud",
+		NetworkID:   nwRes.TFID() + ".id",
+		NetworkZone: "eu-central",
+		IPRange:     "10.0.1.0/24",
+	}
+	snwRes.SetRName("server-private-network-bastion")
+
+	sBastion := &server.RData{
+		Name:         "server-private-network-bastion-bastion",
+		Type:         teste2e.TestServerType,
+		LocationName: teste2e.TestLocationName,
+		Image:        teste2e.TestImage,
+		SSHKeys:      []string{sk.TFID() + ".id"},
+		Networks: []server.RDataInlineNetwork{{
+			NetworkID: nwRes.TFID() + ".id",
+			AliasIPs:  []string{},
+		}},
+		PublicNet: map[string]interface{}{
+			"ipv4_enabled": true,
+			"ipv6_enabled": true,
+		},
+		DependsOn: []string{snwRes.TFID()},
+	}
+	sBastion.SetRName("server-private-network-bastion-bastion")
+
+	sClient := &server.RData{
+		Name:         "server-private-network-bastion-client",
+		Type:         teste2e.TestServerType,
+		LocationName: teste2e.TestLocationName,
+		Image:        teste2e.TestImage,
+		SSHKeys:      []string{sk.TFID() + ".id"},
+		Networks: []server.RDataInlineNetwork{{
+			NetworkID: nwRes.TFID() + ".id",
+			AliasIPs:  []string{},
+		}},
+		PublicNet: map[string]interface{}{
+			"ipv4_enabled": false,
+			"ipv6_enabled": false,
+		},
+		DependsOn: []string{snwRes.TFID()},
+
+		Connection: fmt.Sprintf(`
+			connection {
+				type         = "ssh"
+				user         = "root"
+				host         = one(self.network[*].ip)
+				bastion_host = %s
+				private_key  = %q
+			  }
+		`, sBastion.TFID()+".ipv4_address", sk.PrivateKey),
+		Provisioners: `provisioner "remote-exec" { inline = [ "echo Hello World >> /root/test.txt", ] }`,
+	}
+	sClient.SetRName("server-private-network-bastion-client")
+
+	tmplMan := testtemplate.Manager{}
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_network", nwRes,
+					"testdata/r/hcloud_network_subnet", snwRes,
+					"testdata/r/hcloud_server", sBastion,
+					"testdata/r/hcloud_server", sClient,
+				),
+			},
+		},
+	})
+}
+
 func TestServerResource_Firewalls(t *testing.T) {
 	var s hcloud.Server
 
