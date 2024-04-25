@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/control"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
@@ -168,7 +169,8 @@ func resourceNetworkSubnetDelete(ctx context.Context, d *schema.ResourceData, m 
 		if hcloud.IsError(err, hcloud.ErrorCodeConflict) || hcloud.IsError(err, hcloud.ErrorCodeLocked) {
 			return err
 		}
-		if hcloud.IsError(err, hcloud.ErrorCodeServiceError) && strings.Contains(err.Error(), "servers are attached") {
+		if hcloud.IsError(err, hcloud.ErrorCodeServiceError) &&
+			(strings.Contains(err.Error(), "servers are attached") || strings.Contains(err.Error(), "network has attached resources")) {
 			return err
 		}
 		return control.AbortRetry(err)
@@ -177,8 +179,9 @@ func resourceNetworkSubnetDelete(ctx context.Context, d *schema.ResourceData, m 
 		d.SetId("")
 		return nil
 	}
-	if hcloud.IsError(err, hcloud.ErrorCodeServiceError) && strings.Contains(err.Error(), "servers are attached") {
-		log.Printf("[WARN] Network Subnet (%s) has still servers attached. We assume that the network will be deleted fully, removing from state", d.Id())
+	if hcloud.IsError(err, hcloud.ErrorCodeServiceError) &&
+		(strings.Contains(err.Error(), "servers are attached") || strings.Contains(err.Error(), "network has attached resources")) {
+		log.Printf("[WARN] Network Subnet (%s) has still resources attached. We assume that the network will be deleted fully, removing from state", d.Id())
 		d.SetId("")
 		return nil
 	}
