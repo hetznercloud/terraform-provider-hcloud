@@ -45,9 +45,9 @@ jobs:
           - tool: opentofu
             version: v1.6.x
           - tool: terraform
-            version: v1.6.x
-          - tool: terraform
             version: v1.7.x
+          - tool: terraform
+            version: v1.8.x
 
     steps:
       - uses: actions/checkout@v4
