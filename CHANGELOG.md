@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.47.0](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.46.1...v1.47.0) (2024-05-02)
+
+
+### Features
+
+* test with Terraform 1.8 ([#919](https://github.com/hetznercloud/terraform-provider-hcloud/issues/919)) ([800a66c](https://github.com/hetznercloud/terraform-provider-hcloud/commit/800a66c0b9e61337b86a58f3ce7ab478fad391b6))
+
+
+### Bug Fixes
+
+* **ssh-key:** data inconsistency with empty label objects ([#922](https://github.com/hetznercloud/terraform-provider-hcloud/issues/922)) ([7e1bf2c](https://github.com/hetznercloud/terraform-provider-hcloud/commit/7e1bf2cd6c80c0a86d06b293e7d325e8986d5b3f)), closes [#921](https://github.com/hetznercloud/terraform-provider-hcloud/issues/921)
+* **subnet:** handle new error message for deleting subnets with attached resources ([#923](https://github.com/hetznercloud/terraform-provider-hcloud/issues/923)) ([932c47b](https://github.com/hetznercloud/terraform-provider-hcloud/commit/932c47b8c626898fae47f07b4c161d0206561fb1))
+
 ## [1.46.1](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.46.0...v1.46.1) (2024-04-05)
 
 
