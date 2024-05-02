@@ -97,7 +97,7 @@ func TestLabelsMapValueFrom(t *testing.T) {
 		{
 			name:  "Empty Map",
 			in:    map[string]string{},
-			want:  types.MapNull(types.StringType),
+			want:  types.MapValueMust(types.StringType, map[string]attr.Value{}),
 			diags: nil,
 		},
 	}
