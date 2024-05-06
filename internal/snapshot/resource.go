@@ -70,8 +70,7 @@ func resourceSnapshotCreate(ctx context.Context, d *schema.ResourceData, m inter
 
 	d.SetId(strconv.Itoa(res.Image.ID))
 	if res.Action != nil {
-		_, errCh := client.Action.WatchProgress(ctx, res.Action)
-		if err := <-errCh; err != nil {
+		if err := hcloudutil.WaitForAction(ctx, &client.Action, res.Action); err != nil {
 			return hcloudutil.ErrorToDiag(err)
 		}
 	}
