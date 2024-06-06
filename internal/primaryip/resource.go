@@ -256,20 +256,20 @@ func resourcePrimaryIPDelete(ctx context.Context, d *schema.ResourceData, m inte
 
 	if assigneeID, ok := d.GetOk("assignee_id"); ok && assigneeID != 0 {
 		if server, _, err := client.Server.Get(ctx, strconv.Itoa(assigneeID.(int))); err == nil && server != nil {
-			offAction, _, offErr := client.Server.Poweroff(ctx, server)
-			if offErr != nil {
-				return hcloudutil.ErrorToDiag(offErr)
-			}
+			offAction, _, _ := client.Server.Poweroff(ctx, server)
+			// if offErr != nil {
+			// 	return hcloudutil.ErrorToDiag(offErr)
+			// }
 			if offActionErr := hcloudutil.WaitForAction(ctx, &client.Action, offAction); offActionErr != nil {
 				return hcloudutil.ErrorToDiag(offActionErr)
 			}
 			// dont catch error, because its possible that the primary IP got already unassigned on server destroy
 			UnassignPrimaryIP(ctx, client, primaryIPID)
 
-			onAction, _, onErr := client.Server.Poweron(ctx, server)
-			if onErr != nil {
-				return hcloudutil.ErrorToDiag(onErr)
-			}
+			onAction, _, _ := client.Server.Poweron(ctx, server)
+			// if onErr != nil {
+			// 	return hcloudutil.ErrorToDiag(onErr)
+			// }
 			if onActionErr := hcloudutil.WaitForAction(ctx, &client.Action, onAction); onActionErr != nil {
 				return hcloudutil.ErrorToDiag(onActionErr)
 			}
