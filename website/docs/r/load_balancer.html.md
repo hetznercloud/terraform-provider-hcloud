@@ -15,7 +15,7 @@ Provides a Hetzner Cloud Load Balancer to represent a Load Balancer in the Hetzn
 ```hcl
 resource "hcloud_server" "my_server" {
   name        = "server-%d"
-  server_type = "cx11"
+  server_type = "cx22"
   image       = "ubuntu-18.04"
 }
 

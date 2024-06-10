@@ -15,7 +15,7 @@ Adds a target to a Hetzner Cloud Load Balancer.
 ```hcl
 resource "hcloud_server" "my_server" {
   name        = "my-server"
-  server_type = "cx11"
+  server_type = "cx22"
   image       = "ubuntu-18.04"
 }
 

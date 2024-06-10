@@ -22,7 +22,7 @@ resource "hcloud_volume_attachment" "main" {
 resource "hcloud_server" "node1" {
   name        = "node1"
   image       = "debian-11"
-  server_type = "cx11"
+  server_type = "cx22"
   datacenter  = "nbg1-dc3"
 }
 

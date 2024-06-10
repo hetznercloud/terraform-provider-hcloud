@@ -19,7 +19,7 @@ Provides an Hetzner Cloud server resource. This can be used to create, modify, a
 resource "hcloud_server" "node1" {
   name        = "node1"
   image       = "debian-11"
-  server_type = "cx11"
+  server_type = "cx22"
   public_net {
     ipv4_enabled = true
     ipv6_enabled = true
@@ -42,7 +42,7 @@ auto_delete   = true
 resource "hcloud_server" "server_test" {
   name        = "test-server"
   image       = "ubuntu-20.04"
-  server_type = "cx11"
+  server_type = "cx22"
   datacenter  = "fsn1-dc14"
   labels = {
     "test" : "tessst1"
@@ -70,7 +70,7 @@ resource "hcloud_network_subnet" "network-subnet" {
 
 resource "hcloud_server" "server" {
   name        = "server"
-  server_type = "cx11"
+  server_type = "cx22"
   image       = "ubuntu-20.04"
   location    = "nbg1"
 
@@ -106,7 +106,7 @@ data "hcloud_image" "packer_snapshot" {
 resource "hcloud_server" "from_snapshot" {
   name        = "from-snapshot"
   image       = data.hcloud_image.packer_snapshot.id
-  server_type = "cx11"
+  server_type = "cx22"
   public_net {
     ipv4_enabled = true
     ipv6_enabled = true
