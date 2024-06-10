@@ -205,8 +205,8 @@ func TestVolumeResource_WithServerMultipleVolumes(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 	resServer1 := &server.RData{
 		Name:         "some-server",
-		Type:         "cx11",
-		Image:        "ubuntu-20.04",
+		Type:         teste2e.TestServerType,
+		Image:        teste2e.TestImage,
 		LocationName: teste2e.TestLocationName,
 	}
 	resServer1.SetRName("some-server")

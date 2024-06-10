@@ -18,16 +18,16 @@ import (
 
 var (
 	// TestImage is the system image that is used in all tests
-	TestImage = getEnv("TEST_IMAGE", "ubuntu-22.04")
+	TestImage = getEnv("TEST_IMAGE", "ubuntu-24.04")
 
 	// TestImage is the system image ID that is used in all tests
-	TestImageID = getEnv("TEST_IMAGE_ID", "67794396")
+	TestImageID = getEnv("TEST_IMAGE_ID", "161547269")
 
 	// TestServerType is the default server type used in all tests
-	TestServerType = getEnv("TEST_SERVER_TYPE", "cx11")
+	TestServerType = getEnv("TEST_SERVER_TYPE", "cpx11")
 
 	// TestServerTypeUpgrade is the upgrade server type used in all tests
-	TestServerTypeUpgrade = getEnv("TEST_SERVER_TYPE_UPGRADE", "cx21")
+	TestServerTypeUpgrade = getEnv("TEST_SERVER_TYPE_UPGRADE", "cpx21")
 
 	// TestArchitecture is the default architecture used in all tests, should match the architecture of the TestServerType.
 	TestArchitecture = getEnv("TEST_ARCHITECTURE", string(hcloud.ArchitectureX86))

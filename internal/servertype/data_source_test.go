@@ -18,7 +18,7 @@ func TestAccHcloudDataSourceServerTypeTest(t *testing.T) {
 	}
 	stByName.SetRName("st_by_name")
 	stByID := &servertype.DData{
-		ServerTypeID: "1",
+		ServerTypeID: "22",
 	}
 	stByID.SetRName("st_by_id")
 	resource.ParallelTest(t, resource.TestCase{
@@ -32,18 +32,16 @@ func TestAccHcloudDataSourceServerTypeTest(t *testing.T) {
 				),
 
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(stByName.TFID(), "id", "1"),
-					resource.TestCheckResourceAttr(stByName.TFID(), "name", "cx11"),
-					resource.TestCheckResourceAttr(stByName.TFID(), "description", "CX11"),
-					resource.TestCheckResourceAttr(stByName.TFID(), "cores", "1"),
+					resource.TestCheckResourceAttr(stByName.TFID(), "id", "22"),
+					resource.TestCheckResourceAttr(stByName.TFID(), "name", "cpx11"),
+					resource.TestCheckResourceAttr(stByName.TFID(), "cores", "2"),
 					resource.TestCheckResourceAttr(stByName.TFID(), "memory", "2"),
 					resource.TestCheckResourceAttr(stByName.TFID(), "architecture", "x86"),
 					resource.TestCheckResourceAttr(stByName.TFID(), "included_traffic", "21990232555520"),
 
-					resource.TestCheckResourceAttr(stByID.TFID(), "id", "1"),
-					resource.TestCheckResourceAttr(stByID.TFID(), "name", "cx11"),
-					resource.TestCheckResourceAttr(stByID.TFID(), "description", "CX11"),
-					resource.TestCheckResourceAttr(stByID.TFID(), "cores", "1"),
+					resource.TestCheckResourceAttr(stByID.TFID(), "id", "22"),
+					resource.TestCheckResourceAttr(stByID.TFID(), "name", "cpx11"),
+					resource.TestCheckResourceAttr(stByID.TFID(), "cores", "2"),
 					resource.TestCheckResourceAttr(stByID.TFID(), "memory", "2"),
 					resource.TestCheckResourceAttr(stByID.TFID(), "architecture", "x86"),
 					resource.TestCheckResourceAttr(stByID.TFID(), "included_traffic", "21990232555520"),
