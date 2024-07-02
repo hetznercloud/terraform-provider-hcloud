@@ -8,7 +8,7 @@
 ## Requirements
 
 - [Terraform](https://developer.hashicorp.com/terraform/downloads)
-  - HashiCorp recommends to use the two latest terraform releases (1.8.x). Our test suite validates that our provider works with these versions.
+  - HashiCorp recommends to use the two latest terraform releases (1.8.x, 1.9.x). Our test suite validates that our provider works with these versions.
   - This provider uses the [terraform plugin protocol version 6](https://developer.hashicorp.com/terraform/plugin/terraform-plugin-protocol#protocol-version-6), and should work with all tools (ie. Terraform & OpenTofu) that supports it.
 - [Go](https://go.dev/doc/install) 1.21.x (to build the provider plugin)
 
