@@ -125,8 +125,7 @@ func resourcePrimaryIPCreate(ctx context.Context, d *schema.ResourceData, m inte
 
 	d.SetId(strconv.Itoa(res.PrimaryIP.ID))
 	if res.Action != nil {
-		_, errCh := client.Action.WatchProgress(ctx, res.Action)
-		if err := <-errCh; err != nil {
+		if err := hcloudutil.WaitForAction(ctx, &client.Action, res.Action); err != nil {
 			return hcloudutil.ErrorToDiag(err)
 		}
 	}
@@ -257,16 +256,22 @@ func resourcePrimaryIPDelete(ctx context.Context, d *schema.ResourceData, m inte
 
 	if assigneeID, ok := d.GetOk("assignee_id"); ok && assigneeID != 0 {
 		if server, _, err := client.Server.Get(ctx, strconv.Itoa(assigneeID.(int))); err == nil && server != nil {
-			off, _, _ := client.Server.Poweroff(ctx, server)
-			if errDiag := watchProgress(ctx, off, client); err != nil {
-				return errDiag
+			offAction, _, _ := client.Server.Poweroff(ctx, server)
+			// if offErr != nil {
+			// 	return hcloudutil.ErrorToDiag(offErr)
+			// }
+			if offActionErr := hcloudutil.WaitForAction(ctx, &client.Action, offAction); offActionErr != nil {
+				return hcloudutil.ErrorToDiag(offActionErr)
 			}
 			// dont catch error, because its possible that the primary IP got already unassigned on server destroy
 			UnassignPrimaryIP(ctx, client, primaryIPID)
 
-			on, _, _ := client.Server.Poweron(ctx, server)
-			if errDiag := watchProgress(ctx, on, client); err != nil {
-				return errDiag
+			onAction, _, _ := client.Server.Poweron(ctx, server)
+			// if onErr != nil {
+			// 	return hcloudutil.ErrorToDiag(onErr)
+			// }
+			if onActionErr := hcloudutil.WaitForAction(ctx, &client.Action, onAction); onActionErr != nil {
+				return hcloudutil.ErrorToDiag(onActionErr)
 			}
 		}
 	}
@@ -338,16 +343,6 @@ func setProtection(ctx context.Context, c *hcloud.Client, primaryIP *hcloud.Prim
 	}
 
 	return hcloudutil.WaitForAction(ctx, &c.Action, action)
-}
-
-func watchProgress(ctx context.Context, action *hcloud.Action, client *hcloud.Client) diag.Diagnostics {
-	if action != nil {
-		_, errCh := client.Action.WatchProgress(ctx, action)
-		if err := <-errCh; err != nil {
-			return hcloudutil.ErrorToDiag(err)
-		}
-	}
-	return nil
 }
 
 func AssignPrimaryIP(ctx context.Context, c *hcloud.Client, primaryIPID int, serverID int) diag.Diagnostics {

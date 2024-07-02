@@ -110,8 +110,7 @@ func resourceFloatingIPCreate(ctx context.Context, d *schema.ResourceData, m int
 
 	d.SetId(strconv.Itoa(res.FloatingIP.ID))
 	if res.Action != nil {
-		_, errCh := client.Action.WatchProgress(ctx, res.Action)
-		if err := <-errCh; err != nil {
+		if err := hcloudutil.WaitForAction(ctx, &client.Action, res.Action); err != nil {
 			return hcloudutil.ErrorToDiag(err)
 		}
 	}

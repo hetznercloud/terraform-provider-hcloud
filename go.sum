@@ -129,6 +129,8 @@ github.com/hetznercloud/hcloud-go v1.53.0 h1:xThhlJc6MdpvDAqVB7bAw+nAQuCpQMwsf3y
 github.com/hetznercloud/hcloud-go v1.53.0/go.mod h1:VzDWThl47lOnZXY0q5/LPFD+M62pfe/52TV+mOrpp9Q=
 github.com/hetznercloud/hcloud-go v1.54.1 h1:Y5k++GWasA3IdwbD3pTUVAG825xHPpQ2WDjtBecBYWQ=
 github.com/hetznercloud/hcloud-go v1.54.1/go.mod h1:VzDWThl47lOnZXY0q5/LPFD+M62pfe/52TV+mOrpp9Q=
+github.com/hetznercloud/hcloud-go v1.57.0 h1:aQZZFoJZcq9C1rGX/efZHyyRRmIJxND6tRf98NfIoSc=
+github.com/hetznercloud/hcloud-go v1.57.0/go.mod h1:oTebZCjd+osj75jlI76Z+zjN1sTxmMiQ1MWoO8aRl1c=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 h1:BQSFePA1RWJOlocH6Fxy8MmwDt+yVQYULKfN0RoTN8A=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99/go.mod h1:1lJo3i6rXxKeerYnT8Nvf0QmHCRC1n8sfWVwXF2Frvo=
 github.com/jhump/protoreflect v1.15.1 h1:HUMERORf3I3ZdX05WaQ6MIpd/NJ434hTp5YiKgfCL6c=
@@ -182,6 +184,7 @@ github.com/prometheus/procfs v0.10.1 h1:kYK1Va/YMlutzCGazswoHKo//tZVlFpKYh+Pymzi
 github.com/prometheus/procfs v0.10.1/go.mod h1:nwNm2aOCAYw8uTR/9bWRREkZFxAUcWzPHWJq+XBB/FM=
 github.com/rogpeppe/go-internal v1.11.0 h1:cWPaGQEPrBb5/AsnsZesgZZ9yb1OQ+GOISoDNXVBh4M=
 github.com/rogpeppe/go-internal v1.11.0/go.mod h1:ddIwULY96R17DhadqLgMfk9H9tvdUzkipdSkR5nkCZA=
+github.com/rogpeppe/go-internal v1.12.0/go.mod h1:E+RYuTGaKKdloAfM02xzb0FW3Paa99yedzYV+kq4uf4=
 github.com/sergi/go-diff v1.2.0 h1:XU+rvMAioB0UC3q1MFrIQy4Vo5/4VsRDQQXHsEya6xQ=
 github.com/sergi/go-diff v1.2.0/go.mod h1:STckp+ISIX8hZLjrqAeVduY0gWCT9IjLuqbuNXdaHfM=
 github.com/skeema/knownhosts v1.2.1 h1:SHWdIUa82uGZz+F+47k8SY4QhhI291cXCpopT1lK2AQ=
