@@ -46,6 +46,8 @@ jobs:
             version: v1.6.x
           - tool: terraform
             version: v1.8.x
+          - tool: terraform
+            version: v1.9.x
 
     steps:
       - uses: actions/checkout@v4
