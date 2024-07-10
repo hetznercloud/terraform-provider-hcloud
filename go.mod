@@ -17,7 +17,7 @@ require (
 	github.com/hetznercloud/hcloud-go v1.57.0
 	github.com/joho/godotenv v1.5.1
 	github.com/stretchr/testify v1.9.0
-	golang.org/x/net v0.26.0
+	golang.org/x/net v0.27.0
 )
 
 require (
