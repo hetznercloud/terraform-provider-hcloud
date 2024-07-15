@@ -2,23 +2,39 @@ include:
   - project: cloud/integrations/ci
     file:
       - default.yml
+      - workflows/feature-branches.yml
 
 stages:
+  - build
   - test
+
+variables:
+  GOMODCACHE: $CI_PROJECT_DIR/.cache/go-mod
+  GOCACHE: $CI_PROJECT_DIR/.cache/go-build
+
+cache:
+  key:
+    files:
+      - go.mod
+      - go.sum
+  paths:
+    - $GOMODCACHE
+
+build:
+  stage: build
+  image: golang:1.21
+  script:
+    - go env
+    - go mod download
+
+test:lint:
+  stage: test
+  image: golangci/golangci-lint:v1.59
+  script:
+    - golangci-lint run -v
 
 test:acceptance:
   stage: test
   image: golang:1.21
-  except:
-    - tags
   script:
     - make testacc
-
-test:golangci-lint:
-  stage: test
-  image: golangci/golangci-lint:v1.59.1
-  script:
-    - golangci-lint run -v
-  except:
-    - tags
-    - master
