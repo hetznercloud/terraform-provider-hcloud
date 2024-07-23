@@ -13,38 +13,36 @@ import (
 func TestAccHcloudDataSourceServerTypeTest(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
-	stByName := &servertype.DData{
-		ServerTypeName: teste2e.TestServerType,
-	}
-	stByName.SetRName("st_by_name")
-	stByID := &servertype.DData{
-		ServerTypeID: "22",
-	}
-	stByID.SetRName("st_by_id")
+	byName := &servertype.DData{ServerTypeName: teste2e.TestServerType}
+	byName.SetRName("by_name")
+
+	byID := &servertype.DData{ServerTypeID: "22"}
+	byID.SetRName("by_id")
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
 		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
-					"testdata/d/hcloud_server_type", stByName,
-					"testdata/d/hcloud_server_type", stByID,
+					"testdata/d/hcloud_server_type", byName,
+					"testdata/d/hcloud_server_type", byID,
 				),
 
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(stByName.TFID(), "id", "22"),
-					resource.TestCheckResourceAttr(stByName.TFID(), "name", "cpx11"),
-					resource.TestCheckResourceAttr(stByName.TFID(), "cores", "2"),
-					resource.TestCheckResourceAttr(stByName.TFID(), "memory", "2"),
-					resource.TestCheckResourceAttr(stByName.TFID(), "architecture", "x86"),
-					resource.TestCheckResourceAttr(stByName.TFID(), "included_traffic", "21990232555520"),
+					resource.TestCheckResourceAttr(byName.TFID(), "id", "22"),
+					resource.TestCheckResourceAttr(byName.TFID(), "name", "cpx11"),
+					resource.TestCheckResourceAttr(byName.TFID(), "cores", "2"),
+					resource.TestCheckResourceAttr(byName.TFID(), "memory", "2"),
+					resource.TestCheckResourceAttr(byName.TFID(), "architecture", "x86"),
+					resource.TestCheckResourceAttr(byName.TFID(), "included_traffic", "21990232555520"),
 
-					resource.TestCheckResourceAttr(stByID.TFID(), "id", "22"),
-					resource.TestCheckResourceAttr(stByID.TFID(), "name", "cpx11"),
-					resource.TestCheckResourceAttr(stByID.TFID(), "cores", "2"),
-					resource.TestCheckResourceAttr(stByID.TFID(), "memory", "2"),
-					resource.TestCheckResourceAttr(stByID.TFID(), "architecture", "x86"),
-					resource.TestCheckResourceAttr(stByID.TFID(), "included_traffic", "21990232555520"),
+					resource.TestCheckResourceAttr(byID.TFID(), "id", "22"),
+					resource.TestCheckResourceAttr(byID.TFID(), "name", "cpx11"),
+					resource.TestCheckResourceAttr(byID.TFID(), "cores", "2"),
+					resource.TestCheckResourceAttr(byID.TFID(), "memory", "2"),
+					resource.TestCheckResourceAttr(byID.TFID(), "architecture", "x86"),
+					resource.TestCheckResourceAttr(byID.TFID(), "included_traffic", "21990232555520"),
 				),
 			},
 		},
@@ -54,24 +52,25 @@ func TestAccHcloudDataSourceServerTypeTest(t *testing.T) {
 func TestAccHcloudDataSourceServerTypesTest(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
-	servertypesD := &servertype.DDataList{}
-	servertypesD.SetRName("ds")
+	all := &servertype.DDataList{}
+	all.SetRName("all")
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
 		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
-					"testdata/d/hcloud_server_types", servertypesD,
+					"testdata/d/hcloud_server_types", all,
 				),
 
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(servertypesD.TFID(), "server_type_ids.0", "1"),
-					resource.TestCheckResourceAttr(servertypesD.TFID(), "server_type_ids.1", "3"),
-					resource.TestCheckResourceAttr(servertypesD.TFID(), "names.0", "cx11"),
-					resource.TestCheckResourceAttr(servertypesD.TFID(), "names.1", "cx21"),
-					resource.TestCheckResourceAttr(servertypesD.TFID(), "descriptions.0", "CX11"),
-					resource.TestCheckResourceAttr(servertypesD.TFID(), "descriptions.1", "CX21"),
+					resource.TestCheckResourceAttr(all.TFID(), "server_type_ids.0", "1"),
+					resource.TestCheckResourceAttr(all.TFID(), "server_type_ids.1", "3"),
+					resource.TestCheckResourceAttr(all.TFID(), "names.0", "cx11"),
+					resource.TestCheckResourceAttr(all.TFID(), "names.1", "cx21"),
+					resource.TestCheckResourceAttr(all.TFID(), "descriptions.0", "CX11"),
+					resource.TestCheckResourceAttr(all.TFID(), "descriptions.1", "CX21"),
 				),
 			},
 		},
