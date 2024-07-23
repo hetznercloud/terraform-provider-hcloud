@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -39,6 +40,10 @@ type resourceData struct {
 	CPUType         types.String `tfsdk:"cpu_type"`
 	Architecture    types.String `tfsdk:"architecture"`
 	IncludedTraffic types.Int64  `tfsdk:"included_traffic"`
+
+	IsDeprecated         types.Bool   `tfsdk:"is_deprecated"`
+	DeprecationAnnounced types.String `tfsdk:"deprecation_announced"`
+	UnavailableAfter     types.String `tfsdk:"unavailable_after"`
 }
 
 var resourceDataAttrTypes = map[string]attr.Type{
@@ -52,6 +57,10 @@ var resourceDataAttrTypes = map[string]attr.Type{
 	"cpu_type":         types.StringType,
 	"architecture":     types.StringType,
 	"included_traffic": types.Int64Type,
+
+	"is_deprecated":         types.BoolType,
+	"deprecation_announced": types.StringType,
+	"unavailable_after":     types.StringType,
 }
 
 func newResourceData(_ context.Context, in *hcloud.ServerType) (resourceData, diag.Diagnostics) { // nolint:unparam // to keep the pattern consistent between all data sources
@@ -68,6 +77,16 @@ func newResourceData(_ context.Context, in *hcloud.ServerType) (resourceData, di
 	data.CPUType = types.StringValue(string(in.CPUType))
 	data.Architecture = types.StringValue(string(in.Architecture))
 	data.IncludedTraffic = types.Int64Value(in.IncludedTraffic)
+
+	if in.IsDeprecated() {
+		data.IsDeprecated = types.BoolValue(true)
+		data.DeprecationAnnounced = types.StringValue(in.DeprecationAnnounced().Format(time.RFC3339))
+		data.UnavailableAfter = types.StringValue(in.UnavailableAfter().Format(time.RFC3339))
+	} else {
+		data.IsDeprecated = types.BoolValue(false)
+		data.DeprecationAnnounced = types.StringNull()
+		data.UnavailableAfter = types.StringNull()
+	}
 
 	return data, diags
 }
@@ -105,6 +124,17 @@ func getCommonDataSchema() map[string]schema.Attribute {
 		},
 		"included_traffic": schema.Int64Attribute{
 			Computed: true,
+		},
+		"is_deprecated": schema.BoolAttribute{
+			Computed: true,
+		},
+		"deprecation_announced": schema.StringAttribute{
+			Computed: true,
+			Optional: true,
+		},
+		"unavailable_after": schema.StringAttribute{
+			Computed: true,
+			Optional: true,
 		},
 	}
 }

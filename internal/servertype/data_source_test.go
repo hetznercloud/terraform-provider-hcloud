@@ -49,6 +49,49 @@ func TestAccHcloudDataSourceServerTypeTest(t *testing.T) {
 	})
 }
 
+func TestAccHcloudDataSourceServerType_UpgradePluginFramework(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
+	byName := &servertype.DData{ServerTypeName: teste2e.TestServerType}
+	byName.SetRName("by_name")
+
+	byID := &servertype.DData{ServerTypeID: "22"}
+	byID.SetRName("by_id")
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: teste2e.PreCheck(t),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"hcloud": {
+						VersionConstraint: "1.47.0",
+						Source:            "hetznercloud/hcloud",
+					},
+				},
+
+				Config: tmplMan.Render(t,
+					"testdata/d/hcloud_server_type", byName,
+					"testdata/d/hcloud_server_type", byID,
+					"testdata/r/terraform_data_resource", byName,
+					"testdata/r/terraform_data_resource", byID,
+				),
+			},
+			{
+				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+
+				Config: tmplMan.Render(t,
+					"testdata/d/hcloud_server_type", byName,
+					"testdata/d/hcloud_server_type", byID,
+					"testdata/r/terraform_data_resource", byName,
+					"testdata/r/terraform_data_resource", byID,
+				),
+
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
 func TestAccHcloudDataSourceServerTypesTest(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
@@ -72,6 +115,42 @@ func TestAccHcloudDataSourceServerTypesTest(t *testing.T) {
 					resource.TestCheckResourceAttr(all.TFID(), "descriptions.0", "CX11"),
 					resource.TestCheckResourceAttr(all.TFID(), "descriptions.1", "CX21"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccHcloudDataSourceServerTypes_UpgradePluginFramework(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
+	all := &servertype.DDataList{}
+	all.SetRName("all")
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: teste2e.PreCheck(t),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"hcloud": {
+						VersionConstraint: "1.47.0",
+						Source:            "hetznercloud/hcloud",
+					},
+				},
+
+				Config: tmplMan.Render(t,
+					"testdata/d/hcloud_server_types", all,
+					"testdata/r/terraform_data_resource", all,
+				),
+			},
+			{
+				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+
+				Config: tmplMan.Render(t,
+					"testdata/d/hcloud_server_types", all,
+					"testdata/r/terraform_data_resource", all,
+				),
+
+				PlanOnly: true,
 			},
 		},
 	})
