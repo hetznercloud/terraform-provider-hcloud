@@ -77,3 +77,10 @@ func APIErrorIsNotFound(err error) bool {
 	}
 	return false
 }
+
+func NotFoundDiagnostic(resourceName string, key string, value any) diag.Diagnostic {
+	return diag.NewErrorDiagnostic(
+		"Resource not found",
+		fmt.Sprintf("Resource (%s) was not found: %s=%s", resourceName, key, fmt.Sprint(value)),
+	)
+}

@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
 )
@@ -128,4 +129,32 @@ func hcloudErrorFromErrorAndStatus(errRaw map[string]interface{}, statusCode int
 
 	_, _, err := client.Action.GetByID(context.Background(), 1)
 	return err
+}
+
+func TestNotFoundDiagnostics(t *testing.T) {
+	for _, testCase := range []struct {
+		name     string
+		actual   diag.Diagnostic
+		expected diag.Diagnostic
+	}{
+		{
+			name:     "location with name",
+			actual:   NotFoundDiagnostic("location", "name", "my-location"),
+			expected: diag.NewErrorDiagnostic("Resource not found", "Resource (location) was not found: name=my-location"),
+		},
+		{
+			name:     "location with id",
+			actual:   NotFoundDiagnostic("location", "id", 123),
+			expected: diag.NewErrorDiagnostic("Resource not found", "Resource (location) was not found: id=123"),
+		},
+		{
+			name:     "ssh key with name",
+			actual:   NotFoundDiagnostic("ssh_key", "name", "my-ssh-key"),
+			expected: diag.NewErrorDiagnostic("Resource not found", "Resource (ssh_key) was not found: name=my-ssh-key"),
+		},
+	} {
+		t.Run(testCase.name, func(t *testing.T) {
+			assert.Equal(t, testCase.expected, testCase.actual)
+		})
+	}
 }
