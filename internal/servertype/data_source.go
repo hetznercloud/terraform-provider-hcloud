@@ -3,200 +3,369 @@ package servertype
 import (
 	"context"
 	"crypto/sha1"
+	_ "embed"
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/deprecation"
+	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
 const (
-	// DataSourceType is the type name of the Hetzner Cloud Server Type
-	// data source.
+	// DataSourceType is the type name of the Hetzner Cloud server type datasource.
 	DataSourceType = "hcloud_server_type"
 
-	// ServerTypesDataSourceType is the type name of the Hetzner Cloud Server Types
-	// data source.
+	// DataSourceListType is the type name of the Hetzner Cloud server type list datasource.
 	DataSourceListType = "hcloud_server_types"
 )
 
-// getCommonDataSchema returns a new common schema used by all server type data sources.
-func getCommonDataSchema() map[string]*schema.Schema {
-	return deprecation.AddToSchema(map[string]*schema.Schema{
-		"id": {
-			Type:     schema.TypeInt,
+type resourceData struct {
+	ID              types.Int64  `tfsdk:"id"`
+	Name            types.String `tfsdk:"name"`
+	Description     types.String `tfsdk:"description"`
+	Cores           types.Int32  `tfsdk:"cores"`
+	Memory          types.Int32  `tfsdk:"memory"`
+	Disk            types.Int32  `tfsdk:"disk"`
+	StorageType     types.String `tfsdk:"storage_type"`
+	CPUType         types.String `tfsdk:"cpu_type"`
+	Architecture    types.String `tfsdk:"architecture"`
+	IncludedTraffic types.Int64  `tfsdk:"included_traffic"`
+
+	IsDeprecated         types.Bool   `tfsdk:"is_deprecated"`
+	DeprecationAnnounced types.String `tfsdk:"deprecation_announced"`
+	UnavailableAfter     types.String `tfsdk:"unavailable_after"`
+}
+
+var resourceDataAttrTypes = map[string]attr.Type{
+	"id":               types.Int64Type,
+	"name":             types.StringType,
+	"description":      types.StringType,
+	"cores":            types.Int32Type,
+	"memory":           types.Int32Type,
+	"disk":             types.Int32Type,
+	"storage_type":     types.StringType,
+	"cpu_type":         types.StringType,
+	"architecture":     types.StringType,
+	"included_traffic": types.Int64Type,
+
+	"is_deprecated":         types.BoolType,
+	"deprecation_announced": types.StringType,
+	"unavailable_after":     types.StringType,
+}
+
+func newResourceData(_ context.Context, in *hcloud.ServerType) (resourceData, diag.Diagnostics) { // nolint:unparam // to keep the pattern consistent between all data sources
+	var data resourceData
+	var diags diag.Diagnostics
+
+	data.ID = types.Int64Value(int64(in.ID))
+	data.Name = types.StringValue(in.Name)
+	data.Description = types.StringValue(in.Description)
+	data.Cores = types.Int32Value(int32(in.Cores))
+	data.Memory = types.Int32Value(int32(in.Memory))
+	data.Disk = types.Int32Value(int32(in.Disk))
+	data.StorageType = types.StringValue(string(in.StorageType))
+	data.CPUType = types.StringValue(string(in.CPUType))
+	data.Architecture = types.StringValue(string(in.Architecture))
+	data.IncludedTraffic = types.Int64Value(in.IncludedTraffic)
+
+	if in.IsDeprecated() {
+		data.IsDeprecated = types.BoolValue(true)
+		data.DeprecationAnnounced = types.StringValue(in.DeprecationAnnounced().Format(time.RFC3339))
+		data.UnavailableAfter = types.StringValue(in.UnavailableAfter().Format(time.RFC3339))
+	} else {
+		data.IsDeprecated = types.BoolValue(false)
+		data.DeprecationAnnounced = types.StringNull()
+		data.UnavailableAfter = types.StringNull()
+	}
+
+	return data, diags
+}
+
+func getCommonDataSchema() map[string]schema.Attribute {
+	return map[string]schema.Attribute{
+		"id": schema.Int64Attribute{
 			Optional: true,
 			Computed: true,
 		},
-		"name": {
-			Type:     schema.TypeString,
+		"name": schema.StringAttribute{
 			Optional: true,
 			Computed: true,
 		},
-		"description": {
-			Type:     schema.TypeString,
+		"description": schema.StringAttribute{
 			Computed: true,
 		},
-		"cores": {
-			Type:     schema.TypeInt,
+		"cores": schema.Int32Attribute{
 			Computed: true,
 		},
-		"memory": {
-			Type:     schema.TypeInt,
+		"memory": schema.Int32Attribute{
 			Computed: true,
 		},
-		"disk": {
-			Type:     schema.TypeInt,
+		"disk": schema.Int32Attribute{
 			Computed: true,
 		},
-		"storage_type": {
-			Type:     schema.TypeString,
+		"storage_type": schema.StringAttribute{
 			Computed: true,
 		},
-		"cpu_type": {
-			Type:     schema.TypeString,
+		"cpu_type": schema.StringAttribute{
 			Computed: true,
 		},
-		"architecture": {
-			Type:     schema.TypeString,
+		"architecture": schema.StringAttribute{
 			Computed: true,
 		},
-		"included_traffic": {
-			Type:     schema.TypeInt,
+		"included_traffic": schema.Int64Attribute{
 			Computed: true,
 		},
-	})
-}
-
-// DataSource creates a new Terraform schema for the hcloud_server_type data
-// source.
-func DataSource() *schema.Resource {
-	return &schema.Resource{
-		ReadContext: dataSourceHcloudServerTypeRead,
-		Schema:      getCommonDataSchema(),
-	}
-}
-
-// ServerTypesDataSource creates a new Terraform schema for the
-// hcloud_server_types data source.
-func ServerTypesDataSource() *schema.Resource {
-	return &schema.Resource{
-		ReadContext: dataSourceHcloudServerTypeListRead,
-		Schema: map[string]*schema.Schema{
-			"server_types": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: getCommonDataSchema(),
-				},
-			},
-			"server_type_ids": {
-				Type:       schema.TypeList,
-				Optional:   true,
-				Deprecated: "Use server_types list instead",
-				Elem:       &schema.Schema{Type: schema.TypeString},
-			},
-			"names": {
-				Type:       schema.TypeList,
-				Computed:   true,
-				Deprecated: "Use server_types list instead",
-				Elem:       &schema.Schema{Type: schema.TypeString},
-			},
-			"descriptions": {
-				Type:       schema.TypeList,
-				Computed:   true,
-				Deprecated: "Use server_types list instead",
-				Elem:       &schema.Schema{Type: schema.TypeString},
-			},
+		"is_deprecated": schema.BoolAttribute{
+			Computed: true,
+		},
+		"deprecation_announced": schema.StringAttribute{
+			Computed: true,
+			Optional: true,
+		},
+		"unavailable_after": schema.StringAttribute{
+			Computed: true,
+			Optional: true,
 		},
 	}
 }
 
-func dataSourceHcloudServerTypeRead(ctx context.Context, data *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*hcloud.Client)
+// Single
+var _ datasource.DataSource = (*dataSource)(nil)
+var _ datasource.DataSourceWithConfigure = (*dataSource)(nil)
+var _ datasource.DataSourceWithConfigValidators = (*dataSource)(nil)
 
-	if id, ok := data.GetOk("id"); ok {
-		d, _, err := client.ServerType.GetByID(ctx, id.(int))
+type dataSource struct {
+	client *hcloud.Client
+}
+
+func NewDataSource() datasource.DataSource {
+	return &dataSource{}
+}
+
+// Metadata should return the full name of the data source.
+func (d *dataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = DataSourceType
+}
+
+// Configure enables provider-level data or clients to be set in the
+// provider-defined DataSource type. It is separately executed for each
+// ReadDataSource RPC.
+func (d *dataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+	var newDiags diag.Diagnostics
+
+	d.client, newDiags = hcloudutil.ConfigureClient(req.ProviderData)
+	resp.Diagnostics.Append(newDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+}
+
+//go:embed data_source.md
+var dataSourceMarkdownDescription string
+
+// Schema should return the schema for this data source.
+func (d *dataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema.Attributes = getCommonDataSchema()
+	resp.Schema.MarkdownDescription = dataSourceMarkdownDescription
+}
+
+// ConfigValidators returns a list of ConfigValidators. Each ConfigValidator's Validate method will be called when validating the data source.
+func (d *dataSource) ConfigValidators(_ context.Context) []datasource.ConfigValidator {
+	return []datasource.ConfigValidator{
+		datasourcevalidator.ExactlyOneOf(
+			path.MatchRoot("id"),
+			path.MatchRoot("name"),
+		),
+	}
+}
+
+// Read is called when the provider must read data source values in
+// order to update state. Config values should be read from the
+// ReadRequest and new state values set on the ReadResponse.
+func (d *dataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data resourceData
+
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var result *hcloud.ServerType
+	var err error
+
+	switch {
+	case !data.ID.IsNull():
+		result, _, err = d.client.ServerType.GetByID(ctx, int(data.ID.ValueInt64()))
 		if err != nil {
-			return hcloudutil.ErrorToDiag(err)
+			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+			return
 		}
-		if d == nil {
-			return diag.Errorf("no server type found with id %d", id)
+		if result == nil {
+			resp.Diagnostics.Append(hcloudutil.NotFoundDiagnostic("server type", "id", data.ID.String()))
+			return
 		}
-		setServerTypeSchema(data, d)
-		return nil
-	}
-	if name, ok := data.GetOk("name"); ok {
-		d, _, err := client.ServerType.GetByName(ctx, name.(string))
+	case !data.Name.IsNull():
+		result, _, err = d.client.ServerType.GetByName(ctx, data.Name.ValueString())
 		if err != nil {
-			return hcloudutil.ErrorToDiag(err)
+			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+			return
 		}
-		if d == nil {
-			return diag.Errorf("no server type found with name %v", name)
+		if result == nil {
+			resp.Diagnostics.Append(hcloudutil.NotFoundDiagnostic("server type", "name", data.Name.String()))
+			return
 		}
-		setServerTypeSchema(data, d)
-		return nil
+	default:
+		// Should not happen, see [dataSource.ConfigValidators]
+		resp.Diagnostics.AddError("Unexpected internal error", "")
+		return
 	}
 
-	return diag.Errorf("please specify an id, or a name to lookup for a server type")
+	data, diags := newResourceData(ctx, result)
+	resp.Diagnostics.Append(diags...)
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func setServerTypeSchema(d *schema.ResourceData, t *hcloud.ServerType) {
-	for key, val := range getServerTypeAttributes(t) {
-		if key == "id" {
-			d.SetId(strconv.Itoa(val.(int)))
-		} else {
-			d.Set(key, val)
-		}
+// List
+var _ datasource.DataSource = (*dataSourceList)(nil)
+var _ datasource.DataSourceWithConfigure = (*dataSourceList)(nil)
+
+type dataSourceList struct {
+	client *hcloud.Client
+}
+
+func NewDataSourceList() datasource.DataSource {
+	return &dataSourceList{}
+}
+
+// Metadata should return the full name of the data source.
+func (d *dataSourceList) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = DataSourceListType
+}
+
+// Configure enables provider-level data or clients to be set in the
+// provider-defined DataSource type. It is separately executed for each
+// ReadDataSource RPC.
+func (d *dataSourceList) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+	var newDiags diag.Diagnostics
+
+	d.client, newDiags = hcloudutil.ConfigureClient(req.ProviderData)
+	resp.Diagnostics.Append(newDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+}
+
+//go:embed data_source_list.md
+var dataSourceListMarkdownDescription string
+
+// Schema should return the schema for this data source.
+func (d *dataSourceList) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema.Attributes = map[string]schema.Attribute{
+		"id": schema.StringAttribute{
+			Optional: true,
+		},
+		"server_type_ids": schema.ListAttribute{
+			Optional:           true,
+			DeprecationMessage: "Use server_types list instead",
+			ElementType:        types.StringType,
+		},
+		"names": schema.ListAttribute{
+			Optional:           true,
+			DeprecationMessage: "Use server_types list instead",
+			ElementType:        types.StringType,
+		},
+		"descriptions": schema.ListAttribute{
+			Optional:           true,
+			DeprecationMessage: "Use server_types list instead",
+			ElementType:        types.StringType,
+		},
+		"server_types": schema.ListNestedAttribute{
+			NestedObject: schema.NestedAttributeObject{
+				Attributes: getCommonDataSchema(),
+			},
+			Computed: true,
+		},
 	}
 
-	deprecation.SetData(d, t)
+	resp.Schema.MarkdownDescription = dataSourceListMarkdownDescription
 }
 
-func getServerTypeAttributes(t *hcloud.ServerType) map[string]interface{} {
-	return map[string]interface{}{
-		"id":               t.ID,
-		"name":             t.Name,
-		"description":      t.Description,
-		"cores":            t.Cores,
-		"memory":           t.Memory,
-		"disk":             t.Disk,
-		"storage_type":     t.StorageType,
-		"cpu_type":         t.CPUType,
-		"architecture":     t.Architecture,
-		"included_traffic": t.IncludedTraffic,
+type resourceDataList struct {
+	ID            types.String `tfsdk:"id"`
+	ServerTypeIDs types.List   `tfsdk:"server_type_ids"`
+	Names         types.List   `tfsdk:"names"`
+	Descriptions  types.List   `tfsdk:"descriptions"`
+	ServerTypes   types.List   `tfsdk:"server_types"`
+}
+
+func newResourceDataList(ctx context.Context, in []*hcloud.ServerType) (resourceDataList, diag.Diagnostics) {
+	var data resourceDataList
+	var diags diag.Diagnostics
+	var newDiags diag.Diagnostics
+
+	serverTypeIDs := make([]string, len(in))
+	names := make([]string, len(in))
+	descriptions := make([]string, len(in))
+	serverTypes := make([]resourceData, len(in))
+
+	for i, item := range in {
+		serverTypeIDs[i] = strconv.Itoa(item.ID)
+		names[i] = item.Name
+		descriptions[i] = item.Description
+
+		location, newDiags := newResourceData(ctx, item)
+		diags.Append(newDiags...)
+		serverTypes[i] = location
 	}
+
+	data.ID = types.StringValue(fmt.Sprintf("%x", sha1.Sum([]byte(strings.Join(serverTypeIDs, "")))))
+
+	data.ServerTypeIDs, newDiags = types.ListValueFrom(ctx, types.StringType, serverTypeIDs)
+	diags.Append(newDiags...)
+	data.Names, newDiags = types.ListValueFrom(ctx, types.StringType, names)
+	diags.Append(newDiags...)
+	data.Descriptions, newDiags = types.ListValueFrom(ctx, types.StringType, descriptions)
+	diags.Append(newDiags...)
+
+	data.ServerTypes, newDiags = types.ListValueFrom(ctx, types.ObjectType{AttrTypes: resourceDataAttrTypes}, serverTypes)
+	diags.Append(newDiags...)
+
+	return data, diags
 }
 
-func dataSourceHcloudServerTypeListRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*hcloud.Client)
-	allServerTypes, err := client.ServerType.All(ctx)
+// Read is called when the provider must read data source values in
+// order to update state. Config values should be read from the
+// ReadRequest and new state values set on the ReadResponse.
+func (d *dataSourceList) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data resourceDataList
+
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var result []*hcloud.ServerType
+	var err error
+
+	result, err = d.client.ServerType.All(ctx)
 	if err != nil {
-		return hcloudutil.ErrorToDiag(err)
+		resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+		return
 	}
 
-	names := make([]string, len(allServerTypes))
-	descriptions := make([]string, len(allServerTypes))
-	ids := make([]string, len(allServerTypes))
-	tfServerTypes := make([]map[string]interface{}, len(allServerTypes))
-	for i, serverType := range allServerTypes {
-		ids[i] = strconv.Itoa(serverType.ID)
-		descriptions[i] = serverType.Description
-		names[i] = serverType.Name
+	data, diags := newResourceDataList(ctx, result)
+	resp.Diagnostics.Append(diags...)
 
-		tfServerTypes[i] = getServerTypeAttributes(serverType)
-	}
-
-	d.SetId(fmt.Sprintf("%x", sha1.Sum([]byte(strings.Join(ids, "")))))
-	d.Set("server_type_ids", ids)
-	d.Set("names", names)
-	d.Set("descriptions", descriptions)
-	d.Set("server_types", tfServerTypes)
-
-	return nil
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

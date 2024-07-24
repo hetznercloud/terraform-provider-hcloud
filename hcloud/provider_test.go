@@ -13,7 +13,6 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/primaryip"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/rdns"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/servertype"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/snapshot"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/volume"
 	"github.com/stretchr/testify/assert"
@@ -81,8 +80,6 @@ func TestProvider_DataSources(t *testing.T) {
 		placementgroup.DataSourceListType,
 		server.DataSourceType,
 		server.DataSourceListType,
-		servertype.DataSourceType,
-		servertype.DataSourceListType,
 		volume.DataSourceType,
 		volume.DataSourceListType,
 	}
