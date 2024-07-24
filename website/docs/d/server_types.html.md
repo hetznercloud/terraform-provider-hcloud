@@ -23,4 +23,4 @@ resource "hcloud_server" "workers" {
 ```
 
 ## Attributes Reference
-- `server_types` - (list) List of all server types. See `data.hcloud_type` for schema.
+- `server_types` - (list) List of all server types. See `data.hcloud_server_type` for schema.
