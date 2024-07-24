@@ -459,15 +459,20 @@ func findLoadBalancerTarget(
 func setLoadBalancerTarget(d *schema.ResourceData, lbID int, tgt hcloud.LoadBalancerTarget) {
 	d.Set("type", tgt.Type)
 	d.Set("load_balancer_id", lbID)
-	d.Set("use_private_ip", tgt.UsePrivateIP)
 
 	switch tgt.Type {
 	case hcloud.LoadBalancerTargetTypeServer:
 		d.Set("server_id", tgt.Server.Server.ID)
+		// use_private_ip conflicts with TargetTypeIP. See #961
+		d.Set("use_private_ip", tgt.UsePrivateIP)
+
 		tgtID := generateLoadBalancerServerTargetID(tgt.Server.Server, lbID)
 		d.SetId(tgtID)
 	case hcloud.LoadBalancerTargetTypeLabelSelector:
 		d.Set("label_selector", tgt.LabelSelector.Selector)
+		// use_private_ip conflicts with TargetTypeIP. See #961
+		d.Set("use_private_ip", tgt.UsePrivateIP)
+
 		tgtID := generateLoadBalancerLabelSelectorTargetID(tgt.LabelSelector.Selector, lbID)
 		d.SetId(tgtID)
 	case hcloud.LoadBalancerTargetTypeIP:
