@@ -3,7 +3,6 @@ package sshkey
 import (
 	"context"
 	_ "embed"
-	"fmt"
 	"maps"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
@@ -162,10 +161,7 @@ func (d *dataSource) Read(ctx context.Context, req datasource.ReadRequest, resp 
 			return
 		}
 		if result == nil {
-			resp.Diagnostics.AddError(
-				"Resource not found",
-				fmt.Sprintf("No ssh key found with id %s.", data.ID.String()),
-			)
+			resp.Diagnostics.Append(hcloudutil.NotFoundDiagnostic("ssh key", "id", data.ID.String()))
 			return
 		}
 	case !data.Name.IsNull():
@@ -175,10 +171,7 @@ func (d *dataSource) Read(ctx context.Context, req datasource.ReadRequest, resp 
 			return
 		}
 		if result == nil {
-			resp.Diagnostics.AddError(
-				"Resource not found",
-				fmt.Sprintf("No ssh key found with name %s.", data.Name.String()),
-			)
+			resp.Diagnostics.Append(hcloudutil.NotFoundDiagnostic("ssh key", "name", data.Name.String()))
 			return
 		}
 	case !data.Fingerprint.IsNull():
@@ -188,10 +181,7 @@ func (d *dataSource) Read(ctx context.Context, req datasource.ReadRequest, resp 
 			return
 		}
 		if result == nil {
-			resp.Diagnostics.AddError(
-				"Resource not found",
-				fmt.Sprintf("No ssh key found with fingerprint %s.", data.Fingerprint.String()),
-			)
+			resp.Diagnostics.Append(hcloudutil.NotFoundDiagnostic("ssh key", "fingerprint", data.Fingerprint.String()))
 			return
 		}
 	case !data.WithSelector.IsNull() || !data.Selector.IsNull():

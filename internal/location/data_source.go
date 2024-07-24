@@ -169,10 +169,7 @@ func (d *dataSource) Read(ctx context.Context, req datasource.ReadRequest, resp 
 			return
 		}
 		if result == nil {
-			resp.Diagnostics.AddError(
-				"Resource not found",
-				fmt.Sprintf("No location found with id %s.", data.ID.String()),
-			)
+			resp.Diagnostics.Append(hcloudutil.NotFoundDiagnostic("location", "id", data.ID.String()))
 			return
 		}
 	case !data.Name.IsNull():
@@ -182,10 +179,7 @@ func (d *dataSource) Read(ctx context.Context, req datasource.ReadRequest, resp 
 			return
 		}
 		if result == nil {
-			resp.Diagnostics.AddError(
-				"Resource not found",
-				fmt.Sprintf("No location found with name %s.", data.Name.String()),
-			)
+			resp.Diagnostics.Append(hcloudutil.NotFoundDiagnostic("location", "name", data.Name.String()))
 			return
 		}
 	default:
