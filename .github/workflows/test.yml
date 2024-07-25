@@ -19,6 +19,9 @@ jobs:
       - run: go test -v -timeout=30s -parallel=8 -coverprofile=coverage.txt -coverpkg=./... ./...
 
       - uses: codecov/codecov-action@v4
+        if: >
+          !startsWith(github.head_ref, 'renovate/') &&
+          !startsWith(github.head_ref, 'release-please--')
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: unit
@@ -89,6 +92,9 @@ jobs:
           TF_LOG_PATH_MASK: test-%s.log
 
       - uses: codecov/codecov-action@v4
+        if: >
+          !startsWith(github.head_ref, 'renovate/') &&
+          !startsWith(github.head_ref, 'release-please--')
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: e2e
