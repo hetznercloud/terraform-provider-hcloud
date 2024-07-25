@@ -67,8 +67,9 @@ func getCommonDataSchema() map[string]*schema.Schema {
 			Computed: true,
 		},
 		"included_traffic": {
-			Type:     schema.TypeInt,
-			Computed: true,
+			Type:       schema.TypeInt,
+			Deprecated: "The field is deprecated and will always report 0 after 2024-08-05.",
+			Computed:   true,
 		},
 	})
 }
