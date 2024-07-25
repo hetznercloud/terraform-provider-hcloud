@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.48.0](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.47.0...v1.48.0) (2024-07-25)
+
+
+### Features
+
+* add support for opentofu v1.7 ([#950](https://github.com/hetznercloud/terraform-provider-hcloud/issues/950)) ([ae115a8](https://github.com/hetznercloud/terraform-provider-hcloud/commit/ae115a8c26cc16c3dea5faf2226617036e7bcb8b))
+* add support for terraform v1.9 ([#949](https://github.com/hetznercloud/terraform-provider-hcloud/issues/949)) ([642ac15](https://github.com/hetznercloud/terraform-provider-hcloud/commit/642ac1511689df6bd4dbc8a8e29e1c19a2fd8bd9))
+* drop support for terraform v1.7.x ([#947](https://github.com/hetznercloud/terraform-provider-hcloud/issues/947)) ([f6372aa](https://github.com/hetznercloud/terraform-provider-hcloud/commit/f6372aacf6e8d47839bbfa6101476f6e0c1c6125))
+* **server-type:** mark included_traffic attribute as deprecated ([#963](https://github.com/hetznercloud/terraform-provider-hcloud/issues/963)) ([e8101cc](https://github.com/hetznercloud/terraform-provider-hcloud/commit/e8101ccff942ffe3406a6e9ca5a07c3f7fc34a2d))
+
+
+### Bug Fixes
+
+* do not continue if an api error occurred ([#958](https://github.com/hetznercloud/terraform-provider-hcloud/issues/958)) ([85a4dd0](https://github.com/hetznercloud/terraform-provider-hcloud/commit/85a4dd0c3390cb533fafa5d982d3faff6749aa7d))
+* **load-balancer:** automatic import of target adds conflicting fields ([#962](https://github.com/hetznercloud/terraform-provider-hcloud/issues/962)) ([6c0b1c4](https://github.com/hetznercloud/terraform-provider-hcloud/commit/6c0b1c42c9eee68f1e6dbc1854fb0f8ec00fbfab)), closes [#961](https://github.com/hetznercloud/terraform-provider-hcloud/issues/961)
+
 ## [1.47.0](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.46.1...v1.47.0) (2024-05-02)
 
 
