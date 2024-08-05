@@ -3,10 +3,10 @@ package location_test
 import (
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/location"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
-
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
@@ -113,17 +113,20 @@ func TestAccHcloudDataSourceLocationsTest(t *testing.T) {
 					resource.TestCheckResourceAttr(locationsDS.TFID(), "location_ids.2", "3"),
 					resource.TestCheckResourceAttr(locationsDS.TFID(), "location_ids.3", "4"),
 					resource.TestCheckResourceAttr(locationsDS.TFID(), "location_ids.4", "5"),
+					resource.TestCheckResourceAttr(locationsDS.TFID(), "location_ids.5", "6"),
 					resource.TestCheckResourceAttr(locationsDS.TFID(), "names.0", "fsn1"),
 					resource.TestCheckResourceAttr(locationsDS.TFID(), "names.1", "nbg1"),
 					resource.TestCheckResourceAttr(locationsDS.TFID(), "names.2", "hel1"),
 					resource.TestCheckResourceAttr(locationsDS.TFID(), "names.3", "ash"),
 					resource.TestCheckResourceAttr(locationsDS.TFID(), "names.4", "hil"),
+					resource.TestCheckResourceAttr(locationsDS.TFID(), "names.5", "sin"),
 					resource.TestCheckResourceAttr(locationsDS.TFID(), "descriptions.0", "Falkenstein DC Park 1"),
 					resource.TestCheckResourceAttr(locationsDS.TFID(), "descriptions.1", "Nuremberg DC Park 1"),
 					resource.TestCheckResourceAttr(locationsDS.TFID(), "descriptions.2", "Helsinki DC Park 1"),
 					resource.TestCheckResourceAttr(locationsDS.TFID(), "descriptions.3", "Ashburn, VA"),
 					resource.TestCheckResourceAttr(locationsDS.TFID(), "descriptions.4", "Hillsboro, OR"),
-					resource.TestCheckResourceAttr(locationsDS.TFID(), "locations.#", "5"),
+					resource.TestCheckResourceAttr(locationsDS.TFID(), "descriptions.5", "Singapore"),
+					resource.TestCheckResourceAttr(locationsDS.TFID(), "locations.#", "6"),
 					resource.TestCheckResourceAttr(locationsDS.TFID(), "locations.0.name", "fsn1"),
 					resource.TestCheckResourceAttr(locationsDS.TFID(), "locations.0.network_zone", "eu-central"),
 					resource.TestCheckResourceAttr(locationsDS.TFID(), "locations.1.name", "nbg1"),
@@ -132,6 +135,8 @@ func TestAccHcloudDataSourceLocationsTest(t *testing.T) {
 					resource.TestCheckResourceAttr(locationsDS.TFID(), "locations.3.network_zone", "us-east"),
 					resource.TestCheckResourceAttr(locationsDS.TFID(), "locations.4.name", "hil"),
 					resource.TestCheckResourceAttr(locationsDS.TFID(), "locations.4.network_zone", "us-west"),
+					resource.TestCheckResourceAttr(locationsDS.TFID(), "locations.5.name", "sin"),
+					resource.TestCheckResourceAttr(locationsDS.TFID(), "locations.5.network_zone", "ap-southeast"),
 				),
 			},
 		},
