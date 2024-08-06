@@ -170,7 +170,7 @@ func getServerTypeAttributes(t *hcloud.ServerType) map[string]interface{} {
 		"storage_type":     t.StorageType,
 		"cpu_type":         t.CPUType,
 		"architecture":     t.Architecture,
-		"included_traffic": t.IncludedTraffic,
+		"included_traffic": t.IncludedTraffic, // nolint:staticcheck // Keep as long as it is available
 	}
 }
 
