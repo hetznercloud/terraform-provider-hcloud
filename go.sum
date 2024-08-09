@@ -149,6 +149,8 @@ github.com/hetznercloud/hcloud-go v1.57.0 h1:aQZZFoJZcq9C1rGX/efZHyyRRmIJxND6tRf
 github.com/hetznercloud/hcloud-go v1.57.0/go.mod h1:oTebZCjd+osj75jlI76Z+zjN1sTxmMiQ1MWoO8aRl1c=
 github.com/hetznercloud/hcloud-go v1.59.0 h1:xVwcOwlUdz54/bFjJHsEO43NLvvZW8/PHiBTMVCQWTc=
 github.com/hetznercloud/hcloud-go v1.59.0/go.mod h1:oTebZCjd+osj75jlI76Z+zjN1sTxmMiQ1MWoO8aRl1c=
+github.com/hetznercloud/hcloud-go v1.59.1 h1:YwRRO4KemQZWsyL3Yp3cUH0Z7MQQ94keiBJ/VaTmlsM=
+github.com/hetznercloud/hcloud-go v1.59.1/go.mod h1:oTebZCjd+osj75jlI76Z+zjN1sTxmMiQ1MWoO8aRl1c=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 h1:BQSFePA1RWJOlocH6Fxy8MmwDt+yVQYULKfN0RoTN8A=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99/go.mod h1:1lJo3i6rXxKeerYnT8Nvf0QmHCRC1n8sfWVwXF2Frvo=
 github.com/jhump/protoreflect v1.15.1 h1:HUMERORf3I3ZdX05WaQ6MIpd/NJ434hTp5YiKgfCL6c=
