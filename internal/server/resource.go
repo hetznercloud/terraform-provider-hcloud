@@ -423,11 +423,13 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		// if the server was created without public net, the server is now still offline and has to be powered on after
 		// network assignment
 		if err := onServerCreateWithoutPublicNet(&opts, d, func(_ *hcloud.ServerCreateOpts) error {
+			tflog.Warn(ctx, fmt.Sprintf("poweron line 421 from server resource with id=%d", res.Server.ID))
 			if err := powerOnServer(ctx, c, res.Server); err != nil {
 				return err
 			}
 
 			// Workaround for network interface issue
+			tflog.Warn(ctx, fmt.Sprintf("poweroff 427 from server resource with id %d", res.Server.ID))
 			powerOffTwo, _, err := c.Server.Poweroff(ctx, res.Server)
 			if err != nil {
 				return err
@@ -435,6 +437,7 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 			if err := hcloudutil.WaitForAction(ctx, &c.Action, powerOffTwo); err != nil {
 				return fmt.Errorf("power off server: %v", err)
 			}
+			tflog.Warn(ctx, fmt.Sprintf("poweron line 435 from server resource with id %d", res.Server.ID))
 			return powerOnServer(ctx, c, res.Server)
 		}); err != nil {
 			return err
@@ -703,6 +706,7 @@ func updatePublicNet(ctx context.Context, o interface{}, n interface{}, c *hclou
 		}
 	}
 
+	tflog.Warn(ctx, fmt.Sprintf("poweroff line 704 from server resource with id=%d", server.ID))
 	shutdown, _, err := c.Server.Poweroff(ctx, &hcloud.Server{ID: server.ID})
 	if err != nil {
 		return hcloudutil.ErrorToDiag(err)
@@ -764,6 +768,7 @@ func updatePublicNet(ctx context.Context, o interface{}, n interface{}, c *hclou
 		}
 	}
 
+	tflog.Warn(ctx, fmt.Sprintf("poweron line 766 from server resource with id=%d", server.ID))
 	if err := powerOnServer(ctx, c, server); err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
@@ -790,6 +795,7 @@ func publicNetUpdateDecision(ctx context.Context,
 			}
 			if ipIDInRemoveDiff == 0 {
 				if err := primaryip.DeletePrimaryIP(ctx, c, &hcloud.PrimaryIP{ID: serverIPID}); err != nil {
+					tflog.Warn(ctx, fmt.Sprintf("poweron line 793 from server resource with id=%d", server.ID))
 					if err := powerOnServer(ctx, c, server); err != nil {
 						return hcloudutil.ErrorToDiag(err)
 					}
@@ -798,6 +804,7 @@ func publicNetUpdateDecision(ctx context.Context,
 			}
 		}
 		if err := primaryip.AssignPrimaryIP(ctx, c, ipID, server.ID); err != nil {
+			tflog.Warn(ctx, fmt.Sprintf("poweron line 802 from server resource with id=%d", server.ID))
 			if err := powerOnServer(ctx, c, server); err != nil {
 				return hcloudutil.ErrorToDiag(err)
 			}
@@ -807,6 +814,7 @@ func publicNetUpdateDecision(ctx context.Context,
 	case !ipEnabled && ipID == 0:
 		if serverIPID != 0 {
 			if err := primaryip.UnassignPrimaryIP(ctx, c, serverIPID); err != nil {
+				tflog.Warn(ctx, fmt.Sprintf("poweron line 812 from server resource with id=%d", server.ID))
 				if err := powerOnServer(ctx, c, server); err != nil {
 					return hcloudutil.ErrorToDiag(err)
 				}
@@ -814,6 +822,7 @@ func publicNetUpdateDecision(ctx context.Context,
 			}
 			if ipIDInRemoveDiff == 0 {
 				if err := primaryip.DeletePrimaryIP(ctx, c, &hcloud.PrimaryIP{ID: serverIPID}); err != nil {
+					tflog.Warn(ctx, fmt.Sprintf("poweron line 819 from server resource with id=%d", server.ID))
 					if err := powerOnServer(ctx, c, server); err != nil {
 						return hcloudutil.ErrorToDiag(err)
 					}
@@ -827,6 +836,7 @@ func publicNetUpdateDecision(ctx context.Context,
 		// unassign managed ip when id is removed
 		if ipEnabledInRemoveDiff && ipIDInRemoveDiff != 0 {
 			if err := primaryip.UnassignPrimaryIP(ctx, c, ipIDInRemoveDiff); err != nil {
+				tflog.Warn(ctx, fmt.Sprintf("poweron line 834 from server resource with id=%d", server.ID))
 				if err := powerOnServer(ctx, c, server); err != nil {
 					return hcloudutil.ErrorToDiag(err)
 				}
@@ -836,6 +846,7 @@ func publicNetUpdateDecision(ctx context.Context,
 		if !ipEnabledInRemoveDiff && ipIDInRemoveDiff == 0 ||
 			ipEnabledInRemoveDiff && ipIDInRemoveDiff != 0 {
 			if err := primaryip.CreateRandomPrimaryIP(ctx, c, server, ipType); err != nil {
+				tflog.Warn(ctx, fmt.Sprintf("poweron line 844 from server resource with id=%d", server.ID))
 				if err := powerOnServer(ctx, c, server); err != nil {
 					return hcloudutil.ErrorToDiag(err)
 				}
@@ -845,6 +856,7 @@ func publicNetUpdateDecision(ctx context.Context,
 
 	// error on ip set from true -> false + ipv4 ID provided
 	case !ipEnabled && ipID != 0:
+		tflog.Warn(ctx, fmt.Sprintf("poweron line 854 from server resource with id=%d", server.ID))
 		if err := powerOnServer(ctx, c, server); err != nil {
 			return hcloudutil.ErrorToDiag(err)
 		}
@@ -868,6 +880,7 @@ func resourceServerDelete(ctx context.Context, d *schema.ResourceData, m interfa
 
 	if d.Get("shutdown_before_deletion").(bool) {
 		// Try shutting down the server
+		tflog.Warn(ctx, fmt.Sprintf("poweron line 878 from server resource with id=%d", serverID))
 		shutdownResult, _, err := client.Server.Shutdown(ctx, &hcloud.Server{ID: serverID})
 		if err != nil {
 			return hcloudutil.ErrorToDiag(err)
@@ -1384,8 +1397,8 @@ func publicNetRemovedDecision(ctx context.Context,
 		}
 	}
 
-		if err := primaryip.CreateRandomPrimaryIP(ctx, c, server, ipType); err != nil {
-			return err
+	if err := primaryip.CreateRandomPrimaryIP(ctx, c, server, ipType); err != nil {
+		return err
 	}
 	return nil
 }

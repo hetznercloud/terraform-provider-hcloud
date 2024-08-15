@@ -13,3 +13,5 @@
 !renovate.json
 
 .env*
+
+terraform/

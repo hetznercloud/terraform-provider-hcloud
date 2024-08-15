@@ -3,6 +3,7 @@ package primaryip
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"math/rand"
 	"strconv"
@@ -10,6 +11,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/control"
 
 	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
@@ -262,6 +264,9 @@ func resourcePrimaryIPDelete(ctx context.Context, d *schema.ResourceData, m inte
 				return diag.Errorf("unexpected assignee id: state_assignee_id=%d primary_ip_id=%d server_ipv4_id=%d server_ipv6_id=%d", assigneeID, primaryIPID, server.PublicNet.IPv4.ID, server.PublicNet.IPv6.ID)
 			}
 
+			//if server.PublicNet.IPv4.ID == primaryIPID || server.PublicNet.IPv6.ID == primaryIPID {
+
+			tflog.Warn(ctx, fmt.Sprintf("poweroff line 262 from primary ip resource with id=%d server_id=%d", primaryIPID, server.ID))
 			offAction, _, _ := client.Server.Poweroff(ctx, server)
 			// if offErr != nil {
 			// 	return hcloudutil.ErrorToDiag(offErr)
@@ -272,6 +277,7 @@ func resourcePrimaryIPDelete(ctx context.Context, d *schema.ResourceData, m inte
 			// dont catch error, because its possible that the primary IP got already unassigned on server destroy
 			UnassignPrimaryIP(ctx, client, primaryIPID)
 
+			tflog.Warn(ctx, fmt.Sprintf("poweron line 273 from primary ip resource with id=%d server_id=%d", primaryIPID, server.ID))
 			onAction, _, _ := client.Server.Poweron(ctx, server)
 			// if onErr != nil {
 			// 	return hcloudutil.ErrorToDiag(onErr)
@@ -279,6 +285,9 @@ func resourcePrimaryIPDelete(ctx context.Context, d *schema.ResourceData, m inte
 			if onActionErr := hcloudutil.WaitForAction(ctx, &client.Action, onAction); onActionErr != nil {
 				return hcloudutil.ErrorToDiag(onActionErr)
 			}
+
+			//}
+
 		}
 	}
 	err = control.Retry(2*control.DefaultRetries, func() error {
