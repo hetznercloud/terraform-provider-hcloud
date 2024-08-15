@@ -153,7 +153,9 @@ func (ts *Manager) Render(t *testing.T, args ...interface{}) string {
 		if diags.HasErrors() {
 			t.Fatal(diags.Error())
 		}
-		file.WriteTo(buf)
+		if _, err := file.WriteTo(buf); err != nil {
+			t.Fatal(err)
+		}
 		definition = buf.String()
 	}
 
