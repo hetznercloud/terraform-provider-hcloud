@@ -256,6 +256,12 @@ func resourcePrimaryIPDelete(ctx context.Context, d *schema.ResourceData, m inte
 
 	if assigneeID, ok := d.GetOk("assignee_id"); ok && assigneeID != 0 {
 		if server, _, err := client.Server.Get(ctx, strconv.Itoa(assigneeID.(int))); err == nil && server != nil {
+
+			if server.PublicNet.IPv4.ID != primaryIPID && server.PublicNet.IPv6.ID != primaryIPID {
+				// To make sure that bisect does not rely on flaky behavior from "locked" api response but actual validation.
+				return diag.Errorf("unexpected assignee id: state_assignee_id=%d primary_ip_id=%d server_ipv4_id=%d server_ipv6_id=%d", assigneeID, primaryIPID, server.PublicNet.IPv4.ID, server.PublicNet.IPv6.ID)
+			}
+
 			offAction, _, _ := client.Server.Poweroff(ctx, server)
 			// if offErr != nil {
 			// 	return hcloudutil.ErrorToDiag(offErr)

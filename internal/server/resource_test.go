@@ -813,6 +813,245 @@ func TestServerResource_PrimaryIPNetworkTests(t *testing.T) {
 	})
 }
 
+func TestServerResource_PrimaryIPTests(t *testing.T) {
+	var (
+		s hcloud.Server
+		p hcloud.PrimaryIP
+	)
+
+	sk := sshkey.NewRData(t, "server")
+
+	primaryIPv4Res := &primaryip.RData{
+		Name:         "primaryip-v4-test",
+		Type:         "ipv4",
+		Labels:       nil,
+		Datacenter:   teste2e.TestDataCenter,
+		AssigneeType: "server",
+		AutoDelete:   false,
+	}
+	primaryIPv4Res.SetRName("primary-ip-v4")
+
+	primaryIPv6Res := &primaryip.RData{
+		Name:         "primaryip-v6-test",
+		Type:         "ipv6",
+		Labels:       nil,
+		Datacenter:   teste2e.TestDataCenter,
+		AssigneeType: "server",
+		AutoDelete:   false,
+	}
+	primaryIPv6Res.SetRName("primary-ip-v6")
+
+	sResWithPublicNet := &server.RData{
+		Name:       "server-primaryIP-test",
+		Type:       teste2e.TestServerType,
+		Datacenter: teste2e.TestDataCenter,
+		Image:      teste2e.TestImage,
+		SSHKeys:    []string{sk.TFID() + ".id"},
+		PublicNet: map[string]any{
+			"ipv4_enabled": true,
+			"ipv6_enabled": true,
+		},
+	}
+	sResWithPublicNet.SetRName(sResWithPublicNet.Name)
+
+	sResWithPrimaryIP := &server.RData{
+		Name:       sResWithPublicNet.Name,
+		Type:       sResWithPublicNet.Type,
+		Datacenter: sResWithPublicNet.Datacenter,
+		Image:      sResWithPublicNet.Image,
+		SSHKeys:    sResWithPublicNet.SSHKeys,
+		PublicNet: map[string]any{
+			"ipv4_enabled": true,
+			"ipv4":         primaryIPv4Res.TFID() + ".id",
+			"ipv6_enabled": false,
+		},
+		DependsOn: sResWithPublicNet.DependsOn,
+	}
+
+	sResWithPrimaryIP.SetRName(sResWithPrimaryIP.Name)
+
+	sResWithNoPublicNet := &server.RData{
+		Name:       sResWithPrimaryIP.Name,
+		Type:       sResWithPrimaryIP.Type,
+		Datacenter: sResWithPublicNet.Datacenter,
+		Image:      sResWithPrimaryIP.Image,
+		SSHKeys:    sResWithPrimaryIP.SSHKeys,
+		DependsOn:  sResWithPrimaryIP.DependsOn,
+	}
+
+	sResWithOnlyIPv6 := &server.RData{
+		Name:       sResWithNoPublicNet.Name,
+		Type:       sResWithNoPublicNet.Type,
+		Datacenter: sResWithNoPublicNet.Datacenter,
+		Image:      sResWithNoPublicNet.Image,
+		SSHKeys:    sResWithNoPublicNet.SSHKeys,
+		PublicNet: map[string]any{
+			"ipv4_enabled": false,
+			"ipv6_enabled": true,
+			"ipv6":         primaryIPv6Res.TFID() + ".id",
+		},
+		DependsOn: sResWithNoPublicNet.DependsOn,
+	}
+
+	sResWithOnlyIPv6.SetRName(sResWithOnlyIPv6.Name)
+
+	sResWithNoPublicNet.SetRName(sResWithNoPublicNet.Name)
+
+	tmplMan := testtemplate.Manager{}
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, nil)),
+		Steps: []resource.TestStep{
+			{
+				// Add ipv4 via ID
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_primary_ip", primaryIPv4Res,
+					"testdata/r/hcloud_server", sResWithPrimaryIP,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(primaryIPv4Res.TFID(), primaryip.ByID(t, &p)),
+					testsupport.CheckResourceExists(sResWithPrimaryIP.TFID(), server.ByID(t, &s)),
+					testsupport.LiftTCF(func() error {
+						assert.Equal(t, p.AssigneeID, s.ID)
+						assert.Equal(t, s.PublicNet.IPv4.ID, p.ID)
+						assert.Equal(t, s.PublicNet.IPv6.ID, 0)
+						return nil
+					}),
+				),
+			},
+
+			{
+				// Remove public net, so attached ipv4 gets unattached + an ipv4 should be auto generated
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_primary_ip", primaryIPv4Res,
+					"testdata/r/hcloud_server", sResWithNoPublicNet,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(primaryIPv4Res.TFID(), primaryip.ByID(t, &p)),
+					testsupport.CheckResourceExists(sResWithNoPublicNet.TFID(), server.ByID(t, &s)),
+					testsupport.LiftTCF(func() error {
+						// TODO: Figure out why this check does not fail
+						assert.NotEqual(t, p.ID, s.PublicNet.IPv4.ID)
+						assert.NotEqual(t, 0, s.PublicNet.IPv4.ID)
+						assert.NotEqual(t, 0, s.PublicNet.IPv6.ID)
+						return nil
+					}),
+				),
+			},
+			{
+				// should remove auto generated ipv4 / 6 + attach managed ipv6
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_primary_ip", primaryIPv6Res,
+					"testdata/r/hcloud_server", sResWithOnlyIPv6,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(primaryIPv6Res.TFID(), primaryip.ByID(t, &p)),
+					testsupport.CheckResourceExists(sResWithOnlyIPv6.TFID(), server.ByID(t, &s)),
+					testsupport.LiftTCF(func() error {
+						assert.Equal(t, p.ID, s.PublicNet.IPv6.ID)
+						assert.Equal(t, 0, s.PublicNet.IPv4.ID)
+						return nil
+					}),
+				),
+			},
+		},
+	})
+}
+
+func TestServerResource_PrimaryIPWithPublicTests(t *testing.T) {
+	var (
+		s hcloud.Server
+	)
+
+	sk := sshkey.NewRData(t, "server")
+
+	sResWithPublicNet := &server.RData{
+		Name:       "server-primaryIP-with-public-test",
+		Type:       teste2e.TestServerType,
+		Datacenter: teste2e.TestDataCenter,
+		Image:      teste2e.TestImage,
+		SSHKeys:    []string{sk.TFID() + ".id"},
+		PublicNet: map[string]any{
+			"ipv4_enabled": true,
+			"ipv6_enabled": true,
+		},
+	}
+	sResWithPublicNet.SetRName(sResWithPublicNet.Name)
+
+	sResWithNoPublicNet := &server.RData{
+		Name:       sResWithPublicNet.Name,
+		Type:       sResWithPublicNet.Type,
+		Datacenter: sResWithPublicNet.Datacenter,
+		Image:      sResWithPublicNet.Image,
+		SSHKeys:    sResWithPublicNet.SSHKeys,
+		DependsOn:  sResWithPublicNet.DependsOn,
+	}
+	sResWithNoPublicNet.SetRName(sResWithNoPublicNet.Name)
+
+	initialIPv4ID := 0
+	initialIPv6ID := 0
+
+	tmplMan := testtemplate.Manager{}
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, nil)),
+		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_server", sResWithPublicNet,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(sResWithPublicNet.TFID(), server.ByID(t, &s)),
+					testsupport.LiftTCF(func() error {
+						initialIPv4ID = s.PublicNet.IPv4.ID
+						initialIPv6ID = s.PublicNet.IPv6.ID
+
+						assert.NotEqual(t, 0, s.PublicNet.IPv4.ID)
+						assert.NotEqual(t, 0, s.PublicNet.IPv6.ID)
+						return nil
+					}),
+				),
+			},
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_server", sResWithNoPublicNet,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(sResWithNoPublicNet.TFID(), server.ByID(t, &s)),
+					testsupport.LiftTCF(func() error {
+						assert.Equal(t, initialIPv4ID, s.PublicNet.IPv4.ID)
+						assert.Equal(t, initialIPv6ID, s.PublicNet.IPv6.ID)
+
+						return nil
+					}),
+				),
+			},
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_server", sResWithPublicNet,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(sResWithPublicNet.TFID(), server.ByID(t, &s)),
+					testsupport.LiftTCF(func() error {
+						assert.Equal(t, initialIPv4ID, s.PublicNet.IPv4.ID)
+						assert.Equal(t, initialIPv6ID, s.PublicNet.IPv6.ID)
+
+						return nil
+					}),
+				),
+			},
+		},
+	})
+}
+
 func TestServerResource_Firewalls(t *testing.T) {
 	var s hcloud.Server
 
