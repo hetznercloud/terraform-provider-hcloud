@@ -165,6 +165,11 @@ func Resource() *schema.Resource {
 					// terraform configuration.
 					_, ok := d.GetOk("public_net")
 					return !ok // Negate because we do **not** want to suppress the diff.
+
+					// Maybe https://github.com/hetznercloud/terraform-provider-hcloud/pull/597 ?
+
+					// if old.public_net == { ipv4_enabled = true, ipv6_enabled=true} && new.public_net == nil { return true }
+					// if old.public_net == nil && new.public_net == { ipv4_enabled = true, ipv6_enabled=true} { return true }
 				},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -1363,13 +1368,24 @@ func publicNetRemovedDecision(ctx context.Context,
 	serverIPID int,
 	ipIDToRemove int,
 	ipType hcloud.PrimaryIPType) diag.Diagnostics {
-	if server.PublicNet.IPv4.ID != 0 && ipIDToRemove != 0 {
+	if ipIDToRemove == 0 && serverIPID != 0 {
+		// TODO: Move this check upwards?
+		return nil
+	}
+
+	if ipIDToRemove != 0 && serverIPID != 0 {
+		if ipIDToRemove != serverIPID {
+			// TODO: Nicer error message
+			return diag.Errorf("the primary ip we are trying to unassign does not match the currently assigned primary ip. please re-run terraform.")
+		}
+
 		if err := primaryip.UnassignPrimaryIP(ctx, c, serverIPID); err != nil {
 			return err
 		}
+	}
+
 		if err := primaryip.CreateRandomPrimaryIP(ctx, c, server, ipType); err != nil {
 			return err
-		}
 	}
 	return nil
 }
