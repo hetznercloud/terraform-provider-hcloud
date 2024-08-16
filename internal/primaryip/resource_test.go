@@ -191,13 +191,16 @@ func TestPrimaryIPResource_with_server(t *testing.T) {
 							primaryIPv4One.AssigneeID != srv.ID {
 							return nil
 						}
-						return fmt.Errorf("State is not as expected: \n" +
-							fmt.Sprintf("primary IP v2 two has assignee id %d which not equals target server id %d",
-								primaryIPv4Two.AssigneeID, srv.ID) + "\n" +
-							fmt.Sprintf("primary IP v1 one has assignee id %d and should shouldnt be assigned to server id %d",
-								primaryIPv4One.AssigneeID, srv.ID) + "\n" +
-							fmt.Sprintf("primary IP v6 one has assignee id %d and should shouldnt be assigned to server id %d",
-								primaryIPv6One.AssigneeID, srv.ID))
+						// nolint:revive
+						return fmt.Errorf(`state is not as expected:
+primary IP v4 two has assignee id %d which not equals target server id %d
+primary IP v4 one has assignee id %d and should shouldnt be assigned to server id %d
+primary IP v6 one has assignee id %d and should shouldnt be assigned to server id %d
+`,
+							primaryIPv4Two.AssigneeID, srv.ID,
+							primaryIPv4One.AssigneeID, srv.ID,
+							primaryIPv6One.AssigneeID, srv.ID,
+						)
 					}),
 			},
 		},
