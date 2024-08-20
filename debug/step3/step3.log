@@ -1,0 +1,1090 @@
+2024-08-20T11:23:13.409+0200 [INFO]  Terraform version: 1.9.4
+2024-08-20T11:23:13.409+0200 [DEBUG] using github.com/hashicorp/go-tfe v1.51.0
+2024-08-20T11:23:13.409+0200 [DEBUG] using github.com/hashicorp/hcl/v2 v2.20.0
+2024-08-20T11:23:13.409+0200 [DEBUG] using github.com/hashicorp/terraform-svchost v0.1.1
+2024-08-20T11:23:13.409+0200 [DEBUG] using github.com/zclconf/go-cty v1.14.4
+2024-08-20T11:23:13.409+0200 [INFO]  Go runtime version: go1.22.5
+2024-08-20T11:23:13.409+0200 [INFO]  CLI args: []string{"terraform", "apply", "-backup=step3/step3.tfstate"}
+2024-08-20T11:23:13.409+0200 [TRACE] Stdout is a terminal of width 178
+2024-08-20T11:23:13.409+0200 [TRACE] Stderr is a terminal of width 178
+2024-08-20T11:23:13.409+0200 [TRACE] Stdin is a terminal
+2024-08-20T11:23:13.409+0200 [DEBUG] Attempting to open CLI config file: /home/jo/.terraformrc
+2024-08-20T11:23:13.409+0200 [DEBUG] File doesn't exist, but doesn't need to. Ignoring.
+2024-08-20T11:23:13.410+0200 [DEBUG] ignoring non-existing provider search directory terraform.d/plugins
+2024-08-20T11:23:13.410+0200 [DEBUG] ignoring non-existing provider search directory /home/jo/.terraform.d/plugins
+2024-08-20T11:23:13.410+0200 [DEBUG] ignoring non-existing provider search directory /home/jo/.local/share/terraform/plugins
+2024-08-20T11:23:13.410+0200 [DEBUG] ignoring non-existing provider search directory /usr/local/share/terraform/plugins
+2024-08-20T11:23:13.410+0200 [DEBUG] ignoring non-existing provider search directory /usr/share/terraform/plugins
+2024-08-20T11:23:13.410+0200 [INFO]  CLI command args: []string{"apply", "-backup=step3/step3.tfstate"}
+2024-08-20T11:23:13.410+0200 [TRACE] Meta.Backend: no config given or present on disk, so returning nil config
+2024-08-20T11:23:13.410+0200 [TRACE] Meta.Backend: backend has not previously been initialized in this working directory
+2024-08-20T11:23:13.410+0200 [TRACE] Meta.Backend: using default local state only (no backend configuration, and no existing initialized backend)
+2024-08-20T11:23:13.410+0200 [TRACE] Meta.Backend: instantiated backend of type <nil>
+2024-08-20T11:23:13.411+0200 [TRACE] providercache.fillMetaCache: scanning directory .terraform/providers
+2024-08-20T11:23:13.411+0200 [TRACE] getproviders.SearchLocalDirectory: found registry.terraform.io/hetznercloud/hcloud v1.46.1 for linux_amd64 at .terraform/providers/registry.terraform.io/hetznercloud/hcloud/1.46.1/linux_amd64
+2024-08-20T11:23:13.411+0200 [TRACE] providercache.fillMetaCache: including .terraform/providers/registry.terraform.io/hetznercloud/hcloud/1.46.1/linux_amd64 as a candidate package for registry.terraform.io/hetznercloud/hcloud 1.46.1
+2024-08-20T11:23:13.423+0200 [DEBUG] checking for provisioner in "."
+2024-08-20T11:23:13.424+0200 [DEBUG] checking for provisioner in "/usr/local/bin"
+2024-08-20T11:23:13.424+0200 [TRACE] Meta.Backend: backend <nil> does not support operations, so wrapping it in a local backend
+2024-08-20T11:23:13.424+0200 [TRACE] backend/local: CLI option -backup is overriding state backup path to step3/step3.tfstate
+2024-08-20T11:23:13.424+0200 [INFO]  backend/local: starting Apply operation
+2024-08-20T11:23:13.424+0200 [TRACE] backend/local: requesting state manager for workspace "default"
+2024-08-20T11:23:13.424+0200 [TRACE] backend/local: state manager for workspace "default" will:
+ - read initial snapshot from terraform.tfstate
+ - write new snapshots to terraform.tfstate
+ - create any backup at step3/step3.tfstate
+2024-08-20T11:23:13.424+0200 [TRACE] backend/local: requesting state lock for workspace "default"
+2024-08-20T11:23:13.424+0200 [TRACE] statemgr.Filesystem: preparing to manage state snapshots at terraform.tfstate
+2024-08-20T11:23:13.424+0200 [TRACE] statemgr.Filesystem: existing snapshot has lineage "51ac71ee-5545-8455-db5c-b1f74e9e5c33" serial 5
+2024-08-20T11:23:13.424+0200 [TRACE] statemgr.Filesystem: locking terraform.tfstate using fcntl flock
+2024-08-20T11:23:13.424+0200 [TRACE] statemgr.Filesystem: writing lock metadata to .terraform.tfstate.lock.info
+2024-08-20T11:23:13.424+0200 [TRACE] backend/local: reading remote state for workspace "default"
+2024-08-20T11:23:13.424+0200 [TRACE] statemgr.Filesystem: reading latest snapshot from terraform.tfstate
+2024-08-20T11:23:13.424+0200 [TRACE] statemgr.Filesystem: read snapshot with lineage "51ac71ee-5545-8455-db5c-b1f74e9e5c33" serial 5
+2024-08-20T11:23:13.424+0200 [TRACE] backend/local: populating backendrun.LocalRun for current working directory
+2024-08-20T11:23:13.425+0200 [TRACE] Config.VerifyDependencySelections: provider registry.terraform.io/hetznercloud/hcloud has 1.46.1 to satisfy "1.46.1"
+2024-08-20T11:23:13.425+0200 [TRACE] terraform.NewContext: starting
+2024-08-20T11:23:13.425+0200 [TRACE] terraform.NewContext: complete
+2024-08-20T11:23:13.425+0200 [TRACE] backend/local: requesting interactive input, if necessary
+2024-08-20T11:23:13.425+0200 [TRACE] LoadSchemas: retrieving schema for provider type "registry.terraform.io/hetznercloud/hcloud"
+2024-08-20T11:23:13.425+0200 [TRACE] terraform.contextPlugins: Initializing provider "registry.terraform.io/hetznercloud/hcloud" to read its schema
+2024-08-20T11:23:13.425+0200 [DEBUG] created provider logger: level=info
+2024-08-20T11:23:13.425+0200 [INFO]  provider: configuring client automatic mTLS
+2024-08-20T11:23:13.435+0200 [INFO]  provider.terraform-provider-hcloud_v1.46.1: configuring server automatic mTLS: timestamp="2024-08-20T11:23:13.435+0200"
+2024-08-20T11:23:13.451+0200 [TRACE] GRPCProvider.v6: GetProviderSchema
+2024-08-20T11:23:13.456+0200 [TRACE] GRPCProvider.v6: Close
+2024-08-20T11:23:13.458+0200 [INFO]  provider: plugin process exited: plugin=.terraform/providers/registry.terraform.io/hetznercloud/hcloud/1.46.1/linux_amd64/terraform-provider-hcloud_v1.46.1 id=73461
+2024-08-20T11:23:13.458+0200 [TRACE] Context.Input: Prompting for provider arguments
+2024-08-20T11:23:13.458+0200 [TRACE] Context.Input: Provider provider.hcloud declared at main.tf:10,1-18
+2024-08-20T11:23:13.458+0200 [TRACE] Context.Input: Input for provider.hcloud: map[string]cty.Value{}
+2024-08-20T11:23:13.458+0200 [TRACE] backend/local: running validation operation
+2024-08-20T11:23:13.458+0200 [TRACE] LoadSchemas: retrieving schema for provider type "registry.terraform.io/hetznercloud/hcloud"
+2024-08-20T11:23:13.458+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.458+0200 [DEBUG] Building and walking validate graph
+2024-08-20T11:23:13.458+0200 [TRACE] building graph for walkValidate
+2024-08-20T11:23:13.458+0200 [TRACE] Executing graph transform *terraform.ConfigTransformer
+2024-08-20T11:23:13.458+0200 [TRACE] ConfigTransformer: Starting for path:
+2024-08-20T11:23:13.458+0200 [TRACE] Completed graph transform *terraform.ConfigTransformer with new graph:
+  hcloud_primary_ip.primary-ip-v4 - *terraform.NodeValidatableResource
+  hcloud_server.server-primaryIP-network-test - *terraform.NodeValidatableResource
+  ------
+2024-08-20T11:23:13.458+0200 [TRACE] Executing graph transform *terraform.RootVariableTransformer
+2024-08-20T11:23:13.458+0200 [TRACE] Completed graph transform *terraform.RootVariableTransformer (no changes)
+2024-08-20T11:23:13.458+0200 [TRACE] Executing graph transform *terraform.ModuleVariableTransformer
+2024-08-20T11:23:13.458+0200 [TRACE] Completed graph transform *terraform.ModuleVariableTransformer (no changes)
+2024-08-20T11:23:13.458+0200 [TRACE] Executing graph transform *terraform.variableValidationTransformer
+2024-08-20T11:23:13.458+0200 [TRACE] variableValidationTransformer: adding validation nodes for any existing variable evaluation nodes
+2024-08-20T11:23:13.458+0200 [TRACE] Completed graph transform *terraform.variableValidationTransformer (no changes)
+2024-08-20T11:23:13.458+0200 [TRACE] Executing graph transform *terraform.LocalTransformer
+2024-08-20T11:23:13.458+0200 [TRACE] Completed graph transform *terraform.LocalTransformer (no changes)
+2024-08-20T11:23:13.458+0200 [TRACE] Executing graph transform *terraform.OutputTransformer
+2024-08-20T11:23:13.458+0200 [TRACE] Completed graph transform *terraform.OutputTransformer (no changes)
+2024-08-20T11:23:13.458+0200 [TRACE] Executing graph transform *terraform.checkTransformer
+2024-08-20T11:23:13.458+0200 [TRACE] Completed graph transform *terraform.checkTransformer (no changes)
+2024-08-20T11:23:13.458+0200 [TRACE] Executing graph transform *terraform.OrphanResourceInstanceTransformer
+2024-08-20T11:23:13.458+0200 [TRACE] Completed graph transform *terraform.OrphanResourceInstanceTransformer (no changes)
+2024-08-20T11:23:13.458+0200 [TRACE] Executing graph transform *terraform.StateTransformer
+2024-08-20T11:23:13.458+0200 [TRACE] StateTransformer: pointless no-op call, creating no nodes at all
+2024-08-20T11:23:13.458+0200 [TRACE] Completed graph transform *terraform.StateTransformer (no changes)
+2024-08-20T11:23:13.458+0200 [TRACE] Executing graph transform *terraform.AttachStateTransformer
+2024-08-20T11:23:13.458+0200 [TRACE] Completed graph transform *terraform.AttachStateTransformer (no changes)
+2024-08-20T11:23:13.458+0200 [TRACE] Executing graph transform *terraform.OrphanOutputTransformer
+2024-08-20T11:23:13.458+0200 [TRACE] Completed graph transform *terraform.OrphanOutputTransformer (no changes)
+2024-08-20T11:23:13.458+0200 [TRACE] Executing graph transform *terraform.AttachResourceConfigTransformer
+2024-08-20T11:23:13.458+0200 [TRACE] AttachResourceConfigTransformer: attaching to "hcloud_server.server-primaryIP-network-test" (*terraform.NodeValidatableResource) config from hcl.Range{Filename:"step.tf", Start:hcl.Pos{Line:9, Column:1, Byte:214}, End:hcl.Pos{Line:9, Column:57, Byte:270}}
+2024-08-20T11:23:13.458+0200 [TRACE] AttachResourceConfigTransformer: attaching provider meta configs to hcloud_server.server-primaryIP-network-test
+2024-08-20T11:23:13.458+0200 [TRACE] AttachResourceConfigTransformer: attaching to "hcloud_primary_ip.primary-ip-v4" (*terraform.NodeValidatableResource) config from hcl.Range{Filename:"step.tf", Start:hcl.Pos{Line:1, Column:1, Byte:0}, End:hcl.Pos{Line:1, Column:45, Byte:44}}
+2024-08-20T11:23:13.458+0200 [TRACE] AttachResourceConfigTransformer: attaching provider meta configs to hcloud_primary_ip.primary-ip-v4
+2024-08-20T11:23:13.458+0200 [TRACE] Completed graph transform *terraform.AttachResourceConfigTransformer (no changes)
+2024-08-20T11:23:13.458+0200 [TRACE] Executing graph transform *terraform.graphTransformerMulti
+2024-08-20T11:23:13.458+0200 [TRACE] (graphTransformerMulti) Executing graph transform *terraform.externalProviderTransformer
+2024-08-20T11:23:13.458+0200 [TRACE] (graphTransformerMulti) Completed graph transform *terraform.externalProviderTransformer with new graph:
+  hcloud_primary_ip.primary-ip-v4 - *terraform.NodeValidatableResource
+  hcloud_server.server-primaryIP-network-test - *terraform.NodeValidatableResource
+  ------
+2024-08-20T11:23:13.458+0200 [TRACE] (graphTransformerMulti) Executing graph transform *terraform.ProviderConfigTransformer
+2024-08-20T11:23:13.458+0200 [TRACE] ProviderConfigTransformer: attaching to "provider[\"registry.terraform.io/hetznercloud/hcloud\"]" provider configuration from main.tf:10,1-18
+2024-08-20T11:23:13.458+0200 [TRACE] (graphTransformerMulti) Completed graph transform *terraform.ProviderConfigTransformer with new graph:
+  hcloud_primary_ip.primary-ip-v4 - *terraform.NodeValidatableResource
+  hcloud_server.server-primaryIP-network-test - *terraform.NodeValidatableResource
+  provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  ------
+2024-08-20T11:23:13.458+0200 [TRACE] (graphTransformerMulti) Executing graph transform *terraform.MissingProviderTransformer
+2024-08-20T11:23:13.458+0200 [TRACE] (graphTransformerMulti) Completed graph transform *terraform.MissingProviderTransformer (no changes)
+2024-08-20T11:23:13.458+0200 [TRACE] (graphTransformerMulti) Executing graph transform *terraform.ProviderTransformer
+2024-08-20T11:23:13.458+0200 [TRACE] ProviderTransformer: exact match for provider["registry.terraform.io/hetznercloud/hcloud"] serving hcloud_primary_ip.primary-ip-v4
+2024-08-20T11:23:13.458+0200 [DEBUG] ProviderTransformer: "hcloud_primary_ip.primary-ip-v4" (*terraform.NodeValidatableResource) needs provider["registry.terraform.io/hetznercloud/hcloud"]
+2024-08-20T11:23:13.458+0200 [TRACE] ProviderTransformer: exact match for provider["registry.terraform.io/hetznercloud/hcloud"] serving hcloud_server.server-primaryIP-network-test
+2024-08-20T11:23:13.458+0200 [DEBUG] ProviderTransformer: "hcloud_server.server-primaryIP-network-test" (*terraform.NodeValidatableResource) needs provider["registry.terraform.io/hetznercloud/hcloud"]
+2024-08-20T11:23:13.458+0200 [TRACE] (graphTransformerMulti) Completed graph transform *terraform.ProviderTransformer with new graph:
+  hcloud_primary_ip.primary-ip-v4 - *terraform.NodeValidatableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  hcloud_server.server-primaryIP-network-test - *terraform.NodeValidatableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  ------
+2024-08-20T11:23:13.458+0200 [TRACE] (graphTransformerMulti) Executing graph transform *terraform.PruneProviderTransformer
+2024-08-20T11:23:13.458+0200 [TRACE] (graphTransformerMulti) Completed graph transform *terraform.PruneProviderTransformer (no changes)
+2024-08-20T11:23:13.458+0200 [TRACE] Completed graph transform *terraform.graphTransformerMulti with new graph:
+  hcloud_primary_ip.primary-ip-v4 - *terraform.NodeValidatableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  hcloud_server.server-primaryIP-network-test - *terraform.NodeValidatableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  ------
+2024-08-20T11:23:13.458+0200 [TRACE] Executing graph transform *terraform.RemovedModuleTransformer
+2024-08-20T11:23:13.458+0200 [TRACE] Completed graph transform *terraform.RemovedModuleTransformer (no changes)
+2024-08-20T11:23:13.458+0200 [TRACE] Executing graph transform *terraform.AttachSchemaTransformer
+2024-08-20T11:23:13.458+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.458+0200 [TRACE] AttachSchemaTransformer: attaching resource schema to hcloud_primary_ip.primary-ip-v4
+2024-08-20T11:23:13.458+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.458+0200 [TRACE] AttachSchemaTransformer: attaching resource schema to hcloud_server.server-primaryIP-network-test
+2024-08-20T11:23:13.458+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.458+0200 [TRACE] AttachSchemaTransformer: attaching provider config schema to provider["registry.terraform.io/hetznercloud/hcloud"]
+2024-08-20T11:23:13.458+0200 [TRACE] Completed graph transform *terraform.AttachSchemaTransformer (no changes)
+2024-08-20T11:23:13.458+0200 [TRACE] Executing graph transform *terraform.ModuleExpansionTransformer
+2024-08-20T11:23:13.458+0200 [TRACE] Completed graph transform *terraform.ModuleExpansionTransformer (no changes)
+2024-08-20T11:23:13.458+0200 [TRACE] Executing graph transform *terraform.ExternalReferenceTransformer
+2024-08-20T11:23:13.458+0200 [TRACE] Completed graph transform *terraform.ExternalReferenceTransformer (no changes)
+2024-08-20T11:23:13.458+0200 [TRACE] Executing graph transform *terraform.ReferenceTransformer
+2024-08-20T11:23:13.458+0200 [DEBUG] ReferenceTransformer: "hcloud_primary_ip.primary-ip-v4" references: []
+2024-08-20T11:23:13.458+0200 [DEBUG] ReferenceTransformer: "hcloud_server.server-primaryIP-network-test" references: [hcloud_primary_ip.primary-ip-v4]
+2024-08-20T11:23:13.458+0200 [DEBUG] ReferenceTransformer: "provider[\"registry.terraform.io/hetznercloud/hcloud\"]" references: []
+2024-08-20T11:23:13.458+0200 [TRACE] Completed graph transform *terraform.ReferenceTransformer with new graph:
+  hcloud_primary_ip.primary-ip-v4 - *terraform.NodeValidatableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  hcloud_server.server-primaryIP-network-test - *terraform.NodeValidatableResource
+    hcloud_primary_ip.primary-ip-v4 - *terraform.NodeValidatableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  ------
+2024-08-20T11:23:13.458+0200 [TRACE] Executing graph transform *terraform.AttachDependenciesTransformer
+2024-08-20T11:23:13.458+0200 [TRACE] Completed graph transform *terraform.AttachDependenciesTransformer (no changes)
+2024-08-20T11:23:13.458+0200 [TRACE] Executing graph transform *terraform.attachDataResourceDependsOnTransformer
+2024-08-20T11:23:13.458+0200 [TRACE] Completed graph transform *terraform.attachDataResourceDependsOnTransformer (no changes)
+2024-08-20T11:23:13.458+0200 [TRACE] Executing graph transform *terraform.DestroyEdgeTransformer
+2024-08-20T11:23:13.458+0200 [TRACE] Completed graph transform *terraform.DestroyEdgeTransformer (no changes)
+2024-08-20T11:23:13.458+0200 [TRACE] Executing graph transform *terraform.pruneUnusedNodesTransformer
+2024-08-20T11:23:13.458+0200 [TRACE] Completed graph transform *terraform.pruneUnusedNodesTransformer (no changes)
+2024-08-20T11:23:13.458+0200 [TRACE] Executing graph transform *terraform.TargetsTransformer
+2024-08-20T11:23:13.458+0200 [TRACE] Completed graph transform *terraform.TargetsTransformer (no changes)
+2024-08-20T11:23:13.458+0200 [TRACE] Executing graph transform *terraform.ForcedCBDTransformer
+2024-08-20T11:23:13.458+0200 [TRACE] Completed graph transform *terraform.ForcedCBDTransformer (no changes)
+2024-08-20T11:23:13.458+0200 [TRACE] Executing graph transform *terraform.CloseProviderTransformer
+2024-08-20T11:23:13.458+0200 [TRACE] Completed graph transform *terraform.CloseProviderTransformer with new graph:
+  hcloud_primary_ip.primary-ip-v4 - *terraform.NodeValidatableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  hcloud_server.server-primaryIP-network-test - *terraform.NodeValidatableResource
+    hcloud_primary_ip.primary-ip-v4 - *terraform.NodeValidatableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  provider["registry.terraform.io/hetznercloud/hcloud"] (close) - *terraform.graphNodeCloseProvider
+    hcloud_primary_ip.primary-ip-v4 - *terraform.NodeValidatableResource
+    hcloud_server.server-primaryIP-network-test - *terraform.NodeValidatableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  ------
+2024-08-20T11:23:13.458+0200 [TRACE] Executing graph transform *terraform.CloseRootModuleTransformer
+2024-08-20T11:23:13.458+0200 [TRACE] Completed graph transform *terraform.CloseRootModuleTransformer with new graph:
+  hcloud_primary_ip.primary-ip-v4 - *terraform.NodeValidatableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  hcloud_server.server-primaryIP-network-test - *terraform.NodeValidatableResource
+    hcloud_primary_ip.primary-ip-v4 - *terraform.NodeValidatableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  provider["registry.terraform.io/hetznercloud/hcloud"] (close) - *terraform.graphNodeCloseProvider
+    hcloud_primary_ip.primary-ip-v4 - *terraform.NodeValidatableResource
+    hcloud_server.server-primaryIP-network-test - *terraform.NodeValidatableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  root - *terraform.nodeCloseModule
+    provider["registry.terraform.io/hetznercloud/hcloud"] (close) - *terraform.graphNodeCloseProvider
+  ------
+2024-08-20T11:23:13.458+0200 [TRACE] Executing graph transform *terraform.TransitiveReductionTransformer
+2024-08-20T11:23:13.458+0200 [TRACE] Completed graph transform *terraform.TransitiveReductionTransformer with new graph:
+  hcloud_primary_ip.primary-ip-v4 - *terraform.NodeValidatableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  hcloud_server.server-primaryIP-network-test - *terraform.NodeValidatableResource
+    hcloud_primary_ip.primary-ip-v4 - *terraform.NodeValidatableResource
+  provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  provider["registry.terraform.io/hetznercloud/hcloud"] (close) - *terraform.graphNodeCloseProvider
+    hcloud_server.server-primaryIP-network-test - *terraform.NodeValidatableResource
+  root - *terraform.nodeCloseModule
+    provider["registry.terraform.io/hetznercloud/hcloud"] (close) - *terraform.graphNodeCloseProvider
+  ------
+2024-08-20T11:23:13.458+0200 [DEBUG] Starting graph walk: walkValidate
+2024-08-20T11:23:13.459+0200 [TRACE] vertex "provider[\"registry.terraform.io/hetznercloud/hcloud\"]": starting visit (*terraform.NodeApplyableProvider)
+2024-08-20T11:23:13.459+0200 [TRACE] vertex "provider[\"registry.terraform.io/hetznercloud/hcloud\"]": belongs to
+2024-08-20T11:23:13.459+0200 [DEBUG] created provider logger: level=info
+2024-08-20T11:23:13.459+0200 [INFO]  provider: configuring client automatic mTLS
+2024-08-20T11:23:13.466+0200 [INFO]  provider.terraform-provider-hcloud_v1.46.1: configuring server automatic mTLS: timestamp="2024-08-20T11:23:13.466+0200"
+2024-08-20T11:23:13.477+0200 [TRACE] BuiltinEvalContext: Initialized "provider[\"registry.terraform.io/hetznercloud/hcloud\"]" provider for provider["registry.terraform.io/hetznercloud/hcloud"]
+2024-08-20T11:23:13.477+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.477+0200 [TRACE] NodeApplyableProvider: validating configuration for provider["registry.terraform.io/hetznercloud/hcloud"]
+2024-08-20T11:23:13.477+0200 [TRACE] buildProviderConfig for provider["registry.terraform.io/hetznercloud/hcloud"]: using explicit config only
+2024-08-20T11:23:13.477+0200 [TRACE] vertex "provider[\"registry.terraform.io/hetznercloud/hcloud\"]": visit complete
+2024-08-20T11:23:13.477+0200 [TRACE] vertex "hcloud_primary_ip.primary-ip-v4": starting visit (*terraform.NodeValidatableResource)
+2024-08-20T11:23:13.477+0200 [TRACE] vertex "hcloud_primary_ip.primary-ip-v4": belongs to
+2024-08-20T11:23:13.477+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.477+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.478+0200 [TRACE] GRPCProvider.v6: ValidateResourceConfig
+2024-08-20T11:23:13.478+0200 [TRACE] GRPCProvider.v6: returning cached schema: EXTRA_VALUE_AT_END=registry.terraform.io/hetznercloud/hcloud
+2024-08-20T11:23:13.479+0200 [TRACE] vertex "hcloud_primary_ip.primary-ip-v4": visit complete
+2024-08-20T11:23:13.479+0200 [TRACE] vertex "hcloud_server.server-primaryIP-network-test": starting visit (*terraform.NodeValidatableResource)
+2024-08-20T11:23:13.479+0200 [TRACE] vertex "hcloud_server.server-primaryIP-network-test": belongs to
+2024-08-20T11:23:13.479+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.479+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.479+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.479+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.479+0200 [TRACE] GRPCProvider.v6: ValidateResourceConfig
+2024-08-20T11:23:13.479+0200 [TRACE] GRPCProvider.v6: returning cached schema: EXTRA_VALUE_AT_END=registry.terraform.io/hetznercloud/hcloud
+2024-08-20T11:23:13.479+0200 [TRACE] vertex "hcloud_server.server-primaryIP-network-test": visit complete
+2024-08-20T11:23:13.479+0200 [TRACE] vertex "provider[\"registry.terraform.io/hetznercloud/hcloud\"] (close)": starting visit (*terraform.graphNodeCloseProvider)
+2024-08-20T11:23:13.479+0200 [TRACE] vertex "provider[\"registry.terraform.io/hetznercloud/hcloud\"] (close)": does not belong to any module instance
+2024-08-20T11:23:13.479+0200 [TRACE] GRPCProvider.v6: Close
+2024-08-20T11:23:13.480+0200 [INFO]  provider: plugin process exited: plugin=.terraform/providers/registry.terraform.io/hetznercloud/hcloud/1.46.1/linux_amd64/terraform-provider-hcloud_v1.46.1 id=73478
+2024-08-20T11:23:13.480+0200 [TRACE] vertex "provider[\"registry.terraform.io/hetznercloud/hcloud\"] (close)": visit complete
+2024-08-20T11:23:13.480+0200 [TRACE] vertex "root": starting visit (*terraform.nodeCloseModule)
+2024-08-20T11:23:13.480+0200 [TRACE] vertex "root": does not belong to any module instance
+2024-08-20T11:23:13.480+0200 [TRACE] vertex "root": visit complete
+2024-08-20T11:23:13.480+0200 [TRACE] LoadSchemas: retrieving schema for provider type "registry.terraform.io/hetznercloud/hcloud"
+2024-08-20T11:23:13.480+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.480+0200 [INFO]  backend/local: apply calling Plan
+2024-08-20T11:23:13.480+0200 [DEBUG] Building and walking plan graph for NormalMode
+2024-08-20T11:23:13.480+0200 [TRACE] building graph for walkPlan
+2024-08-20T11:23:13.480+0200 [TRACE] Executing graph transform *terraform.ConfigTransformer
+2024-08-20T11:23:13.480+0200 [TRACE] ConfigTransformer: Starting for path:
+2024-08-20T11:23:13.480+0200 [TRACE] Completed graph transform *terraform.ConfigTransformer with new graph:
+  hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandPlannableResource
+  hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandPlannableResource
+  ------
+2024-08-20T11:23:13.480+0200 [TRACE] Executing graph transform *terraform.RootVariableTransformer
+2024-08-20T11:23:13.480+0200 [TRACE] Completed graph transform *terraform.RootVariableTransformer (no changes)
+2024-08-20T11:23:13.480+0200 [TRACE] Executing graph transform *terraform.ModuleVariableTransformer
+2024-08-20T11:23:13.480+0200 [TRACE] Completed graph transform *terraform.ModuleVariableTransformer (no changes)
+2024-08-20T11:23:13.480+0200 [TRACE] Executing graph transform *terraform.variableValidationTransformer
+2024-08-20T11:23:13.480+0200 [TRACE] variableValidationTransformer: adding validation nodes for any existing variable evaluation nodes
+2024-08-20T11:23:13.480+0200 [TRACE] Completed graph transform *terraform.variableValidationTransformer (no changes)
+2024-08-20T11:23:13.480+0200 [TRACE] Executing graph transform *terraform.LocalTransformer
+2024-08-20T11:23:13.480+0200 [TRACE] Completed graph transform *terraform.LocalTransformer (no changes)
+2024-08-20T11:23:13.480+0200 [TRACE] Executing graph transform *terraform.OutputTransformer
+2024-08-20T11:23:13.480+0200 [TRACE] Completed graph transform *terraform.OutputTransformer (no changes)
+2024-08-20T11:23:13.480+0200 [TRACE] Executing graph transform *terraform.checkTransformer
+2024-08-20T11:23:13.480+0200 [TRACE] Completed graph transform *terraform.checkTransformer (no changes)
+2024-08-20T11:23:13.480+0200 [TRACE] Executing graph transform *terraform.OrphanResourceInstanceTransformer
+2024-08-20T11:23:13.480+0200 [TRACE] Completed graph transform *terraform.OrphanResourceInstanceTransformer (no changes)
+2024-08-20T11:23:13.480+0200 [TRACE] Executing graph transform *terraform.StateTransformer
+2024-08-20T11:23:13.480+0200 [TRACE] StateTransformer: creating nodes for deposed instance objects only
+2024-08-20T11:23:13.480+0200 [TRACE] Completed graph transform *terraform.StateTransformer (no changes)
+2024-08-20T11:23:13.481+0200 [TRACE] Executing graph transform *terraform.AttachStateTransformer
+2024-08-20T11:23:13.481+0200 [TRACE] Completed graph transform *terraform.AttachStateTransformer (no changes)
+2024-08-20T11:23:13.481+0200 [TRACE] Executing graph transform *terraform.OrphanOutputTransformer
+2024-08-20T11:23:13.481+0200 [TRACE] Completed graph transform *terraform.OrphanOutputTransformer (no changes)
+2024-08-20T11:23:13.481+0200 [TRACE] Executing graph transform *terraform.AttachResourceConfigTransformer
+2024-08-20T11:23:13.481+0200 [TRACE] AttachResourceConfigTransformer: attaching to "hcloud_primary_ip.primary-ip-v4 (expand)" (*terraform.nodeExpandPlannableResource) config from hcl.Range{Filename:"step.tf", Start:hcl.Pos{Line:1, Column:1, Byte:0}, End:hcl.Pos{Line:1, Column:45, Byte:44}}
+2024-08-20T11:23:13.481+0200 [TRACE] AttachResourceConfigTransformer: attaching provider meta configs to hcloud_primary_ip.primary-ip-v4 (expand)
+2024-08-20T11:23:13.481+0200 [TRACE] AttachResourceConfigTransformer: attaching to "hcloud_server.server-primaryIP-network-test (expand)" (*terraform.nodeExpandPlannableResource) config from hcl.Range{Filename:"step.tf", Start:hcl.Pos{Line:9, Column:1, Byte:214}, End:hcl.Pos{Line:9, Column:57, Byte:270}}
+2024-08-20T11:23:13.481+0200 [TRACE] AttachResourceConfigTransformer: attaching provider meta configs to hcloud_server.server-primaryIP-network-test (expand)
+2024-08-20T11:23:13.481+0200 [TRACE] Completed graph transform *terraform.AttachResourceConfigTransformer (no changes)
+2024-08-20T11:23:13.481+0200 [TRACE] Executing graph transform *terraform.graphTransformerMulti
+2024-08-20T11:23:13.481+0200 [TRACE] (graphTransformerMulti) Executing graph transform *terraform.externalProviderTransformer
+2024-08-20T11:23:13.481+0200 [TRACE] (graphTransformerMulti) Completed graph transform *terraform.externalProviderTransformer with new graph:
+  hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandPlannableResource
+  hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandPlannableResource
+  ------
+2024-08-20T11:23:13.481+0200 [TRACE] (graphTransformerMulti) Executing graph transform *terraform.ProviderConfigTransformer
+2024-08-20T11:23:13.481+0200 [TRACE] ProviderConfigTransformer: attaching to "provider[\"registry.terraform.io/hetznercloud/hcloud\"]" provider configuration from main.tf:10,1-18
+2024-08-20T11:23:13.481+0200 [TRACE] (graphTransformerMulti) Completed graph transform *terraform.ProviderConfigTransformer with new graph:
+  hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandPlannableResource
+  hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandPlannableResource
+  provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  ------
+2024-08-20T11:23:13.481+0200 [TRACE] (graphTransformerMulti) Executing graph transform *terraform.MissingProviderTransformer
+2024-08-20T11:23:13.481+0200 [TRACE] (graphTransformerMulti) Completed graph transform *terraform.MissingProviderTransformer (no changes)
+2024-08-20T11:23:13.481+0200 [TRACE] (graphTransformerMulti) Executing graph transform *terraform.ProviderTransformer
+2024-08-20T11:23:13.481+0200 [TRACE] ProviderTransformer: exact match for provider["registry.terraform.io/hetznercloud/hcloud"] serving hcloud_server.server-primaryIP-network-test (expand)
+2024-08-20T11:23:13.481+0200 [DEBUG] ProviderTransformer: "hcloud_server.server-primaryIP-network-test (expand)" (*terraform.nodeExpandPlannableResource) needs provider["registry.terraform.io/hetznercloud/hcloud"]
+2024-08-20T11:23:13.481+0200 [TRACE] ProviderTransformer: exact match for provider["registry.terraform.io/hetznercloud/hcloud"] serving hcloud_primary_ip.primary-ip-v4 (expand)
+2024-08-20T11:23:13.481+0200 [DEBUG] ProviderTransformer: "hcloud_primary_ip.primary-ip-v4 (expand)" (*terraform.nodeExpandPlannableResource) needs provider["registry.terraform.io/hetznercloud/hcloud"]
+2024-08-20T11:23:13.481+0200 [TRACE] (graphTransformerMulti) Completed graph transform *terraform.ProviderTransformer with new graph:
+  hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandPlannableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandPlannableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  ------
+2024-08-20T11:23:13.481+0200 [TRACE] (graphTransformerMulti) Executing graph transform *terraform.PruneProviderTransformer
+2024-08-20T11:23:13.481+0200 [TRACE] (graphTransformerMulti) Completed graph transform *terraform.PruneProviderTransformer (no changes)
+2024-08-20T11:23:13.481+0200 [TRACE] Completed graph transform *terraform.graphTransformerMulti with new graph:
+  hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandPlannableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandPlannableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  ------
+2024-08-20T11:23:13.481+0200 [TRACE] Executing graph transform *terraform.RemovedModuleTransformer
+2024-08-20T11:23:13.481+0200 [TRACE] Completed graph transform *terraform.RemovedModuleTransformer (no changes)
+2024-08-20T11:23:13.481+0200 [TRACE] Executing graph transform *terraform.AttachSchemaTransformer
+2024-08-20T11:23:13.481+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.481+0200 [TRACE] AttachSchemaTransformer: attaching resource schema to hcloud_primary_ip.primary-ip-v4 (expand)
+2024-08-20T11:23:13.481+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.481+0200 [TRACE] AttachSchemaTransformer: attaching resource schema to hcloud_server.server-primaryIP-network-test (expand)
+2024-08-20T11:23:13.481+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.481+0200 [TRACE] AttachSchemaTransformer: attaching provider config schema to provider["registry.terraform.io/hetznercloud/hcloud"]
+2024-08-20T11:23:13.481+0200 [TRACE] Completed graph transform *terraform.AttachSchemaTransformer (no changes)
+2024-08-20T11:23:13.481+0200 [TRACE] Executing graph transform *terraform.ModuleExpansionTransformer
+2024-08-20T11:23:13.481+0200 [TRACE] Completed graph transform *terraform.ModuleExpansionTransformer (no changes)
+2024-08-20T11:23:13.481+0200 [TRACE] Executing graph transform *terraform.ExternalReferenceTransformer
+2024-08-20T11:23:13.481+0200 [TRACE] Completed graph transform *terraform.ExternalReferenceTransformer (no changes)
+2024-08-20T11:23:13.481+0200 [TRACE] Executing graph transform *terraform.ReferenceTransformer
+2024-08-20T11:23:13.481+0200 [DEBUG] ReferenceTransformer: "hcloud_primary_ip.primary-ip-v4 (expand)" references: []
+2024-08-20T11:23:13.481+0200 [DEBUG] ReferenceTransformer: "hcloud_server.server-primaryIP-network-test (expand)" references: [hcloud_primary_ip.primary-ip-v4 (expand)]
+2024-08-20T11:23:13.481+0200 [DEBUG] ReferenceTransformer: "provider[\"registry.terraform.io/hetznercloud/hcloud\"]" references: []
+2024-08-20T11:23:13.481+0200 [TRACE] Completed graph transform *terraform.ReferenceTransformer with new graph:
+  hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandPlannableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandPlannableResource
+    hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandPlannableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  ------
+2024-08-20T11:23:13.481+0200 [TRACE] Executing graph transform *terraform.AttachDependenciesTransformer
+2024-08-20T11:23:13.481+0200 [TRACE] AttachDependenciesTransformer: hcloud_primary_ip.primary-ip-v4 depends on []
+2024-08-20T11:23:13.481+0200 [TRACE] AttachDependenciesTransformer: hcloud_server.server-primaryIP-network-test depends on [hcloud_primary_ip.primary-ip-v4]
+2024-08-20T11:23:13.481+0200 [TRACE] Completed graph transform *terraform.AttachDependenciesTransformer (no changes)
+2024-08-20T11:23:13.481+0200 [TRACE] Executing graph transform *terraform.attachDataResourceDependsOnTransformer
+2024-08-20T11:23:13.481+0200 [TRACE] Completed graph transform *terraform.attachDataResourceDependsOnTransformer (no changes)
+2024-08-20T11:23:13.481+0200 [TRACE] Executing graph transform *terraform.DestroyEdgeTransformer
+2024-08-20T11:23:13.481+0200 [TRACE] Completed graph transform *terraform.DestroyEdgeTransformer (no changes)
+2024-08-20T11:23:13.481+0200 [TRACE] Executing graph transform *terraform.pruneUnusedNodesTransformer
+2024-08-20T11:23:13.481+0200 [TRACE] Completed graph transform *terraform.pruneUnusedNodesTransformer (no changes)
+2024-08-20T11:23:13.481+0200 [TRACE] Executing graph transform *terraform.TargetsTransformer
+2024-08-20T11:23:13.481+0200 [TRACE] Completed graph transform *terraform.TargetsTransformer (no changes)
+2024-08-20T11:23:13.481+0200 [TRACE] Executing graph transform *terraform.ForcedCBDTransformer
+2024-08-20T11:23:13.481+0200 [TRACE] ForcedCBDTransformer: "hcloud_primary_ip.primary-ip-v4 (expand)" (*terraform.nodeExpandPlannableResource) has no CBD descendent, so skipping
+2024-08-20T11:23:13.481+0200 [TRACE] ForcedCBDTransformer: "hcloud_server.server-primaryIP-network-test (expand)" (*terraform.nodeExpandPlannableResource) has no CBD descendent, so skipping
+2024-08-20T11:23:13.481+0200 [TRACE] Completed graph transform *terraform.ForcedCBDTransformer (no changes)
+2024-08-20T11:23:13.481+0200 [TRACE] Executing graph transform *terraform.CloseProviderTransformer
+2024-08-20T11:23:13.481+0200 [TRACE] Completed graph transform *terraform.CloseProviderTransformer with new graph:
+  hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandPlannableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandPlannableResource
+    hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandPlannableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  provider["registry.terraform.io/hetznercloud/hcloud"] (close) - *terraform.graphNodeCloseProvider
+    hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandPlannableResource
+    hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandPlannableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  ------
+2024-08-20T11:23:13.481+0200 [TRACE] Executing graph transform *terraform.CloseRootModuleTransformer
+2024-08-20T11:23:13.481+0200 [TRACE] Completed graph transform *terraform.CloseRootModuleTransformer with new graph:
+  hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandPlannableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandPlannableResource
+    hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandPlannableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  provider["registry.terraform.io/hetznercloud/hcloud"] (close) - *terraform.graphNodeCloseProvider
+    hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandPlannableResource
+    hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandPlannableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  root - *terraform.nodeCloseModule
+    provider["registry.terraform.io/hetznercloud/hcloud"] (close) - *terraform.graphNodeCloseProvider
+  ------
+2024-08-20T11:23:13.481+0200 [TRACE] Executing graph transform *terraform.TransitiveReductionTransformer
+2024-08-20T11:23:13.481+0200 [TRACE] Completed graph transform *terraform.TransitiveReductionTransformer with new graph:
+  hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandPlannableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandPlannableResource
+    hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandPlannableResource
+  provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  provider["registry.terraform.io/hetznercloud/hcloud"] (close) - *terraform.graphNodeCloseProvider
+    hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandPlannableResource
+  root - *terraform.nodeCloseModule
+    provider["registry.terraform.io/hetznercloud/hcloud"] (close) - *terraform.graphNodeCloseProvider
+  ------
+2024-08-20T11:23:13.481+0200 [DEBUG] Starting graph walk: walkPlan
+2024-08-20T11:23:13.481+0200 [TRACE] vertex "provider[\"registry.terraform.io/hetznercloud/hcloud\"]": starting visit (*terraform.NodeApplyableProvider)
+2024-08-20T11:23:13.481+0200 [TRACE] vertex "provider[\"registry.terraform.io/hetznercloud/hcloud\"]": belongs to
+2024-08-20T11:23:13.481+0200 [DEBUG] created provider logger: level=info
+2024-08-20T11:23:13.481+0200 [INFO]  provider: configuring client automatic mTLS
+2024-08-20T11:23:13.489+0200 [INFO]  provider.terraform-provider-hcloud_v1.46.1: configuring server automatic mTLS: timestamp="2024-08-20T11:23:13.489+0200"
+2024-08-20T11:23:13.500+0200 [TRACE] BuiltinEvalContext: Initialized "provider[\"registry.terraform.io/hetznercloud/hcloud\"]" provider for provider["registry.terraform.io/hetznercloud/hcloud"]
+2024-08-20T11:23:13.500+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.500+0200 [TRACE] NodeApplyableProvider: configuring provider["registry.terraform.io/hetznercloud/hcloud"]
+2024-08-20T11:23:13.500+0200 [TRACE] buildProviderConfig for provider["registry.terraform.io/hetznercloud/hcloud"]: using explicit config only
+2024-08-20T11:23:13.500+0200 [TRACE] GRPCProvider.v6: returning cached schema: EXTRA_VALUE_AT_END=registry.terraform.io/hetznercloud/hcloud
+2024-08-20T11:23:13.500+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.500+0200 [TRACE] GRPCProvider.v6: ValidateProviderConfig
+2024-08-20T11:23:13.500+0200 [TRACE] GRPCProvider.v6: returning cached schema: EXTRA_VALUE_AT_END=registry.terraform.io/hetznercloud/hcloud
+2024-08-20T11:23:13.501+0200 [TRACE] GRPCProvider.v6: ConfigureProvider
+2024-08-20T11:23:13.501+0200 [TRACE] GRPCProvider.v6: returning cached schema: EXTRA_VALUE_AT_END=registry.terraform.io/hetznercloud/hcloud
+2024-08-20T11:23:13.501+0200 [INFO]  provider.terraform-provider-hcloud_v1.46.1: terraform-provider-hcloud info: @caller=github.com/hetznercloud/terraform-provider-hcloud/hcloud/plugin_provider.go:160 @module=hcloud tf_req_id=c9e4cf47-b7b8-0fd4-1e74-326ef1aa3245 tf_rpc=ConfigureProvider commit=bd5246a9890410e2aa6c064d9833b8f5a6d319d2 tf_mux_provider="*proto6server.Server" tf_provider_addr=registry.terraform.io/hetznercloud/hcloud version=1.46.1 timestamp="2024-08-20T11:23:13.501+0200"
+2024-08-20T11:23:13.501+0200 [INFO]  provider.terraform-provider-hcloud_v1.46.1: hcloud-go info: @caller=github.com/hetznercloud/terraform-provider-hcloud/hcloud/plugin_provider.go:161 @module=hcloud tf_mux_provider="*proto6server.Server" tf_provider_addr=registry.terraform.io/hetznercloud/hcloud tf_req_id=c9e4cf47-b7b8-0fd4-1e74-326ef1aa3245 tf_rpc=ConfigureProvider version=1.53.0 timestamp="2024-08-20T11:23:13.501+0200"
+2024-08-20T11:23:13.501+0200 [TRACE] vertex "provider[\"registry.terraform.io/hetznercloud/hcloud\"]": visit complete
+2024-08-20T11:23:13.501+0200 [TRACE] vertex "hcloud_primary_ip.primary-ip-v4 (expand)": starting visit (*terraform.nodeExpandPlannableResource)
+2024-08-20T11:23:13.501+0200 [TRACE] vertex "hcloud_primary_ip.primary-ip-v4 (expand)": does not belong to any module instance
+2024-08-20T11:23:13.501+0200 [TRACE] vertex "hcloud_primary_ip.primary-ip-v4 (expand)": expanding dynamic subgraph
+2024-08-20T11:23:13.501+0200 [TRACE] Executing graph transform *terraform.ResourceCountTransformer
+2024-08-20T11:23:13.501+0200 [TRACE] ResourceCountTransformer: adding hcloud_primary_ip.primary-ip-v4 as *terraform.NodePlannableResourceInstance
+2024-08-20T11:23:13.501+0200 [TRACE] Completed graph transform *terraform.ResourceCountTransformer with new graph:
+  hcloud_primary_ip.primary-ip-v4 - *terraform.NodePlannableResourceInstance
+  ------
+2024-08-20T11:23:13.501+0200 [TRACE] Executing graph transform *terraform.OrphanResourceInstanceCountTransformer
+2024-08-20T11:23:13.501+0200 [TRACE] Completed graph transform *terraform.OrphanResourceInstanceCountTransformer (no changes)
+2024-08-20T11:23:13.501+0200 [TRACE] Executing graph transform *terraform.AttachStateTransformer
+2024-08-20T11:23:13.501+0200 [TRACE] NodeAbstractResourceInstance.AttachResourceState for hcloud_primary_ip.primary-ip-v4
+2024-08-20T11:23:13.501+0200 [TRACE] Completed graph transform *terraform.AttachStateTransformer (no changes)
+2024-08-20T11:23:13.501+0200 [TRACE] Executing graph transform *terraform.TargetsTransformer
+2024-08-20T11:23:13.501+0200 [TRACE] Completed graph transform *terraform.TargetsTransformer (no changes)
+2024-08-20T11:23:13.501+0200 [TRACE] Executing graph transform *terraform.ReferenceTransformer
+2024-08-20T11:23:13.501+0200 [DEBUG] ReferenceTransformer: "hcloud_primary_ip.primary-ip-v4" references: []
+2024-08-20T11:23:13.501+0200 [TRACE] Completed graph transform *terraform.ReferenceTransformer (no changes)
+2024-08-20T11:23:13.501+0200 [TRACE] Executing graph transform *terraform.RootTransformer
+2024-08-20T11:23:13.501+0200 [TRACE] Completed graph transform *terraform.RootTransformer with new graph:
+  hcloud_primary_ip.primary-ip-v4 - *terraform.NodePlannableResourceInstance
+  root - terraform.graphNodeRoot
+    hcloud_primary_ip.primary-ip-v4 - *terraform.NodePlannableResourceInstance
+  ------
+2024-08-20T11:23:13.501+0200 [TRACE] vertex "hcloud_primary_ip.primary-ip-v4 (expand)": entering dynamic subgraph
+2024-08-20T11:23:13.501+0200 [TRACE] vertex "hcloud_primary_ip.primary-ip-v4": starting visit (*terraform.NodePlannableResourceInstance)
+2024-08-20T11:23:13.501+0200 [TRACE] vertex "hcloud_primary_ip.primary-ip-v4": belongs to
+2024-08-20T11:23:13.501+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.501+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.501+0200 [TRACE] readResourceInstanceState: reading state for hcloud_primary_ip.primary-ip-v4
+2024-08-20T11:23:13.501+0200 [TRACE] upgradeResourceState: schema version of hcloud_primary_ip.primary-ip-v4 is still 0; calling provider "hcloud" for any other minor fixups
+2024-08-20T11:23:13.501+0200 [TRACE] GRPCProvider.v6: UpgradeResourceState
+2024-08-20T11:23:13.501+0200 [TRACE] GRPCProvider.v6: returning cached schema: EXTRA_VALUE_AT_END=registry.terraform.io/hetznercloud/hcloud
+2024-08-20T11:23:13.502+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.502+0200 [TRACE] NodeAbstractResouceInstance.writeResourceInstanceState to prevRunState for hcloud_primary_ip.primary-ip-v4
+2024-08-20T11:23:13.502+0200 [TRACE] NodeAbstractResouceInstance.writeResourceInstanceState: writing state object for hcloud_primary_ip.primary-ip-v4
+2024-08-20T11:23:13.502+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.502+0200 [TRACE] NodeAbstractResouceInstance.writeResourceInstanceState to refreshState for hcloud_primary_ip.primary-ip-v4
+2024-08-20T11:23:13.502+0200 [TRACE] NodeAbstractResouceInstance.writeResourceInstanceState: writing state object for hcloud_primary_ip.primary-ip-v4
+2024-08-20T11:23:13.502+0200 [TRACE] NodeAbstractResourceInstance.refresh for hcloud_primary_ip.primary-ip-v4
+2024-08-20T11:23:13.502+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.502+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.502+0200 [TRACE] GRPCProvider.v6: ReadResource
+2024-08-20T11:23:13.502+0200 [TRACE] GRPCProvider.v6: returning cached schema: EXTRA_VALUE_AT_END=registry.terraform.io/hetznercloud/hcloud
+2024-08-20T11:23:13.715+0200 [WARN]  Provider "registry.terraform.io/hetznercloud/hcloud" produced an unexpected new value for hcloud_primary_ip.primary-ip-v4 during refresh.
+      - .labels: was null, but now cty.MapValEmpty(cty.String)
+      - .assignee_id: was cty.NumberIntVal(0), but now cty.NumberIntVal(5.2022869e+07)
+2024-08-20T11:23:13.715+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.715+0200 [TRACE] NodeAbstractResouceInstance.writeResourceInstanceState to refreshState for hcloud_primary_ip.primary-ip-v4
+2024-08-20T11:23:13.715+0200 [TRACE] NodeAbstractResouceInstance.writeResourceInstanceState: writing state object for hcloud_primary_ip.primary-ip-v4
+2024-08-20T11:23:13.716+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.716+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.716+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.716+0200 [TRACE] Re-validating config for "hcloud_primary_ip.primary-ip-v4"
+2024-08-20T11:23:13.716+0200 [TRACE] GRPCProvider.v6: ValidateResourceConfig
+2024-08-20T11:23:13.716+0200 [TRACE] GRPCProvider.v6: returning cached schema: EXTRA_VALUE_AT_END=registry.terraform.io/hetznercloud/hcloud
+2024-08-20T11:23:13.717+0200 [TRACE] GRPCProvider.v6: PlanResourceChange
+2024-08-20T11:23:13.717+0200 [TRACE] GRPCProvider.v6: returning cached schema: EXTRA_VALUE_AT_END=registry.terraform.io/hetznercloud/hcloud
+2024-08-20T11:23:13.718+0200 [WARN]  Provider "registry.terraform.io/hetznercloud/hcloud" produced an invalid plan for hcloud_primary_ip.primary-ip-v4, but we are tolerating it because it is using the legacy plugin SDK.
+    The following problems may be the cause of any confusing errors from downstream operations:
+      - .delete_protection: planned value cty.False for a non-computed attribute
+      - .labels: planned value cty.MapValEmpty(cty.String) for a non-computed attribute
+2024-08-20T11:23:13.719+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.719+0200 [TRACE] writeChange: recorded NoOp change for hcloud_primary_ip.primary-ip-v4
+2024-08-20T11:23:13.719+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.719+0200 [TRACE] NodeAbstractResouceInstance.writeResourceInstanceState to workingState for hcloud_primary_ip.primary-ip-v4
+2024-08-20T11:23:13.719+0200 [TRACE] NodeAbstractResouceInstance.writeResourceInstanceState: writing state object for hcloud_primary_ip.primary-ip-v4
+2024-08-20T11:23:13.719+0200 [TRACE] vertex "hcloud_primary_ip.primary-ip-v4": visit complete
+2024-08-20T11:23:13.719+0200 [TRACE] vertex "root": starting visit (terraform.graphNodeRoot)
+2024-08-20T11:23:13.719+0200 [TRACE] vertex "root": does not belong to any module instance
+2024-08-20T11:23:13.719+0200 [TRACE] vertex "root": visit complete
+2024-08-20T11:23:13.719+0200 [TRACE] vertex "hcloud_primary_ip.primary-ip-v4 (expand)": dynamic subgraph completed successfully
+2024-08-20T11:23:13.719+0200 [TRACE] vertex "hcloud_primary_ip.primary-ip-v4 (expand)": visit complete
+2024-08-20T11:23:13.719+0200 [TRACE] vertex "hcloud_server.server-primaryIP-network-test (expand)": starting visit (*terraform.nodeExpandPlannableResource)
+2024-08-20T11:23:13.719+0200 [TRACE] vertex "hcloud_server.server-primaryIP-network-test (expand)": does not belong to any module instance
+2024-08-20T11:23:13.719+0200 [TRACE] vertex "hcloud_server.server-primaryIP-network-test (expand)": expanding dynamic subgraph
+2024-08-20T11:23:13.719+0200 [TRACE] Executing graph transform *terraform.ResourceCountTransformer
+2024-08-20T11:23:13.719+0200 [TRACE] ResourceCountTransformer: adding hcloud_server.server-primaryIP-network-test as *terraform.NodePlannableResourceInstance
+2024-08-20T11:23:13.719+0200 [TRACE] Completed graph transform *terraform.ResourceCountTransformer with new graph:
+  hcloud_server.server-primaryIP-network-test - *terraform.NodePlannableResourceInstance
+  ------
+2024-08-20T11:23:13.719+0200 [TRACE] Executing graph transform *terraform.OrphanResourceInstanceCountTransformer
+2024-08-20T11:23:13.719+0200 [TRACE] Completed graph transform *terraform.OrphanResourceInstanceCountTransformer (no changes)
+2024-08-20T11:23:13.719+0200 [TRACE] Executing graph transform *terraform.AttachStateTransformer
+2024-08-20T11:23:13.719+0200 [TRACE] NodeAbstractResourceInstance.AttachResourceState for hcloud_server.server-primaryIP-network-test
+2024-08-20T11:23:13.719+0200 [TRACE] Completed graph transform *terraform.AttachStateTransformer (no changes)
+2024-08-20T11:23:13.719+0200 [TRACE] Executing graph transform *terraform.TargetsTransformer
+2024-08-20T11:23:13.719+0200 [TRACE] Completed graph transform *terraform.TargetsTransformer (no changes)
+2024-08-20T11:23:13.719+0200 [TRACE] Executing graph transform *terraform.ReferenceTransformer
+2024-08-20T11:23:13.719+0200 [DEBUG] ReferenceTransformer: "hcloud_server.server-primaryIP-network-test" references: []
+2024-08-20T11:23:13.719+0200 [TRACE] Completed graph transform *terraform.ReferenceTransformer (no changes)
+2024-08-20T11:23:13.719+0200 [TRACE] Executing graph transform *terraform.RootTransformer
+2024-08-20T11:23:13.719+0200 [TRACE] Completed graph transform *terraform.RootTransformer with new graph:
+  hcloud_server.server-primaryIP-network-test - *terraform.NodePlannableResourceInstance
+  root - terraform.graphNodeRoot
+    hcloud_server.server-primaryIP-network-test - *terraform.NodePlannableResourceInstance
+  ------
+2024-08-20T11:23:13.719+0200 [TRACE] vertex "hcloud_server.server-primaryIP-network-test (expand)": entering dynamic subgraph
+2024-08-20T11:23:13.719+0200 [TRACE] vertex "hcloud_server.server-primaryIP-network-test": starting visit (*terraform.NodePlannableResourceInstance)
+2024-08-20T11:23:13.719+0200 [TRACE] vertex "hcloud_server.server-primaryIP-network-test": belongs to
+2024-08-20T11:23:13.719+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.719+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.720+0200 [TRACE] readResourceInstanceState: reading state for hcloud_server.server-primaryIP-network-test
+2024-08-20T11:23:13.720+0200 [TRACE] upgradeResourceState: schema version of hcloud_server.server-primaryIP-network-test is still 0; calling provider "hcloud" for any other minor fixups
+2024-08-20T11:23:13.720+0200 [TRACE] GRPCProvider.v6: UpgradeResourceState
+2024-08-20T11:23:13.720+0200 [TRACE] GRPCProvider.v6: returning cached schema: EXTRA_VALUE_AT_END=registry.terraform.io/hetznercloud/hcloud
+2024-08-20T11:23:13.722+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.722+0200 [TRACE] NodeAbstractResouceInstance.writeResourceInstanceState to prevRunState for hcloud_server.server-primaryIP-network-test
+2024-08-20T11:23:13.722+0200 [TRACE] NodeAbstractResouceInstance.writeResourceInstanceState: writing state object for hcloud_server.server-primaryIP-network-test
+2024-08-20T11:23:13.722+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.722+0200 [TRACE] NodeAbstractResouceInstance.writeResourceInstanceState to refreshState for hcloud_server.server-primaryIP-network-test
+2024-08-20T11:23:13.722+0200 [TRACE] NodeAbstractResouceInstance.writeResourceInstanceState: writing state object for hcloud_server.server-primaryIP-network-test
+2024-08-20T11:23:13.722+0200 [TRACE] NodeAbstractResourceInstance.refresh for hcloud_server.server-primaryIP-network-test
+2024-08-20T11:23:13.722+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.722+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.723+0200 [TRACE] GRPCProvider.v6: ReadResource
+2024-08-20T11:23:13.723+0200 [TRACE] GRPCProvider.v6: returning cached schema: EXTRA_VALUE_AT_END=registry.terraform.io/hetznercloud/hcloud
+2024-08-20T11:23:13.919+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.919+0200 [TRACE] NodeAbstractResouceInstance.writeResourceInstanceState to refreshState for hcloud_server.server-primaryIP-network-test
+2024-08-20T11:23:13.919+0200 [TRACE] NodeAbstractResouceInstance.writeResourceInstanceState: writing state object for hcloud_server.server-primaryIP-network-test
+2024-08-20T11:23:13.919+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.919+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.919+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.919+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.919+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.919+0200 [TRACE] Re-validating config for "hcloud_server.server-primaryIP-network-test"
+2024-08-20T11:23:13.919+0200 [TRACE] GRPCProvider.v6: ValidateResourceConfig
+2024-08-20T11:23:13.919+0200 [TRACE] GRPCProvider.v6: returning cached schema: EXTRA_VALUE_AT_END=registry.terraform.io/hetznercloud/hcloud
+2024-08-20T11:23:13.921+0200 [TRACE] GRPCProvider.v6: PlanResourceChange
+2024-08-20T11:23:13.921+0200 [TRACE] GRPCProvider.v6: returning cached schema: EXTRA_VALUE_AT_END=registry.terraform.io/hetznercloud/hcloud
+2024-08-20T11:23:13.926+0200 [WARN]  Provider "registry.terraform.io/hetznercloud/hcloud" produced an invalid plan for hcloud_server.server-primaryIP-network-test, but we are tolerating it because it is using the legacy plugin SDK.
+    The following problems may be the cause of any confusing errors from downstream operations:
+      - .labels: planned value cty.MapValEmpty(cty.String) for a non-computed attribute
+      - .rebuild_protection: planned value cty.False for a non-computed attribute
+      - .delete_protection: planned value cty.False for a non-computed attribute
+      - .ignore_remote_firewall_ids: planned value cty.False for a non-computed attribute
+      - .keep_disk: planned value cty.False for a non-computed attribute
+      - .placement_group_id: planned value cty.NumberIntVal(0) for a non-computed attribute
+      - .allow_deprecated_images: planned value cty.False for a non-computed attribute
+      - .backups: planned value cty.False for a non-computed attribute
+      - .shutdown_before_deletion: planned value cty.False for a non-computed attribute
+2024-08-20T11:23:13.926+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.926+0200 [TRACE] writeChange: recorded Update change for hcloud_server.server-primaryIP-network-test
+2024-08-20T11:23:13.926+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.926+0200 [TRACE] NodeAbstractResouceInstance.writeResourceInstanceState to workingState for hcloud_server.server-primaryIP-network-test
+2024-08-20T11:23:13.926+0200 [TRACE] NodeAbstractResouceInstance.writeResourceInstanceState: writing state object for hcloud_server.server-primaryIP-network-test
+2024-08-20T11:23:13.926+0200 [TRACE] vertex "hcloud_server.server-primaryIP-network-test": visit complete
+2024-08-20T11:23:13.927+0200 [TRACE] vertex "root": starting visit (terraform.graphNodeRoot)
+2024-08-20T11:23:13.927+0200 [TRACE] vertex "root": does not belong to any module instance
+2024-08-20T11:23:13.927+0200 [TRACE] vertex "root": visit complete
+2024-08-20T11:23:13.927+0200 [TRACE] vertex "hcloud_server.server-primaryIP-network-test (expand)": dynamic subgraph completed successfully
+2024-08-20T11:23:13.927+0200 [TRACE] vertex "hcloud_server.server-primaryIP-network-test (expand)": visit complete
+2024-08-20T11:23:13.927+0200 [TRACE] vertex "provider[\"registry.terraform.io/hetznercloud/hcloud\"] (close)": starting visit (*terraform.graphNodeCloseProvider)
+2024-08-20T11:23:13.927+0200 [TRACE] vertex "provider[\"registry.terraform.io/hetznercloud/hcloud\"] (close)": does not belong to any module instance
+2024-08-20T11:23:13.927+0200 [TRACE] GRPCProvider.v6: Close
+2024-08-20T11:23:13.929+0200 [INFO]  provider: plugin process exited: plugin=.terraform/providers/registry.terraform.io/hetznercloud/hcloud/1.46.1/linux_amd64/terraform-provider-hcloud_v1.46.1 id=73491
+2024-08-20T11:23:13.929+0200 [TRACE] vertex "provider[\"registry.terraform.io/hetznercloud/hcloud\"] (close)": visit complete
+2024-08-20T11:23:13.929+0200 [TRACE] vertex "root": starting visit (*terraform.nodeCloseModule)
+2024-08-20T11:23:13.929+0200 [TRACE] vertex "root": does not belong to any module instance
+2024-08-20T11:23:13.929+0200 [TRACE] vertex "root": visit complete
+2024-08-20T11:23:13.929+0200 [TRACE] LoadSchemas: retrieving schema for provider type "registry.terraform.io/hetznercloud/hcloud"
+2024-08-20T11:23:13.929+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.929+0200 [TRACE] LoadSchemas: retrieving schema for provider type "registry.terraform.io/hetznercloud/hcloud"
+2024-08-20T11:23:13.929+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.929+0200 [TRACE] Plan is complete
+2024-08-20T11:23:13.930+0200 [TRACE] Plan is applyable
+2024-08-20T11:23:13.930+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.930+0200 [TRACE] LoadSchemas: retrieving schema for provider type "registry.terraform.io/hetznercloud/hcloud"
+2024-08-20T11:23:13.930+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.930+0200 [DEBUG] building apply graph to check for errors
+2024-08-20T11:23:13.930+0200 [TRACE] Executing graph transform *terraform.ConfigTransformer
+2024-08-20T11:23:13.930+0200 [TRACE] ConfigTransformer: Starting for path:
+2024-08-20T11:23:13.930+0200 [TRACE] Completed graph transform *terraform.ConfigTransformer with new graph:
+  hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandApplyableResource
+  hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+  ------
+2024-08-20T11:23:13.930+0200 [TRACE] Executing graph transform *terraform.RootVariableTransformer
+2024-08-20T11:23:13.930+0200 [TRACE] Completed graph transform *terraform.RootVariableTransformer (no changes)
+2024-08-20T11:23:13.930+0200 [TRACE] Executing graph transform *terraform.ModuleVariableTransformer
+2024-08-20T11:23:13.930+0200 [TRACE] Completed graph transform *terraform.ModuleVariableTransformer (no changes)
+2024-08-20T11:23:13.930+0200 [TRACE] Executing graph transform *terraform.variableValidationTransformer
+2024-08-20T11:23:13.930+0200 [TRACE] variableValidationTransformer: adding validation nodes for any existing variable evaluation nodes
+2024-08-20T11:23:13.930+0200 [TRACE] Completed graph transform *terraform.variableValidationTransformer (no changes)
+2024-08-20T11:23:13.930+0200 [TRACE] Executing graph transform *terraform.LocalTransformer
+2024-08-20T11:23:13.930+0200 [TRACE] Completed graph transform *terraform.LocalTransformer (no changes)
+2024-08-20T11:23:13.930+0200 [TRACE] Executing graph transform *terraform.OutputTransformer
+2024-08-20T11:23:13.930+0200 [TRACE] Completed graph transform *terraform.OutputTransformer (no changes)
+2024-08-20T11:23:13.930+0200 [TRACE] Executing graph transform *terraform.DiffTransformer
+2024-08-20T11:23:13.930+0200 [TRACE] DiffTransformer starting
+2024-08-20T11:23:13.930+0200 [TRACE] DiffTransformer: found NoOp change for hcloud_primary_ip.primary-ip-v4
+2024-08-20T11:23:13.930+0200 [TRACE] DiffTransformer: found Update change for hcloud_server.server-primaryIP-network-test
+2024-08-20T11:23:13.930+0200 [TRACE] DiffTransformer: hcloud_server.server-primaryIP-network-test will be represented by hcloud_server.server-primaryIP-network-test
+2024-08-20T11:23:13.930+0200 [TRACE] DiffTransformer complete
+2024-08-20T11:23:13.930+0200 [TRACE] Completed graph transform *terraform.DiffTransformer with new graph:
+  hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandApplyableResource
+  hcloud_server.server-primaryIP-network-test - *terraform.NodeApplyableResourceInstance
+    hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+  hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+  ------
+2024-08-20T11:23:13.930+0200 [TRACE] Executing graph transform *terraform.DeferredTransformer
+2024-08-20T11:23:13.930+0200 [TRACE] Completed graph transform *terraform.DeferredTransformer (no changes)
+2024-08-20T11:23:13.930+0200 [TRACE] Executing graph transform *terraform.checkTransformer
+2024-08-20T11:23:13.930+0200 [TRACE] Completed graph transform *terraform.checkTransformer (no changes)
+2024-08-20T11:23:13.930+0200 [TRACE] Executing graph transform *terraform.AttachStateTransformer
+2024-08-20T11:23:13.930+0200 [TRACE] NodeAbstractResourceInstance.AttachResourceState for hcloud_server.server-primaryIP-network-test
+2024-08-20T11:23:13.930+0200 [TRACE] Completed graph transform *terraform.AttachStateTransformer (no changes)
+2024-08-20T11:23:13.930+0200 [TRACE] Executing graph transform *terraform.OrphanOutputTransformer
+2024-08-20T11:23:13.930+0200 [TRACE] Completed graph transform *terraform.OrphanOutputTransformer (no changes)
+2024-08-20T11:23:13.930+0200 [TRACE] Executing graph transform *terraform.AttachResourceConfigTransformer
+2024-08-20T11:23:13.930+0200 [TRACE] AttachResourceConfigTransformer: attaching to "hcloud_server.server-primaryIP-network-test (expand)" (*terraform.nodeExpandApplyableResource) config from hcl.Range{Filename:"step.tf", Start:hcl.Pos{Line:9, Column:1, Byte:214}, End:hcl.Pos{Line:9, Column:57, Byte:270}}
+2024-08-20T11:23:13.930+0200 [TRACE] AttachResourceConfigTransformer: attaching provider meta configs to hcloud_server.server-primaryIP-network-test (expand)
+2024-08-20T11:23:13.930+0200 [TRACE] AttachResourceConfigTransformer: attaching to "hcloud_primary_ip.primary-ip-v4 (expand)" (*terraform.nodeExpandApplyableResource) config from hcl.Range{Filename:"step.tf", Start:hcl.Pos{Line:1, Column:1, Byte:0}, End:hcl.Pos{Line:1, Column:45, Byte:44}}
+2024-08-20T11:23:13.930+0200 [TRACE] AttachResourceConfigTransformer: attaching provider meta configs to hcloud_primary_ip.primary-ip-v4 (expand)
+2024-08-20T11:23:13.930+0200 [TRACE] AttachResourceConfigTransformer: attaching to "hcloud_server.server-primaryIP-network-test" (*terraform.NodeApplyableResourceInstance) config from hcl.Range{Filename:"step.tf", Start:hcl.Pos{Line:9, Column:1, Byte:214}, End:hcl.Pos{Line:9, Column:57, Byte:270}}
+2024-08-20T11:23:13.930+0200 [TRACE] AttachResourceConfigTransformer: attaching provider meta configs to hcloud_server.server-primaryIP-network-test
+2024-08-20T11:23:13.930+0200 [TRACE] Completed graph transform *terraform.AttachResourceConfigTransformer (no changes)
+2024-08-20T11:23:13.930+0200 [TRACE] Executing graph transform *terraform.graphTransformerMulti
+2024-08-20T11:23:13.930+0200 [TRACE] (graphTransformerMulti) Executing graph transform *terraform.externalProviderTransformer
+2024-08-20T11:23:13.930+0200 [TRACE] (graphTransformerMulti) Completed graph transform *terraform.externalProviderTransformer with new graph:
+  hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandApplyableResource
+  hcloud_server.server-primaryIP-network-test - *terraform.NodeApplyableResourceInstance
+    hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+  hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+  ------
+2024-08-20T11:23:13.930+0200 [TRACE] (graphTransformerMulti) Executing graph transform *terraform.ProviderConfigTransformer
+2024-08-20T11:23:13.930+0200 [TRACE] ProviderConfigTransformer: attaching to "provider[\"registry.terraform.io/hetznercloud/hcloud\"]" provider configuration from main.tf:10,1-18
+2024-08-20T11:23:13.930+0200 [TRACE] (graphTransformerMulti) Completed graph transform *terraform.ProviderConfigTransformer with new graph:
+  hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandApplyableResource
+  hcloud_server.server-primaryIP-network-test - *terraform.NodeApplyableResourceInstance
+    hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+  hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+  provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  ------
+2024-08-20T11:23:13.930+0200 [TRACE] (graphTransformerMulti) Executing graph transform *terraform.MissingProviderTransformer
+2024-08-20T11:23:13.930+0200 [TRACE] (graphTransformerMulti) Completed graph transform *terraform.MissingProviderTransformer (no changes)
+2024-08-20T11:23:13.930+0200 [TRACE] (graphTransformerMulti) Executing graph transform *terraform.ProviderTransformer
+2024-08-20T11:23:13.930+0200 [TRACE] ProviderTransformer: exact match for provider["registry.terraform.io/hetznercloud/hcloud"] serving hcloud_server.server-primaryIP-network-test (expand)
+2024-08-20T11:23:13.930+0200 [DEBUG] ProviderTransformer: "hcloud_server.server-primaryIP-network-test (expand)" (*terraform.nodeExpandApplyableResource) needs provider["registry.terraform.io/hetznercloud/hcloud"]
+2024-08-20T11:23:13.930+0200 [TRACE] ProviderTransformer: exact match for provider["registry.terraform.io/hetznercloud/hcloud"] serving hcloud_primary_ip.primary-ip-v4 (expand)
+2024-08-20T11:23:13.930+0200 [DEBUG] ProviderTransformer: "hcloud_primary_ip.primary-ip-v4 (expand)" (*terraform.nodeExpandApplyableResource) needs provider["registry.terraform.io/hetznercloud/hcloud"]
+2024-08-20T11:23:13.930+0200 [TRACE] ProviderTransformer: exact match for provider["registry.terraform.io/hetznercloud/hcloud"] serving hcloud_server.server-primaryIP-network-test
+2024-08-20T11:23:13.930+0200 [DEBUG] ProviderTransformer: "hcloud_server.server-primaryIP-network-test" (*terraform.NodeApplyableResourceInstance) needs provider["registry.terraform.io/hetznercloud/hcloud"]
+2024-08-20T11:23:13.930+0200 [TRACE] (graphTransformerMulti) Completed graph transform *terraform.ProviderTransformer with new graph:
+  hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandApplyableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  hcloud_server.server-primaryIP-network-test - *terraform.NodeApplyableResourceInstance
+    hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  ------
+2024-08-20T11:23:13.930+0200 [TRACE] (graphTransformerMulti) Executing graph transform *terraform.PruneProviderTransformer
+2024-08-20T11:23:13.930+0200 [TRACE] (graphTransformerMulti) Completed graph transform *terraform.PruneProviderTransformer (no changes)
+2024-08-20T11:23:13.930+0200 [TRACE] Completed graph transform *terraform.graphTransformerMulti with new graph:
+  hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandApplyableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  hcloud_server.server-primaryIP-network-test - *terraform.NodeApplyableResourceInstance
+    hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  ------
+2024-08-20T11:23:13.930+0200 [TRACE] Executing graph transform *terraform.RemovedModuleTransformer
+2024-08-20T11:23:13.930+0200 [TRACE] Completed graph transform *terraform.RemovedModuleTransformer (no changes)
+2024-08-20T11:23:13.930+0200 [TRACE] Executing graph transform *terraform.AttachSchemaTransformer
+2024-08-20T11:23:13.930+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.930+0200 [TRACE] AttachSchemaTransformer: attaching resource schema to hcloud_server.server-primaryIP-network-test (expand)
+2024-08-20T11:23:13.930+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.930+0200 [TRACE] AttachSchemaTransformer: attaching resource schema to hcloud_primary_ip.primary-ip-v4 (expand)
+2024-08-20T11:23:13.930+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.930+0200 [TRACE] AttachSchemaTransformer: attaching resource schema to hcloud_server.server-primaryIP-network-test
+2024-08-20T11:23:13.930+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:13.930+0200 [TRACE] AttachSchemaTransformer: attaching provider config schema to provider["registry.terraform.io/hetznercloud/hcloud"]
+2024-08-20T11:23:13.930+0200 [TRACE] Completed graph transform *terraform.AttachSchemaTransformer (no changes)
+2024-08-20T11:23:13.930+0200 [TRACE] Executing graph transform *terraform.ModuleExpansionTransformer
+2024-08-20T11:23:13.930+0200 [TRACE] Completed graph transform *terraform.ModuleExpansionTransformer (no changes)
+2024-08-20T11:23:13.930+0200 [TRACE] Executing graph transform *terraform.ExternalReferenceTransformer
+2024-08-20T11:23:13.930+0200 [TRACE] Completed graph transform *terraform.ExternalReferenceTransformer (no changes)
+2024-08-20T11:23:13.930+0200 [TRACE] Executing graph transform *terraform.ReferenceTransformer
+2024-08-20T11:23:13.930+0200 [DEBUG] ReferenceTransformer: "hcloud_server.server-primaryIP-network-test (expand)" references: [hcloud_primary_ip.primary-ip-v4 (expand)]
+2024-08-20T11:23:13.930+0200 [DEBUG] ReferenceTransformer: "hcloud_primary_ip.primary-ip-v4 (expand)" references: []
+2024-08-20T11:23:13.930+0200 [DEBUG] ReferenceTransformer: "hcloud_server.server-primaryIP-network-test" references: [hcloud_primary_ip.primary-ip-v4 (expand)]
+2024-08-20T11:23:13.930+0200 [DEBUG] ReferenceTransformer: "provider[\"registry.terraform.io/hetznercloud/hcloud\"]" references: []
+2024-08-20T11:23:13.930+0200 [TRACE] Completed graph transform *terraform.ReferenceTransformer with new graph:
+  hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandApplyableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  hcloud_server.server-primaryIP-network-test - *terraform.NodeApplyableResourceInstance
+    hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandApplyableResource
+    hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+    hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandApplyableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  ------
+2024-08-20T11:23:13.930+0200 [TRACE] Executing graph transform *terraform.AttachDependenciesTransformer
+2024-08-20T11:23:13.930+0200 [TRACE] AttachDependenciesTransformer: hcloud_server.server-primaryIP-network-test depends on [hcloud_primary_ip.primary-ip-v4]
+2024-08-20T11:23:13.930+0200 [TRACE] Completed graph transform *terraform.AttachDependenciesTransformer (no changes)
+2024-08-20T11:23:13.930+0200 [TRACE] Executing graph transform *terraform.checkStartTransformer
+2024-08-20T11:23:13.930+0200 [TRACE] Completed graph transform *terraform.checkStartTransformer (no changes)
+2024-08-20T11:23:13.930+0200 [TRACE] Executing graph transform *terraform.ForcedCBDTransformer
+2024-08-20T11:23:13.930+0200 [TRACE] ForcedCBDTransformer: "hcloud_server.server-primaryIP-network-test" (*terraform.NodeApplyableResourceInstance) has no CBD descendent, so skipping
+2024-08-20T11:23:13.930+0200 [TRACE] Completed graph transform *terraform.ForcedCBDTransformer (no changes)
+2024-08-20T11:23:13.930+0200 [TRACE] Executing graph transform *terraform.DestroyEdgeTransformer
+2024-08-20T11:23:13.930+0200 [TRACE] Completed graph transform *terraform.DestroyEdgeTransformer (no changes)
+2024-08-20T11:23:13.930+0200 [TRACE] Executing graph transform *terraform.CBDEdgeTransformer
+2024-08-20T11:23:13.930+0200 [TRACE] Completed graph transform *terraform.CBDEdgeTransformer (no changes)
+2024-08-20T11:23:13.930+0200 [TRACE] Executing graph transform *terraform.pruneUnusedNodesTransformer
+2024-08-20T11:23:13.930+0200 [TRACE] Completed graph transform *terraform.pruneUnusedNodesTransformer (no changes)
+2024-08-20T11:23:13.930+0200 [TRACE] Executing graph transform *terraform.TargetsTransformer
+2024-08-20T11:23:13.930+0200 [TRACE] Completed graph transform *terraform.TargetsTransformer (no changes)
+2024-08-20T11:23:13.930+0200 [TRACE] Executing graph transform *terraform.CloseProviderTransformer
+2024-08-20T11:23:13.930+0200 [TRACE] Completed graph transform *terraform.CloseProviderTransformer with new graph:
+  hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandApplyableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  hcloud_server.server-primaryIP-network-test - *terraform.NodeApplyableResourceInstance
+    hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandApplyableResource
+    hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+    hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandApplyableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  provider["registry.terraform.io/hetznercloud/hcloud"] (close) - *terraform.graphNodeCloseProvider
+    hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandApplyableResource
+    hcloud_server.server-primaryIP-network-test - *terraform.NodeApplyableResourceInstance
+    hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  ------
+2024-08-20T11:23:13.930+0200 [TRACE] Executing graph transform *terraform.CloseRootModuleTransformer
+2024-08-20T11:23:13.931+0200 [TRACE] Completed graph transform *terraform.CloseRootModuleTransformer with new graph:
+  hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandApplyableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  hcloud_server.server-primaryIP-network-test - *terraform.NodeApplyableResourceInstance
+    hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandApplyableResource
+    hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+    hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandApplyableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  provider["registry.terraform.io/hetznercloud/hcloud"] (close) - *terraform.graphNodeCloseProvider
+    hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandApplyableResource
+    hcloud_server.server-primaryIP-network-test - *terraform.NodeApplyableResourceInstance
+    hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  root - *terraform.nodeCloseModule
+    provider["registry.terraform.io/hetznercloud/hcloud"] (close) - *terraform.graphNodeCloseProvider
+  ------
+2024-08-20T11:23:13.931+0200 [TRACE] Executing graph transform *terraform.TransitiveReductionTransformer
+2024-08-20T11:23:13.931+0200 [TRACE] Completed graph transform *terraform.TransitiveReductionTransformer with new graph:
+  hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandApplyableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  hcloud_server.server-primaryIP-network-test - *terraform.NodeApplyableResourceInstance
+    hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+  hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+    hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandApplyableResource
+  provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  provider["registry.terraform.io/hetznercloud/hcloud"] (close) - *terraform.graphNodeCloseProvider
+    hcloud_server.server-primaryIP-network-test - *terraform.NodeApplyableResourceInstance
+  root - *terraform.nodeCloseModule
+    provider["registry.terraform.io/hetznercloud/hcloud"] (close) - *terraform.graphNodeCloseProvider
+  ------
+2024-08-20T11:23:13.932+0200 [DEBUG] command: asking for input: "\nDo you want to perform these actions?"
+2024-08-20T11:23:16.742+0200 [INFO]  backend/local: apply calling Apply
+2024-08-20T11:23:16.742+0200 [DEBUG] Building and walking apply graph for NormalMode plan
+2024-08-20T11:23:16.742+0200 [TRACE] Executing graph transform *terraform.ConfigTransformer
+2024-08-20T11:23:16.742+0200 [TRACE] ConfigTransformer: Starting for path:
+2024-08-20T11:23:16.742+0200 [TRACE] Completed graph transform *terraform.ConfigTransformer with new graph:
+  hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandApplyableResource
+  hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+  ------
+2024-08-20T11:23:16.742+0200 [TRACE] Executing graph transform *terraform.RootVariableTransformer
+2024-08-20T11:23:16.742+0200 [TRACE] Completed graph transform *terraform.RootVariableTransformer (no changes)
+2024-08-20T11:23:16.742+0200 [TRACE] Executing graph transform *terraform.ModuleVariableTransformer
+2024-08-20T11:23:16.742+0200 [TRACE] Completed graph transform *terraform.ModuleVariableTransformer (no changes)
+2024-08-20T11:23:16.742+0200 [TRACE] Executing graph transform *terraform.variableValidationTransformer
+2024-08-20T11:23:16.742+0200 [TRACE] variableValidationTransformer: adding validation nodes for any existing variable evaluation nodes
+2024-08-20T11:23:16.742+0200 [TRACE] Completed graph transform *terraform.variableValidationTransformer (no changes)
+2024-08-20T11:23:16.742+0200 [TRACE] Executing graph transform *terraform.LocalTransformer
+2024-08-20T11:23:16.742+0200 [TRACE] Completed graph transform *terraform.LocalTransformer (no changes)
+2024-08-20T11:23:16.742+0200 [TRACE] Executing graph transform *terraform.OutputTransformer
+2024-08-20T11:23:16.742+0200 [TRACE] Completed graph transform *terraform.OutputTransformer (no changes)
+2024-08-20T11:23:16.742+0200 [TRACE] Executing graph transform *terraform.DiffTransformer
+2024-08-20T11:23:16.742+0200 [TRACE] DiffTransformer starting
+2024-08-20T11:23:16.743+0200 [TRACE] DiffTransformer: found NoOp change for hcloud_primary_ip.primary-ip-v4
+2024-08-20T11:23:16.743+0200 [TRACE] DiffTransformer: found Update change for hcloud_server.server-primaryIP-network-test
+2024-08-20T11:23:16.743+0200 [TRACE] DiffTransformer: hcloud_server.server-primaryIP-network-test will be represented by hcloud_server.server-primaryIP-network-test
+2024-08-20T11:23:16.743+0200 [TRACE] DiffTransformer complete
+2024-08-20T11:23:16.743+0200 [TRACE] Completed graph transform *terraform.DiffTransformer with new graph:
+  hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandApplyableResource
+  hcloud_server.server-primaryIP-network-test - *terraform.NodeApplyableResourceInstance
+    hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+  hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+  ------
+2024-08-20T11:23:16.743+0200 [TRACE] Executing graph transform *terraform.DeferredTransformer
+2024-08-20T11:23:16.743+0200 [TRACE] Completed graph transform *terraform.DeferredTransformer (no changes)
+2024-08-20T11:23:16.743+0200 [TRACE] Executing graph transform *terraform.checkTransformer
+2024-08-20T11:23:16.743+0200 [TRACE] Completed graph transform *terraform.checkTransformer (no changes)
+2024-08-20T11:23:16.743+0200 [TRACE] Executing graph transform *terraform.AttachStateTransformer
+2024-08-20T11:23:16.743+0200 [TRACE] NodeAbstractResourceInstance.AttachResourceState for hcloud_server.server-primaryIP-network-test
+2024-08-20T11:23:16.743+0200 [TRACE] Completed graph transform *terraform.AttachStateTransformer (no changes)
+2024-08-20T11:23:16.743+0200 [TRACE] Executing graph transform *terraform.OrphanOutputTransformer
+2024-08-20T11:23:16.743+0200 [TRACE] Completed graph transform *terraform.OrphanOutputTransformer (no changes)
+2024-08-20T11:23:16.743+0200 [TRACE] Executing graph transform *terraform.AttachResourceConfigTransformer
+2024-08-20T11:23:16.743+0200 [TRACE] AttachResourceConfigTransformer: attaching to "hcloud_primary_ip.primary-ip-v4 (expand)" (*terraform.nodeExpandApplyableResource) config from hcl.Range{Filename:"step.tf", Start:hcl.Pos{Line:1, Column:1, Byte:0}, End:hcl.Pos{Line:1, Column:45, Byte:44}}
+2024-08-20T11:23:16.743+0200 [TRACE] AttachResourceConfigTransformer: attaching provider meta configs to hcloud_primary_ip.primary-ip-v4 (expand)
+2024-08-20T11:23:16.743+0200 [TRACE] AttachResourceConfigTransformer: attaching to "hcloud_server.server-primaryIP-network-test (expand)" (*terraform.nodeExpandApplyableResource) config from hcl.Range{Filename:"step.tf", Start:hcl.Pos{Line:9, Column:1, Byte:214}, End:hcl.Pos{Line:9, Column:57, Byte:270}}
+2024-08-20T11:23:16.743+0200 [TRACE] AttachResourceConfigTransformer: attaching provider meta configs to hcloud_server.server-primaryIP-network-test (expand)
+2024-08-20T11:23:16.743+0200 [TRACE] AttachResourceConfigTransformer: attaching to "hcloud_server.server-primaryIP-network-test" (*terraform.NodeApplyableResourceInstance) config from hcl.Range{Filename:"step.tf", Start:hcl.Pos{Line:9, Column:1, Byte:214}, End:hcl.Pos{Line:9, Column:57, Byte:270}}
+2024-08-20T11:23:16.743+0200 [TRACE] AttachResourceConfigTransformer: attaching provider meta configs to hcloud_server.server-primaryIP-network-test
+2024-08-20T11:23:16.743+0200 [TRACE] Completed graph transform *terraform.AttachResourceConfigTransformer (no changes)
+2024-08-20T11:23:16.743+0200 [TRACE] Executing graph transform *terraform.graphTransformerMulti
+2024-08-20T11:23:16.743+0200 [TRACE] (graphTransformerMulti) Executing graph transform *terraform.externalProviderTransformer
+2024-08-20T11:23:16.743+0200 [TRACE] (graphTransformerMulti) Completed graph transform *terraform.externalProviderTransformer with new graph:
+  hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandApplyableResource
+  hcloud_server.server-primaryIP-network-test - *terraform.NodeApplyableResourceInstance
+    hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+  hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+  ------
+2024-08-20T11:23:16.743+0200 [TRACE] (graphTransformerMulti) Executing graph transform *terraform.ProviderConfigTransformer
+2024-08-20T11:23:16.743+0200 [TRACE] ProviderConfigTransformer: attaching to "provider[\"registry.terraform.io/hetznercloud/hcloud\"]" provider configuration from main.tf:10,1-18
+2024-08-20T11:23:16.743+0200 [TRACE] (graphTransformerMulti) Completed graph transform *terraform.ProviderConfigTransformer with new graph:
+  hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandApplyableResource
+  hcloud_server.server-primaryIP-network-test - *terraform.NodeApplyableResourceInstance
+    hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+  hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+  provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  ------
+2024-08-20T11:23:16.743+0200 [TRACE] (graphTransformerMulti) Executing graph transform *terraform.MissingProviderTransformer
+2024-08-20T11:23:16.743+0200 [TRACE] (graphTransformerMulti) Completed graph transform *terraform.MissingProviderTransformer (no changes)
+2024-08-20T11:23:16.743+0200 [TRACE] (graphTransformerMulti) Executing graph transform *terraform.ProviderTransformer
+2024-08-20T11:23:16.743+0200 [TRACE] ProviderTransformer: exact match for provider["registry.terraform.io/hetznercloud/hcloud"] serving hcloud_server.server-primaryIP-network-test (expand)
+2024-08-20T11:23:16.743+0200 [DEBUG] ProviderTransformer: "hcloud_server.server-primaryIP-network-test (expand)" (*terraform.nodeExpandApplyableResource) needs provider["registry.terraform.io/hetznercloud/hcloud"]
+2024-08-20T11:23:16.743+0200 [TRACE] ProviderTransformer: exact match for provider["registry.terraform.io/hetznercloud/hcloud"] serving hcloud_server.server-primaryIP-network-test
+2024-08-20T11:23:16.743+0200 [DEBUG] ProviderTransformer: "hcloud_server.server-primaryIP-network-test" (*terraform.NodeApplyableResourceInstance) needs provider["registry.terraform.io/hetznercloud/hcloud"]
+2024-08-20T11:23:16.743+0200 [TRACE] ProviderTransformer: exact match for provider["registry.terraform.io/hetznercloud/hcloud"] serving hcloud_primary_ip.primary-ip-v4 (expand)
+2024-08-20T11:23:16.743+0200 [DEBUG] ProviderTransformer: "hcloud_primary_ip.primary-ip-v4 (expand)" (*terraform.nodeExpandApplyableResource) needs provider["registry.terraform.io/hetznercloud/hcloud"]
+2024-08-20T11:23:16.743+0200 [TRACE] (graphTransformerMulti) Completed graph transform *terraform.ProviderTransformer with new graph:
+  hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandApplyableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  hcloud_server.server-primaryIP-network-test - *terraform.NodeApplyableResourceInstance
+    hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  ------
+2024-08-20T11:23:16.743+0200 [TRACE] (graphTransformerMulti) Executing graph transform *terraform.PruneProviderTransformer
+2024-08-20T11:23:16.743+0200 [TRACE] (graphTransformerMulti) Completed graph transform *terraform.PruneProviderTransformer (no changes)
+2024-08-20T11:23:16.743+0200 [TRACE] Completed graph transform *terraform.graphTransformerMulti with new graph:
+  hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandApplyableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  hcloud_server.server-primaryIP-network-test - *terraform.NodeApplyableResourceInstance
+    hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  ------
+2024-08-20T11:23:16.743+0200 [TRACE] Executing graph transform *terraform.RemovedModuleTransformer
+2024-08-20T11:23:16.743+0200 [TRACE] Completed graph transform *terraform.RemovedModuleTransformer (no changes)
+2024-08-20T11:23:16.743+0200 [TRACE] Executing graph transform *terraform.AttachSchemaTransformer
+2024-08-20T11:23:16.743+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:16.743+0200 [TRACE] AttachSchemaTransformer: attaching resource schema to hcloud_primary_ip.primary-ip-v4 (expand)
+2024-08-20T11:23:16.743+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:16.743+0200 [TRACE] AttachSchemaTransformer: attaching resource schema to hcloud_server.server-primaryIP-network-test (expand)
+2024-08-20T11:23:16.743+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:16.743+0200 [TRACE] AttachSchemaTransformer: attaching resource schema to hcloud_server.server-primaryIP-network-test
+2024-08-20T11:23:16.743+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:16.743+0200 [TRACE] AttachSchemaTransformer: attaching provider config schema to provider["registry.terraform.io/hetznercloud/hcloud"]
+2024-08-20T11:23:16.743+0200 [TRACE] Completed graph transform *terraform.AttachSchemaTransformer (no changes)
+2024-08-20T11:23:16.743+0200 [TRACE] Executing graph transform *terraform.ModuleExpansionTransformer
+2024-08-20T11:23:16.743+0200 [TRACE] Completed graph transform *terraform.ModuleExpansionTransformer (no changes)
+2024-08-20T11:23:16.743+0200 [TRACE] Executing graph transform *terraform.ExternalReferenceTransformer
+2024-08-20T11:23:16.743+0200 [TRACE] Completed graph transform *terraform.ExternalReferenceTransformer (no changes)
+2024-08-20T11:23:16.743+0200 [TRACE] Executing graph transform *terraform.ReferenceTransformer
+2024-08-20T11:23:16.744+0200 [DEBUG] ReferenceTransformer: "hcloud_server.server-primaryIP-network-test (expand)" references: [hcloud_primary_ip.primary-ip-v4 (expand)]
+2024-08-20T11:23:16.744+0200 [DEBUG] ReferenceTransformer: "hcloud_server.server-primaryIP-network-test" references: [hcloud_primary_ip.primary-ip-v4 (expand)]
+2024-08-20T11:23:16.744+0200 [DEBUG] ReferenceTransformer: "provider[\"registry.terraform.io/hetznercloud/hcloud\"]" references: []
+2024-08-20T11:23:16.744+0200 [DEBUG] ReferenceTransformer: "hcloud_primary_ip.primary-ip-v4 (expand)" references: []
+2024-08-20T11:23:16.744+0200 [TRACE] Completed graph transform *terraform.ReferenceTransformer with new graph:
+  hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandApplyableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  hcloud_server.server-primaryIP-network-test - *terraform.NodeApplyableResourceInstance
+    hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandApplyableResource
+    hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+    hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandApplyableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  ------
+2024-08-20T11:23:16.744+0200 [TRACE] Executing graph transform *terraform.AttachDependenciesTransformer
+2024-08-20T11:23:16.744+0200 [TRACE] AttachDependenciesTransformer: hcloud_server.server-primaryIP-network-test depends on [hcloud_primary_ip.primary-ip-v4]
+2024-08-20T11:23:16.744+0200 [TRACE] Completed graph transform *terraform.AttachDependenciesTransformer (no changes)
+2024-08-20T11:23:16.744+0200 [TRACE] Executing graph transform *terraform.checkStartTransformer
+2024-08-20T11:23:16.744+0200 [TRACE] Completed graph transform *terraform.checkStartTransformer (no changes)
+2024-08-20T11:23:16.744+0200 [TRACE] Executing graph transform *terraform.ForcedCBDTransformer
+2024-08-20T11:23:16.744+0200 [TRACE] ForcedCBDTransformer: "hcloud_server.server-primaryIP-network-test" (*terraform.NodeApplyableResourceInstance) has no CBD descendent, so skipping
+2024-08-20T11:23:16.744+0200 [TRACE] Completed graph transform *terraform.ForcedCBDTransformer (no changes)
+2024-08-20T11:23:16.744+0200 [TRACE] Executing graph transform *terraform.DestroyEdgeTransformer
+2024-08-20T11:23:16.744+0200 [TRACE] Completed graph transform *terraform.DestroyEdgeTransformer (no changes)
+2024-08-20T11:23:16.744+0200 [TRACE] Executing graph transform *terraform.CBDEdgeTransformer
+2024-08-20T11:23:16.744+0200 [TRACE] Completed graph transform *terraform.CBDEdgeTransformer (no changes)
+2024-08-20T11:23:16.744+0200 [TRACE] Executing graph transform *terraform.pruneUnusedNodesTransformer
+2024-08-20T11:23:16.744+0200 [TRACE] Completed graph transform *terraform.pruneUnusedNodesTransformer (no changes)
+2024-08-20T11:23:16.744+0200 [TRACE] Executing graph transform *terraform.TargetsTransformer
+2024-08-20T11:23:16.744+0200 [TRACE] Completed graph transform *terraform.TargetsTransformer (no changes)
+2024-08-20T11:23:16.744+0200 [TRACE] Executing graph transform *terraform.CloseProviderTransformer
+2024-08-20T11:23:16.744+0200 [TRACE] Completed graph transform *terraform.CloseProviderTransformer with new graph:
+  hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandApplyableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  hcloud_server.server-primaryIP-network-test - *terraform.NodeApplyableResourceInstance
+    hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandApplyableResource
+    hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+    hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandApplyableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  provider["registry.terraform.io/hetznercloud/hcloud"] (close) - *terraform.graphNodeCloseProvider
+    hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandApplyableResource
+    hcloud_server.server-primaryIP-network-test - *terraform.NodeApplyableResourceInstance
+    hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  ------
+2024-08-20T11:23:16.744+0200 [TRACE] Executing graph transform *terraform.CloseRootModuleTransformer
+2024-08-20T11:23:16.744+0200 [TRACE] Completed graph transform *terraform.CloseRootModuleTransformer with new graph:
+  hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandApplyableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  hcloud_server.server-primaryIP-network-test - *terraform.NodeApplyableResourceInstance
+    hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandApplyableResource
+    hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+    hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandApplyableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  provider["registry.terraform.io/hetznercloud/hcloud"] (close) - *terraform.graphNodeCloseProvider
+    hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandApplyableResource
+    hcloud_server.server-primaryIP-network-test - *terraform.NodeApplyableResourceInstance
+    hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  root - *terraform.nodeCloseModule
+    provider["registry.terraform.io/hetznercloud/hcloud"] (close) - *terraform.graphNodeCloseProvider
+  ------
+2024-08-20T11:23:16.744+0200 [TRACE] Executing graph transform *terraform.TransitiveReductionTransformer
+2024-08-20T11:23:16.744+0200 [TRACE] Completed graph transform *terraform.TransitiveReductionTransformer with new graph:
+  hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandApplyableResource
+    provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  hcloud_server.server-primaryIP-network-test - *terraform.NodeApplyableResourceInstance
+    hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+  hcloud_server.server-primaryIP-network-test (expand) - *terraform.nodeExpandApplyableResource
+    hcloud_primary_ip.primary-ip-v4 (expand) - *terraform.nodeExpandApplyableResource
+  provider["registry.terraform.io/hetznercloud/hcloud"] - *terraform.NodeApplyableProvider
+  provider["registry.terraform.io/hetznercloud/hcloud"] (close) - *terraform.graphNodeCloseProvider
+    hcloud_server.server-primaryIP-network-test - *terraform.NodeApplyableResourceInstance
+  root - *terraform.nodeCloseModule
+    provider["registry.terraform.io/hetznercloud/hcloud"] (close) - *terraform.graphNodeCloseProvider
+  ------
+2024-08-20T11:23:16.744+0200 [DEBUG] Starting graph walk: walkApply
+2024-08-20T11:23:16.744+0200 [TRACE] vertex "provider[\"registry.terraform.io/hetznercloud/hcloud\"]": starting visit (*terraform.NodeApplyableProvider)
+2024-08-20T11:23:16.745+0200 [TRACE] vertex "provider[\"registry.terraform.io/hetznercloud/hcloud\"]": belongs to
+2024-08-20T11:23:16.745+0200 [DEBUG] created provider logger: level=info
+2024-08-20T11:23:16.745+0200 [INFO]  provider: configuring client automatic mTLS
+2024-08-20T11:23:16.756+0200 [INFO]  provider.terraform-provider-hcloud_v1.46.1: configuring server automatic mTLS: timestamp="2024-08-20T11:23:16.756+0200"
+2024-08-20T11:23:16.772+0200 [TRACE] BuiltinEvalContext: Initialized "provider[\"registry.terraform.io/hetznercloud/hcloud\"]" provider for provider["registry.terraform.io/hetznercloud/hcloud"]
+2024-08-20T11:23:16.772+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:16.772+0200 [TRACE] NodeApplyableProvider: configuring provider["registry.terraform.io/hetznercloud/hcloud"]
+2024-08-20T11:23:16.772+0200 [TRACE] buildProviderConfig for provider["registry.terraform.io/hetznercloud/hcloud"]: using explicit config only
+2024-08-20T11:23:16.772+0200 [TRACE] GRPCProvider.v6: returning cached schema: EXTRA_VALUE_AT_END=registry.terraform.io/hetznercloud/hcloud
+2024-08-20T11:23:16.772+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:16.772+0200 [TRACE] GRPCProvider.v6: ValidateProviderConfig
+2024-08-20T11:23:16.772+0200 [TRACE] GRPCProvider.v6: returning cached schema: EXTRA_VALUE_AT_END=registry.terraform.io/hetznercloud/hcloud
+2024-08-20T11:23:16.773+0200 [TRACE] GRPCProvider.v6: ConfigureProvider
+2024-08-20T11:23:16.773+0200 [TRACE] GRPCProvider.v6: returning cached schema: EXTRA_VALUE_AT_END=registry.terraform.io/hetznercloud/hcloud
+2024-08-20T11:23:16.774+0200 [INFO]  provider.terraform-provider-hcloud_v1.46.1: terraform-provider-hcloud info: @caller=github.com/hetznercloud/terraform-provider-hcloud/hcloud/plugin_provider.go:160 tf_mux_provider="*proto6server.Server" version=1.46.1 @module=hcloud commit=bd5246a9890410e2aa6c064d9833b8f5a6d319d2 tf_provider_addr=registry.terraform.io/hetznercloud/hcloud tf_req_id=226e089c-ac1d-6cc9-1cc6-56210a473498 tf_rpc=ConfigureProvider timestamp="2024-08-20T11:23:16.774+0200"
+2024-08-20T11:23:16.774+0200 [INFO]  provider.terraform-provider-hcloud_v1.46.1: hcloud-go info: tf_provider_addr=registry.terraform.io/hetznercloud/hcloud version=1.53.0 @caller=github.com/hetznercloud/terraform-provider-hcloud/hcloud/plugin_provider.go:161 tf_mux_provider="*proto6server.Server" @module=hcloud tf_req_id=226e089c-ac1d-6cc9-1cc6-56210a473498 tf_rpc=ConfigureProvider timestamp="2024-08-20T11:23:16.774+0200"
+2024-08-20T11:23:16.774+0200 [TRACE] vertex "provider[\"registry.terraform.io/hetznercloud/hcloud\"]": visit complete
+2024-08-20T11:23:16.774+0200 [TRACE] vertex "hcloud_primary_ip.primary-ip-v4 (expand)": starting visit (*terraform.nodeExpandApplyableResource)
+2024-08-20T11:23:16.774+0200 [TRACE] vertex "hcloud_primary_ip.primary-ip-v4 (expand)": does not belong to any module instance
+2024-08-20T11:23:16.774+0200 [TRACE] vertex "hcloud_primary_ip.primary-ip-v4 (expand)": visit complete
+2024-08-20T11:23:16.774+0200 [TRACE] vertex "hcloud_server.server-primaryIP-network-test (expand)": starting visit (*terraform.nodeExpandApplyableResource)
+2024-08-20T11:23:16.774+0200 [TRACE] vertex "hcloud_server.server-primaryIP-network-test (expand)": does not belong to any module instance
+2024-08-20T11:23:16.774+0200 [TRACE] vertex "hcloud_server.server-primaryIP-network-test (expand)": visit complete
+2024-08-20T11:23:16.774+0200 [TRACE] vertex "hcloud_server.server-primaryIP-network-test": starting visit (*terraform.NodeApplyableResourceInstance)
+2024-08-20T11:23:16.774+0200 [TRACE] vertex "hcloud_server.server-primaryIP-network-test": belongs to
+2024-08-20T11:23:16.774+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:16.774+0200 [TRACE] readDiff: Read Update change from plan for hcloud_server.server-primaryIP-network-test
+2024-08-20T11:23:16.774+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:16.774+0200 [TRACE] readResourceInstanceState: reading state for hcloud_server.server-primaryIP-network-test
+2024-08-20T11:23:16.774+0200 [TRACE] upgradeResourceState: schema version of hcloud_server.server-primaryIP-network-test is still 0; calling provider "hcloud" for any other minor fixups
+2024-08-20T11:23:16.774+0200 [TRACE] GRPCProvider.v6: UpgradeResourceState
+2024-08-20T11:23:16.774+0200 [TRACE] GRPCProvider.v6: returning cached schema: EXTRA_VALUE_AT_END=registry.terraform.io/hetznercloud/hcloud
+2024-08-20T11:23:16.777+0200 [TRACE] readDiff: Read Update change from plan for hcloud_server.server-primaryIP-network-test
+2024-08-20T11:23:16.777+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:16.777+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:16.777+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:16.777+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:16.777+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:16.777+0200 [TRACE] Re-validating config for "hcloud_server.server-primaryIP-network-test"
+2024-08-20T11:23:16.777+0200 [TRACE] GRPCProvider.v6: ValidateResourceConfig
+2024-08-20T11:23:16.777+0200 [TRACE] GRPCProvider.v6: returning cached schema: EXTRA_VALUE_AT_END=registry.terraform.io/hetznercloud/hcloud
+2024-08-20T11:23:16.778+0200 [TRACE] GRPCProvider.v6: PlanResourceChange
+2024-08-20T11:23:16.778+0200 [TRACE] GRPCProvider.v6: returning cached schema: EXTRA_VALUE_AT_END=registry.terraform.io/hetznercloud/hcloud
+2024-08-20T11:23:16.781+0200 [WARN]  Provider "registry.terraform.io/hetznercloud/hcloud" produced an invalid plan for hcloud_server.server-primaryIP-network-test, but we are tolerating it because it is using the legacy plugin SDK.
+    The following problems may be the cause of any confusing errors from downstream operations:
+      - .shutdown_before_deletion: planned value cty.False for a non-computed attribute
+      - .labels: planned value cty.MapValEmpty(cty.String) for a non-computed attribute
+      - .rebuild_protection: planned value cty.False for a non-computed attribute
+      - .delete_protection: planned value cty.False for a non-computed attribute
+      - .ignore_remote_firewall_ids: planned value cty.False for a non-computed attribute
+      - .keep_disk: planned value cty.False for a non-computed attribute
+      - .placement_group_id: planned value cty.NumberIntVal(0) for a non-computed attribute
+      - .allow_deprecated_images: planned value cty.False for a non-computed attribute
+      - .backups: planned value cty.False for a non-computed attribute
+2024-08-20T11:23:16.781+0200 [TRACE] checkPlannedChange: Verifying that actual change (action Update) matches planned change (action Update)
+2024-08-20T11:23:16.781+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:16.781+0200 [INFO]  Starting apply for hcloud_server.server-primaryIP-network-test
+2024-08-20T11:23:16.781+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:16.781+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:16.781+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:16.781+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:16.781+0200 [DEBUG] hcloud_server.server-primaryIP-network-test: applying the planned Update change
+2024-08-20T11:23:16.782+0200 [TRACE] GRPCProvider.v6: ApplyResourceChange
+2024-08-20T11:23:16.782+0200 [TRACE] GRPCProvider.v6: returning cached schema: EXTRA_VALUE_AT_END=registry.terraform.io/hetznercloud/hcloud
+2024-08-20T11:23:21.746+0200 [TRACE] dag/walk: vertex "root" is waiting for "provider[\"registry.terraform.io/hetznercloud/hcloud\"] (close)"
+2024-08-20T11:23:21.746+0200 [TRACE] dag/walk: vertex "provider[\"registry.terraform.io/hetznercloud/hcloud\"] (close)" is waiting for "hcloud_server.server-primaryIP-network-test"
+2024-08-20T11:23:26.748+0200 [TRACE] dag/walk: vertex "provider[\"registry.terraform.io/hetznercloud/hcloud\"] (close)" is waiting for "hcloud_server.server-primaryIP-network-test"
+2024-08-20T11:23:26.749+0200 [TRACE] dag/walk: vertex "root" is waiting for "provider[\"registry.terraform.io/hetznercloud/hcloud\"] (close)"
+2024-08-20T11:23:31.752+0200 [TRACE] dag/walk: vertex "root" is waiting for "provider[\"registry.terraform.io/hetznercloud/hcloud\"] (close)"
+2024-08-20T11:23:31.752+0200 [TRACE] dag/walk: vertex "provider[\"registry.terraform.io/hetznercloud/hcloud\"] (close)" is waiting for "hcloud_server.server-primaryIP-network-test"
+2024-08-20T11:23:36.756+0200 [TRACE] dag/walk: vertex "provider[\"registry.terraform.io/hetznercloud/hcloud\"] (close)" is waiting for "hcloud_server.server-primaryIP-network-test"
+2024-08-20T11:23:36.756+0200 [TRACE] dag/walk: vertex "root" is waiting for "provider[\"registry.terraform.io/hetznercloud/hcloud\"] (close)"
+2024-08-20T11:23:41.432+0200 [WARN]  Provider "provider[\"registry.terraform.io/hetznercloud/hcloud\"]" produced an unexpected new value for hcloud_server.server-primaryIP-network-test, but we are tolerating it because it is using the legacy plugin SDK.
+    The following problems may be the cause of any confusing errors from downstream operations:
+      - .ipv6_address: was cty.StringVal(""), but now cty.StringVal("2a01:4f8:c2c:851a::1")
+      - .ipv6_network: was cty.StringVal("<nil>"), but now cty.StringVal("2a01:4f8:c2c:851a::/64")
+2024-08-20T11:23:41.432+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:41.432+0200 [TRACE] NodeAbstractResouceInstance.writeResourceInstanceState to workingState for hcloud_server.server-primaryIP-network-test
+2024-08-20T11:23:41.432+0200 [TRACE] NodeAbstractResouceInstance.writeResourceInstanceState: writing state object for hcloud_server.server-primaryIP-network-test
+2024-08-20T11:23:41.433+0200 [TRACE] evalApplyProvisioners: hcloud_server.server-primaryIP-network-test is not freshly-created, so no provisioning is required
+2024-08-20T11:23:41.433+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:41.433+0200 [TRACE] NodeAbstractResouceInstance.writeResourceInstanceState to workingState for hcloud_server.server-primaryIP-network-test
+2024-08-20T11:23:41.433+0200 [TRACE] NodeAbstractResouceInstance.writeResourceInstanceState: writing state object for hcloud_server.server-primaryIP-network-test
+2024-08-20T11:23:41.433+0200 [TRACE] statemgr.Filesystem: creating backup snapshot at step3/step3.tfstate
+2024-08-20T11:23:41.434+0200 [TRACE] statemgr.Filesystem: state has changed since last snapshot, so incrementing serial to 6
+2024-08-20T11:23:41.434+0200 [TRACE] statemgr.Filesystem: writing snapshot at terraform.tfstate
+2024-08-20T11:23:41.450+0200 [DEBUG] State storage *statemgr.Filesystem declined to persist a state snapshot
+2024-08-20T11:23:41.451+0200 [TRACE] vertex "hcloud_server.server-primaryIP-network-test": visit complete
+2024-08-20T11:23:41.451+0200 [TRACE] vertex "provider[\"registry.terraform.io/hetznercloud/hcloud\"] (close)": starting visit (*terraform.graphNodeCloseProvider)
+2024-08-20T11:23:41.451+0200 [TRACE] vertex "provider[\"registry.terraform.io/hetznercloud/hcloud\"] (close)": does not belong to any module instance
+2024-08-20T11:23:41.451+0200 [TRACE] GRPCProvider.v6: Close
+2024-08-20T11:23:41.454+0200 [INFO]  provider: plugin process exited: plugin=.terraform/providers/registry.terraform.io/hetznercloud/hcloud/1.46.1/linux_amd64/terraform-provider-hcloud_v1.46.1 id=73511
+2024-08-20T11:23:41.454+0200 [TRACE] vertex "provider[\"registry.terraform.io/hetznercloud/hcloud\"] (close)": visit complete
+2024-08-20T11:23:41.454+0200 [TRACE] vertex "root": starting visit (*terraform.nodeCloseModule)
+2024-08-20T11:23:41.454+0200 [TRACE] vertex "root": does not belong to any module instance
+2024-08-20T11:23:41.454+0200 [TRACE] vertex "root": visit complete
+2024-08-20T11:23:41.455+0200 [TRACE] terraform.contextPlugins: Schema for provider "registry.terraform.io/hetznercloud/hcloud" is in the global cache
+2024-08-20T11:23:41.455+0200 [TRACE] statemgr.Filesystem: have already backed up original terraform.tfstate to step3/step3.tfstate on a previous write
+2024-08-20T11:23:41.455+0200 [TRACE] statemgr.Filesystem: state has changed since last snapshot, so incrementing serial to 7
+2024-08-20T11:23:41.455+0200 [TRACE] statemgr.Filesystem: writing snapshot at terraform.tfstate
+2024-08-20T11:23:41.462+0200 [TRACE] statemgr.Filesystem: removing lock metadata file .terraform.tfstate.lock.info
+2024-08-20T11:23:41.462+0200 [TRACE] statemgr.Filesystem: unlocking terraform.tfstate using fcntl flock
