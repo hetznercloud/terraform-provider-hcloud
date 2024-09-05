@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/deprecation"
 
@@ -190,7 +191,18 @@ func dataSourceHcloudServerTypeListRead(ctx context.Context, d *schema.ResourceD
 		descriptions[i] = serverType.Description
 		names[i] = serverType.Name
 
-		tfServerTypes[i] = getServerTypeAttributes(serverType)
+		tfServerType := getServerTypeAttributes(serverType)
+		if !serverType.IsDeprecated() {
+			tfServerType["is_deprecated"] = false
+			tfServerType["deprecation_announced"] = nil
+			tfServerType["unavailable_after"] = nil
+		} else {
+			tfServerType["is_deprecated"] = true
+			tfServerType["deprecation_announced"] = serverType.DeprecationAnnounced().Format(time.RFC3339)
+			tfServerType["unavailable_after"] = serverType.UnavailableAfter().Format(time.RFC3339)
+		}
+
+		tfServerTypes[i] = tfServerType
 	}
 
 	d.SetId(fmt.Sprintf("%x", sha1.Sum([]byte(strings.Join(ids, "")))))
