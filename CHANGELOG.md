@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.48.1](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.48.0...v1.48.1) (2024-09-06)
+
+
+### Bug Fixes
+
+* missing deprecation info in server type list data source ([#984](https://github.com/hetznercloud/terraform-provider-hcloud/issues/984)) ([c12560e](https://github.com/hetznercloud/terraform-provider-hcloud/commit/c12560ebbb1c5ed131f84154a9463e8d4ea7ab2a))
+
 ## [1.48.0](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.47.0...v1.48.0) (2024-07-25)
 
 
