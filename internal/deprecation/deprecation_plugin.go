@@ -12,16 +12,14 @@ import (
 	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 
-type Model struct {
+type DeprecationModel struct { // nolint:revive
 	IsDeprecated         types.Bool   `tfsdk:"is_deprecated"`
 	DeprecationAnnounced types.String `tfsdk:"deprecation_announced"`
 	UnavailableAfter     types.String `tfsdk:"unavailable_after"`
 }
 
-type DeprecationModel = Model //nolint:revive
-
-func NewModel(_ context.Context, in hcloud.Deprecatable) (Model, diag.Diagnostics) {
-	var data Model
+func NewDeprecationModel(_ context.Context, in hcloud.Deprecatable) (DeprecationModel, diag.Diagnostics) {
+	var data DeprecationModel
 	var diags diag.Diagnostics
 
 	if in.IsDeprecated() {
