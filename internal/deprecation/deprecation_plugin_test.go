@@ -17,7 +17,9 @@ func TestNewDeprecationModel(t *testing.T) {
 		data, diags := NewDeprecationModel(ctx, hcloud.ServerType{})
 		assert.Equal(t, diags.HasError(), false)
 		assert.Equal(t, data.IsDeprecated.ValueBool(), false)
+		assert.Equal(t, data.DeprecationAnnounced.IsNull(), false)
 		assert.Equal(t, data.DeprecationAnnounced.ValueString(), "")
+		assert.Equal(t, data.UnavailableAfter.IsNull(), false)
 		assert.Equal(t, data.UnavailableAfter.ValueString(), "")
 	}
 
