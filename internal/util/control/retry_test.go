@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/control"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/control"
 	"github.com/stretchr/testify/assert"
 )
 
