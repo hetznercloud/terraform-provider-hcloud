@@ -2,10 +2,7 @@ package floatingip
 
 import (
 	"context"
-	"crypto/sha1"
-	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/datasourceutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
@@ -210,7 +207,7 @@ func dataSourceHcloudFloatingIPListRead(ctx context.Context, d *schema.ResourceD
 		tfIPs[i] = getFloatingIPAttributes(ip)
 	}
 	d.Set("floating_ips", tfIPs)
-	d.SetId(fmt.Sprintf("%x", sha1.Sum([]byte(strings.Join(ids, "")))))
+	d.SetId(datasourceutil.ListID(ids))
 
 	return nil
 }

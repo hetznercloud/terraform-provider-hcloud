@@ -2,10 +2,7 @@ package server
 
 import (
 	"context"
-	"crypto/sha1"
-	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
@@ -260,7 +257,7 @@ func dataSourceHcloudServerListRead(ctx context.Context, d *schema.ResourceData,
 		tfServers[i] = getServerAttributes(d, server)
 	}
 	d.Set("servers", tfServers)
-	d.SetId(fmt.Sprintf("%x", sha1.Sum([]byte(strings.Join(ids, "")))))
+	d.SetId(datasourceutil.ListID(ids))
 
 	return nil
 }

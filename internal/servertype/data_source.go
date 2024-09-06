@@ -2,10 +2,7 @@ package servertype
 
 import (
 	"context"
-	"crypto/sha1"
-	"fmt"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/deprecation"
@@ -13,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/datasourceutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
@@ -205,7 +203,7 @@ func dataSourceHcloudServerTypeListRead(ctx context.Context, d *schema.ResourceD
 		tfServerTypes[i] = tfServerType
 	}
 
-	d.SetId(fmt.Sprintf("%x", sha1.Sum([]byte(strings.Join(ids, "")))))
+	d.SetId(datasourceutil.ListID(ids))
 	d.Set("server_type_ids", ids)
 	d.Set("names", names)
 	d.Set("descriptions", descriptions)

@@ -2,12 +2,9 @@ package image
 
 import (
 	"context"
-	"crypto/sha1"
-	"fmt"
 	"log"
 	"sort"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -274,7 +271,7 @@ func dataSourceHcloudImageListRead(ctx context.Context, d *schema.ResourceData, 
 		tfImages[i] = getImageAttributes(image)
 	}
 	d.Set("images", tfImages)
-	d.SetId(fmt.Sprintf("%x", sha1.Sum([]byte(strings.Join(ids, "")))))
+	d.SetId(datasourceutil.ListID(ids))
 
 	return nil
 }

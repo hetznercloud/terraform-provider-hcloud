@@ -2,12 +2,10 @@ package datacenter
 
 import (
 	"context"
-	"crypto/sha1"
 	_ "embed"
 	"fmt"
 	"sort"
 	"strconv"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -18,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/datasourceutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
@@ -305,7 +304,7 @@ func newResourceDataList(ctx context.Context, in []*hcloud.Datacenter) (resource
 		datacenters[i] = datacenter
 	}
 
-	data.ID = types.StringValue(fmt.Sprintf("%x", sha1.Sum([]byte(strings.Join(datacenterIDs, "")))))
+	data.ID = types.StringValue(datasourceutil.ListID(datacenterIDs))
 
 	data.DatacenterIDs, newDiags = types.ListValueFrom(ctx, types.StringType, datacenterIDs)
 	diags.Append(newDiags...)

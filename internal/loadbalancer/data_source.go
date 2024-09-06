@@ -2,10 +2,7 @@ package loadbalancer
 
 import (
 	"context"
-	"crypto/sha1"
-	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
@@ -326,7 +323,7 @@ func dataSourceHcloudLoadBalancerListRead(ctx context.Context, d *schema.Resourc
 		tfLoadBalancers[i] = getLoadBalancerAttributes(loadBalancer)
 	}
 	d.Set("load_balancers", tfLoadBalancers)
-	d.SetId(fmt.Sprintf("%x", sha1.Sum([]byte(strings.Join(ids, "")))))
+	d.SetId(datasourceutil.ListID(ids))
 
 	return nil
 }
