@@ -19,6 +19,7 @@ import (
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/datacenter"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancertype"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/location"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/servertype"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
@@ -171,6 +172,8 @@ func (p *PluginProvider) DataSources(_ context.Context) []func() datasource.Data
 	return []func() datasource.DataSource{
 		datacenter.NewDataSource,
 		datacenter.NewDataSourceList,
+		loadbalancertype.NewDataSource,
+		loadbalancertype.NewDataSourceList,
 		location.NewDataSource,
 		location.NewDataSourceList,
 		servertype.NewDataSource,
