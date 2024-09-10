@@ -2,10 +2,7 @@ package network
 
 import (
 	"context"
-	"crypto/sha1"
-	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
@@ -172,7 +169,7 @@ func dataSourceHcloudNetworkListRead(ctx context.Context, d *schema.ResourceData
 		tsNetworks[i] = getNetworkAttributes(firewall)
 	}
 	d.Set("networks", tsNetworks)
-	d.SetId(fmt.Sprintf("%x", sha1.Sum([]byte(strings.Join(ids, "")))))
+	d.SetId(datasourceutil.ListID(ids))
 
 	return nil
 }

@@ -2,12 +2,9 @@ package firewall
 
 import (
 	"context"
-	"crypto/sha1"
-	"fmt"
 	"log"
 	"sort"
 	"strconv"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -212,7 +209,7 @@ func dataSourceHcloudFirewallListRead(ctx context.Context, d *schema.ResourceDat
 		tfFirewalls[i] = getFirewallAttributes(firewall)
 	}
 	d.Set("firewalls", tfFirewalls)
-	d.SetId(fmt.Sprintf("%x", sha1.Sum([]byte(strings.Join(ids, "")))))
+	d.SetId(datasourceutil.ListID(ids))
 
 	return nil
 }

@@ -2,10 +2,7 @@ package volume
 
 import (
 	"context"
-	"crypto/sha1"
-	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
@@ -210,7 +207,7 @@ func dataSourceHcloudVolumeListRead(ctx context.Context, d *schema.ResourceData,
 		tfVolume[i] = getVolumeAttributes(volume)
 	}
 	d.Set("volumes", tfVolume)
-	d.SetId(fmt.Sprintf("%x", sha1.Sum([]byte(strings.Join(ids, "")))))
+	d.SetId(datasourceutil.ListID(ids))
 
 	return nil
 }

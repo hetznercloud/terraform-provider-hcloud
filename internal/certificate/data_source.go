@@ -2,10 +2,8 @@ package certificate
 
 import (
 	"context"
-	"crypto/sha1"
 	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -178,7 +176,7 @@ func dataSourceHcloudCertificateListRead(ctx context.Context, d *schema.Resource
 		tfCertificates[i] = getCertificateAttributes(certificate)
 	}
 	d.Set("certificates", tfCertificates)
-	d.SetId(fmt.Sprintf("%x", sha1.Sum([]byte(strings.Join(ids, "")))))
+	d.SetId(datasourceutil.ListID(ids))
 
 	return nil
 }

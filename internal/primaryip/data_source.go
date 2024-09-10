@@ -2,10 +2,7 @@ package primaryip
 
 import (
 	"context"
-	"crypto/sha1"
-	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/merge"
@@ -200,7 +197,7 @@ func dataSourceHcloudPrimaryIPListRead(ctx context.Context, d *schema.ResourceDa
 		tfIPs[i] = getPrimaryIPAttributes(ip)
 	}
 	d.Set("primary_ips", tfIPs)
-	d.SetId(fmt.Sprintf("%x", sha1.Sum([]byte(strings.Join(ids, "")))))
+	d.SetId(datasourceutil.ListID(ids))
 
 	return nil
 }

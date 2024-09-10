@@ -1,12 +1,9 @@
 package placementgroup
 
 import (
-	"crypto/sha1"
-	"fmt"
 	"log"
 	"sort"
 	"strconv"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -170,7 +167,7 @@ func dataSourceHcloudPlacementGroupListRead(ctx context.Context, d *schema.Resou
 		tfPlacementGroups[i] = getAttributes(firewall)
 	}
 	d.Set("placement_groups", tfPlacementGroups)
-	d.SetId(fmt.Sprintf("%x", sha1.Sum([]byte(strings.Join(ids, "")))))
+	d.SetId(datasourceutil.ListID(ids))
 
 	return nil
 }
