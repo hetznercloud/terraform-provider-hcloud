@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
+
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
@@ -256,22 +257,26 @@ func resourcePrimaryIPDelete(ctx context.Context, d *schema.ResourceData, m inte
 
 	if assigneeID, ok := d.GetOk("assignee_id"); ok && assigneeID != 0 {
 		if server, _, err := client.Server.Get(ctx, strconv.Itoa(assigneeID.(int))); err == nil && server != nil {
-			offAction, _, _ := client.Server.Poweroff(ctx, server)
-			// if offErr != nil {
-			// 	return hcloudutil.ErrorToDiag(offErr)
-			// }
-			if offActionErr := hcloudutil.WaitForAction(ctx, &client.Action, offAction); offActionErr != nil {
-				return hcloudutil.ErrorToDiag(offActionErr)
-			}
-			// dont catch error, because its possible that the primary IP got already unassigned on server destroy
-			UnassignPrimaryIP(ctx, client, primaryIPID)
+			// The server does not have this primary ip assigned anymore, no need to try to detach it before deleting
+			// Workaround for https://github.com/hashicorp/terraform/issues/35568
+			if server.PublicNet.IPv4.ID == assigneeID || server.PublicNet.IPv6.ID == assigneeID {
+				offAction, _, _ := client.Server.Poweroff(ctx, server)
+				// if offErr != nil {
+				// 	return hcloudutil.ErrorToDiag(offErr)
+				// }
+				if offActionErr := hcloudutil.WaitForAction(ctx, &client.Action, offAction); offActionErr != nil {
+					return hcloudutil.ErrorToDiag(offActionErr)
+				}
+				// dont catch error, because its possible that the primary IP got already unassigned on server destroy
+				UnassignPrimaryIP(ctx, client, primaryIPID)
 
-			onAction, _, _ := client.Server.Poweron(ctx, server)
-			// if onErr != nil {
-			// 	return hcloudutil.ErrorToDiag(onErr)
-			// }
-			if onActionErr := hcloudutil.WaitForAction(ctx, &client.Action, onAction); onActionErr != nil {
-				return hcloudutil.ErrorToDiag(onActionErr)
+				onAction, _, _ := client.Server.Poweron(ctx, server)
+				// if onErr != nil {
+				// 	return hcloudutil.ErrorToDiag(onErr)
+				// }
+				if onActionErr := hcloudutil.WaitForAction(ctx, &client.Action, onAction); onActionErr != nil {
+					return hcloudutil.ErrorToDiag(onActionErr)
+				}
 			}
 		}
 	}
