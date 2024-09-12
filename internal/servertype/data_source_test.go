@@ -3,10 +3,10 @@ package servertype_test
 import (
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/servertype"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
-
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
@@ -77,25 +77,25 @@ func TestAccDataSourceList(t *testing.T) {
 				),
 
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(all.TFID(), "server_type_ids.0", "22"),
-					resource.TestCheckResourceAttr(all.TFID(), "server_type_ids.1", "23"),
-					resource.TestCheckResourceAttr(all.TFID(), "names.0", "cpx11"),
-					resource.TestCheckResourceAttr(all.TFID(), "names.1", "cpx21"),
-					resource.TestCheckResourceAttr(all.TFID(), "descriptions.0", "CPX 11"),
-					resource.TestCheckResourceAttr(all.TFID(), "descriptions.1", "CPX 21"),
+					resource.TestCheckResourceAttr(all.TFID(), "server_type_ids.1", "22"),
+					resource.TestCheckResourceAttr(all.TFID(), "server_type_ids.2", "23"),
+					resource.TestCheckResourceAttr(all.TFID(), "names.1", "cpx11"),
+					resource.TestCheckResourceAttr(all.TFID(), "names.2", "cpx21"),
+					resource.TestCheckResourceAttr(all.TFID(), "descriptions.1", "CPX 11"),
+					resource.TestCheckResourceAttr(all.TFID(), "descriptions.2", "CPX 21"),
 
-					resource.TestCheckResourceAttr(all.TFID(), "server_types.0.id", "22"),
-					resource.TestCheckResourceAttr(all.TFID(), "server_types.0.name", "cpx11"),
-					resource.TestCheckResourceAttr(all.TFID(), "server_types.0.cores", "2"),
-					resource.TestCheckResourceAttr(all.TFID(), "server_types.0.memory", "2"),
-					resource.TestCheckResourceAttr(all.TFID(), "server_types.0.disk", "40"),
-					resource.TestCheckResourceAttr(all.TFID(), "server_types.0.storage_type", "local"),
-					resource.TestCheckResourceAttr(all.TFID(), "server_types.0.cpu_type", "shared"),
-					resource.TestCheckResourceAttr(all.TFID(), "server_types.0.architecture", "x86"),
-					resource.TestCheckResourceAttr(all.TFID(), "server_types.0.included_traffic", "0"),
-					resource.TestCheckResourceAttr(all.TFID(), "server_types.0.is_deprecated", "false"),
-					resource.TestCheckResourceAttr(all.TFID(), "server_types.0.deprecation_announced", ""),
-					resource.TestCheckResourceAttr(all.TFID(), "server_types.0.unavailable_after", ""),
+					resource.TestCheckResourceAttr(all.TFID(), "server_types.1.id", "22"),
+					resource.TestCheckResourceAttr(all.TFID(), "server_types.1.name", "cpx11"),
+					resource.TestCheckResourceAttr(all.TFID(), "server_types.1.cores", "2"),
+					resource.TestCheckResourceAttr(all.TFID(), "server_types.1.memory", "2"),
+					resource.TestCheckResourceAttr(all.TFID(), "server_types.1.disk", "40"),
+					resource.TestCheckResourceAttr(all.TFID(), "server_types.1.storage_type", "local"),
+					resource.TestCheckResourceAttr(all.TFID(), "server_types.1.cpu_type", "shared"),
+					resource.TestCheckResourceAttr(all.TFID(), "server_types.1.architecture", "x86"),
+					resource.TestCheckResourceAttr(all.TFID(), "server_types.1.included_traffic", "0"),
+					resource.TestCheckResourceAttr(all.TFID(), "server_types.1.is_deprecated", "false"),
+					resource.TestCheckResourceAttr(all.TFID(), "server_types.1.deprecation_announced", ""),
+					resource.TestCheckResourceAttr(all.TFID(), "server_types.1.unavailable_after", ""),
 				),
 			},
 		},
