@@ -27,7 +27,6 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/network"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/rdns"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/servertype"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/volume"
 )
 
@@ -118,8 +117,6 @@ func Provider() *schema.Provider {
 			placementgroup.DataSourceListType: placementgroup.DataSourceList(),
 			server.DataSourceType:             server.DataSource(),
 			server.DataSourceListType:         server.DataSourceList(),
-			servertype.DataSourceType:         servertype.DataSource(),
-			servertype.DataSourceListType:     servertype.ServerTypesDataSource(),
 			volume.DataSourceType:             volume.DataSource(),
 			volume.DataSourceListType:         volume.DataSourceList(),
 		},
