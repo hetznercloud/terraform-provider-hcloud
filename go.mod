@@ -2,6 +2,8 @@ module github.com/hetznercloud/terraform-provider-hcloud
 
 go 1.21
 
+toolchain go1.23.1
+
 require (
 	github.com/google/go-cmp v0.6.0
 	github.com/hashicorp/go-cty v1.4.1-0.20200723130312-85980079f637
