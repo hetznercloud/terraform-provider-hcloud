@@ -2,8 +2,6 @@ module github.com/hetznercloud/terraform-provider-hcloud
 
 go 1.22.0
 
-toolchain go1.23.1
-
 toolchain go1.23.2
 
 require (
