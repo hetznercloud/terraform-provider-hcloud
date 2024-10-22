@@ -65,7 +65,7 @@ resource "hcloud_server" "server_test" {
 - `name` - (string) Name of the Primary IP.
 - `datacenter` - (string) The datacenter name of the Primary IP.
 - `auto_delete` - (bool) Whether auto delete is enabled.
-- `labels` - (string) Description of the Primary IP.
+- `labels` - (map) User-defined labels (key-value pairs).
 - `ip_address` - (string) IP Address of the Primary IP.
 - `ip_network` - (string) IPv6 subnet of the Primary IP for IPv6 addresses. (Only set if `type` is `ipv6`)
 - `assignee_id` - (int) ID of the assigned resource.
