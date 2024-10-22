@@ -49,7 +49,7 @@ resource "hcloud_server" "server_test" {
 - `datacenter` - (string, optional) The datacenter name to create the resource in.
 - `auto_delete` - (bool) Whether auto delete is enabled.
   `Important note:`It is recommended to set `auto_delete` to `false`, because if a server assigned to the managed ip is getting deleted, it will also delete the primary IP which will break the TF state.
-- `labels` - (string) Description of the Primary IP.
+- `labels` - (map, optional) User-defined labels (key-value pairs).
 - `assignee_id` - (int) ID of the assigned resource
 - `assignee_type` - (string) The type of the assigned resource. Currently supported: `server`
 - `delete_protection` - (bool) Whether delete protection is enabled. See ["Delete Protection"](../index.html.markdown#delete-protection) in the Provider Docs for details.
@@ -62,7 +62,7 @@ resource "hcloud_server" "server_test" {
 - `name` - (string) Name of the Primary IP.
 - `auto_delete` - (bool) Whether auto delete is enabled.
   `Important note:`It is recommended to set `auto_delete` to `false`, because if a server assigned to a managed ip is getting deleted, it will also delete the primary IP which will break the TF state.
-- `labels` - (string) Description of the Primary IP.
+- `labels` - (map) User-defined labels (key-value pairs).
 - `ip_address` - (string) IP Address of the Primary IP.
 - `ip_network` - (string) IPv6 subnet of the Primary IP for IPv6 addresses. (Only set if `type` is `ipv6`)
 - `assignee_id` - (int) ID of the assigned resource
