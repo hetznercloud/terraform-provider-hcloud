@@ -282,12 +282,16 @@ func resourcePrimaryIPDelete(ctx context.Context, d *schema.ResourceData, m inte
 	}
 	err = control.Retry(2*control.DefaultRetries, func() error {
 		if _, err := client.PrimaryIP.Delete(ctx, &hcloud.PrimaryIP{ID: primaryIPID}); err != nil {
-			if !hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
+			if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
 				// Primary IP was already deleted
-				return err
+				return nil
+			}
+			if hcloud.IsError(err, hcloud.ErrorCodeProtected) {
+				// Primary IP is delete protected
+				return control.AbortRetry(err)
 			}
 		}
-		return nil
+		return err
 	})
 	if err != nil {
 		return hcloudutil.ErrorToDiag(err)

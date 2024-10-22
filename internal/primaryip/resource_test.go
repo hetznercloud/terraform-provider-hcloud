@@ -2,6 +2,7 @@ package primaryip_test
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"testing"
 
@@ -256,6 +257,67 @@ func TestPrimaryIPResource_FieldUpdates(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(res.TFID(), "delete_protection", fmt.Sprintf("%t", res.DeleteProtection)),
 				),
+			},
+		},
+	})
+}
+
+func TestPrimaryIPResource_DeleteProtection(t *testing.T) {
+	var pip hcloud.PrimaryIP
+
+	unprotected := &primaryip.RData{
+		Name:             "primaryip-test",
+		Type:             "ipv6",
+		Datacenter:       teste2e.TestDataCenter,
+		AssigneeType:     "server",
+		DeleteProtection: false,
+	}
+
+	protected := &primaryip.RData{
+		Name:             unprotected.Name,
+		Type:             unprotected.Type,
+		Datacenter:       unprotected.Datacenter,
+		AssigneeType:     unprotected.AssigneeType,
+		DeleteProtection: true,
+	}
+
+	tmplMan := testtemplate.Manager{}
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &pip)),
+		Steps: []resource.TestStep{
+			{
+				// Create protected primary IP.
+				Config: tmplMan.Render(t, "testdata/r/hcloud_primary_ip", protected),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(protected.TFID(), primaryip.ByID(t, &pip)),
+					resource.TestCheckResourceAttr(protected.TFID(), "name", fmt.Sprintf("primaryip-test--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(protected.TFID(), "type", protected.Type),
+					resource.TestCheckResourceAttr(protected.TFID(), "delete_protection", "true"),
+				),
+			},
+			{
+				// Delete protected primary IP.
+				Config:      tmplMan.Render(t, "testdata/r/hcloud_primary_ip", protected),
+				Destroy:     true,
+				ExpectError: regexp.MustCompile(`Primary IP deletion is protected \(protected, .*\)`),
+			},
+			{
+				// Change primary IP protection.
+				Config: tmplMan.Render(t, "testdata/r/hcloud_primary_ip", unprotected),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(unprotected.TFID(), primaryip.ByID(t, &pip)),
+					resource.TestCheckResourceAttr(unprotected.TFID(), "name", fmt.Sprintf("primaryip-test--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(unprotected.TFID(), "type", protected.Type),
+					resource.TestCheckResourceAttr(unprotected.TFID(), "delete_protection", "false"),
+				),
+			},
+			{
+				// Delete unprotected primary IP.
+				Config:  tmplMan.Render(t, "testdata/r/hcloud_primary_ip", unprotected),
+				Destroy: true,
 			},
 		},
 	})
