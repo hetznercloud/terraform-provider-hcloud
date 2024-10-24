@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.48.2](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.48.1...v1.48.2) (2024-10-24)
+
+
+### Bug Fixes
+
+* do not retry deleting a protected primary ip ([#1015](https://github.com/hetznercloud/terraform-provider-hcloud/issues/1015)) ([e9de286](https://github.com/hetznercloud/terraform-provider-hcloud/commit/e9de2865836bef8d4f4e9604d2d8c83c5a7cd12e)), closes [#1014](https://github.com/hetznercloud/terraform-provider-hcloud/issues/1014)
+* **primary-ip:** conflict when deleting IP ([#994](https://github.com/hetznercloud/terraform-provider-hcloud/issues/994)) ([0873fb1](https://github.com/hetznercloud/terraform-provider-hcloud/commit/0873fb1580bf33334bc266a508d42a94486c20c5))
+
 ## [1.48.1](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.48.0...v1.48.1) (2024-09-06)
 
 
