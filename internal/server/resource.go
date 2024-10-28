@@ -418,18 +418,6 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		// if the server was created without public net, the server is now still offline and has to be powered on after
 		// network assignment
 		if err := onServerCreateWithoutPublicNet(&opts, d, func(_ *hcloud.ServerCreateOpts) error {
-			if err := powerOnServer(ctx, c, res.Server); err != nil {
-				return err
-			}
-
-			// Workaround for network interface issue
-			powerOffTwo, _, err := c.Server.Poweroff(ctx, res.Server)
-			if err != nil {
-				return err
-			}
-			if err := hcloudutil.WaitForAction(ctx, &c.Action, powerOffTwo); err != nil {
-				return fmt.Errorf("power off server: %v", err)
-			}
 			return powerOnServer(ctx, c, res.Server)
 		}); err != nil {
 			return err
