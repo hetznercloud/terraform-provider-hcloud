@@ -18,7 +18,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/hcclient"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/primaryip"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/control"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
@@ -423,7 +422,7 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 			if err != nil {
 				return err
 			}
-			if err := hcclient.WaitForAction(ctx, &c.Action, powerOn); err != nil {
+			if err := hcloudutil.WaitForAction(ctx, &c.Action, powerOn); err != nil {
 				return fmt.Errorf("start server: %v", err)
 			}
 		}); err != nil {
