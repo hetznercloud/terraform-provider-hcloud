@@ -418,13 +418,7 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		// if the server was created without public net, the server is now still offline and has to be powered on after
 		// network assignment
 		if err := onServerCreateWithoutPublicNet(&opts, d, func(_ *hcloud.ServerCreateOpts) error {
-			powerOn, _, err := c.Server.Poweron(ctx, res.Server)
-			if err != nil {
-				return err
-			}
-			if err := hcloudutil.WaitForAction(ctx, &c.Action, powerOn); err != nil {
-				return fmt.Errorf("start server: %v", err)
-			}
+			return powerOnServer(ctx, c, res.Server)
 		}); err != nil {
 			return err
 		}
