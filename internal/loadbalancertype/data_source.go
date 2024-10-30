@@ -75,19 +75,15 @@ func getCommonDataSchema() map[string]schema.Attribute {
 			Computed: true,
 		},
 		"max_assigned_certificates": schema.Int64Attribute{
-			Optional: true,
 			Computed: true,
 		},
 		"max_connections": schema.Int64Attribute{
-			Optional: true,
 			Computed: true,
 		},
 		"max_services": schema.Int64Attribute{
-			Optional: true,
 			Computed: true,
 		},
 		"max_targets": schema.Int64Attribute{
-			Optional: true,
 			Computed: true,
 		},
 	}
