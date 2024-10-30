@@ -61,14 +61,14 @@ func newResourceData(_ context.Context, in *hcloud.LoadBalancerType) (resourceDa
 	return data, diags
 }
 
-func getCommonDataSchema() map[string]schema.Attribute {
+func getCommonDataSchema(readOnly bool) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"id": schema.Int64Attribute{
-			Optional: true,
+			Optional: !readOnly,
 			Computed: true,
 		},
 		"name": schema.StringAttribute{
-			Optional: true,
+			Optional: !readOnly,
 			Computed: true,
 		},
 		"description": schema.StringAttribute{
@@ -125,7 +125,7 @@ var dataSourceMarkdownDescription string
 
 // Schema should return the schema for this data source.
 func (d *dataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema.Attributes = getCommonDataSchema()
+	resp.Schema.Attributes = getCommonDataSchema(false)
 	resp.Schema.MarkdownDescription = dataSourceMarkdownDescription
 }
 
@@ -223,11 +223,11 @@ var dataSourceListMarkdownDescription string
 func (d *dataSourceList) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema.Attributes = map[string]schema.Attribute{
 		"id": schema.StringAttribute{
-			Optional: true,
+			Computed: true,
 		},
 		"load_balancer_types": schema.ListNestedAttribute{
 			NestedObject: schema.NestedAttributeObject{
-				Attributes: getCommonDataSchema(),
+				Attributes: getCommonDataSchema(true),
 			},
 			Computed: true,
 		},
