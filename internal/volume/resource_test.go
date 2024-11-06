@@ -256,7 +256,7 @@ func TestVolumeResource_Protection(t *testing.T) {
 
 		res = &volume.RData{
 			Name:             "basic-volume",
-			LocationName:     "nbg1",
+			LocationName:     teste2e.TestLocationName,
 			Size:             10,
 			DeleteProtection: true,
 		}
