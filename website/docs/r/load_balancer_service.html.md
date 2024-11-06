@@ -106,7 +106,7 @@ resource "hcloud_load_balancer_service" "load_balancer_service" {
 
 (health check) `http` supports the following fields:
 
-- `domain` - string) Domain we try to access when performing the Health Check.
+- `domain` - (string) Domain we try to access when performing the Health Check.
 - `path` - (string) Path we try to access when performing the Health Check.
 - `response` - (string) Response we expect to be included in the Target response when a Health Check was performed.
 - `tls` - (bool) Enable TLS certificate checking.
