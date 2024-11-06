@@ -34,7 +34,7 @@ data "hcloud_load_balancer" "lb_3" {
 - `id` - (int) Unique ID of the Load Balancer.
 - `load_balancer_type` - (string) Name of the Type of the Load Balancer.
 - `name` - (string) Name of the Load Balancer.
-- `location` - (string) Name of the location the Load Balancer is in.
+- `location` - (string) Name of the location the Load Balancer is in. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-locations-are-there) for more details about locations.
 - `ipv4` - (string) IPv4 Address of the Load Balancer.
 - `ipv6` - (string) IPv4 Address of the Load Balancer.
 - `algorithm` - (Optional) Configuration of the algorithm the Load Balancer use.

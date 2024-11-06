@@ -36,7 +36,7 @@ resource "hcloud_load_balancer_target" "load_balancer_target" {
 
 - `name` - (Required, string) Name of the Load Balancer.
 - `load_balancer_type` - (Required, string) Type of the Load Balancer.
-- `location` - (Optional, string) The location name of the Load Balancer. Require when no network_zone is set.
+- `location` - (Optional, string) The location name of the Load Balancer. Require when no network_zone is set. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-locations-are-there) for more details about locations.
 - `network_zone` - (Optional, string) The Network Zone of the Load Balancer. Require when no location is set.
 - `algorithm` - (Optional) Configuration of the algorithm the Load Balancer use.
 - `labels` - (Optional, map) User-defined labels (key-value pairs) should be created with.
@@ -50,7 +50,7 @@ resource "hcloud_load_balancer_target" "load_balancer_target" {
 - `id` - (int) Unique ID of the Load Balancer.
 - `load_balancer_type` - (string) Name of the Type of the Load Balancer.
 - `name` - (string) Name of the Load Balancer.
-- `location` - (string) Name of the location the Load Balancer is in.
+- `location` - (string) Name of the location the Load Balancer is in. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-locations-are-there) for more details about locations.
 - `ipv4` - (string) IPv4 Address of the Load Balancer.
 - `ipv6` - (string) IPv6 Address of the Load Balancer.
 - `algorithm` - (Optional) Configuration of the algorithm the Load Balancer use.

@@ -31,7 +31,7 @@ data "hcloud_volume" "volume_3" {
 - `id` - (int) Unique ID of the volume.
 - `name` - (string) Name of the volume.
 - `size` - (int) Size of the volume.
-- `location` - (string) The location name.
+- `location` - (string) The location name. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-locations-are-there) for more details about locations.
 - `server_id` - (Optional, int) Server ID the volume is attached to
 - `labels` - (map) User-defined labels (key-value pairs).
 - `linux_device` - (string) Device path on the file system for the Volume.

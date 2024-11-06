@@ -46,7 +46,7 @@ resource "hcloud_server" "server_test" {
 
 - `type` - (string) Type of the Primary IP. `ipv4` or `ipv6`
 - `name` - (string) Name of the Primary IP.
-- `datacenter` - (string, optional) The datacenter name to create the resource in.
+- `datacenter` - (string, optional) The datacenter name to create the resource in. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-datacenters-are-there) for more details about datacenters.
 - `auto_delete` - (bool) Whether auto delete is enabled.
   `Important note:`It is recommended to set `auto_delete` to `false`, because if a server assigned to the managed ip is getting deleted, it will also delete the primary IP which will break the TF state.
 - `labels` - (map, optional) User-defined labels (key-value pairs).
@@ -60,7 +60,7 @@ Note: At least one of `datacenter` or `assignee_id` is required.
 
 - `id` - (int) Unique ID of the Primary IP.
 - `type` - (string) Type of the Primary IP.
-- `datacenter` - (string) The datacenter of the Primary IP.
+- `datacenter` - (string) The datacenter of the Primary IP. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-datacenters-are-there) for more details about datacenters.
 - `name` - (string) Name of the Primary IP.
 - `auto_delete` - (bool) Whether auto delete is enabled.
 - `labels` - (map) User-defined labels (key-value pairs).
