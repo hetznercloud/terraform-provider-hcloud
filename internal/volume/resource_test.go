@@ -17,7 +17,7 @@ import (
 func TestVolumeResource_Basic(t *testing.T) {
 	var vol hcloud.Volume
 
-	res := volume.Basic
+	res := VolumeRData()
 	resRenamed := &volume.RData{
 		Name:         res.Name + "-renamed",
 		LocationName: teste2e.TestLocationName,
@@ -75,7 +75,7 @@ func TestVolumeResource_Basic(t *testing.T) {
 func TestVolumeResource_Resize(t *testing.T) {
 	var vol hcloud.Volume
 
-	res := volume.Basic
+	res := VolumeRData()
 	res.Name = "resized-volume"
 	resResized := &volume.RData{
 		Name:         res.Name,
@@ -144,12 +144,12 @@ func TestVolumeResource_WithServer(t *testing.T) {
 	}
 	resServer2.SetRName("another-server")
 
-	res := volume.Basic
+	res := VolumeRData()
 	res.Name = "volume-with-server"
 	res.LocationName = ""
 	res.ServerID = resServer1.TFID() + ".id"
 
-	resAnotherServer := volume.Basic
+	resAnotherServer := VolumeRData()
 	resAnotherServer.Name = "volume-with-server"
 	resAnotherServer.LocationName = ""
 	resAnotherServer.ServerID = resServer2.TFID() + ".id"
@@ -211,7 +211,7 @@ func TestVolumeResource_WithServerMultipleVolumes(t *testing.T) {
 	}
 	resServer1.SetRName("some-server")
 
-	res := volume.Basic
+	res := VolumeRData()
 	res.Name = "volume-with-server"
 	res.LocationName = ""
 	res.ServerID = resServer1.TFID() + ".id"

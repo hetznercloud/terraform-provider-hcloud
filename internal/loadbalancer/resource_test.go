@@ -18,7 +18,7 @@ import (
 func TestLoadBalancerResource_Basic(t *testing.T) {
 	var lb hcloud.LoadBalancer
 
-	res := loadbalancer.Basic
+	res := LoadBalancerRData()
 	resRenamed := &loadbalancer.RData{
 		Name:         res.Name + "-renamed",
 		LocationName: teste2e.TestLocationName,
@@ -77,7 +77,8 @@ func TestLoadBalancerResource_Basic(t *testing.T) {
 func TestLoadBalancerResource_Resize(t *testing.T) {
 	var lb hcloud.LoadBalancer
 
-	res := loadbalancer.Basic
+	res := LoadBalancerRData()
+
 	resResized := &loadbalancer.RData{
 		Name:         res.Name,
 		LocationName: teste2e.TestLocationName,
@@ -202,7 +203,7 @@ func TestLoadBalancerResource_Protection(t *testing.T) {
 
 		res = &loadbalancer.RData{
 			Name:             "load-balancer-protection",
-			LocationName:     "nbg1",
+			LocationName:     teste2e.TestLocationName,
 			DeleteProtection: true,
 		}
 
