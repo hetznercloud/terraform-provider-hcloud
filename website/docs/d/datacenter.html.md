@@ -26,6 +26,6 @@ data "hcloud_datacenter" "ds_2" {
 - `id` - (int) Unique ID of the datacenter.
 - `name` - (string) Name of the datacenter.
 - `description` - (string) Description of the datacenter.
-- `location` - (map) Physical datacenter location.
+- `location` - (map) Location details of the datacenter. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-locations-are-there) for more details about locations.
 - `supported_server_type_ids` - (list) List of server types supported by the datacenter.
 - `available_server_type_ids` - (list) List of available server types.

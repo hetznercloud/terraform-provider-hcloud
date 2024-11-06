@@ -63,7 +63,7 @@ resource "hcloud_server" "server_test" {
 - `id` - (int) Unique ID of the Primary IP.
 - `type` - (string) Type of the Primary IP.
 - `name` - (string) Name of the Primary IP.
-- `datacenter` - (string) The datacenter name of the Primary IP.
+- `datacenter` - (string) The datacenter name of the Primary IP. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-datacenters-are-there) for more details about datacenters.
 - `auto_delete` - (bool) Whether auto delete is enabled.
 - `labels` - (map) User-defined labels (key-value pairs).
 - `ip_address` - (string) IP Address of the Primary IP.

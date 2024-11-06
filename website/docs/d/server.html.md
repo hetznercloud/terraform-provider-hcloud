@@ -33,8 +33,8 @@ data "hcloud_server" "s_3" {
 - `name` - (string) Name of the server.
 - `server_type` - (string) Name of the server type.
 - `image` - (string) Name or ID of the image the server was created from.
-- `location` - (string) The location name.
-- `datacenter` - (string) The datacenter name.
+- `location` - (string) The location name. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-locations-are-there) for more details about locations.
+- `datacenter` - (string) The datacenter name. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-datacenters-are-there) for more details about datacenters.
 - `backup_window` - (string) The backup window of the server, if enabled.
 - `backups` - (bool) Whether backups are enabled.
 - `iso` - (string) ID or Name of the mounted ISO image. Architecture of ISO must equal the server (type) architecture.
