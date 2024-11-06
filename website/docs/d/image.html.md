@@ -5,10 +5,14 @@ sidebar_current: "docs-hcloud-datasource-image"
 description: |-
   Provides details about a specific Hetzner Cloud Image.
 ---
+
 # Data Source: hcloud_image
+
 Provides details about a Hetzner Cloud Image.
 This resource is useful if you want to use a non-terraform managed image.
+
 ## Example Usage
+
 ```hcl
 data "hcloud_image" "image_1" {
   id = "1234"
@@ -25,7 +29,9 @@ resource "hcloud_server" "main" {
   image = data.hcloud_image.image_1.id
 }
 ```
+
 ## Argument Reference
+
 - `id` - (Optional, string) ID of the Image.
 - `name` - (Optional, string) Name of the Image.
 - `with_selector` - (Optional, string) [Label selector](https://docs.hetzner.cloud/#overview-label-selector)
@@ -35,6 +41,7 @@ resource "hcloud_server" "main" {
 - `include_deprecated` - (Optional, bool) Also return the image if it is marked as deprecated.
 
 ## Attributes Reference
+
 - `id` - (int) Unique ID of the Image.
 - `name` - (string) Name of the Image, only present when the Image is of type `system`.
 - `type` - (string) Type of the Image, could be `system`, `backup` or `snapshot`.

@@ -5,10 +5,13 @@ sidebar_current: "docs-hcloud-datasource-server-types"
 description: |-
   List all available Hetzner Cloud Server Types.
 ---
+
 # Data Source: hcloud_server_types
+
 Provides a list of available Hetzner Cloud Server Types.
 
 ## Example Usage
+
 ```hcl
 data "hcloud_server_types" "ds" {
 }
@@ -23,4 +26,5 @@ resource "hcloud_server" "workers" {
 ```
 
 ## Attributes Reference
+
 - `server_types` - (list) List of all server types. See `data.hcloud_server_type` for schema.

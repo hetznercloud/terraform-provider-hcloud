@@ -39,7 +39,7 @@ resource "hcloud_server" "node1" {
 
 - `id` - (int) Unique ID of the Placement Group.
 - `name` - (string) Name of the Placement Group.
-- `type` - (string)  Type of the Placement Group.
+- `type` - (string) Type of the Placement Group.
 - `labels` - (map) User-defined labels (key-value pairs)
 
 ## Import

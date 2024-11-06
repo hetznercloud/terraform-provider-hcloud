@@ -8,7 +8,7 @@ description: |-
 
 # hcloud_network
 
- Provides a Hetzner Cloud Network to represent a Network in the Hetzner Cloud.
+Provides a Hetzner Cloud Network to represent a Network in the Hetzner Cloud.
 
 ## Example Usage
 
@@ -43,4 +43,3 @@ Networks can be imported using its `id`:
 ```
 terraform import hcloud_network.myip id
 ```
-

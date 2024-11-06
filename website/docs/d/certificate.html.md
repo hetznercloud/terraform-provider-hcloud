@@ -3,7 +3,7 @@ layout: "hcloud"
 page_title: "Hetzner Cloud: hcloud_load_certificate"
 sidebar_current: "docs-hcloud-datasource-certificate-x"
 description: |-
-   Provides details about a specific Hetzner Cloud Certificate.
+  Provides details about a specific Hetzner Cloud Certificate.
 ---
 
 # hcloud_certificate

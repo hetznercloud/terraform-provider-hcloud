@@ -5,11 +5,14 @@ sidebar_current: "docs-hcloud-datasource-server-type"
 description: |-
   Provides details about a specific Hetzner Cloud Server Type.
 ---
+
 # Data Source: hcloud_server_type
+
 Provides details about a specific Hetzner Cloud Server Type.
 Use this resource to get detailed information about specific Server Type.
 
 ## Example Usage
+
 ```hcl
 data "hcloud_server_type" "ds_1" {
   name = "cx22"
@@ -18,11 +21,14 @@ data "hcloud_server_type" "ds_2" {
   id = 1
 }
 ```
+
 ## Argument Reference
+
 - `id` - (Optional, string) ID of the server_type.
 - `name` - (Optional, string) Name of the server_type.
 
 ## Attributes Reference
+
 - `id` - (int) Unique ID of the server_type.
 - `name` - (string) Name of the server_type.
 - `description` - (string) Description of the server_type.

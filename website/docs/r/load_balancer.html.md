@@ -43,6 +43,7 @@ resource "hcloud_load_balancer_target" "load_balancer_target" {
 - `delete_protection` - (Optional, bool) Enable or disable delete protection. See ["Delete Protection"](../index.html.markdown#delete-protection) in the Provider Docs for details.
 
 `algorithm` support the following fields:
+
 - `type` - (Required, string) Type of the Load Balancer Algorithm. `round_robin` or `least_connections`
 
 ## Attributes Reference
@@ -60,6 +61,7 @@ resource "hcloud_load_balancer_target" "load_balancer_target" {
 - `network_ip` - (string) IP of the Load Balancer in the first private network that it is connected to.
 
 `algorithm` support the following fields:
+
 - `type` - (string) Type of the Load Balancer Algorithm. `round_robin` or `least_connections`
 
 ## Import

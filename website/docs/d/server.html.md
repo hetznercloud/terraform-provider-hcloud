@@ -5,11 +5,14 @@ sidebar_current: "docs-hcloud-datasource-server-x"
 description: |-
   Provides details about a specific Hetzner Cloud Server.
 ---
+
 # Data Source: hcloud_server
+
 Provides details about a Hetzner Cloud Server.
 This resource is useful if you want to use a non-terraform managed server.
 
 ## Example Usage
+
 ```hcl
 data "hcloud_server" "s_1" {
   name = "my-server"
@@ -23,12 +26,14 @@ data "hcloud_server" "s_3" {
 ```
 
 ## Argument Reference
+
 - `id` - ID of the server.
 - `name` - Name of the server.
 - `with_selector` - Label Selector. For more information about possible values, visit the [Hetzner Cloud Documentation](https://docs.hetzner.cloud/#overview-label-selector).
 - `with_status` - (Optional, list) List only servers with the specified status, could contain `initializing`, `starting`, `running`, `stopping`, `off`, `deleting`, `rebuilding`, `migrating`, `unknown`.
 
 ## Attributes Reference
+
 - `id` - (int) Unique ID of the server.
 - `name` - (string) Name of the server.
 - `server_type` - (string) Name of the server type.

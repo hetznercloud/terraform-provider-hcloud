@@ -8,7 +8,7 @@ description: |-
 
 # hcloud_network_route
 
- Provides a Hetzner Cloud Network Route to represent a Network route in the Hetzner Cloud.
+Provides a Hetzner Cloud Network Route to represent a Network route in the Hetzner Cloud.
 
 ## Example Usage
 
@@ -37,7 +37,6 @@ resource "hcloud_network_route" "privNet" {
 - `network_id` - (int) ID of the Network.
 - `destination` - (string) Destination of this route.
 - `gateway` - (string) Gateway of the route.
-
 
 ## Import
 

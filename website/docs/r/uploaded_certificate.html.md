@@ -46,7 +46,7 @@ resource "hcloud_uploaded_certificate" "sample_certificate" {
 - `private_key` - (Required, string) PEM encoded private key belonging to the certificate.
 - `certificate` - (Required, string) PEM encoded TLS certificate.
 - `labels` - (Optional, map) User-defined labels (key-value pairs) the
-certificate should be created with.
+  certificate should be created with.
 
 ## Attribute Reference
 

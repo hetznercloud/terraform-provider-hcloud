@@ -31,5 +31,5 @@ data "hcloud_placement_group" "sample_placement_group_2" {
 
 - `id` - (int) Unique ID of the Placement Group.
 - `name` - (string) Name of the Placement Group.
-- `type` - (string)  Type of the Placement Group.
+- `type` - (string) Type of the Placement Group.
 - `labels` - (map) User-defined labels (key-value pairs)

@@ -5,11 +5,14 @@ sidebar_current: "docs-hcloud-datasource-locations"
 description: |-
   List all available Hetzner Cloud Locations.
 ---
+
 # Data Source: hcloud_locations
+
 Provides a list of available Hetzner Cloud Locations.
 This resource may be useful to create highly available infrastructure, distributed across several locations.
 
 ## Example Usage
+
 ```hcl
 data "hcloud_locations" "ds" {
 }
@@ -25,6 +28,7 @@ resource "hcloud_server" "workers" {
 ```
 
 ## Attributes Reference
+
 - `location_ids` - (list) List of unique location identifiers. **Deprecated**: Use `locations` attribute instead.
 - `names` - (list) List of location names. **Deprecated**: Use `locations` attribute instead.
 - `descriptions` - (list) List of all location descriptions. **Deprecated**: Use `locations` attribute instead.

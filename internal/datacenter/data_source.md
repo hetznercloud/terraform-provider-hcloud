@@ -1,4 +1,4 @@
-Provides details about a specific Hetzner Cloud Datacenter. 
+Provides details about a specific Hetzner Cloud Datacenter.
 
 Use this resource to get detailed information about a specific datacenter.
 

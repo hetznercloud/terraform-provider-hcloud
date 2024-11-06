@@ -38,7 +38,7 @@ terraform import hcloud_managed_certificate.sample_certificate id
 - `domain_names` - (Required, list) Domain names for which a certificate
   should be obtained.
 - `labels` - (Optional, map) User-defined labels (key-value pairs) the
-certificate should be created with.
+  certificate should be created with.
 
 ## Attribute Reference
 

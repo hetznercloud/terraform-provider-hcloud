@@ -10,5 +10,3 @@ description: |-
 
 Alias for `hcloud_uploaded_certificate` to remain backwards compatible.
 Deprecated.
-
-
