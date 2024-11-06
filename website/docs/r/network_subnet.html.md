@@ -8,7 +8,7 @@ description: |-
 
 # hcloud_network_subnet
 
- Provides a Hetzner Cloud Network Subnet to represent a Subnet in the Hetzner Cloud.
+Provides a Hetzner Cloud Network Subnet to represent a Subnet in the Hetzner Cloud.
 
 ## Example Usage
 

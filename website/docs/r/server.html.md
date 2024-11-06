@@ -26,6 +26,7 @@ resource "hcloud_server" "node1" {
   }
 }
 ```
+
 ```hcl
 ### Server creation with one linked primary ip (ipv4)
 resource "hcloud_primary_ip" "primary_ip_1" {
@@ -54,7 +55,9 @@ resource "hcloud_server" "server_test" {
   }
 }
 ```
+
 ### Server creation with network
+
 ```hcl
 resource "hcloud_network" "network" {
   name     = "network"
@@ -115,6 +118,7 @@ resource "hcloud_server" "from_snapshot" {
 ```
 
 ## Primary IPs
+
 When creating a server without linking at least one ´primary_ip´, it automatically creates & assigns two (ipv4 & ipv6).
 With the public_net block, you can enable or link primary ips. If you don't define this block, two primary ips (ipv4, ipv6) will be created and assigned to the server automatically.
 
@@ -176,7 +180,7 @@ The following arguments are supported:
   This should not be used in normal cases. See the documentation of the
   `hcloud_firewall_attachment` resource for a reason to use this
   argument.
-- `network` - (Optional)  Network the server should be attached to on creation. (Can be specified multiple times)
+- `network` - (Optional) Network the server should be attached to on creation. (Can be specified multiple times)
 - `placement_group_id` - (Optional, string) Placement Group ID the server added to on creation.
 - `delete_protection` - (Optional, bool) Enable or disable delete protection (Needs to be the same as `rebuild_protection`). See ["Delete Protection"](../index.html.markdown#delete-protection) in the Provider Docs for details.
 - `rebuild_protection` - (Optional, bool) Enable or disable rebuild protection (Needs to be the same as `delete_protection`).
@@ -184,12 +188,12 @@ The following arguments are supported:
 - `shutdown_before_deletion` - (bool) Whether to try shutting the server down gracefully before deleting it.
 
 `network` support the following fields:
+
 - `network_id` - (Required, int) ID of the network
 - `ip` - (Optional, string) Specify the IP the server should get in the network
 - `alias_ips` - (Optional, list) Alias IPs the server should have in the Network.
 
 There is a bug with Terraform `1.4+` which causes the network to be detached & attached on every apply. Set `alias_ips = []` to avoid this. See [#650](https://github.com/hetznercloud/terraform-provider-hcloud/issues/650#issuecomment-1497160625) for details.
-
 
 ## Attributes Reference
 
@@ -217,7 +221,7 @@ The following attributes are exported:
   issue. It is therefore necessary to use `depends_on` to link the server
   to the respective subnetwork. See examples.
 - `firewall_ids` - (Optional, list) Firewall IDs the server is attached to.
-- `network` - (Optional, list)  Network the server should be attached to on creation. (Can be specified multiple times)
+- `network` - (Optional, list) Network the server should be attached to on creation. (Can be specified multiple times)
 - `placement_group_id` - (Optional, string) Placement Group ID the server is assigned to.
 - `delete_protection` - (bool) Whether delete protection is enabled.
 - `rebuild_protection` - (bool) Whether rebuild protection is enabled.
@@ -225,11 +229,11 @@ The following attributes are exported:
 - `primary_disk_size` - (int) The size of the primary disk in GB.
 
 a single entry in `network` support the following fields:
+
 - `network_id` - (Required, int) ID of the network
 - `ip` - (Optional, string) Specify the IP the server should get in the network
 - `alias_ips` - (Optional, list) Alias IPs the server should have in the Network.
 - `mac_address` - (Optional, string) The MAC address the private interface of the server has
-
 
 ## Import
 

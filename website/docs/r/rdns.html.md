@@ -73,6 +73,7 @@ resource "hcloud_rdns" "load_balancer_master" {
   dns_ptr          = "example.com"
 }
 ```
+
 ## Argument Reference
 
 - `dns_ptr` - (Required, string) The DNS address the `ip_address` should resolve to.

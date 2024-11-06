@@ -31,11 +31,12 @@ data "hcloud_firewall" "sample_firewall_2" {
 
 - `id` - (int) Unique ID of the Firewall.
 - `name` - (string) Name of the Firewall.
-- `rule` - (string)  Configuration of a Rule from this Firewall.
+- `rule` - (string) Configuration of a Rule from this Firewall.
 - `labels` - (map) User-defined labels (key-value pairs)
 - `apply_to` - Configuration of the Applied Resources
 
 `rule` support the following fields:
+
 - `direction` - (Required, string) Direction of the Firewall Rule. `in`, `out`
 - `protocol` - (Required, string) Protocol of the Firewall Rule. `tcp`, `icmp`, `udp`, `gre`, `esp`
 - `port` - (Required, string) Port of the Firewall Rule. Required when `protocol` is `tcp` or `udp`
@@ -44,6 +45,7 @@ data "hcloud_firewall" "sample_firewall_2" {
 - `description` - (Optional, string) Description of the firewall rule
 
 `apply_to` support the following fields:
+
 - `label_selector` - (string) Label Selector to select servers the firewall is applied to. Empty if a server is directly
   referenced
 - `server` - (int) ID of a server where the firewall is applied to. `0` if applied to a label_selector

@@ -34,7 +34,6 @@ jobs:
       github.event_name == 'push' ||
       github.event.pull_request.draft == false
     needs: [unit]
-
     runs-on: ubuntu-latest
 
     permissions:

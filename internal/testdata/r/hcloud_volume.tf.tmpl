@@ -17,7 +17,7 @@ resource "hcloud_volume" "{{ .RName }}" {
   {{- end }}
   }
   {{ end }}
-  
+
   {{- if .DeleteProtection }}
   delete_protection = {{ .DeleteProtection }}
   {{ end }}

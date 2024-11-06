@@ -5,11 +5,14 @@ sidebar_current: "docs-hcloud-datasource-datacenters"
 description: |-
   List all available Hetzner Cloud Datacenters.
 ---
+
 # Data Source: hcloud_datacenters
+
 Provides a list of available Hetzner Cloud Datacenters.
 This resource may be useful to create highly available infrastructure, distributed across several datacenters.
 
 ## Example Usage
+
 ```hcl
 data "hcloud_datacenters" "ds" {
 }
@@ -25,6 +28,7 @@ resource "hcloud_server" "workers" {
 ```
 
 ## Attributes Reference
+
 - `datacenter_ids` - (list) List of unique datacenter identifiers. **Deprecated**: Use `datacenters` attribute instead.
 - `names` - (list) List of datacenter names. **Deprecated**: Use `datacenters` attribute instead.
 - `descriptions` - (list) List of all datacenter descriptions. **Deprecated**: Use `datacenters` attribute instead.

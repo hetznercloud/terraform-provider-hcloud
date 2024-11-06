@@ -8,7 +8,7 @@ description: |-
 
 # hcloud_load_balancer_service
 
-  Define services for Hetzner Cloud Load Balancers.
+Define services for Hetzner Cloud Load Balancers.
 
 ## Example Usage
 
@@ -80,7 +80,6 @@ resource "hcloud_load_balancer_service" "load_balancer_service" {
 - `tls` - (Optional, bool) Enable TLS certificate checking.
 - `status_codes` - (Optional, list[string]) We expect that the target answers with these status codes. If not the target is marked as `unhealthy`.
 
-
 ## Attribute Reference
 
 - `protocol` - (string) Protocol of the service. `http`, `https` or `tcp`
@@ -107,7 +106,7 @@ resource "hcloud_load_balancer_service" "load_balancer_service" {
 
 (health check) `http` supports the following fields:
 
-- `domain` -  string) Domain we try to access when performing the Health Check.
+- `domain` - (string) Domain we try to access when performing the Health Check.
 - `path` - (string) Path we try to access when performing the Health Check.
 - `response` - (string) Response we expect to be included in the Target response when a Health Check was performed.
 - `tls` - (bool) Enable TLS certificate checking.

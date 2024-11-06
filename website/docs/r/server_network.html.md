@@ -8,7 +8,7 @@ description: |-
 
 # hcloud_server_network
 
- Provides a Hetzner Cloud Server Network to represent a private network on a server in the Hetzner Cloud.
+Provides a Hetzner Cloud Server Network to represent a private network on a server in the Hetzner Cloud.
 
 ## Example Usage
 
@@ -51,7 +51,7 @@ resource "hcloud_server_network" "srvnetwork" {
   the existence of a subnet.
 - `subnet_id` - (Optional, string) ID of the sub-network which should be
   added to the Server. Required if `network_id` is not set.
-  *Note*: if the `ip` property is missing, the Server is currently added
+  _Note_: if the `ip` property is missing, the Server is currently added
   to the last created subnet.
 - `ip` - (Optional, string) IP to request to be assigned to this server.
   If you do not provide this then you will be auto assigned an IP

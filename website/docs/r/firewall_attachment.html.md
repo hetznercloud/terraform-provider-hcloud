@@ -10,7 +10,7 @@ description: |-
 
 Attaches resource to a Hetzner Cloud Firewall.
 
-*Note*: only one `hcloud_firewall_attachment` per Firewall is allowed.
+_Note_: only one `hcloud_firewall_attachment` per Firewall is allowed.
 Any resources that should be attached to that Firewall need to be
 specified in that `hcloud_firewall_attachment`.
 
@@ -67,7 +67,7 @@ resource to attach servers to a Firewall. In some scenarios this may
 pose a security risk.
 
 The following workaround ensures that a server is attached to a Firewall
-*before* it first boots. However, the workaround requires two Firewalls.
+_before_ it first boots. However, the workaround requires two Firewalls.
 Additionally the server resource definition needs to ignore any remote
 changes to the `hcloud_server.firewall_ids` property. This is done using
 the `ignore_remote_firewall_ids` property of `hcloud_server`.

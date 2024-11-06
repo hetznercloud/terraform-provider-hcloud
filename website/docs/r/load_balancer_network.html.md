@@ -8,7 +8,7 @@ description: |-
 
 # hcloud_load_balancer_network
 
- Provides a Hetzner Cloud Load Balancer Network to represent a private network on a Load Balancer in the Hetzner Cloud.
+Provides a Hetzner Cloud Load Balancer Network to represent a private network on a Load Balancer in the Hetzner Cloud.
 
 ## Example Usage
 
@@ -59,7 +59,7 @@ resource "hcloud_load_balancer_network" "srvnetwork" {
   `hcloud_load_balancer_network` and the existence of a subnet.
 - `subnet_id` - (Optional, string) ID of the sub-network which should be
   added to the Load Balancer. Required if `network_id` is not set.
-  *Note*: if the `ip` property is missing, the Load Balancer is
+  _Note_: if the `ip` property is missing, the Load Balancer is
   currently added to the last created subnet.
 - `ip` - (Optional, string) IP to request to be assigned to this Load
   Balancer. If you do not provide this then you will be auto assigned an
@@ -82,4 +82,3 @@ Load Balancer Network entries can be imported using a compound ID with the follo
 ```
 terraform import hcloud_load_balancer_network.myloadbalancernetwork 123-654
 ```
-
