@@ -3,12 +3,12 @@ layout: "hcloud"
 page_title: "Hetzner Cloud: hcloud_volume"
 sidebar_current: "docs-hcloud-datasource-volumes-x"
 description: |-
-Provides details about multiple Hetzner Cloud volumes.
+  Provides details about multiple Hetzner Cloud Volumes.
 ---
 
 # hcloud_volumes
 
-Provides details about multiple Hetzner Cloud volumes.
+Provides details about multiple Hetzner Cloud Volumes.
 
 ## Example Usage
 
