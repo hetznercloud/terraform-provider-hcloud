@@ -66,7 +66,9 @@ resource "hcloud_server" "{{ .RName }}" {
   {{ end }}
 
   {{- if .UserData }}
-  user_data   = "{{ .UserData }}"
+  user_data   = <<EOF
+{{ .UserData }}
+EOF
   {{ end }}
 
   {{ if .FirewallIDs }}
