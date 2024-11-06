@@ -10,6 +10,7 @@
 *.log
 /_output
 !.golangci.yaml
+!.pre-commit-config.yaml
 !renovate.json
 
 .env*
