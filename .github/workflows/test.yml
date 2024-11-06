@@ -94,6 +94,9 @@ jobs:
           TF_LOG: DEBUG
           TF_LOG_PATH_MASK: test-%s.log
 
+          TEST_DATACENTER: ${{ vars.TEST_DATACENTER }}
+          TEST_LOCATION: ${{ vars.TEST_LOCATION }}
+
       - uses: codecov/codecov-action@v4
         if: >
           !startsWith(github.head_ref, 'renovate/') &&
