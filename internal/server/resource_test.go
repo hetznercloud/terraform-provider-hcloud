@@ -843,6 +843,15 @@ func TestServerResource_PrivateNetworkBastion(t *testing.T) {
 			"ipv4_enabled": true,
 			"ipv6_enabled": true,
 		},
+		UserData: `#cloud-config
+users:
+  - default
+  - name: test
+    shell: /bin/bash
+
+runcmd:
+  - echo "hello from bastion!"
+`,
 		DependsOn: []string{subnetRes.TFID()},
 	}
 	bastionRes.SetRName("bastion")
@@ -860,6 +869,15 @@ func TestServerResource_PrivateNetworkBastion(t *testing.T) {
 			"ipv4_enabled": false,
 			"ipv6_enabled": false,
 		},
+		UserData: `#cloud-config
+users:
+  - default
+  - name: test
+    shell: /bin/bash
+
+runcmd:
+  - echo "hello from host!"
+`,
 		DependsOn: []string{subnetRes.TFID()},
 
 		Connection: fmt.Sprintf(`
