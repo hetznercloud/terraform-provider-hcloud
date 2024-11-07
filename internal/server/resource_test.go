@@ -210,11 +210,10 @@ func TestServerResource_ChangeUserData(t *testing.T) {
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s)),
-					resource.TestCheckResourceAttr(res.TFID(), "name",
-						fmt.Sprintf("server-userdata--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(res.TFID(), "name", fmt.Sprintf("server-userdata--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(res.TFID(), "server_type", res.Type),
 					resource.TestCheckResourceAttr(res.TFID(), "image", res.Image),
-					resource.TestCheckResourceAttr(res.TFID(), "user_data", userDataHashSum(res.UserData)),
+					resource.TestCheckResourceAttr(res.TFID(), "user_data", userDataHashSum(res.UserData+"\n")),
 				),
 			},
 			{
@@ -226,11 +225,10 @@ func TestServerResource_ChangeUserData(t *testing.T) {
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s2)),
-					resource.TestCheckResourceAttr(resChangedUserdata.TFID(), "name",
-						fmt.Sprintf("server-userdata--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(resChangedUserdata.TFID(), "name", fmt.Sprintf("server-userdata--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(resChangedUserdata.TFID(), "server_type", res.Type),
 					resource.TestCheckResourceAttr(resChangedUserdata.TFID(), "image", res.Image),
-					resource.TestCheckResourceAttr(resChangedUserdata.TFID(), "user_data", userDataHashSum(resChangedUserdata.UserData)),
+					resource.TestCheckResourceAttr(resChangedUserdata.TFID(), "user_data", userDataHashSum(resChangedUserdata.UserData+"\n")),
 					testsupport.LiftTCF(isRecreated(&s2, &s)),
 				),
 			},
