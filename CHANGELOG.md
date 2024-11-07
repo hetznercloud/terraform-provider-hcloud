@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.49.0](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.48.1...v1.49.0) (2024-11-07)
+
+
+### Features
+
+* add data.load_balancer_type(s) data sources ([#991](https://github.com/hetznercloud/terraform-provider-hcloud/issues/991)) ([ef60613](https://github.com/hetznercloud/terraform-provider-hcloud/commit/ef60613cf649c60a04663011180eae9318afba7b))
+* add support for opentofu v1.8 ([#1029](https://github.com/hetznercloud/terraform-provider-hcloud/issues/1029)) ([c7902de](https://github.com/hetznercloud/terraform-provider-hcloud/commit/c7902deb659c39ae1f00352ac967d22b9e98e169))
+* drop support for opentofu v1.6 ([#1030](https://github.com/hetznercloud/terraform-provider-hcloud/issues/1030)) ([8c448dd](https://github.com/hetznercloud/terraform-provider-hcloud/commit/8c448dd02b3bdcbc881825fc18ea7163cecda22a))
+
+
+### Bug Fixes
+
+* do not retry deleting a protected primary ip ([#1015](https://github.com/hetznercloud/terraform-provider-hcloud/issues/1015)) ([e9de286](https://github.com/hetznercloud/terraform-provider-hcloud/commit/e9de2865836bef8d4f4e9604d2d8c83c5a7cd12e)), closes [#1014](https://github.com/hetznercloud/terraform-provider-hcloud/issues/1014)
+* **primary-ip:** conflict when deleting IP ([#994](https://github.com/hetznercloud/terraform-provider-hcloud/issues/994)) ([0873fb1](https://github.com/hetznercloud/terraform-provider-hcloud/commit/0873fb1580bf33334bc266a508d42a94486c20c5))
+
 ## [1.48.1](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.48.0...v1.48.1) (2024-09-06)
 
 
