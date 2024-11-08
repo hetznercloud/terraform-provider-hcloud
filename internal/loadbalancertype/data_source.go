@@ -2,7 +2,6 @@ package loadbalancertype
 
 import (
 	"context"
-	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -64,27 +63,34 @@ func newResourceData(_ context.Context, in *hcloud.LoadBalancerType) (resourceDa
 func getCommonDataSchema(readOnly bool) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"id": schema.Int64Attribute{
-			Optional: !readOnly,
-			Computed: true,
+			MarkdownDescription: "ID of the Load Balancer Type.",
+			Optional:            !readOnly,
+			Computed:            true,
 		},
 		"name": schema.StringAttribute{
-			Optional: !readOnly,
-			Computed: true,
+			MarkdownDescription: "Name of the Load Balancer Type.",
+			Optional:            !readOnly,
+			Computed:            true,
 		},
 		"description": schema.StringAttribute{
-			Computed: true,
+			MarkdownDescription: "Description of the Load Balancer Type.",
+			Computed:            true,
 		},
 		"max_assigned_certificates": schema.Int64Attribute{
-			Computed: true,
+			MarkdownDescription: "Maximum number of certificates that can be assigned for the Load Balancer of this type.",
+			Computed:            true,
 		},
 		"max_connections": schema.Int64Attribute{
-			Computed: true,
+			MarkdownDescription: "Maximum number of simultaneous open connections for the Load Balancer of this type.",
+			Computed:            true,
 		},
 		"max_services": schema.Int64Attribute{
-			Computed: true,
+			MarkdownDescription: "Maximum number of services for the Load Balancer of this type.",
+			Computed:            true,
 		},
 		"max_targets": schema.Int64Attribute{
-			Computed: true,
+			MarkdownDescription: "Maximum number of targets for the Load Balancer of this type.",
+			Computed:            true,
 		},
 	}
 }
@@ -120,13 +126,15 @@ func (d *dataSource) Configure(_ context.Context, req datasource.ConfigureReques
 	}
 }
 
-//go:embed data_source.md
-var dataSourceMarkdownDescription string
-
 // Schema should return the schema for this data source.
 func (d *dataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema.MarkdownDescription = `
+Provides details about a specific Hetzner Cloud Load Balancer Type.
+
+Use this resource to get detailed information about a specific Load Balancer Type.
+`
+
 	resp.Schema.Attributes = getCommonDataSchema(false)
-	resp.Schema.MarkdownDescription = dataSourceMarkdownDescription
 }
 
 // ConfigValidators returns a list of ConfigValidators. Each ConfigValidator's Validate method will be called when validating the data source.
@@ -216,11 +224,12 @@ func (d *dataSourceList) Configure(_ context.Context, req datasource.ConfigureRe
 	}
 }
 
-//go:embed data_source_list.md
-var dataSourceListMarkdownDescription string
-
 // Schema should return the schema for this data source.
 func (d *dataSourceList) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema.MarkdownDescription = `
+Provides a list of available Hetzner Cloud Load Balancer Types.
+`
+
 	resp.Schema.Attributes = map[string]schema.Attribute{
 		"id": schema.StringAttribute{
 			Computed: true,
@@ -232,8 +241,6 @@ func (d *dataSourceList) Schema(_ context.Context, _ datasource.SchemaRequest, r
 			Computed: true,
 		},
 	}
-
-	resp.Schema.MarkdownDescription = dataSourceListMarkdownDescription
 }
 
 type resourceDataList struct {
