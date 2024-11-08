@@ -49,15 +49,16 @@ func AttrTypes() map[string]attr.Type {
 func DataSourceSchema() map[string]datasourceschema.Attribute {
 	return map[string]datasourceschema.Attribute{
 		"is_deprecated": datasourceschema.BoolAttribute{
-			Computed: true,
+			MarkdownDescription: "Whether the resource is deprecated.",
+			Computed:            true,
 		},
 		"deprecation_announced": datasourceschema.StringAttribute{
-			Computed: true,
-			Optional: true,
+			MarkdownDescription: "Date of the resource deprecation announcement.",
+			Computed:            true,
 		},
 		"unavailable_after": datasourceschema.StringAttribute{
-			Computed: true,
-			Optional: true,
+			MarkdownDescription: "Date of the resource removal. After this date, the resource cannot be used anymore.",
+			Computed:            true,
 		},
 	}
 }
@@ -65,15 +66,16 @@ func DataSourceSchema() map[string]datasourceschema.Attribute {
 func ResourceSchema() map[string]resourceschema.Attribute {
 	return map[string]resourceschema.Attribute{
 		"is_deprecated": resourceschema.BoolAttribute{
-			Computed: true,
+			MarkdownDescription: "Whether the resource is deprecated.",
+			Computed:            true,
 		},
 		"deprecation_announced": resourceschema.StringAttribute{
-			Computed: true,
-			Optional: true,
+			MarkdownDescription: "Date of the resource deprecation announcement.",
+			Computed:            true,
 		},
 		"unavailable_after": resourceschema.StringAttribute{
-			Computed: true,
-			Optional: true,
+			MarkdownDescription: "Date of the resource removal. After this date, the resource cannot be used anymore.",
+			Computed:            true,
 		},
 	}
 }
