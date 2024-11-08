@@ -877,26 +877,6 @@ runcmd:
   - echo "hello from host!"
 `,
 		DependsOn: []string{subnetRes.TFID()},
-
-		Connection: fmt.Sprintf(`
-			connection {
-				type         = "ssh"
-				user         = "root"
-				host         = one(self.network[*].ip)
-				private_key  = %q
-
-				bastion_user = "root"
-				bastion_host = %s
-			}
-		`,
-			sshKeyRes.PrivateKey,
-			bastionRes.TFID()+".ipv4_address",
-		),
-		Provisioners: `
-			provisioner "remote-exec" {
-				inline = [ "cloud-init status --wait --long" ]
-			}
-		`,
 	}
 	hostRes.SetRName("host")
 
@@ -912,6 +892,29 @@ runcmd:
 					"testdata/r/hcloud_network_subnet", subnetRes,
 					"testdata/r/hcloud_server", bastionRes,
 					"testdata/r/hcloud_server", hostRes,
+					"testdata/r/any",
+					fmt.Sprintf(`
+resource "terraform_data" "wait" {
+  triggers_replace = [
+    hcloud_server.bastion.id,
+    hcloud_server.host.id,
+  ]
+
+  connection {
+    type        = "ssh"
+    user        = "root"
+    host        = one(hcloud_server.host.network[*].ip)
+    private_key = %q
+
+    bastion_user = "root"
+    bastion_host = hcloud_server.bastion.ipv4_address
+  }
+
+  provisioner "remote-exec" {
+    inline = ["cloud-init status --wait --long"]
+  }
+}
+`, sshKeyRes.PrivateKey),
 				),
 			},
 		},
