@@ -2,7 +2,6 @@ package datacenter
 
 import (
 	"context"
-	_ "embed"
 	"fmt"
 	"sort"
 	"strconv"
@@ -85,31 +84,37 @@ func newResourceData(ctx context.Context, in *hcloud.Datacenter) (resourceData, 
 	return data, diags
 }
 
-func getCommonDataSchema() map[string]schema.Attribute {
+func getCommonDataSchema(readOnly bool) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"id": schema.Int64Attribute{
-			Optional: true,
-			Computed: true,
+			MarkdownDescription: "ID of the Datacenter.",
+			Optional:            !readOnly,
+			Computed:            readOnly,
 		},
 		"name": schema.StringAttribute{
-			Optional: true,
-			Computed: true,
+			MarkdownDescription: "Name of the Datacenter.",
+			Optional:            !readOnly,
+			Computed:            readOnly,
 		},
 		"description": schema.StringAttribute{
-			Computed: true,
+			MarkdownDescription: "Description of the Datacenter.",
+			Computed:            true,
 		},
 		// TODO: Refactor to SingleNestedAttribute in v2
 		"location": schema.MapAttribute{
-			Computed:    true,
-			ElementType: types.StringType,
+			MarkdownDescription: "Location of the Datacenter. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-locations-are-there) for more details about locations.",
+			ElementType:         types.StringType,
+			Computed:            true,
 		},
 		"supported_server_type_ids": schema.ListAttribute{
-			Computed:    true,
-			ElementType: types.Int64Type,
+			MarkdownDescription: "List of supported Server Types in the Datacenter.",
+			ElementType:         types.Int64Type,
+			Computed:            true,
 		},
 		"available_server_type_ids": schema.ListAttribute{
-			Computed:    true,
-			ElementType: types.Int64Type,
+			MarkdownDescription: "List of currently available Server Types in the Datacenter.",
+			ElementType:         types.Int64Type,
+			Computed:            true,
 		},
 	}
 }
@@ -145,13 +150,14 @@ func (d *dataSource) Configure(_ context.Context, req datasource.ConfigureReques
 	}
 }
 
-//go:embed data_source.md
-var dataSourceMarkdownDescription string
-
 // Schema should return the schema for this data source.
 func (d *dataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema.Attributes = getCommonDataSchema()
-	resp.Schema.MarkdownDescription = dataSourceMarkdownDescription
+	resp.Schema.MarkdownDescription = `
+Provides details about a specific Hetzner Cloud Datacenter.
+
+Use this resource to get detailed information about a specific Datacenter.
+`
+	resp.Schema.Attributes = getCommonDataSchema(false)
 }
 
 // ConfigValidators returns a list of ConfigValidators. Each ConfigValidator's Validate method will be called when validating the data source.
@@ -241,39 +247,40 @@ func (d *dataSourceList) Configure(_ context.Context, req datasource.ConfigureRe
 	}
 }
 
-//go:embed data_source_list.md
-var dataSourceListMarkdownDescription string
-
 // Schema should return the schema for this data source.
 func (d *dataSourceList) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema.MarkdownDescription = `
+Provides a list of available Hetzner Cloud Datacenters.
+
+This resource may be useful to create highly available infrastructure, distributed across several Datacenters.
+`
+
 	resp.Schema.Attributes = map[string]schema.Attribute{
 		"id": schema.StringAttribute{
-			Optional: true,
+			Computed: true,
 		},
 		"datacenter_ids": schema.ListAttribute{
-			Optional:           true,
 			DeprecationMessage: "Use datacenters list instead",
 			ElementType:        types.StringType,
+			Computed:           true,
 		},
 		"names": schema.ListAttribute{
-			Optional:           true,
 			DeprecationMessage: "Use datacenters list instead",
 			ElementType:        types.StringType,
+			Computed:           true,
 		},
 		"descriptions": schema.ListAttribute{
-			Optional:           true,
 			DeprecationMessage: "Use datacenters list instead",
 			ElementType:        types.StringType,
+			Computed:           true,
 		},
 		"datacenters": schema.ListNestedAttribute{
 			NestedObject: schema.NestedAttributeObject{
-				Attributes: getCommonDataSchema(),
+				Attributes: getCommonDataSchema(true),
 			},
 			Computed: true,
 		},
 	}
-
-	resp.Schema.MarkdownDescription = dataSourceListMarkdownDescription
 }
 
 type resourceDataList struct {
