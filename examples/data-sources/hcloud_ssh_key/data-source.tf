@@ -1,15 +1,23 @@
-data "hcloud_ssh_key" "ssh_key_1" {
-  id = "1234"
+data "hcloud_ssh_key" "by_id" {
+  id = 24332897
 }
-data "hcloud_ssh_key" "ssh_key_2" {
+
+data "hcloud_ssh_key" "by_name" {
   name = "my-ssh-key"
 }
-data "hcloud_ssh_key" "ssh_key_3" {
-  fingerprint = "43:51:43:a1:b5:fc:8b:b7:0a:3a:a9:b1:0f:66:73:a8"
+
+data "hcloud_ssh_key" "by_fingerprint" {
+  fingerprint = "55:58:dc:bd:61:6e:7d:24:07:a7:7d:9b:be:99:83:a8"
 }
-data "hcloud_ssh_key" "ssh_key_4" {
+
+data "hcloud_ssh_key" "by_selector" {
   with_selector = "key=value"
 }
+
 resource "hcloud_server" "main" {
-  ssh_keys = [data.hcloud_ssh_key.ssh_key_1.id, data.hcloud_ssh_key.ssh_key_2.id, data.hcloud_ssh_key.ssh_key_3.id]
+  ssh_keys = [
+    data.hcloud_ssh_key.by_id.id,
+    data.hcloud_ssh_key.by_name.id,
+    data.hcloud_ssh_key.by_fingerprint.id,
+  ]
 }

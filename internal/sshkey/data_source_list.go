@@ -2,7 +2,6 @@ package sshkey
 
 import (
 	"context"
-	_ "embed"
 	"strconv"
 	"strings"
 
@@ -49,27 +48,29 @@ func (d *dataSourceList) Configure(_ context.Context, req datasource.ConfigureRe
 	}
 }
 
-//go:embed data_source_list.md
-var dataSourceListMarkdownDescription string
-
 // Schema should return the schema for this data source.
 func (d *dataSourceList) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema.MarkdownDescription = `
+Provides details about Hetzner Cloud SSH Keys.
+
+This resource is useful if you want to use a non-terraform managed SSH Key.
+`
+
 	resp.Schema.Attributes = map[string]schema.Attribute{
 		"id": schema.StringAttribute{
 			Optional: true,
 		},
 		"ssh_keys": schema.ListNestedAttribute{
 			NestedObject: schema.NestedAttributeObject{
-				Attributes: getCommonDataSourceSchema(),
+				Attributes: getCommonDataSourceSchema(true),
 			},
 			Computed: true,
 		},
 		"with_selector": schema.StringAttribute{
-			Optional: true,
+			MarkdownDescription: "Filter results using a [Label Selector](https://docs.hetzner.cloud/#label-selector)",
+			Optional:            true,
 		},
 	}
-
-	resp.Schema.MarkdownDescription = dataSourceListMarkdownDescription
 }
 
 type resourceDataList struct {

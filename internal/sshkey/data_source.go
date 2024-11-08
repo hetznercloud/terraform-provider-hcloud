@@ -2,7 +2,6 @@ package sshkey
 
 import (
 	"context"
-	_ "embed"
 	"maps"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
@@ -46,32 +45,30 @@ func populateResourceDataWithSelector(ctx context.Context, data *resourceDataWit
 	return diags
 }
 
-func getCommonDataSourceSchema() map[string]schema.Attribute {
+func getCommonDataSourceSchema(readOnly bool) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"id": schema.Int64Attribute{
-			MarkdownDescription: "ID of the SSH key.",
-			Optional:            true,
-			Computed:            true,
+			MarkdownDescription: "ID of the SSH Key.",
+			Optional:            !readOnly,
+			Computed:            readOnly,
 		},
 		"name": schema.StringAttribute{
-			MarkdownDescription: "Name of the SSH key.",
-			Optional:            true,
-			Computed:            true,
+			MarkdownDescription: "Name of the SSH Key.",
+			Optional:            !readOnly,
+			Computed:            readOnly,
 		},
 		"fingerprint": schema.StringAttribute{
-			MarkdownDescription: "Fingerprint of the SSH key.",
-			Optional:            true,
-			Computed:            true,
+			MarkdownDescription: "Fingerprint of the SSH Key.",
+			Optional:            !readOnly,
+			Computed:            readOnly,
 		},
 		"public_key": schema.StringAttribute{
-			MarkdownDescription: "Public key of the SSH key pair.",
-			Optional:            true,
+			MarkdownDescription: "Public key of the SSH Key pair.",
 			Computed:            true,
 		},
 		"labels": schema.MapAttribute{
 			MarkdownDescription: "User-defined [labels](https://docs.hetzner.cloud/#labels) (key-value pairs) for the resource.",
 			ElementType:         types.StringType,
-			Optional:            true,
 			Computed:            true,
 		},
 	}
@@ -108,22 +105,26 @@ func (d *dataSource) Configure(_ context.Context, req datasource.ConfigureReques
 	}
 }
 
-//go:embed data_source.md
-var dataSourceMarkdownDescription string
-
 // Schema should return the schema for this data source.
 func (d *dataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema.Attributes = getCommonDataSourceSchema()
+	resp.Schema.MarkdownDescription = `
+Provides details about a specific Hetzner Cloud SSH Key.
+
+This resource is useful if you want to use a non-terraform managed SSH Key.
+`
+
+	resp.Schema.Attributes = getCommonDataSourceSchema(false)
 	maps.Copy(resp.Schema.Attributes, map[string]schema.Attribute{
 		"selector": schema.StringAttribute{
-			Optional:           true,
-			DeprecationMessage: "Please use the with_selector property instead.",
+			MarkdownDescription: "Filter results using a [Label Selector](https://docs.hetzner.cloud/#label-selector).",
+			Optional:            true,
+			DeprecationMessage:  "Please use the with_selector property instead.",
 		},
 		"with_selector": schema.StringAttribute{
-			Optional: true,
+			MarkdownDescription: "Filter results using a [Label Selector](https://docs.hetzner.cloud/#label-selector).",
+			Optional:            true,
 		},
 	})
-	resp.Schema.MarkdownDescription = dataSourceMarkdownDescription
 }
 
 // ConfigValidators returns a list of ConfigValidators. Each ConfigValidator's Validate method will be called when validating the data source.
