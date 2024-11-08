@@ -94,12 +94,4 @@ EOF
   {{- if .RebuildProtection }}
   rebuild_protection = {{ .RebuildProtection }}
   {{ end }}
-
-  {{- if .Connection }}
-  {{ .Connection }}
-  {{ end }}
-
-  {{- if .Provisioners }}
-  {{ .Provisioners }}
-  {{ end }}
 }
