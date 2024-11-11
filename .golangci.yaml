@@ -1,40 +1,50 @@
 ---
-linters-settings:
-  errcheck:
-    exclude-functions:
-      - (*github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema.ResourceData).Set
-  misspell:
-    locale: US
-
 linters:
-  disable-all: true
-  enable:
-    - gofmt
-    - bodyclose
-    - errcheck
-    - exportloopref
-    - gocritic
-    - goimports
-    - gosimple
-    - govet
-    - ineffassign
-    - misspell
-    - prealloc
-    - revive
-    - rowserrcheck
-    - staticcheck
-    - typecheck
-    - unparam
+  presets:
+    - bugs
+    - error
+    - import
+    - metalinter
+    - module
     - unused
-    - unconvert
-    - whitespace
+
+  enable:
+    - testifylint
+
+  disable:
+    # preset error
+    - err113 # Very annoying to define static errors everywhere
+    - wrapcheck # Very annoying to wrap errors everywhere
+    # preset import
+    - depguard
+
+linters-settings:
+  gci:
+    sections:
+      - standard
+      - default
+      - prefix(github.com/hetznercloud)
+
+  exhaustive:
+    # Switch cases with a default case should be exhaustive.
+    default-signifies-exhaustive: true
 
 issues:
   exclude-rules:
     - path: _test\.go
       linters:
-        - exportloopref
         - gosec
         - errcheck
     - path: testing\.go
       text: unused-parameter
+    - linters:
+        - testifylint
+      text: bool-compare
+    - linters:
+        - testifylint
+      text: empty
+
+      # Can be removed once we migrated to the plugin framework.
+    - linters:
+        - errcheck
+      text: Error return value of `d.Set` is not checked
