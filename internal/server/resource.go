@@ -234,9 +234,9 @@ func Resource() *schema.Resource {
 				Optional: true,
 				Computed: true,
 				Elem:     &schema.Schema{Type: schema.TypeInt},
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool { // nolint:revive
+				DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool { // nolint:revive
 					sup := d.Get("ignore_remote_firewall_ids").(bool)
-					if sup && old != "" && new != "" {
+					if sup && oldValue != "" && newValue != "" {
 						return true
 					}
 					return false
@@ -274,14 +274,14 @@ func userDataHashSum(userData string) string {
 	return base64.StdEncoding.EncodeToString(sum[:])
 }
 
-func userDataDiffSuppress(k, old, new string, d *schema.ResourceData) bool {
+func userDataDiffSuppress(k, oldValue, newValue string, d *schema.ResourceData) bool {
 	userData := d.Get(k).(string)
-	if new != "" && userData != "" {
-		if _, err := base64.StdEncoding.DecodeString(old); err != nil {
-			return userDataHashSum(old) == new
+	if newValue != "" && userData != "" {
+		if _, err := base64.StdEncoding.DecodeString(oldValue); err != nil {
+			return userDataHashSum(oldValue) == newValue
 		}
 	}
-	return strings.TrimSpace(old) == strings.TrimSpace(new)
+	return strings.TrimSpace(oldValue) == strings.TrimSpace(newValue)
 }
 
 func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -1286,11 +1286,11 @@ func setPlacementGroup(ctx context.Context, c *hcloud.Client, server *hcloud.Ser
 	return nil
 }
 
-func setProtection(ctx context.Context, c *hcloud.Client, server *hcloud.Server, delete bool, rebuild bool) error {
+func setProtection(ctx context.Context, c *hcloud.Client, server *hcloud.Server, deleteProtection bool, rebuildProtection bool) error {
 	action, _, err := c.Server.ChangeProtection(ctx, server,
 		hcloud.ServerChangeProtectionOpts{
-			Delete:  &delete,
-			Rebuild: &rebuild,
+			Delete:  &deleteProtection,
+			Rebuild: &rebuildProtection,
 		},
 	)
 	if err != nil {

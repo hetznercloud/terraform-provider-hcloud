@@ -1080,10 +1080,10 @@ func TestServerResource_EmptySSHKey(t *testing.T) {
 	})
 }
 
-func isRecreated(new, old *hcloud.Server) func() error {
+func isRecreated(newServer, oldServer *hcloud.Server) func() error {
 	return func() error {
-		if new.ID == old.ID {
-			return fmt.Errorf("new server is the same as server cert %d", old.ID)
+		if newServer.ID == oldServer.ID {
+			return fmt.Errorf("new server is the same as server cert %d", oldServer.ID)
 		}
 		return nil
 	}

@@ -411,10 +411,10 @@ func getVolumeAttributes(v *hcloud.Volume) map[string]interface{} {
 	return res
 }
 
-func setProtection(ctx context.Context, c *hcloud.Client, v *hcloud.Volume, delete bool) error {
+func setProtection(ctx context.Context, c *hcloud.Client, v *hcloud.Volume, deleteProtection bool) error {
 	action, _, err := c.Volume.ChangeProtection(ctx, v,
 		hcloud.VolumeChangeProtectionOpts{
-			Delete: &delete,
+			Delete: &deleteProtection,
 		},
 	)
 	if err != nil {

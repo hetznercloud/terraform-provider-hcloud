@@ -456,10 +456,10 @@ func algorithmToTerraformAlgorithm(algorithm hcloud.LoadBalancerAlgorithm) (tfAl
 	return
 }
 
-func setProtection(ctx context.Context, c *hcloud.Client, lb *hcloud.LoadBalancer, delete bool) error {
+func setProtection(ctx context.Context, c *hcloud.Client, lb *hcloud.LoadBalancer, deleteProtection bool) error {
 	action, _, err := c.LoadBalancer.ChangeProtection(ctx, lb,
 		hcloud.LoadBalancerChangeProtectionOpts{
-			Delete: &delete,
+			Delete: &deleteProtection,
 		},
 	)
 	if err != nil {
