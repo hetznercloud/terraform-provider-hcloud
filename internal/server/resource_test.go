@@ -210,11 +210,10 @@ func TestServerResource_ChangeUserData(t *testing.T) {
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s)),
-					resource.TestCheckResourceAttr(res.TFID(), "name",
-						fmt.Sprintf("server-userdata--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(res.TFID(), "name", fmt.Sprintf("server-userdata--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(res.TFID(), "server_type", res.Type),
 					resource.TestCheckResourceAttr(res.TFID(), "image", res.Image),
-					resource.TestCheckResourceAttr(res.TFID(), "user_data", userDataHashSum(res.UserData)),
+					resource.TestCheckResourceAttr(res.TFID(), "user_data", userDataHashSum(res.UserData+"\n")),
 				),
 			},
 			{
@@ -226,11 +225,10 @@ func TestServerResource_ChangeUserData(t *testing.T) {
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s2)),
-					resource.TestCheckResourceAttr(resChangedUserdata.TFID(), "name",
-						fmt.Sprintf("server-userdata--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(resChangedUserdata.TFID(), "name", fmt.Sprintf("server-userdata--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(resChangedUserdata.TFID(), "server_type", res.Type),
 					resource.TestCheckResourceAttr(resChangedUserdata.TFID(), "image", res.Image),
-					resource.TestCheckResourceAttr(resChangedUserdata.TFID(), "user_data", userDataHashSum(resChangedUserdata.UserData)),
+					resource.TestCheckResourceAttr(resChangedUserdata.TFID(), "user_data", userDataHashSum(resChangedUserdata.UserData+"\n")),
 					testsupport.LiftTCF(isRecreated(&s2, &s)),
 				),
 			},
@@ -808,6 +806,115 @@ func TestServerResource_PrimaryIPNetworkTests(t *testing.T) {
 						assert.NotEqual(t, 0, s.PublicNet.IPv6.ID)
 						return nil
 					}),
+				),
+			},
+		},
+	})
+}
+
+func TestServerResource_PrivateNetworkBastion(t *testing.T) {
+	name := "server-private-network-bastion"
+
+	sshKeyRes := sshkey.NewRData(t, name)
+
+	networkRes := &network.RData{Name: name, IPRange: "10.0.0.0/16"}
+	networkRes.SetRName("network")
+
+	subnetRes := &network.RDataSubnet{
+		Type:        "cloud",
+		NetworkID:   networkRes.TFID() + ".id",
+		NetworkZone: "eu-central",
+		IPRange:     "10.0.1.0/24",
+	}
+	subnetRes.SetRName("network")
+
+	bastionRes := &server.RData{
+		Name:         name + "-bastion",
+		Type:         teste2e.TestServerType,
+		LocationName: teste2e.TestLocationName,
+		Image:        teste2e.TestImage,
+		SSHKeys:      []string{sshKeyRes.TFID() + ".id"},
+		Networks: []server.RDataInlineNetwork{{
+			NetworkID: networkRes.TFID() + ".id",
+		}},
+		PublicNet: map[string]interface{}{
+			"ipv4_enabled": true,
+			"ipv6_enabled": true,
+		},
+		UserData: `#cloud-config
+users:
+  - default
+  - name: test
+    shell: /bin/bash
+
+runcmd:
+  - echo "hello from bastion!"
+`,
+		DependsOn: []string{subnetRes.TFID()},
+	}
+	bastionRes.SetRName("bastion")
+
+	hostRes := &server.RData{
+		Name:         name + "-host",
+		Type:         teste2e.TestServerType,
+		LocationName: teste2e.TestLocationName,
+		Image:        teste2e.TestImage,
+		SSHKeys:      []string{sshKeyRes.TFID() + ".id"},
+		Networks: []server.RDataInlineNetwork{{
+			NetworkID: networkRes.TFID() + ".id",
+		}},
+		PublicNet: map[string]interface{}{
+			"ipv4_enabled": false,
+			"ipv6_enabled": false,
+		},
+		UserData: `#cloud-config
+users:
+  - default
+  - name: test
+    shell: /bin/bash
+
+runcmd:
+  - echo "hello from host!"
+`,
+		DependsOn: []string{subnetRes.TFID()},
+	}
+	hostRes.SetRName("host")
+
+	tmplMan := testtemplate.Manager{}
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sshKeyRes,
+					"testdata/r/hcloud_network", networkRes,
+					"testdata/r/hcloud_network_subnet", subnetRes,
+					"testdata/r/hcloud_server", bastionRes,
+					"testdata/r/hcloud_server", hostRes,
+					"testdata/r/any",
+					fmt.Sprintf(`
+resource "terraform_data" "wait" {
+  triggers_replace = [
+    hcloud_server.bastion.id,
+    hcloud_server.host.id,
+  ]
+
+  connection {
+    type        = "ssh"
+    user        = "root"
+    host        = one(hcloud_server.host.network[*].ip)
+    private_key = %q
+
+    bastion_user = "root"
+    bastion_host = hcloud_server.bastion.ipv4_address
+  }
+
+  provisioner "remote-exec" {
+    inline = ["cloud-init status --wait --long"]
+  }
+}
+`, sshKeyRes.PrivateKey),
 				),
 			},
 		},

@@ -117,14 +117,21 @@ func (ts *Manager) Render(t *testing.T, args ...interface{}) string {
 		if !ok {
 			t.Fatalf("args[%d]: string required: %T", i, args[i])
 		}
-		data, ok := args[i+1].(Data)
-		if !ok {
-			t.Fatalf("args[%d]: data required: %T", i+1, args[i+1])
+
+		var data any
+		switch arg := args[i+1].(type) {
+		case Data:
+			arg.SetRInt(ts.RandInt)
+			if arg.RName() == "" {
+				arg.SetRName(ts.RandName)
+			}
+			data = arg
+		case string:
+			data = arg
+		default:
+			t.Fatalf("args[%d]: data or string required: %T", i+1, args[i+1])
 		}
-		data.SetRInt(ts.RandInt)
-		if data.RName() == "" {
-			data.SetRName(ts.RandName)
-		}
+
 		tmpl := ts.tmpl.Lookup(tmplName)
 		if tmpl == nil {
 			t.Fatalf("template %s: not found", tmplName)

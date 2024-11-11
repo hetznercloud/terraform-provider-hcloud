@@ -41,6 +41,9 @@ resource "hcloud_server" "{{ .RName }}" {
       {{ end }}
       {{- if .AliasIPs }}
       alias_ips = {{ with DQuoteS .AliasIPs }}[{{ StringsJoin . ", " }}]{{ end }}
+      {{- else }}
+      # Workaround for https://github.com/hetznercloud/terraform-provider-hcloud/issues/650
+      alias_ips = []
       {{- end }}
   }
   {{ end }}{{ end }}
@@ -63,7 +66,9 @@ resource "hcloud_server" "{{ .RName }}" {
   {{ end }}
 
   {{- if .UserData }}
-  user_data   = "{{ .UserData }}"
+  user_data   = <<EOF
+{{ .UserData }}
+EOF
   {{ end }}
 
   {{ if .FirewallIDs }}
