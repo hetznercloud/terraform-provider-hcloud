@@ -304,10 +304,10 @@ func getFloatingIPAttributes(f *hcloud.FloatingIP) map[string]interface{} {
 	return res
 }
 
-func setProtection(ctx context.Context, c *hcloud.Client, f *hcloud.FloatingIP, delete bool) error {
+func setProtection(ctx context.Context, c *hcloud.Client, f *hcloud.FloatingIP, deleteProtection bool) error {
 	action, _, err := c.FloatingIP.ChangeProtection(ctx, f,
 		hcloud.FloatingIPChangeProtectionOpts{
-			Delete: &delete,
+			Delete: &deleteProtection,
 		},
 	)
 	if err != nil {

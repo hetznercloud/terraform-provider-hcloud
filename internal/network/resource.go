@@ -238,10 +238,10 @@ func getNetworkAttributes(n *hcloud.Network) map[string]interface{} {
 	}
 }
 
-func setProtection(ctx context.Context, c *hcloud.Client, n *hcloud.Network, delete bool) error {
+func setProtection(ctx context.Context, c *hcloud.Client, n *hcloud.Network, deleteProtection bool) error {
 	action, _, err := c.Network.ChangeProtection(ctx, n,
 		hcloud.NetworkChangeProtectionOpts{
-			Delete: &delete,
+			Delete: &deleteProtection,
 		},
 	)
 	if err != nil {

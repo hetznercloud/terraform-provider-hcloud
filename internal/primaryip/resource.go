@@ -340,11 +340,11 @@ func getPrimaryIPAttributes(f *hcloud.PrimaryIP) map[string]interface{} {
 	return res
 }
 
-func setProtection(ctx context.Context, c *hcloud.Client, primaryIP *hcloud.PrimaryIP, delete bool) error {
+func setProtection(ctx context.Context, c *hcloud.Client, primaryIP *hcloud.PrimaryIP, deleteProtection bool) error {
 	action, _, err := c.PrimaryIP.ChangeProtection(ctx,
 		hcloud.PrimaryIPChangeProtectionOpts{
 			ID:     primaryIP.ID,
-			Delete: delete,
+			Delete: deleteProtection,
 		},
 	)
 	if err != nil {
