@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
 )
@@ -77,7 +78,7 @@ func TestAttachment_FromResourceData(t *testing.T) {
 				tt.assertErr(t, err)
 				return
 			}
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, tt.att, actual)
 		})
 	}
@@ -236,7 +237,7 @@ func TestAttachment_FromFirewall(t *testing.T) {
 				tt.assertError(t, err)
 				return
 			}
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, tt.att, att)
 		})
 	}
