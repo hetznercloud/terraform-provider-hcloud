@@ -132,7 +132,7 @@ func resourceLoadBalancerNetworkUpdate(ctx context.Context, d *schema.ResourceDa
 	c := m.(*hcloud.Client)
 
 	loadBalancer, nw, privateNet, err := lookupLoadBalancerNetworkID(ctx, d.Id(), c)
-	if err == errInvalidLoadBalancerNetworkID {
+	if errors.Is(err, errInvalidLoadBalancerNetworkID) {
 		log.Printf("[WARN] Invalid id (%s), removing from state: %s", d.Id(), err)
 		d.SetId("")
 		return nil
@@ -167,7 +167,7 @@ func resourceLoadBalancerNetworkRead(ctx context.Context, d *schema.ResourceData
 	client := m.(*hcloud.Client)
 
 	loadBalancer, network, privateNet, err := lookupLoadBalancerNetworkID(ctx, d.Id(), client)
-	if err == errInvalidLoadBalancerNetworkID {
+	if errors.Is(err, errInvalidLoadBalancerNetworkID) {
 		log.Printf("[WARN] Invalid id (%s), removing from state: %s", d.Id(), err)
 		d.SetId("")
 		return nil

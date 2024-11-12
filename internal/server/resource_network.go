@@ -107,7 +107,7 @@ func resourceServerNetworkCreate(ctx context.Context, d *schema.ResourceData, m 
 func resourceServerNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 	server, network, _, err := lookupServerNetworkID(ctx, d.Id(), client)
-	if err == errInvalidServerNetworkID {
+	if errors.Is(err, errInvalidServerNetworkID) {
 		log.Printf("[WARN] Invalid id (%s), removing from state: %s", d.Id(), err)
 		d.SetId("")
 		return nil
@@ -138,7 +138,7 @@ func resourceServerNetworkRead(ctx context.Context, d *schema.ResourceData, m in
 	client := m.(*hcloud.Client)
 
 	server, network, privateNet, err := lookupServerNetworkID(ctx, d.Id(), client)
-	if err == errInvalidServerNetworkID {
+	if errors.Is(err, errInvalidServerNetworkID) {
 		log.Printf("[WARN] Invalid id (%s), removing from state: %s", d.Id(), err)
 		d.SetId("")
 		return nil

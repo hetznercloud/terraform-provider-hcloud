@@ -253,7 +253,7 @@ func resourceLoadBalancerServiceUpdate(ctx context.Context, d *schema.ResourceDa
 	c := m.(*hcloud.Client)
 
 	lb, svc, err := lookupLoadBalancerServiceID(ctx, d.Id(), c)
-	if err == errInvalidLoadBalancerServiceID {
+	if errors.Is(err, errInvalidLoadBalancerServiceID) {
 		log.Printf("[WARN] Invalid id (%s), removing from state: %s", d.Id(), err)
 		d.SetId("")
 		return nil
@@ -297,7 +297,7 @@ func resourceLoadBalancerServiceUpdate(ctx context.Context, d *schema.ResourceDa
 func resourceLoadBalancerServiceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 	lb, svc, err := lookupLoadBalancerServiceID(ctx, d.Id(), client)
-	if err == errInvalidLoadBalancerServiceID {
+	if errors.Is(err, errInvalidLoadBalancerServiceID) {
 		log.Printf("[WARN] Invalid id (%s), removing from state: %s", d.Id(), err)
 		d.SetId("")
 		return nil
@@ -317,7 +317,7 @@ func resourceLoadBalancerServiceDelete(ctx context.Context, d *schema.ResourceDa
 	c := m.(*hcloud.Client)
 
 	lb, svc, err := lookupLoadBalancerServiceID(ctx, d.Id(), c)
-	if err == errInvalidLoadBalancerServiceID {
+	if errors.Is(err, errInvalidLoadBalancerServiceID) {
 		log.Printf("[WARN] Invalid id (%s), removing from state: %s", d.Id(), err)
 		d.SetId("")
 		return nil
