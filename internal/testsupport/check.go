@@ -27,7 +27,7 @@ func CheckResourceExists(name string, k KeyFunc) resource.TestCheckFunc {
 
 	return func(s *terraform.State) error {
 		if err := backendResourceByKey(s, name, k); err != nil {
-			return fmt.Errorf("%s: %v", op, err)
+			return fmt.Errorf("%s: %w", op, err)
 		}
 		return nil
 	}
@@ -45,7 +45,7 @@ func CheckResourcesDestroyed(resType string, k KeyFunc) resource.TestCheckFunc {
 			}
 			err := backendResourceByKey(s, name, k)
 			if err != nil && !errors.Is(err, errMissingInHCBackend) {
-				return fmt.Errorf("%s: %v", op, err)
+				return fmt.Errorf("%s: %w", op, err)
 			}
 		}
 		return nil

@@ -20,11 +20,11 @@ func EqualCert(cert1, cert2 string) (bool, error) {
 
 	parsed1, err := parseCertificates(cert1)
 	if err != nil {
-		return false, fmt.Errorf("%s: cert1: %v", op, err)
+		return false, fmt.Errorf("%s: cert1: %w", op, err)
 	}
 	parsed2, err := parseCertificates(cert2)
 	if err != nil {
-		return false, fmt.Errorf("%s: cert2: %v", op, err)
+		return false, fmt.Errorf("%s: cert2: %w", op, err)
 	}
 	if len(parsed1) != len(parsed2) {
 		return false, nil
@@ -67,7 +67,7 @@ func parseCertificates(cert string) ([]*x509.Certificate, error) {
 		}
 		c, err := x509.ParseCertificate(blk.Bytes)
 		if err != nil {
-			return nil, fmt.Errorf("%s: %v", op, err)
+			return nil, fmt.Errorf("%s: %w", op, err)
 		}
 
 		certs = append(certs, c)

@@ -141,7 +141,7 @@ func resourceLoadBalancerCreateServerTarget(
 
 	server, _, err := client.Server.GetByID(ctx, serverID)
 	if err != nil {
-		return nil, tgt, fmt.Errorf("get server by id: %d: %v", serverID, err)
+		return nil, tgt, fmt.Errorf("get server by id: %d: %w", serverID, err)
 	}
 	if server == nil {
 		return nil, tgt, fmt.Errorf("server %d: not found", serverID)
@@ -171,7 +171,7 @@ func resourceLoadBalancerCreateServerTarget(
 		return nil
 	})
 	if err != nil {
-		return nil, tgt, fmt.Errorf("%s: load balancer %d: %v", op, lb.ID, err)
+		return nil, tgt, fmt.Errorf("%s: load balancer %d: %w", op, lb.ID, err)
 	}
 
 	tgt = hcloud.LoadBalancerTarget{
@@ -184,7 +184,7 @@ func resourceLoadBalancerCreateServerTarget(
 		if hcloud.IsError(err, hcloud.ErrorCodeTargetAlreadyDefined) {
 			return nil, tgt, nil
 		}
-		return nil, tgt, fmt.Errorf("add server target: %v", err)
+		return nil, tgt, fmt.Errorf("add server target: %w", err)
 	}
 
 	return action, tgt, nil
@@ -222,7 +222,7 @@ func resourceLoadBalancerCreateLabelSelectorTarget(
 		return nil, tgt, nil
 	}
 	if err != nil {
-		return nil, tgt, fmt.Errorf("add label selector target: %v", err)
+		return nil, tgt, fmt.Errorf("add label selector target: %w", err)
 	}
 	return action, tgt, nil
 }
@@ -252,7 +252,7 @@ func resourceLoadBalancerCreateIPTarget(
 		return nil, tgt, nil
 	}
 	if err != nil {
-		return nil, tgt, fmt.Errorf("add ip target: %v", err)
+		return nil, tgt, fmt.Errorf("add ip target: %w", err)
 	}
 	return action, tgt, nil
 }
@@ -398,11 +398,11 @@ func removeLoadBalancerTarget(ctx context.Context, c *hcloud.Client, lb *hcloud.
 		return nil
 	}
 	if err != nil {
-		return fmt.Errorf("remove server target: %v", err)
+		return fmt.Errorf("remove server target: %w", err)
 	}
 
 	if err := hcloudutil.WaitForAction(ctx, &c.Action, a); err != nil {
-		return fmt.Errorf("remove server target: wait for action: %v", err)
+		return fmt.Errorf("remove server target: wait for action: %w", err)
 	}
 	return nil
 }
@@ -418,7 +418,7 @@ func findLoadBalancerTarget(
 
 	lb, _, err := client.LoadBalancer.GetByID(ctx, lbID)
 	if err != nil {
-		return nil, hcloud.LoadBalancerTarget{}, fmt.Errorf("get load balancer by id: %d: %v", lbID, err)
+		return nil, hcloud.LoadBalancerTarget{}, fmt.Errorf("get load balancer by id: %d: %w", lbID, err)
 	}
 	if lb == nil {
 		return nil, hcloud.LoadBalancerTarget{}, errLoadBalancerNotFound
