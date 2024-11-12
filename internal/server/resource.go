@@ -2,7 +2,7 @@ package server
 
 import (
 	"context"
-	"crypto/sha1"
+	"crypto/sha1" // nolint: gosec
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -270,7 +270,7 @@ func Resource() *schema.Resource {
 }
 
 func userDataHashSum(userData string) string {
-	sum := sha1.Sum([]byte(userData))
+	sum := sha1.Sum([]byte(userData)) // nolint: gosec
 	return base64.StdEncoding.EncodeToString(sum[:])
 }
 

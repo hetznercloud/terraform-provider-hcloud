@@ -2,7 +2,7 @@ package server_test
 
 import (
 	"context"
-	"crypto/sha1"
+	"crypto/sha1" // nolint: gosec
 	"encoding/base64"
 	"fmt"
 	"regexp"
@@ -1196,6 +1196,6 @@ func isRecreated(newServer, oldServer *hcloud.Server) func() error {
 }
 
 func userDataHashSum(userData string) string {
-	sum := sha1.Sum([]byte(userData))
+	sum := sha1.Sum([]byte(userData)) // nolint: gosec
 	return base64.StdEncoding.EncodeToString(sum[:])
 }
