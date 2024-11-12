@@ -37,7 +37,7 @@ func TestErrorToDiag(t *testing.T) {
 			if !got.HasError() {
 				t.Fatal("Expected to get errors")
 			}
-			assert.Equal(t, got[0].Summary, tt.wantedSummary)
+			assert.Equal(t, tt.wantedSummary, got[0].Summary)
 		})
 	}
 }

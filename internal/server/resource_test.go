@@ -721,8 +721,8 @@ func TestAccServerResource_PrimaryIPNetworkTests(t *testing.T) {
 					testsupport.CheckResourceExists(sResWithPrimaryIP.TFID(), server.ByID(t, &s)),
 					testsupport.LiftTCF(func() error {
 						assert.Equal(t, p.AssigneeID, s.ID)
-						assert.Equal(t, s.PublicNet.IPv4.ID, p.ID)
-						assert.Equal(t, s.PublicNet.IPv6.ID, 0)
+						assert.Equal(t, p.ID, s.PublicNet.IPv4.ID)
+						assert.Equal(t, 0, s.PublicNet.IPv6.ID)
 						return nil
 					}),
 				),

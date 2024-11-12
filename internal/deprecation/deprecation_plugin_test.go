@@ -16,12 +16,12 @@ func TestNewDeprecationModel(t *testing.T) {
 
 	{
 		data, diags := NewDeprecationModel(ctx, hcloud.ServerType{})
-		assert.Equal(t, diags.HasError(), false)
-		assert.Equal(t, data.IsDeprecated.ValueBool(), false)
-		assert.Equal(t, data.DeprecationAnnounced.IsNull(), false)
-		assert.Equal(t, data.DeprecationAnnounced.ValueString(), "")
-		assert.Equal(t, data.UnavailableAfter.IsNull(), false)
-		assert.Equal(t, data.UnavailableAfter.ValueString(), "")
+		assert.Equal(t, false, diags.HasError())
+		assert.Equal(t, false, data.IsDeprecated.ValueBool())
+		assert.Equal(t, false, data.DeprecationAnnounced.IsNull())
+		assert.Equal(t, "", data.DeprecationAnnounced.ValueString())
+		assert.Equal(t, false, data.UnavailableAfter.IsNull())
+		assert.Equal(t, "", data.UnavailableAfter.ValueString())
 	}
 
 	{
@@ -33,9 +33,9 @@ func TestNewDeprecationModel(t *testing.T) {
 				},
 			},
 		})
-		assert.Equal(t, diags.HasError(), false)
-		assert.Equal(t, data.IsDeprecated.ValueBool(), true)
-		assert.Equal(t, data.DeprecationAnnounced.ValueString(), "2024-09-06T12:00:00Z")
-		assert.Equal(t, data.UnavailableAfter.ValueString(), "2024-09-06T12:00:00Z")
+		assert.Equal(t, false, diags.HasError())
+		assert.Equal(t, true, data.IsDeprecated.ValueBool())
+		assert.Equal(t, "2024-09-06T12:00:00Z", data.DeprecationAnnounced.ValueString())
+		assert.Equal(t, "2024-09-06T12:00:00Z", data.UnavailableAfter.ValueString())
 	}
 }
