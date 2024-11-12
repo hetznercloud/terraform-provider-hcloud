@@ -209,7 +209,7 @@ func resourceNetworkDelete(ctx context.Context, d *schema.ResourceData, m interf
 }
 
 func resourceNetworkIsNotFound(err error, d *schema.ResourceData) bool {
-	if hcerr, ok := err.(hcloud.Error); ok && hcerr.Code == hcloud.ErrorCodeNotFound {
+	if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
 		log.Printf("[WARN] Network (%s) not found, removing from state", d.Id())
 		d.SetId("")
 		return true

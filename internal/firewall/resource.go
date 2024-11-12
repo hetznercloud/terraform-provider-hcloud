@@ -472,7 +472,7 @@ func removeFromResources(ctx context.Context, client *hcloud.Client, d *schema.R
 }
 
 func resourceFirewallIsNotFound(err error, d *schema.ResourceData) bool {
-	if hcerr, ok := err.(hcloud.Error); ok && hcerr.Code == hcloud.ErrorCodeNotFound {
+	if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
 		log.Printf("[WARN] firewall (%s) not found, removing from state", d.Id())
 		d.SetId("")
 		return true

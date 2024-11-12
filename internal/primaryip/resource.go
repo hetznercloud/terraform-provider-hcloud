@@ -300,7 +300,7 @@ func resourcePrimaryIPDelete(ctx context.Context, d *schema.ResourceData, m inte
 }
 
 func resourcePrimaryIPIsNotFound(err error, d *schema.ResourceData) bool {
-	if hcerr, ok := err.(hcloud.Error); ok && hcerr.Code == hcloud.ErrorCodeNotFound {
+	if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
 		log.Printf("[WARN] Primary IP (%s) not found, removing from state", d.Id())
 		d.SetId("")
 		return true

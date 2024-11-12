@@ -253,7 +253,7 @@ func resourceFloatingIPDelete(ctx context.Context, d *schema.ResourceData, m int
 		return nil
 	}
 	if _, err := client.FloatingIP.Delete(ctx, &hcloud.FloatingIP{ID: floatingIPID}); err != nil {
-		if hcerr, ok := err.(hcloud.Error); ok && hcerr.Code == hcloud.ErrorCodeNotFound {
+		if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
 			// server has already been deleted
 			return nil
 		}
@@ -264,7 +264,7 @@ func resourceFloatingIPDelete(ctx context.Context, d *schema.ResourceData, m int
 }
 
 func resourceFloatingIPIsNotFound(err error, d *schema.ResourceData) bool {
-	if hcerr, ok := err.(hcloud.Error); ok && hcerr.Code == hcloud.ErrorCodeNotFound {
+	if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
 		log.Printf("[WARN] Floating IP (%s) not found, removing from state", d.Id())
 		d.SetId("")
 		return true
