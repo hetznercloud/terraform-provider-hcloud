@@ -8,31 +8,33 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancer"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
+	loadbalancer2 "github.com/hetznercloud/terraform-provider-hcloud/test/e2e/loadbalancer"
 )
 
 func TestAccHcloudDataSourceLoadBalancerTest(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
-	res := &loadbalancer.RData{
+	res := &loadbalancer2.RData{
 		Name:         "some-load-balancer",
 		LocationName: teste2e.TestLocationName,
 		Labels: map[string]string{
 			"key": strconv.Itoa(acctest.RandInt()),
 		},
 	}
-	lbByName := &loadbalancer.DData{
+	lbByName := &loadbalancer2.DData{
 		LoadBalancerName: res.TFID() + ".name",
 	}
 	lbByName.SetRName("lb_by_name")
-	lbByID := &loadbalancer.DData{
+	lbByID := &loadbalancer2.DData{
 		LoadBalancerID: res.TFID() + ".id",
 	}
 	lbByID.SetRName("lb_by_id")
-	lbBySel := &loadbalancer.DData{
+	lbBySel := &loadbalancer2.DData{
 		LabelSelector: fmt.Sprintf("key=${%s.labels[\"key\"]}", res.TFID()),
 	}
 	lbBySel.SetRName("lb_by_sel")
@@ -40,7 +42,7 @@ func TestAccHcloudDataSourceLoadBalancerTest(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
 		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
-		CheckDestroy:             testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer2.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
@@ -80,7 +82,7 @@ func TestAccHcloudDataSourceLoadBalancerTest(t *testing.T) {
 }
 
 func TestAccHcloudDataSourceLoadBalancerListTest(t *testing.T) {
-	res := &loadbalancer.RData{
+	res := &loadbalancer2.RData{
 		Name:         "some-load-balancer",
 		LocationName: teste2e.TestLocationName,
 		Labels: map[string]string{
@@ -88,19 +90,19 @@ func TestAccHcloudDataSourceLoadBalancerListTest(t *testing.T) {
 		},
 	}
 
-	loadBalancersBySel := &loadbalancer.DDataList{
+	loadBalancersBySel := &loadbalancer2.DDataList{
 		LabelSelector: fmt.Sprintf("key=${%s.labels[\"key\"]}", res.TFID()),
 	}
 	loadBalancersBySel.SetRName("load_balancers_by_sel")
 
-	allLoadBalancersSel := &loadbalancer.DDataList{}
+	allLoadBalancersSel := &loadbalancer2.DDataList{}
 	allLoadBalancersSel.SetRName("all_load_balancers_sel")
 
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
 		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
-		CheckDestroy:             testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer2.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
