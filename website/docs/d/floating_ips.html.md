@@ -3,7 +3,7 @@ layout: "hcloud"
 page_title: "Hetzner Cloud: hcloud_floating_ips"
 sidebar_current: "docs-hcloud-datasource-floating-ips-x"
 description: |-
-Provides details about multiple Hetzner Cloud Floating IPs.
+  Provides details about multiple Hetzner Cloud Floating IPs.
 ---
 
 # Data Source: hcloud_floating_ips

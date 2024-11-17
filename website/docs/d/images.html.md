@@ -3,7 +3,7 @@ layout: "hcloud"
 page_title: "Hetzner Cloud: hcloud_images"
 sidebar_current: "docs-hcloud-datasource-images-x"
 description: |-
-Provides details about multiple Hetzner Cloud Images.
+  Provides details about multiple Hetzner Cloud Images.
 ---
 
 # Data Source: hcloud_images

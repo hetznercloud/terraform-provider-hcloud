@@ -3,7 +3,7 @@ layout: "hcloud"
 page_title: "Hetzner Cloud: hcloud_load_firewalls"
 sidebar_current: "docs-hcloud-datasource-firewalls-x"
 description: |-
-Provides details about multiple Hetzner Cloud Firewall.
+  Provides details about multiple Hetzner Cloud Firewall.
 ---
 
 # hcloud_firewalls

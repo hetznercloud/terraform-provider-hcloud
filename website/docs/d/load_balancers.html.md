@@ -3,7 +3,7 @@ layout: "hcloud"
 page_title: "Hetzner Cloud: hcloud_load_balancers"
 sidebar_current: "docs-hcloud-datasource-load-balancers-x"
 description: |-
-Provides details about multiple Hetzner Cloud Load Balancers.
+  Provides details about multiple Hetzner Cloud Load Balancers.
 ---
 
 # hcloud_load_balancer
