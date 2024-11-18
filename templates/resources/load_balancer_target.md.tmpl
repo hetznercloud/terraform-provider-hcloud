@@ -50,8 +50,4 @@ Where _identifier_ depends on the _type_:
 - `label_selector`: label selector, for example: `foo=bar`
 - `ip`: ip address, for example: `203.0.113.123`
 
-```shell
-terraform import hcloud_load_balancer_target.server "${LOAD_BALANCER_ID}__server__${SERVER_ID}"
-terraform import hcloud_load_balancer_target.label "${LOAD_BALANCER_ID}__label_selector__${LABEL_SELECTOR}"
-terraform import hcloud_load_balancer_target.ip "${LOAD_BALANCER_ID}__ip__${IP}"
-```
+{{ codefile "shell" .ImportFile }}

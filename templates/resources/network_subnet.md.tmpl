@@ -34,6 +34,4 @@ Provides a Hetzner Cloud Network Subnet to represent a Subnet in the Hetzner Clo
 Network Subnet entries can be imported using a compound ID with the following format:
 `<network-id>-<ip_range>`
 
-```shell
-terraform import hcloud_network_subnet.example "$NETWORK_ID-$IP_RANGE"
-```
+{{ codefile "shell" .ImportFile }}

@@ -45,6 +45,4 @@ Provides a Hetzner Cloud Load Balancer Network to represent a private network on
 Load Balancer Network entries can be imported using a compound ID with the following format:
 `<load-balancer-id>-<network-id>`
 
-```shell
-terraform import hcloud_load_balancer_network.example "$LOAD_BALANCER_ID-$NETWORK_ID"
-```
+{{ codefile "shell" .ImportFile }}

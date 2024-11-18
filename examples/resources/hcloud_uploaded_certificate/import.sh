@@ -1,1 +1,1 @@
-terraform import hcloud_uploaded_certificate.sample_certificate id
+terraform import hcloud_uploaded_certificate.example "$CERTIFICATE_ID"

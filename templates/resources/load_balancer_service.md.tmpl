@@ -84,6 +84,4 @@ Define services for Hetzner Cloud Load Balancers.
 Load Balancer Service entries can be imported using a compound ID with the following format:
 `<load-balancer-id>__<listen-port>`
 
-```shell
-terraform import hcloud_load_balancer_service.example "${LOAD_BALANCER_ID}__${LISTEN_PORT}"
-```
+{{ codefile "shell" .ImportFile }}

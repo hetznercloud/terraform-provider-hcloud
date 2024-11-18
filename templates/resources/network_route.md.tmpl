@@ -30,6 +30,4 @@ Provides a Hetzner Cloud Network Route to represent a Network route in the Hetzn
 Network Route entries can be imported using a compound ID with the following format:
 `<network-id>-<destination>`
 
-```shell
-terraform import hcloud_network_route.example "$NETWORK_ID-$DESTINATION"
-```
+{{ codefile "shell" .ImportFile }}

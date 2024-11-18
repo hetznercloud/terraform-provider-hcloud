@@ -46,6 +46,4 @@ Provides a Hetzner Cloud Server Network to represent a private network on a serv
 Server Network entries can be imported using a compound ID with the following format:
 `<server-id>-<network-id>`
 
-```shell
-terraform import hcloud_server_network.example "$SERVER_ID-$NETWORK_ID"
-```
+{{ codefile "shell" .ImportFile }}
