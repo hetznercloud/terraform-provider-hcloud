@@ -11,16 +11,7 @@ This resource is useful if you want to use a non-terraform managed SSH Key.
 
 ## Example Usage
 
-```terraform
-data "hcloud_ssh_keys" "all_keys" {
-}
-data "hcloud_ssh_keys" "keys_by_selector" {
-  with_selector = "foo=bar"
-}
-resource "hcloud_server" "main" {
-  ssh_keys = data.hcloud_ssh_keys.all_keys.ssh_keys.*.name
-}
-```
+{{ tffile .ExampleFile }}
 
 ## Argument Reference
 

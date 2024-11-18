@@ -11,17 +11,7 @@ This resource is useful if you want to use a non-terraform managed volume.
 
 ## Example Usage
 
-```terraform
-data "hcloud_volume" "volume_1" {
-  id = "1234"
-}
-data "hcloud_volume" "volume_2" {
-  name = "my-volume"
-}
-data "hcloud_volume" "volume_3" {
-  with_selector = "key=value"
-}
-```
+{{ tffile .ExampleFile }}
 
 ## Argument Reference
 

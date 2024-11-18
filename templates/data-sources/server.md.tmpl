@@ -11,17 +11,7 @@ This resource is useful if you want to use a non-terraform managed server.
 
 ## Example Usage
 
-```terraform
-data "hcloud_server" "s_1" {
-  name = "my-server"
-}
-data "hcloud_server" "s_2" {
-  id = "123"
-}
-data "hcloud_server" "s_3" {
-  with_selector = "key=value"
-}
-```
+{{ tffile .ExampleFile }}
 
 ## Argument Reference
 
