@@ -1,0 +1,38 @@
+---
+page_title: "Hetzner Cloud: hcloud_network"
+description: |-
+  Provides details about a specific Hetzner Cloud network.
+---
+
+# Data Source: hcloud_network
+
+Provides details about a Hetzner Cloud network.
+This resource is useful if you want to use a non-terraform managed network.
+
+## Example Usage
+
+```terraform
+data "hcloud_network" "network_1" {
+  id = "1234"
+}
+data "hcloud_network" "network_2" {
+  name = "my-network"
+}
+data "hcloud_network" "network_3" {
+  with_selector = "key=value"
+}
+```
+
+## Argument Reference
+
+- `id` - ID of the Network.
+- `name` - Name of the Network.
+- `with_selector` - Label Selector. For more information about possible values, visit the [Hetzner Cloud Documentation](https://docs.hetzner.cloud/#overview-label-selector).
+
+## Attributes Reference
+
+- `id` - Unique ID of the Network.
+- `name` - Name of the Network.
+- `ip_range` - IPv4 prefix of the Network.
+- `delete_protection` - (bool) Whether delete protection is enabled.
+- `expose_routes_to_vswitch` - (bool) Indicates if the routes from this network should be exposed to the vSwitch connection. The exposing only takes effect if a vSwitch connection is active.
