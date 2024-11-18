@@ -1,0 +1,1 @@
+terraform import hcloud_managed_certificate.sample_certificate id
