@@ -1,7 +1,7 @@
 resource "hcloud_uploaded_certificate" "sample_certificate" {
-    name = "test-certificate-%d"
+  name = "test-certificate-%d"
 
-    private_key =<<-EOT
+  private_key = <<-EOT
     -----BEGIN RSA PRIVATE KEY-----
     MIIEpQIBAAKCAQEAorPccsHibgGLJIub5Sb1yvDvARifoKzg7MIhyAYLnJkGn9B1
     ...
@@ -9,7 +9,7 @@ resource "hcloud_uploaded_certificate" "sample_certificate" {
     -----END RSA PRIVATE KEY-----
     EOT
 
-    certificate =<<-EOT
+  certificate = <<-EOT
     -----BEGIN CERTIFICATE-----
     MIIDMDCCAhigAwIBAgIIJgROscP8RRUwDQYJKoZIhvcNAQELBQAwIDEeMBwGA1UE
     ...
@@ -17,9 +17,9 @@ resource "hcloud_uploaded_certificate" "sample_certificate" {
     -----END CERTIFICATE-----
     EOT
 
-    labels = {
-        label_1 = "value_1"
-        label_2 = "value_2"
-        ...
-    }
+  labels = {
+    label_1 = "value_1"
+    label_2 = "value_2"
+    # ...
+  }
 }

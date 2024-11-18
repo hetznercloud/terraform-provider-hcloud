@@ -7,8 +7,8 @@ resource "hcloud_placement_group" "my-placement-group" {
 }
 
 resource "hcloud_server" "node1" {
-  name         = "node1"
-  image        = "debian-11"
-  server_type  = "cx22"
+  name               = "node1"
+  image              = "debian-11"
+  server_type        = "cx22"
   placement_group_id = hcloud_placement_group.my-placement-group.id
 }

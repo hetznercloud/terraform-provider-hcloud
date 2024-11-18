@@ -1,7 +1,7 @@
 # Get image infos because we need the ID
 data "hcloud_image" "packer_snapshot" {
   with_selector = "app=foobar"
-  most_recent = true
+  most_recent   = true
 }
 
 # Create a new server from the snapshot
