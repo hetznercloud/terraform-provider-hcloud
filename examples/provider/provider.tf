@@ -2,7 +2,7 @@
 terraform {
   required_providers {
     hcloud = {
-      source = "hetznercloud/hcloud"
+      source  = "hetznercloud/hcloud"
       version = "~> 1.45"
     }
   }
@@ -18,9 +18,4 @@ variable "hcloud_token" {
 # Configure the Hetzner Cloud Provider
 provider "hcloud" {
   token = var.hcloud_token
-}
-
-# Create a server
-resource "hcloud_server" "web" {
-  # ...
 }
