@@ -3,7 +3,7 @@ layout: "hcloud"
 page_title: "Hetzner Cloud: hcloud_placement_groups"
 sidebar_current: "docs-hcloud-datasource-placement-groups-x"
 description: |-
-Provides details about multiple Hetzner Cloud Placement Groups.
+  Provides details about multiple Hetzner Cloud Placement Groups.
 ---
 
 # hcloud_placement_groups

@@ -3,7 +3,7 @@ layout: "hcloud"
 page_title: "Hetzner Cloud: hcloud_primary_ip"
 sidebar_current: "docs-hcloud-datasource-primary-ip"
 description: |-
-Provides details about a specific Hetzner Cloud Primary IP.
+  Provides details about a specific Hetzner Cloud Primary IP.
 ---
 
 # Data Source: hcloud_primary_ip

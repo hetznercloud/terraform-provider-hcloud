@@ -3,7 +3,7 @@ layout: "hcloud"
 page_title: "Hetzner Cloud: hcloud_networks"
 sidebar_current: "docs-hcloud-datasource-networks-x"
 description: |-
-Provides details about multiple Hetzner Cloud Networks.
+  Provides details about multiple Hetzner Cloud Networks.
 ---
 
 # hcloud_networks
