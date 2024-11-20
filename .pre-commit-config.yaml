@@ -31,7 +31,7 @@ repos:
         require_serial: false
         additional_dependencies: [prettier@3.3.3]
         files: \.(md|ya?ml)$
-        exclude: ^(CHANGELOG.md)$
+        exclude: ^(CHANGELOG.md|docs/.*)$
 
   - repo: local
     hooks:
@@ -47,3 +47,23 @@ repos:
     rev: v0.10.0.1
     hooks:
       - id: shellcheck
+        args: [--shell, bash]
+
+  - repo: local
+    hooks:
+      - id: opentofu_fmt
+        name: opentofu_fmt
+        description: Format all .tf files to a canonical format.
+        language: docker_image
+        entry: ghcr.io/opentofu/opentofu fmt
+        files: \.tf$
+
+  - repo: local
+    hooks:
+      - id: generate
+        name: generate
+        description: Ensure generated files are up to date
+        language: golang
+        entry: make generate
+        pass_filenames: false
+        files: (^examples/|\.go$)

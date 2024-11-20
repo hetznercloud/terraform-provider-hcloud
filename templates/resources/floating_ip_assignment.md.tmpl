@@ -1,0 +1,30 @@
+---
+page_title: "Hetzner Cloud: hcloud_floating_ip_assignment"
+description: |-
+  Provides a Hetzner Cloud Floating IP Assignment to assign a Floating IP to a Hetzner Cloud Server.
+---
+
+# hcloud_floating_ip_assignment
+
+Provides a Hetzner Cloud Floating IP Assignment to assign a Floating IP to a Hetzner Cloud Server. Deleting a Floating IP Assignment will unassign the Floating IP from the Server.
+
+## Example Usage
+
+{{ tffile .ExampleFile }}
+
+## Argument Reference
+
+- `floating_ip_id` - (Required, int) ID of the Floating IP.
+- `server_id` - (Required, int) Server to assign the Floating IP to.
+
+## Attributes Reference
+
+- `id` - (int) Unique ID of the Floating IP Assignment.
+- `floating_ip_id` - (int) ID of the Floating IP.
+- `server_id` - (int) Server the Floating IP was assigned to.
+
+## Import
+
+Floating IP Assignments can be imported using the `floating_ip_id`:
+
+{{ codefile "shell" .ImportFile }}
