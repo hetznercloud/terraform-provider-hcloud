@@ -3,12 +3,15 @@
 page_title: "hcloud_server_type Data Source - hcloud"
 subcategory: ""
 description: |-
-  Provides a list of available Hetzner Cloud Server Types.
+  Provides details about a specific Hetzner Cloud Server Type.
+  Use this resource to get detailed information about specific Server Type.
 ---
 
 # hcloud_server_type (Data Source)
 
-Provides a list of available Hetzner Cloud Server Types.
+Provides details about a specific Hetzner Cloud Server Type.
+
+Use this resource to get detailed information about specific Server Type.
 
 ## Example Usage
 

@@ -165,7 +165,9 @@ func (d *dataSource) Configure(_ context.Context, req datasource.ConfigureReques
 // Schema should return the schema for this data source.
 func (d *dataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema.MarkdownDescription = `
-Provides a list of available Hetzner Cloud Server Types.
+Provides details about a specific Hetzner Cloud Server Type.
+
+Use this resource to get detailed information about specific Server Type.
 `
 	resp.Schema.Attributes = getCommonDataSchema(false)
 }
@@ -260,9 +262,7 @@ func (d *dataSourceList) Configure(_ context.Context, req datasource.ConfigureRe
 // Schema should return the schema for this data source.
 func (d *dataSourceList) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema.MarkdownDescription = `
-Provides details about a specific Hetzner Cloud Server Type.
-
-Use this resource to get detailed information about a specific Server Type.
+Provides a list of available Hetzner Cloud Server Types.
 `
 
 	resp.Schema.Attributes = map[string]schema.Attribute{
