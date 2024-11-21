@@ -51,7 +51,7 @@ func (d *dataSourceList) Configure(_ context.Context, req datasource.ConfigureRe
 // Schema should return the schema for this data source.
 func (d *dataSourceList) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema.MarkdownDescription = `
-Provides details about Hetzner Cloud SSH Keys.
+Provides a list of Hetzner Cloud SSH Keys.
 
 This resource is useful if you want to use a non-terraform managed SSH Key.
 `

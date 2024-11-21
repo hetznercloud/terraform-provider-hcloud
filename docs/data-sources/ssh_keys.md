@@ -3,13 +3,13 @@
 page_title: "hcloud_ssh_keys Data Source - hcloud"
 subcategory: ""
 description: |-
-  Provides details about Hetzner Cloud SSH Keys.
+  Provides a list of Hetzner Cloud SSH Keys.
   This resource is useful if you want to use a non-terraform managed SSH Key.
 ---
 
 # hcloud_ssh_keys (Data Source)
 
-Provides details about Hetzner Cloud SSH Keys.
+Provides a list of Hetzner Cloud SSH Keys.
 
 This resource is useful if you want to use a non-terraform managed SSH Key.
 
