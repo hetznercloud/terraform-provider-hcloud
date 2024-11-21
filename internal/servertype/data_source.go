@@ -127,7 +127,7 @@ func getCommonDataSchema(readOnly bool) map[string]schema.Attribute {
 				DeprecationMessage: "The field is deprecated and will always report 0 after 2024-08-05.",
 			},
 		},
-		deprecation.DataSourceSchema(),
+		deprecation.DataSourceSchema("Server Type"),
 	)
 }
 

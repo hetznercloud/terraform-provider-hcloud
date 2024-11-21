@@ -2,6 +2,7 @@ package deprecation
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -46,35 +47,35 @@ func AttrTypes() map[string]attr.Type {
 	}
 }
 
-func DataSourceSchema() map[string]datasourceschema.Attribute {
+func DataSourceSchema(resource string) map[string]datasourceschema.Attribute {
 	return map[string]datasourceschema.Attribute{
 		"is_deprecated": datasourceschema.BoolAttribute{
-			MarkdownDescription: "Whether the resource is deprecated.",
+			MarkdownDescription: fmt.Sprintf("Whether the %s is deprecated.", resource),
 			Computed:            true,
 		},
 		"deprecation_announced": datasourceschema.StringAttribute{
-			MarkdownDescription: "Date of the resource deprecation announcement.",
+			MarkdownDescription: fmt.Sprintf("Date of the %s deprecation announcement.", resource),
 			Computed:            true,
 		},
 		"unavailable_after": datasourceschema.StringAttribute{
-			MarkdownDescription: "Date of the resource removal. After this date, the resource cannot be used anymore.",
+			MarkdownDescription: fmt.Sprintf("Date of the %s removal. After this date, the %s cannot be used anymore.", resource, resource),
 			Computed:            true,
 		},
 	}
 }
 
-func ResourceSchema() map[string]resourceschema.Attribute {
+func ResourceSchema(resource string) map[string]resourceschema.Attribute {
 	return map[string]resourceschema.Attribute{
 		"is_deprecated": resourceschema.BoolAttribute{
-			MarkdownDescription: "Whether the resource is deprecated.",
+			MarkdownDescription: fmt.Sprintf("Whether the %s is deprecated.", resource),
 			Computed:            true,
 		},
 		"deprecation_announced": resourceschema.StringAttribute{
-			MarkdownDescription: "Date of the resource deprecation announcement.",
+			MarkdownDescription: fmt.Sprintf("Date of the %s deprecation announcement.", resource),
 			Computed:            true,
 		},
 		"unavailable_after": resourceschema.StringAttribute{
-			MarkdownDescription: "Date of the resource removal. After this date, the resource cannot be used anymore.",
+			MarkdownDescription: fmt.Sprintf("Date of the %s removal. After this date, the %s cannot be used anymore.", resource, resource),
 			Computed:            true,
 		},
 	}

@@ -35,13 +35,13 @@ Read-Only:
 - `architecture` (String) Architecture of the cpu for a Server of this type.
 - `cores` (Number) Number of cpu cores for a Server of this type.
 - `cpu_type` (String) Type of cpu for a Server of this type.
-- `deprecation_announced` (String) Date of the resource deprecation announcement.
+- `deprecation_announced` (String) Date of the Server Type deprecation announcement.
 - `description` (String) Description of the Server Type.
 - `disk` (Number) Disk size in GB for a Server of this type.
 - `id` (Number) ID of the Server Type.
 - `included_traffic` (Number, Deprecated)
-- `is_deprecated` (Boolean) Whether the resource is deprecated.
+- `is_deprecated` (Boolean) Whether the Server Type is deprecated.
 - `memory` (Number) Memory in GB for a Server of this type.
 - `name` (String) Name of the Server Type.
 - `storage_type` (String) Type of boot drive for a Server of this type.
-- `unavailable_after` (String) Date of the resource removal. After this date, the resource cannot be used anymore.
+- `unavailable_after` (String) Date of the Server Type removal. After this date, the Server Type cannot be used anymore.
