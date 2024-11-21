@@ -2,7 +2,6 @@ package sshkey
 
 import (
 	"context"
-	_ "embed"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -49,24 +48,25 @@ func (r *resourceImpl) Configure(_ context.Context, req resource.ConfigureReques
 	}
 }
 
-//go:embed resource.md
-var resourceMarkdownDescription string
-
 func (r *resourceImpl) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema.MarkdownDescription = `
+Provides a Hetzner Cloud SSH Key resource to manage SSH Keys for server access.
+`
+
 	resp.Schema.Attributes = map[string]schema.Attribute{
 		"id": schema.StringAttribute{
-			MarkdownDescription: "ID of the SSH key.",
+			MarkdownDescription: "ID of the SSH Key.",
 			Computed:            true,
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
 		"name": schema.StringAttribute{
-			MarkdownDescription: "Name of the SSH key.",
+			MarkdownDescription: "Name of the SSH Key.",
 			Required:            true,
 		},
 		"public_key": schema.StringAttribute{
-			MarkdownDescription: "Public key of the SSH key pair. If this is a file, it can be read using the `file` interpolation function.",
+			MarkdownDescription: "Public key of the SSH Key pair. If this is a file, it can be read using the `file` interpolation function.",
 			Required:            true,
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.RequiresReplace(),
@@ -81,7 +81,6 @@ func (r *resourceImpl) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 		},
 		"labels": resourceutil.LabelsSchema(),
 	}
-	resp.Schema.MarkdownDescription = resourceMarkdownDescription
 }
 
 func (r *resourceImpl) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

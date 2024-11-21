@@ -1,6 +1,7 @@
-data "hcloud_location" "l_1" {
-  name = "fsn1"
-}
-data "hcloud_location" "l_2" {
+data "hcloud_location" "by_id" {
   id = 1
+}
+
+data "hcloud_location" "by_name" {
+  name = "fsn1"
 }

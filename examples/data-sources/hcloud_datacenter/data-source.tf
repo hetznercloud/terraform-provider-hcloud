@@ -1,6 +1,7 @@
-data "hcloud_datacenter" "ds_1" {
-  name = "fsn1-dc8"
-}
-data "hcloud_datacenter" "ds_2" {
+data "hcloud_datacenter" "by_id" {
   id = 4
+}
+
+data "hcloud_datacenter" "by_name" {
+  name = "fsn1-dc14"
 }

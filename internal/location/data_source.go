@@ -2,7 +2,6 @@ package location
 
 import (
 	"context"
-	_ "embed"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
@@ -64,33 +63,41 @@ func newResourceData(_ context.Context, in *hcloud.Location) (resourceData, diag
 	return data, diags
 }
 
-func getCommonDataSchema() map[string]schema.Attribute {
+func getCommonDataSchema(readOnly bool) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"id": schema.Int64Attribute{
-			Optional: true,
-			Computed: true,
+			MarkdownDescription: "ID of the Location.",
+			Optional:            !readOnly,
+			Computed:            readOnly,
 		},
 		"name": schema.StringAttribute{
-			Optional: true,
-			Computed: true,
+			MarkdownDescription: "Name of the Location.",
+			Optional:            !readOnly,
+			Computed:            readOnly,
 		},
 		"description": schema.StringAttribute{
-			Computed: true,
+			MarkdownDescription: "Description of the Location.",
+			Computed:            true,
 		},
 		"country": schema.StringAttribute{
-			Computed: true,
+			MarkdownDescription: "Country the Location resides in. ISO 3166-1 alpha-2 code of the country.",
+			Computed:            true,
 		},
 		"city": schema.StringAttribute{
-			Computed: true,
+			MarkdownDescription: "Name of the closest city to the Location. City name and optionally state in short form.",
+			Computed:            true,
 		},
 		"latitude": schema.Float64Attribute{
-			Computed: true,
+			MarkdownDescription: "Latitude of the city closest to the Location.",
+			Computed:            true,
 		},
 		"longitude": schema.Float64Attribute{
-			Computed: true,
+			MarkdownDescription: "Longitude of the city closest to the Location.",
+			Computed:            true,
 		},
 		"network_zone": schema.StringAttribute{
-			Computed: true,
+			MarkdownDescription: "Name of the Network Zone this Location resides in.",
+			Computed:            true,
 		},
 	}
 }
@@ -126,13 +133,14 @@ func (d *dataSource) Configure(_ context.Context, req datasource.ConfigureReques
 	}
 }
 
-//go:embed data_source.md
-var dataSourceMarkdownDescription string
-
 // Schema should return the schema for this data source.
 func (d *dataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema.Attributes = getCommonDataSchema()
-	resp.Schema.MarkdownDescription = dataSourceMarkdownDescription
+	resp.Schema.MarkdownDescription = `
+Provides details about a specific Hetzner Cloud Location.
+
+Use this resource to get detailed information about a specific Location.
+`
+	resp.Schema.Attributes = getCommonDataSchema(false)
 }
 
 // ConfigValidators returns a list of ConfigValidators. Each ConfigValidator's Validate method will be called when validating the data source.
@@ -222,39 +230,40 @@ func (d *dataSourceList) Configure(_ context.Context, req datasource.ConfigureRe
 	}
 }
 
-//go:embed data_source_list.md
-var dataSourceListMarkdownDescription string
-
 // Schema should return the schema for this data source.
 func (d *dataSourceList) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema.MarkdownDescription = `
+Provides a list of available Hetzner Cloud Locations.
+
+This resource may be useful to create highly available infrastructure, distributed across several locations.
+`
+
 	resp.Schema.Attributes = map[string]schema.Attribute{
 		"id": schema.StringAttribute{
-			Optional: true,
+			Computed: true,
 		},
 		"location_ids": schema.ListAttribute{
-			Optional:           true,
 			DeprecationMessage: "Use locations list instead",
 			ElementType:        types.StringType,
+			Computed:           true,
 		},
 		"names": schema.ListAttribute{
-			Optional:           true,
 			DeprecationMessage: "Use locations list instead",
 			ElementType:        types.StringType,
+			Computed:           true,
 		},
 		"descriptions": schema.ListAttribute{
-			Optional:           true,
 			DeprecationMessage: "Use locations list instead",
 			ElementType:        types.StringType,
+			Computed:           true,
 		},
 		"locations": schema.ListNestedAttribute{
 			NestedObject: schema.NestedAttributeObject{
-				Attributes: getCommonDataSchema(),
+				Attributes: getCommonDataSchema(true),
 			},
 			Computed: true,
 		},
 	}
-
-	resp.Schema.MarkdownDescription = dataSourceListMarkdownDescription
 }
 
 type resourceDataList struct {

@@ -2,7 +2,6 @@ package servertype
 
 import (
 	"context"
-	_ "embed"
 	"strconv"
 
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/deprecation"
@@ -82,44 +81,53 @@ func newResourceData(ctx context.Context, in *hcloud.ServerType) (resourceData, 
 	return data, diags
 }
 
-func getCommonDataSchema() map[string]schema.Attribute {
+func getCommonDataSchema(readOnly bool) map[string]schema.Attribute {
 	return merge.Maps(
 		map[string]schema.Attribute{
 			"id": schema.Int64Attribute{
-				Optional: true,
-				Computed: true,
+				MarkdownDescription: "ID of the Server Type.",
+				Optional:            !readOnly,
+				Computed:            readOnly,
 			},
 			"name": schema.StringAttribute{
-				Optional: true,
-				Computed: true,
+				MarkdownDescription: "Name of the Server Type.",
+				Optional:            !readOnly,
+				Computed:            readOnly,
 			},
 			"description": schema.StringAttribute{
-				Computed: true,
+				MarkdownDescription: "Description of the Server Type.",
+				Computed:            true,
 			},
 			"cores": schema.Int32Attribute{
-				Computed: true,
+				MarkdownDescription: "Number of cpu cores for a Server of this type.",
+				Computed:            true,
 			},
 			"memory": schema.Int32Attribute{
-				Computed: true,
+				MarkdownDescription: "Memory in GB for a Server of this type.",
+				Computed:            true,
 			},
 			"disk": schema.Int32Attribute{
-				Computed: true,
+				MarkdownDescription: "Disk size in GB for a Server of this type.",
+				Computed:            true,
 			},
 			"storage_type": schema.StringAttribute{
-				Computed: true,
+				MarkdownDescription: "Type of boot drive for a Server of this type.",
+				Computed:            true,
 			},
 			"cpu_type": schema.StringAttribute{
-				Computed: true,
+				MarkdownDescription: "Type of cpu for a Server of this type.",
+				Computed:            true,
 			},
 			"architecture": schema.StringAttribute{
-				Computed: true,
+				MarkdownDescription: "Architecture of the cpu for a Server of this type.",
+				Computed:            true,
 			},
 			"included_traffic": schema.Int64Attribute{
 				Computed:           true,
 				DeprecationMessage: "The field is deprecated and will always report 0 after 2024-08-05.",
 			},
 		},
-		deprecation.DataSourceSchema(),
+		deprecation.DataSourceSchema("Server Type"),
 	)
 }
 
@@ -154,13 +162,14 @@ func (d *dataSource) Configure(_ context.Context, req datasource.ConfigureReques
 	}
 }
 
-//go:embed data_source.md
-var dataSourceMarkdownDescription string
-
 // Schema should return the schema for this data source.
 func (d *dataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema.Attributes = getCommonDataSchema()
-	resp.Schema.MarkdownDescription = dataSourceMarkdownDescription
+	resp.Schema.MarkdownDescription = `
+Provides details about a specific Hetzner Cloud Server Type.
+
+Use this resource to get detailed information about specific Server Type.
+`
+	resp.Schema.Attributes = getCommonDataSchema(false)
 }
 
 // ConfigValidators returns a list of ConfigValidators. Each ConfigValidator's Validate method will be called when validating the data source.
@@ -250,39 +259,38 @@ func (d *dataSourceList) Configure(_ context.Context, req datasource.ConfigureRe
 	}
 }
 
-//go:embed data_source_list.md
-var dataSourceListMarkdownDescription string
-
 // Schema should return the schema for this data source.
 func (d *dataSourceList) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema.MarkdownDescription = `
+Provides a list of available Hetzner Cloud Server Types.
+`
+
 	resp.Schema.Attributes = map[string]schema.Attribute{
 		"id": schema.StringAttribute{
-			Optional: true,
+			Computed: true,
 		},
 		"server_type_ids": schema.ListAttribute{
-			Optional:           true,
 			DeprecationMessage: "Use server_types list instead",
 			ElementType:        types.StringType,
+			Computed:           true,
 		},
 		"names": schema.ListAttribute{
-			Optional:           true,
 			DeprecationMessage: "Use server_types list instead",
 			ElementType:        types.StringType,
+			Computed:           true,
 		},
 		"descriptions": schema.ListAttribute{
-			Optional:           true,
 			DeprecationMessage: "Use server_types list instead",
 			ElementType:        types.StringType,
+			Computed:           true,
 		},
 		"server_types": schema.ListNestedAttribute{
 			NestedObject: schema.NestedAttributeObject{
-				Attributes: getCommonDataSchema(),
+				Attributes: getCommonDataSchema(true),
 			},
 			Computed: true,
 		},
 	}
-
-	resp.Schema.MarkdownDescription = dataSourceListMarkdownDescription
 }
 
 type resourceDataList struct {

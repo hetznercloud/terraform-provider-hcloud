@@ -2,6 +2,7 @@ package deprecation
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -46,34 +47,36 @@ func AttrTypes() map[string]attr.Type {
 	}
 }
 
-func DataSourceSchema() map[string]datasourceschema.Attribute {
+func DataSourceSchema(resource string) map[string]datasourceschema.Attribute {
 	return map[string]datasourceschema.Attribute{
 		"is_deprecated": datasourceschema.BoolAttribute{
-			Computed: true,
+			MarkdownDescription: fmt.Sprintf("Whether the %s is deprecated.", resource),
+			Computed:            true,
 		},
 		"deprecation_announced": datasourceschema.StringAttribute{
-			Computed: true,
-			Optional: true,
+			MarkdownDescription: fmt.Sprintf("Date of the %s deprecation announcement.", resource),
+			Computed:            true,
 		},
 		"unavailable_after": datasourceschema.StringAttribute{
-			Computed: true,
-			Optional: true,
+			MarkdownDescription: fmt.Sprintf("Date of the %s removal. After this date, the %s cannot be used anymore.", resource, resource),
+			Computed:            true,
 		},
 	}
 }
 
-func ResourceSchema() map[string]resourceschema.Attribute {
+func ResourceSchema(resource string) map[string]resourceschema.Attribute {
 	return map[string]resourceschema.Attribute{
 		"is_deprecated": resourceschema.BoolAttribute{
-			Computed: true,
+			MarkdownDescription: fmt.Sprintf("Whether the %s is deprecated.", resource),
+			Computed:            true,
 		},
 		"deprecation_announced": resourceschema.StringAttribute{
-			Computed: true,
-			Optional: true,
+			MarkdownDescription: fmt.Sprintf("Date of the %s deprecation announcement.", resource),
+			Computed:            true,
 		},
 		"unavailable_after": resourceschema.StringAttribute{
-			Computed: true,
-			Optional: true,
+			MarkdownDescription: fmt.Sprintf("Date of the %s removal. After this date, the %s cannot be used anymore.", resource, resource),
+			Computed:            true,
 		},
 	}
 }
