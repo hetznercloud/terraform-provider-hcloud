@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.49.1](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.49.0...v1.49.1) (2024-11-21)
+
+
+### Bug Fixes
+
+* remove server network interface workaround ([#1021](https://github.com/hetznercloud/terraform-provider-hcloud/issues/1021)) ([be330df](https://github.com/hetznercloud/terraform-provider-hcloud/commit/be330dfbd721b32e337c188c863c97667f021f65))
+
 ## [1.49.0](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.48.1...v1.49.0) (2024-11-07)
 
 
