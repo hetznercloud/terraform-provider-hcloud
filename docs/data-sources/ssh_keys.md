@@ -18,7 +18,7 @@ This resource is useful if you want to use a non-terraform managed SSH Key.
 ```terraform
 data "hcloud_ssh_keys" "all" {}
 
-data "hcloud_ssh_keys" "filter_with_selector" {
+data "hcloud_ssh_keys" "by_label" {
   with_selector = "foo=bar"
 }
 

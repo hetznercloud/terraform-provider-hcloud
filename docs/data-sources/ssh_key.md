@@ -28,7 +28,7 @@ data "hcloud_ssh_key" "by_fingerprint" {
   fingerprint = "55:58:dc:bd:61:6e:7d:24:07:a7:7d:9b:be:99:83:a8"
 }
 
-data "hcloud_ssh_key" "by_selector" {
+data "hcloud_ssh_key" "by_label" {
   with_selector = "key=value"
 }
 
