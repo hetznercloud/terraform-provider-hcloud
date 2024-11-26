@@ -4,7 +4,7 @@ go 1.22.7
 
 toolchain go1.23.3
 
-require github.com/hashicorp/terraform-plugin-docs v0.20.0
+require github.com/hashicorp/terraform-plugin-docs v0.20.1
 
 require (
 	github.com/BurntSushi/toml v1.2.1 // indirect
@@ -49,7 +49,7 @@ require (
 	golang.org/x/exp v0.0.0-20230626212559-97b1e661b5df // indirect
 	golang.org/x/mod v0.21.0 // indirect
 	golang.org/x/sys v0.21.0 // indirect
-	golang.org/x/text v0.19.0 // indirect
+	golang.org/x/text v0.20.0 // indirect
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
