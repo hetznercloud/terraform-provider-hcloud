@@ -26,6 +26,6 @@ resource "hcloud_load_balancer_network" "srvnetwork" {
   # server and sub-network in parallel. This may result in the server
   # creation failing randomly.
   depends_on = [
-    hcloud_network_subnet.srvnetwork
+    hcloud_network_subnet.foonet
   ]
 }
