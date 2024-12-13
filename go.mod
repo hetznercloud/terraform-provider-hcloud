@@ -6,12 +6,12 @@ toolchain go1.23.4
 
 require (
 	github.com/google/go-cmp v0.6.0
-	github.com/hashicorp/go-cty v1.4.1-0.20200723130312-85980079f637
+	github.com/hashicorp/go-cty v1.4.1-0.20241127173709-a0325cb22c13
 	github.com/hashicorp/go-hclog v1.6.3
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/hcl/v2 v2.23.0
 	github.com/hashicorp/terraform-plugin-framework v1.13.0
-	github.com/hashicorp/terraform-plugin-framework-validators v0.15.0
+	github.com/hashicorp/terraform-plugin-framework-validators v0.16.0
 	github.com/hashicorp/terraform-plugin-go v0.25.0
 	github.com/hashicorp/terraform-plugin-log v0.9.0
 	github.com/hashicorp/terraform-plugin-mux v0.17.0
