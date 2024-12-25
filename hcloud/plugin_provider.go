@@ -136,9 +136,9 @@ func (p *PluginProvider) Configure(ctx context.Context, req provider.ConfigureRe
 			)
 		}
 		if data.PollFunction.ValueString() == "constant" {
-			opts = append(opts, hcloud.WithPollBackoffFunc(hcloud.ConstantBackoff(pollInterval)))
+			opts = append(opts, hcloud.WithPollOpts(hcloud.PollOpts{BackoffFunc: hcloud.ConstantBackoff(pollInterval)}))
 		} else {
-			opts = append(opts, hcloud.WithPollBackoffFunc(hcloud.ExponentialBackoff(2, pollInterval)))
+			opts = append(opts, hcloud.WithPollOpts(hcloud.PollOpts{BackoffFunc: hcloud.ExponentialBackoff(2, pollInterval)}))
 		}
 	}
 

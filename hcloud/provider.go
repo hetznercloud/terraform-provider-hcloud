@@ -136,9 +136,9 @@ func providerConfigure(_ context.Context, d *schema.ResourceData) (interface{}, 
 		}
 		pollFunction, ok := d.GetOk("poll_function")
 		if ok && pollFunction == "constant" {
-			opts = append(opts, hcloud.WithPollBackoffFunc(hcloud.ConstantBackoff(pollInterval)))
+			opts = append(opts, hcloud.WithPollOpts(hcloud.PollOpts{BackoffFunc: hcloud.ConstantBackoff(pollInterval)}))
 		} else {
-			opts = append(opts, hcloud.WithPollBackoffFunc(hcloud.ExponentialBackoff(2, pollInterval)))
+			opts = append(opts, hcloud.WithPollOpts(hcloud.PollOpts{BackoffFunc: hcloud.ExponentialBackoff(2, pollInterval)}))
 		}
 	}
 	if logging.LogLevel() != "" {
