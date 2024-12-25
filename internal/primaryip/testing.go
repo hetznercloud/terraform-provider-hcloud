@@ -43,8 +43,8 @@ func Sweep(r string) error {
 }
 
 // ByID returns a function that obtains a primary IP by its ID.
-func ByID(t *testing.T, fl *hcloud.PrimaryIP) func(*hcloud.Client, int) bool {
-	return func(c *hcloud.Client, id int) bool {
+func ByID(t *testing.T, fl *hcloud.PrimaryIP) func(*hcloud.Client, int64) bool {
+	return func(c *hcloud.Client, id int64) bool {
 		found, _, err := c.PrimaryIP.GetByID(context.Background(), id)
 		if err != nil {
 			t.Fatalf("find primary ip %d: %v", id, err)

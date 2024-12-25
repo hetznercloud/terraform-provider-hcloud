@@ -16,7 +16,7 @@ import (
 // its ID.
 //
 // KeyFunc must return true if the resource was found.
-type KeyFunc func(c *hcloud.Client, id int) bool
+type KeyFunc func(c *hcloud.Client, id int64) bool
 
 // CheckResourceExists checks that a resource with the passed name exists.
 //
