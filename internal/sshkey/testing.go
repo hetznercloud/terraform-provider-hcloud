@@ -45,8 +45,8 @@ func Sweep(r string) error {
 }
 
 // ByID returns a function that obtains a sshkey by its ID.
-func ByID(t *testing.T, cert *hcloud.SSHKey) func(*hcloud.Client, int) bool {
-	return func(c *hcloud.Client, id int) bool {
+func ByID(t *testing.T, cert *hcloud.SSHKey) func(*hcloud.Client, int64) bool {
+	return func(c *hcloud.Client, id int64) bool {
 		found, _, err := c.SSHKey.GetByID(context.Background(), id)
 		if err != nil {
 			t.Fatalf("find sshkey %d: %v", id, err)

@@ -43,8 +43,8 @@ func Sweep(r string) error {
 }
 
 // ByID returns a function that obtains a server by its ID.
-func ByID(t *testing.T, srv *hcloud.Server) func(*hcloud.Client, int) bool {
-	return func(c *hcloud.Client, id int) bool {
+func ByID(t *testing.T, srv *hcloud.Server) func(*hcloud.Client, int64) bool {
+	return func(c *hcloud.Client, id int64) bool {
 		found, _, err := c.Server.GetByID(context.Background(), id)
 		if err != nil {
 			t.Fatalf("find server %d: %v", id, err)
