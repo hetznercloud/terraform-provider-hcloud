@@ -911,7 +911,7 @@ resource "terraform_data" "wait" {
   }
 
   provisioner "remote-exec" {
-    inline = ["cloud-init status --wait --long"]
+    inline = ["cloud-init status --wait --long || test $? -eq 2"]
   }
 }
 `, sshKeyRes.PrivateKey),
