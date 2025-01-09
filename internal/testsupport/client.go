@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 )
 
 // CreateClient creates a new *hcloud.Client which authenticates using the

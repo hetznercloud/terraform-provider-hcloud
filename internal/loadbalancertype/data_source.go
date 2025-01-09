@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
-	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/datasourceutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )

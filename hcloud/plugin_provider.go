@@ -17,7 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
-	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/datacenter"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancertype"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/location"
