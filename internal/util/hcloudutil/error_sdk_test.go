@@ -4,8 +4,9 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 
 func TestErrorToDiag(t *testing.T) {

@@ -4,8 +4,9 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/control"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/control"
 )
 
 func TestRetry(t *testing.T) {

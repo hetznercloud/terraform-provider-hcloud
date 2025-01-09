@@ -4,8 +4,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/timeutil"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/timeutil"
 )
 
 func TestConvertFormat(t *testing.T) {

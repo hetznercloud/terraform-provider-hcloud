@@ -4,8 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 )
 
 // TestParseCertificates_CertificateChain tries to parse a chain of PEM

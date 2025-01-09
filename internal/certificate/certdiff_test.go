@@ -4,9 +4,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/certificate"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestEqualCert_EqualCertificates(t *testing.T) {

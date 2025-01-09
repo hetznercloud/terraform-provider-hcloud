@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+
 	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 

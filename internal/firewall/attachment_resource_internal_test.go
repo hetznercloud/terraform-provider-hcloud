@@ -5,8 +5,9 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/hetznercloud/hcloud-go/hcloud"
 )
 
 func TestAttachment_FromResourceData(t *testing.T) {

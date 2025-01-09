@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 

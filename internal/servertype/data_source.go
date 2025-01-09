@@ -4,8 +4,6 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/deprecation"
-
 	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -15,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/deprecation"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/datasourceutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/merge"

@@ -3,8 +3,9 @@ package merge_test
 import (
 	"testing"
 
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/merge"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/merge"
 )
 
 func TestStringSlice(t *testing.T) {
