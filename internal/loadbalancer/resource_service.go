@@ -202,6 +202,7 @@ func resourceLoadBalancerServiceCreate(ctx context.Context, d *schema.ResourceDa
 			listenPort = 80
 		case hcloud.LoadBalancerServiceProtocolHTTPS:
 			listenPort = 443
+		default:
 		}
 	}
 	opts.ListenPort = hcloud.Ptr(listenPort)
