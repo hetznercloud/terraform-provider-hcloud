@@ -154,7 +154,7 @@ func TestAccLoadBalancerNetworkResource_SubNetID(t *testing.T) {
 	})
 }
 
-func TestHcloudLoadBalancerNetworkResource_CannotAttachToTwoNetworks(t *testing.T) {
+func TestAccLoadBalancerNetworkResource_CannotAttachToTwoNetworks(t *testing.T) {
 	nwRess := make([]*network.RData, 2)
 	snRess := make([]*network.RDataSubnet, len(nwRess))
 	for i := 0; i < len(nwRess); i++ {
