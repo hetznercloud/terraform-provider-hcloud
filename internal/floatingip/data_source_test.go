@@ -77,7 +77,7 @@ func TestAccFloatingIPDataSource_Basic(t *testing.T) {
 	})
 }
 
-func TestAccFloatingIPDataSource_List(t *testing.T) {
+func TestAccFloatingIPDataSourceList(t *testing.T) {
 	res := &floatingip.RData{
 		Name: "floatingip-ds-test",
 		Type: "ipv4",

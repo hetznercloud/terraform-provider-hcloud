@@ -104,7 +104,7 @@ func TestAccServerTypeDataSource_Basic_UpgradePluginFramework(t *testing.T) {
 	})
 }
 
-func TestAccServerTypeDataSource_List(t *testing.T) {
+func TestAccServerTypeDataSourceList(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	all := &servertype.DDataList{}
@@ -145,7 +145,7 @@ func TestAccServerTypeDataSource_List(t *testing.T) {
 	})
 }
 
-func TestAccServerTypeDataSource_List_UpgradePluginFramework(t *testing.T) {
+func TestAccServerTypeDataSourceList_UpgradePluginFramework(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	all := &servertype.DDataList{}

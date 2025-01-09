@@ -172,7 +172,7 @@ func TestAccVolumeDataSource_Attached(t *testing.T) {
 	})
 }
 
-func TestAccVolumeDataSource_List(t *testing.T) {
+func TestAccVolumeDataSourceList(t *testing.T) {
 	res := &volume.RData{
 		Name:         "volume-ds-test",
 		Size:         10,

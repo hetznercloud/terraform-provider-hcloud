@@ -83,7 +83,7 @@ func TestAccPrimaryIPDataSource_Basic(t *testing.T) {
 	})
 }
 
-func TestAccPrimaryIPDataSource_List(t *testing.T) {
+func TestAccPrimaryIPDataSourceList(t *testing.T) {
 	res := &primaryip.RData{
 		Name: "primary-ds-test",
 		Type: "ipv4",

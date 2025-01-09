@@ -52,7 +52,7 @@ func TestAccLoadBalancerTypeDataSource_Basic(t *testing.T) {
 	})
 }
 
-func TestAccLoadBalancerTypeDataSource_List(t *testing.T) {
+func TestAccLoadBalancerTypeDataSourceList(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	all := &loadbalancertype.DDataList{}

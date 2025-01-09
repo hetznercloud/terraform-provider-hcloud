@@ -80,7 +80,7 @@ func TestAccLoadBalancerDataSource_Basic(t *testing.T) {
 	})
 }
 
-func TestAccLoadBalancerDataSource_List(t *testing.T) {
+func TestAccLoadBalancerDataSourceList(t *testing.T) {
 	res := &loadbalancer.RData{
 		Name:         "some-load-balancer",
 		LocationName: teste2e.TestLocationName,

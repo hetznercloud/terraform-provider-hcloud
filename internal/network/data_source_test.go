@@ -81,7 +81,7 @@ func TestAccNetworkDataSource_Basic(t *testing.T) {
 	})
 }
 
-func TestAccNetworkDataSource_List(t *testing.T) {
+func TestAccNetworkDataSourceList(t *testing.T) {
 	res := &network.RData{
 		Name:    "network-ds-test",
 		IPRange: "10.0.0.0/16",

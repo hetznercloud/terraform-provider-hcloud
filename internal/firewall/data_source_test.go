@@ -64,7 +64,7 @@ func TestAccFirewallDataSource_Basic(t *testing.T) {
 	})
 }
 
-func TestAccFirewallDataSource_List(t *testing.T) {
+func TestAccFirewallDataSourceList(t *testing.T) {
 	res := firewall.NewRData(t, "firewall-ds-test", []firewall.RDataRule{}, nil)
 
 	firewallBySel := &firewall.DDataList{

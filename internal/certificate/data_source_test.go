@@ -66,7 +66,7 @@ func TestAccCertificateDataSource_Basic(t *testing.T) {
 	})
 }
 
-func TestAccCertificateDataSource_List(t *testing.T) {
+func TestAccCertificateDataSourceList(t *testing.T) {
 	res := certificate.NewUploadedRData(t, "datasource-test", "TFtestAcc")
 
 	certificateBySel := &certificate.DDataList{

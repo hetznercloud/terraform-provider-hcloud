@@ -74,7 +74,7 @@ func TestAccServerDataSource_Basic(t *testing.T) {
 	})
 }
 
-func TestAccServerDataSource_List(t *testing.T) {
+func TestAccServerDataSourceList(t *testing.T) {
 	res := &server.RData{
 		Name:  "server-ds-test",
 		Type:  teste2e.TestServerType,

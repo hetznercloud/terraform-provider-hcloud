@@ -67,7 +67,7 @@ func TestAccPlacementGroupDataSource_Basic(t *testing.T) {
 	})
 }
 
-func TestAccPlacementGroupDataSource_List(t *testing.T) {
+func TestAccPlacementGroupDataSourceList(t *testing.T) {
 	res := placementgroup.NewRData(t, "basic-placement-group", "spread")
 	res.SetRName("placement-group-ds-test")
 

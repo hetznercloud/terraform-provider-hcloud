@@ -88,7 +88,7 @@ func TestAccDatacenterDataSource_Basic_UpgradePluginFramework(t *testing.T) {
 	})
 }
 
-func TestAccDatacenterDataSource_List(t *testing.T) {
+func TestAccDatacenterDataSourceList(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	datacentersD := &datacenter.DDataList{}
@@ -128,7 +128,7 @@ func TestAccDatacenterDataSource_List(t *testing.T) {
 	})
 }
 
-func TestAccDatacenterDataSource_List_UpgradePluginFramework(t *testing.T) {
+func TestAccDatacenterDataSourceList_UpgradePluginFramework(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	datacentersD := &datacenter.DDataList{}

@@ -81,7 +81,7 @@ func TestAccImageDataSource_WithFilters(t *testing.T) {
 	})
 }
 
-func TestAccImageDataSource_List(t *testing.T) {
+func TestAccImageDataSourceList(t *testing.T) {
 	allImagesSel := &image.DDataList{}
 	allImagesSel.SetRName("all_images_sel")
 

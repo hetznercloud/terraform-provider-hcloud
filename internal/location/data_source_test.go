@@ -93,7 +93,7 @@ func TestAccLocationDataSource_Basic_UpgradePluginFramework(t *testing.T) {
 	})
 }
 
-func TestAccLocationDataSource_List(t *testing.T) {
+func TestAccLocationDataSourceList(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	locationsDS := &location.DDataList{}
@@ -143,7 +143,7 @@ func TestAccLocationDataSource_List(t *testing.T) {
 	})
 }
 
-func TestAccLocationDataSource_List_UpgradePluginFramework(t *testing.T) {
+func TestAccLocationDataSourceList_UpgradePluginFramework(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	locationsDS := &location.DDataList{}
