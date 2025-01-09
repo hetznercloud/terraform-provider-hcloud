@@ -13,7 +13,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestAccImageDataSource_Basic(t *testing.T) {
+func TestAccImageDataSource(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	imageByName := &image.DData{

@@ -16,7 +16,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestAccLoadBalancerResource_Basic(t *testing.T) {
+func TestAccLoadBalancerResource(t *testing.T) {
 	var lb hcloud.LoadBalancer
 
 	res := LoadBalancerRData()

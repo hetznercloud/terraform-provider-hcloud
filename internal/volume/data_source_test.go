@@ -17,7 +17,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/volume"
 )
 
-func TestAccVolumeDataSource_Basic(t *testing.T) {
+func TestAccVolumeDataSource(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	res := &volume.RData{

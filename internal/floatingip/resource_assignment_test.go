@@ -19,7 +19,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestAccFloatingIPAssignmentResource_Basic(t *testing.T) {
+func TestAccFloatingIPAssignmentResource(t *testing.T) {
 	var s hcloud.Server
 	var s2 hcloud.Server
 	var f hcloud.FloatingIP

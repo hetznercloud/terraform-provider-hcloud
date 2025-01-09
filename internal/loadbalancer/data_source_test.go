@@ -15,7 +15,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestAccLoadBalancerDataSource_Basic(t *testing.T) {
+func TestAccLoadBalancerDataSource(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	res := &loadbalancer.RData{

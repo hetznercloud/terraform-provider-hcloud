@@ -16,7 +16,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestAccFloatingIPDataSource_Basic(t *testing.T) {
+func TestAccFloatingIPDataSource(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	res := &floatingip.RData{

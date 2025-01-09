@@ -10,7 +10,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestAccLocationDataSource_Basic(t *testing.T) {
+func TestAccLocationDataSource(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	lByName := &location.DData{
@@ -47,7 +47,7 @@ func TestAccLocationDataSource_Basic(t *testing.T) {
 	})
 }
 
-func TestAccLocationDataSource_Basic_UpgradePluginFramework(t *testing.T) {
+func TestAccLocationDataSource_UpgradePluginFramework(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	lByName := &location.DData{

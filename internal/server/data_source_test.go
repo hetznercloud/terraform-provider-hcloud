@@ -17,7 +17,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestAccServerDataSource_Basic(t *testing.T) {
+func TestAccServerDataSource(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	res := &server.RData{

@@ -13,7 +13,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestAccCertificateDataSource_Basic(t *testing.T) {
+func TestAccCertificateDataSource(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	res := certificate.NewUploadedRData(t, "datasource-test", "TFtestAcc")

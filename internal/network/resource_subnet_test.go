@@ -16,7 +16,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestAccNetworkSubnetResource_Basic(t *testing.T) {
+func TestAccNetworkSubnetResource(t *testing.T) {
 	var nw hcloud.Network
 
 	resNetwork := &network.RData{

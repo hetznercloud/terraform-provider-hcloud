@@ -13,7 +13,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestAccPlacementGroupDataSource_Basic(t *testing.T) {
+func TestAccPlacementGroupDataSource(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	res := placementgroup.NewRData(t, "basic-placement-group", "spread")

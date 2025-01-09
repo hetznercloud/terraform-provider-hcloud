@@ -17,7 +17,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestAccNetworkDataSource_Basic(t *testing.T) {
+func TestAccNetworkDataSource(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	res := &network.RData{

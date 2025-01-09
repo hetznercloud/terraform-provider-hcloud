@@ -17,7 +17,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestAccSnapshotResource_Basic(t *testing.T) {
+func TestAccSnapshotResource(t *testing.T) {
 	var s hcloud.Image
 	tmplMan := testtemplate.Manager{}
 

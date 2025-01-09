@@ -17,7 +17,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestAccFloatingIPResource_Basic(t *testing.T) {
+func TestAccFloatingIPResource(t *testing.T) {
 	var fip hcloud.FloatingIP
 
 	res := &floatingip.RData{

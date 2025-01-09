@@ -12,7 +12,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestAccFirewallDataSource_Basic(t *testing.T) {
+func TestAccFirewallDataSource(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	res := firewall.NewRData(t, "basic-firewall", []firewall.RDataRule{}, nil)

@@ -14,7 +14,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestAccFirewallResource_Basic(t *testing.T) {
+func TestAccFirewallResource(t *testing.T) {
 	var f hcloud.Firewall
 
 	res := firewall.NewRData(t, "basic-firewall", []firewall.RDataRule{

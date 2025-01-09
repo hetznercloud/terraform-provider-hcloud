@@ -27,7 +27,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
-func TestAccServerResource_Basic(t *testing.T) {
+func TestAccServerResource(t *testing.T) {
 	var s hcloud.Server
 
 	sk := sshkey.NewRData(t, "server-basic")

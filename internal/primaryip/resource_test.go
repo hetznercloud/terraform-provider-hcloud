@@ -18,7 +18,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestAccPrimaryIPResource_Basic(t *testing.T) {
+func TestAccPrimaryIPResource(t *testing.T) {
 	var pip hcloud.PrimaryIP
 
 	res := &primaryip.RData{

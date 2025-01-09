@@ -14,7 +14,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestAccPrimaryIPDataSource_Basic(t *testing.T) {
+func TestAccPrimaryIPDataSource(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	res := &primaryip.RData{

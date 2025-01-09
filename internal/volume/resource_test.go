@@ -15,7 +15,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestAccVolumeResource_Basic(t *testing.T) {
+func TestAccVolumeResource(t *testing.T) {
 	var vol hcloud.Volume
 
 	res := VolumeRData()

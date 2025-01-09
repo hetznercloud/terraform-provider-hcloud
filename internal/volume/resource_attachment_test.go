@@ -19,7 +19,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestAccVolumeAttachmentResource_Basic(t *testing.T) {
+func TestAccVolumeAttachmentResource(t *testing.T) {
 	var s hcloud.Server
 	var s2 hcloud.Server
 	var v hcloud.Volume
