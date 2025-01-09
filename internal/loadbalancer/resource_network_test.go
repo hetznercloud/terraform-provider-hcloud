@@ -8,16 +8,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancer"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/network"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
-	"github.com/stretchr/testify/assert"
 )
 
-func TestAccHcloudLoadBalancerNetwork_NetworkID(t *testing.T) {
+func TestAccLoadBalancerNetworkResource_NetworkID(t *testing.T) {
 	var (
 		nw hcloud.Network
 		lb hcloud.LoadBalancer
@@ -101,7 +102,7 @@ func TestAccHcloudLoadBalancerNetwork_NetworkID(t *testing.T) {
 	})
 }
 
-func TestAccHcloudLoadBalancerNetwork_SubNetID(t *testing.T) {
+func TestAccLoadBalancerNetworkResource_SubNetID(t *testing.T) {
 	var (
 		nw hcloud.Network
 		lb hcloud.LoadBalancer
@@ -153,7 +154,7 @@ func TestAccHcloudLoadBalancerNetwork_SubNetID(t *testing.T) {
 	})
 }
 
-func TestAccHcloudLoadBalancerNetwork_CannotAttachToTwoNetworks(t *testing.T) {
+func TestAccLoadBalancerNetworkResource_CannotAttachToTwoNetworks(t *testing.T) {
 	nwRess := make([]*network.RData, 2)
 	snRess := make([]*network.RDataSubnet, len(nwRess))
 	for i := 0; i < len(nwRess); i++ {

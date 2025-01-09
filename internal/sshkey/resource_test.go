@@ -14,7 +14,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestSSHKeyResource_Basic(t *testing.T) {
+func TestAccSSHKeyResource(t *testing.T) {
 	var sk hcloud.SSHKey
 
 	tmplMan := testtemplate.Manager{}

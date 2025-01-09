@@ -10,7 +10,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestAccHcloudDataSourceDatacenterTest(t *testing.T) {
+func TestAccDatacenterDataSource(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	dcByName := &datacenter.DData{
@@ -43,7 +43,7 @@ func TestAccHcloudDataSourceDatacenterTest(t *testing.T) {
 	})
 }
 
-func TestAccHcloudDataSourceDatacenter_UpgradePluginFramework(t *testing.T) {
+func TestAccDatacenterDataSource_UpgradePluginFramework(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	dcByName := &datacenter.DData{
@@ -88,7 +88,7 @@ func TestAccHcloudDataSourceDatacenter_UpgradePluginFramework(t *testing.T) {
 	})
 }
 
-func TestAccHcloudDataSourceDatacentersTest(t *testing.T) {
+func TestAccDatacenterDataSourceList(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	datacentersD := &datacenter.DDataList{}
@@ -128,7 +128,7 @@ func TestAccHcloudDataSourceDatacentersTest(t *testing.T) {
 	})
 }
 
-func TestAccHcloudDataSourceDatacenters_UpgradePluginFramework(t *testing.T) {
+func TestAccDatacenterDataSourceList_UpgradePluginFramework(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	datacentersD := &datacenter.DDataList{}

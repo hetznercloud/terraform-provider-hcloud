@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/certificate"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancer"
@@ -16,7 +17,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestAccHcloudLoadBalancerService_TCP(t *testing.T) {
+func TestAccLoadBalancerServiceResource_TCP(t *testing.T) {
 	var lb hcloud.LoadBalancer
 
 	lbRes := LoadBalancerRData()
@@ -92,7 +93,7 @@ func TestAccHcloudLoadBalancerService_TCP(t *testing.T) {
 	})
 }
 
-func TestAccHcloudLoadBalancerService_HTTP(t *testing.T) {
+func TestAccLoadBalancerServiceResource_HTTP(t *testing.T) {
 	var lb hcloud.LoadBalancer
 
 	lbRes := LoadBalancerRData()
@@ -208,7 +209,7 @@ func TestAccHcloudLoadBalancerService_HTTP(t *testing.T) {
 	})
 }
 
-func TestAccHcloudLoadBalancerService_HTTP_StickySessions(t *testing.T) {
+func TestAccLoadBalancerServiceResource_HTTP_StickySessions(t *testing.T) {
 	var lb hcloud.LoadBalancer
 
 	lbRes := LoadBalancerRData()
@@ -253,7 +254,7 @@ func TestAccHcloudLoadBalancerService_HTTP_StickySessions(t *testing.T) {
 	})
 }
 
-func TestAccHcloudLoadBalancerService_HTTPS(t *testing.T) {
+func TestAccLoadBalancerServiceResource_HTTPS(t *testing.T) {
 	var (
 		lb   hcloud.LoadBalancer
 		cert hcloud.Certificate
@@ -304,7 +305,7 @@ func TestAccHcloudLoadBalancerService_HTTPS(t *testing.T) {
 	})
 }
 
-func TestAccHcloudLoadBalancerService_HTTPS_UpdateUnchangedCertificates(t *testing.T) {
+func TestAccLoadBalancerServiceResource_HTTPS_UpdateUnchangedCertificates(t *testing.T) {
 	certRes1 := certificate.NewUploadedRData(t, "cert-res1", "TFAccTests1")
 	certRes2 := certificate.NewUploadedRData(t, "cert-res2", "TFAccTests2")
 	lbRes := &loadbalancer.RData{
@@ -341,7 +342,7 @@ func TestAccHcloudLoadBalancerService_HTTPS_UpdateUnchangedCertificates(t *testi
 	})
 }
 
-func TestAccHcloudLoadBalancerService_CreateDelete_NoListenPort(t *testing.T) {
+func TestAccLoadBalancerServiceResource_CreateDelete_NoListenPort(t *testing.T) {
 	svcName := "lb-create-delete-service-test"
 
 	certData := certificate.NewUploadedRData(t, "test-cert", "example.org")
@@ -396,7 +397,7 @@ func TestAccHcloudLoadBalancerService_CreateDelete_NoListenPort(t *testing.T) {
 	})
 }
 
-func TestAccHcloudLoadBalancerService_ChangeListenPort(t *testing.T) {
+func TestAccLoadBalancerServiceResource_ChangeListenPort(t *testing.T) {
 	var lb hcloud.LoadBalancer
 
 	lbRes := LoadBalancerRData()

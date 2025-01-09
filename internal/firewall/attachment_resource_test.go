@@ -13,7 +13,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestAttachmentResource_Servers(t *testing.T) {
+func TestAccFirewallAttachmentResource_Servers(t *testing.T) {
 	var (
 		srv hcloud.Server
 		fw  hcloud.Firewall
@@ -56,7 +56,7 @@ func TestAttachmentResource_Servers(t *testing.T) {
 	})
 }
 
-func TestAttachmentResource_LabelSelectors(t *testing.T) {
+func TestAccFirewallAttachmentResource_LabelSelectors(t *testing.T) {
 	var (
 		srv hcloud.Server
 		fw  hcloud.Firewall

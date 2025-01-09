@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancer"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
@@ -15,7 +16,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestLoadBalancerResource_Basic(t *testing.T) {
+func TestAccLoadBalancerResource(t *testing.T) {
 	var lb hcloud.LoadBalancer
 
 	res := LoadBalancerRData()
@@ -74,7 +75,7 @@ func TestLoadBalancerResource_Basic(t *testing.T) {
 	})
 }
 
-func TestLoadBalancerResource_Resize(t *testing.T) {
+func TestAccLoadBalancerResource_Resize(t *testing.T) {
 	var lb hcloud.LoadBalancer
 
 	res := LoadBalancerRData()
@@ -120,7 +121,7 @@ func TestLoadBalancerResource_Resize(t *testing.T) {
 	})
 }
 
-func TestLoadBalancerResource_InlineTarget(t *testing.T) {
+func TestAccLoadBalancerResource_InlineTarget(t *testing.T) {
 	var srv0, srv1 hcloud.Server
 
 	tmplMan := testtemplate.Manager{RandInt: acctest.RandInt()}
@@ -197,7 +198,7 @@ func TestLoadBalancerResource_InlineTarget(t *testing.T) {
 	})
 }
 
-func TestLoadBalancerResource_Protection(t *testing.T) {
+func TestAccLoadBalancerResource_Protection(t *testing.T) {
 	var (
 		lb hcloud.LoadBalancer
 

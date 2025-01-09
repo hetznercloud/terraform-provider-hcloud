@@ -18,7 +18,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestPrimaryIPResource_Basic(t *testing.T) {
+func TestAccPrimaryIPResource(t *testing.T) {
 	var pip hcloud.PrimaryIP
 
 	res := &primaryip.RData{
@@ -76,7 +76,7 @@ func TestPrimaryIPResource_Basic(t *testing.T) {
 	})
 }
 
-func TestPrimaryIPResource_with_server(t *testing.T) {
+func TestAccPrimaryIPResource_WithServer(t *testing.T) {
 	var srv hcloud.Server
 	var primaryIPv4One hcloud.PrimaryIP
 	var primaryIPv4Two hcloud.PrimaryIP
@@ -208,7 +208,7 @@ primary IP v6 one has assignee id %d and should shouldnt be assigned to server i
 	})
 }
 
-func TestPrimaryIPResource_FieldUpdates(t *testing.T) {
+func TestAccPrimaryIPResource_FieldUpdates(t *testing.T) {
 	var (
 		pip hcloud.PrimaryIP
 
@@ -262,7 +262,7 @@ func TestPrimaryIPResource_FieldUpdates(t *testing.T) {
 	})
 }
 
-func TestPrimaryIPResource_DeleteProtection(t *testing.T) {
+func TestAccPrimaryIPResource_DeleteProtection(t *testing.T) {
 	var pip hcloud.PrimaryIP
 
 	unprotected := &primaryip.RData{

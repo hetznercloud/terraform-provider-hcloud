@@ -19,7 +19,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestAccHcloudLoadBalancerTarget_ServerTarget(t *testing.T) {
+func TestAccLoadBalancerTargetResource_ServerTarget(t *testing.T) {
 	var (
 		lb  hcloud.LoadBalancer
 		srv hcloud.Server
@@ -83,7 +83,7 @@ func TestAccHcloudLoadBalancerTarget_ServerTarget(t *testing.T) {
 	})
 }
 
-func TestAccHcloudLoadBalancerTarget_ServerTarget_UsePrivateIP(t *testing.T) {
+func TestAccLoadBalancerTargetResource_ServerTarget_UsePrivateIP(t *testing.T) {
 	var (
 		lb  hcloud.LoadBalancer
 		srv hcloud.Server
@@ -168,7 +168,7 @@ func TestAccHcloudLoadBalancerTarget_ServerTarget_UsePrivateIP(t *testing.T) {
 	})
 }
 
-func TestAccHcloudLoadBalancerTarget_LabelSelectorTarget(t *testing.T) {
+func TestAccLoadBalancerTargetResource_LabelSelectorTarget(t *testing.T) {
 	var (
 		lb  hcloud.LoadBalancer
 		srv hcloud.Server
@@ -229,7 +229,7 @@ func TestAccHcloudLoadBalancerTarget_LabelSelectorTarget(t *testing.T) {
 	})
 }
 
-func TestAccHcloudLoadBalancerTarget_LabelSelectorTarget_UsePrivateIP(t *testing.T) {
+func TestAccLoadBalancerTargetResource_LabelSelectorTarget_UsePrivateIP(t *testing.T) {
 	var (
 		lb  hcloud.LoadBalancer
 		srv hcloud.Server
@@ -329,7 +329,7 @@ func TestAccHcloudLoadBalancerTarget_LabelSelectorTarget_UsePrivateIP(t *testing
 	})
 }
 
-func TestAccHcloudLoadBalancerTarget_IPTarget(t *testing.T) {
+func TestAccLoadBalancerTargetResource_IPTarget(t *testing.T) {
 	t.Skip("No dedicated server available in test account")
 
 	var (

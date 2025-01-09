@@ -12,7 +12,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestAccHcloudDataSourceFirewallTest(t *testing.T) {
+func TestAccFirewallDataSource(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	res := firewall.NewRData(t, "basic-firewall", []firewall.RDataRule{}, nil)
@@ -64,7 +64,7 @@ func TestAccHcloudDataSourceFirewallTest(t *testing.T) {
 	})
 }
 
-func TestAccHcloudDataSourceFirewallListTest(t *testing.T) {
+func TestAccFirewallDataSourceList(t *testing.T) {
 	res := firewall.NewRData(t, "firewall-ds-test", []firewall.RDataRule{}, nil)
 
 	firewallBySel := &firewall.DDataList{

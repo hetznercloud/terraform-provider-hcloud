@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 
@@ -12,12 +13,13 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/volume"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestVolumeAssignmentResource_Basic(t *testing.T) {
+func TestAccVolumeAttachmentResource(t *testing.T) {
 	var s hcloud.Server
 	var s2 hcloud.Server
 	var v hcloud.Volume

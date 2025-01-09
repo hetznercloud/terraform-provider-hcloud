@@ -6,16 +6,18 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/network"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancer"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestAccHcloudDataSourceNetworkTest(t *testing.T) {
+func TestAccNetworkDataSource(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	res := &network.RData{
@@ -79,7 +81,7 @@ func TestAccHcloudDataSourceNetworkTest(t *testing.T) {
 	})
 }
 
-func TestAccHcloudDataSourceNetworkListTest(t *testing.T) {
+func TestAccNetworkDataSourceList(t *testing.T) {
 	res := &network.RData{
 		Name:    "network-ds-test",
 		IPRange: "10.0.0.0/16",

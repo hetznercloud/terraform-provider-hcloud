@@ -6,16 +6,18 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancer"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestAccHcloudDataSourceServerTest(t *testing.T) {
+func TestAccServerDataSource(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	res := &server.RData{
@@ -72,7 +74,7 @@ func TestAccHcloudDataSourceServerTest(t *testing.T) {
 	})
 }
 
-func TestAccHcloudDataSourceServerListTest(t *testing.T) {
+func TestAccServerDataSourceList(t *testing.T) {
 	res := &server.RData{
 		Name:  "server-ds-test",
 		Type:  teste2e.TestServerType,

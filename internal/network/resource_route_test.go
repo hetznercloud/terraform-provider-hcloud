@@ -10,12 +10,13 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestNetworkRouteResource_Basic(t *testing.T) {
+func TestAccNetworkRouteResource(t *testing.T) {
 	var nw hcloud.Network
 
 	resNetwork := &network.RData{
