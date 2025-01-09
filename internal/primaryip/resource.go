@@ -406,5 +406,5 @@ func CreateRandomPrimaryIP(ctx context.Context, c *hcloud.Client, server *hcloud
 }
 
 func randomNumberBetween(low, hi int) int {
-	return low + rand.Intn(hi-low)
+	return low + rand.Intn(hi-low) // nolint: gosec
 }

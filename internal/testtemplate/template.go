@@ -12,17 +12,10 @@ import (
 	"sync"
 	"testing"
 	"text/template"
-	"time"
 
 	hcl "github.com/hashicorp/hcl/v2"
 	hclwrite "github.com/hashicorp/hcl/v2/hclwrite"
 )
-
-var rng *rand.Rand
-
-func init() {
-	rng = rand.New(rand.NewSource(time.Now().UnixNano()))
-}
 
 // Data marks a struct as containing data for test templates.
 type Data interface {
@@ -73,7 +66,7 @@ func (ts *Manager) init(t *testing.T) {
 
 	ts.once.Do(func() {
 		if ts.RandInt == 0 {
-			ts.RandInt = rng.Int()
+			ts.RandInt = rand.Int() // nolint: gosec
 		}
 		if ts.RandName == "" {
 			ts.RandName = "r_" + strconv.Itoa(ts.RandInt)
