@@ -27,7 +27,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
-func TestServerResource_Basic(t *testing.T) {
+func TestAccServerResource_Basic(t *testing.T) {
 	var s hcloud.Server
 
 	sk := sshkey.NewRData(t, "server-basic")
@@ -87,7 +87,7 @@ func TestServerResource_Basic(t *testing.T) {
 	})
 }
 
-func TestServerResource_ImageID(t *testing.T) {
+func TestAccServerResource_ImageID(t *testing.T) {
 	var s hcloud.Server
 
 	sk := sshkey.NewRData(t, "server-image-id")
@@ -125,7 +125,7 @@ func TestServerResource_ImageID(t *testing.T) {
 	})
 }
 
-func TestServerResource_Resize(t *testing.T) {
+func TestAccServerResource_Resize(t *testing.T) {
 	var s hcloud.Server
 
 	sk := sshkey.NewRData(t, "server-resize")
@@ -181,7 +181,7 @@ func TestServerResource_Resize(t *testing.T) {
 	})
 }
 
-func TestServerResource_ChangeUserData(t *testing.T) {
+func TestAccServerResource_ChangeUserData(t *testing.T) {
 	var s, s2 hcloud.Server
 
 	sk := sshkey.NewRData(t, "server-userdata")
@@ -236,7 +236,7 @@ func TestServerResource_ChangeUserData(t *testing.T) {
 	})
 }
 
-func TestServerResource_ISO(t *testing.T) {
+func TestAccServerResource_ISO(t *testing.T) {
 	var s hcloud.Server
 
 	sk := sshkey.NewRData(t, "server-iso")
@@ -275,7 +275,7 @@ func TestServerResource_ISO(t *testing.T) {
 	})
 }
 
-func TestServerResource_DirectAttachToNetwork(t *testing.T) {
+func TestAccServerResource_DirectAttachToNetwork(t *testing.T) {
 	var (
 		nw  hcloud.Network
 		nw2 hcloud.Network
@@ -504,7 +504,7 @@ func TestServerResource_DirectAttachToNetwork(t *testing.T) {
 	})
 }
 
-func TestServerResource_PrimaryIPNetworkTests(t *testing.T) {
+func TestAccServerResource_PrimaryIPNetworkTests(t *testing.T) {
 	var (
 		nw hcloud.Network
 		s  hcloud.Server
@@ -812,7 +812,7 @@ func TestServerResource_PrimaryIPNetworkTests(t *testing.T) {
 	})
 }
 
-func TestServerResource_PrivateNetworkBastion(t *testing.T) {
+func TestAccServerResource_PrivateNetworkBastion(t *testing.T) {
 	name := "server-private-network-bastion"
 
 	sshKeyRes := sshkey.NewRData(t, name)
@@ -921,7 +921,7 @@ resource "terraform_data" "wait" {
 	})
 }
 
-func TestServerResource_Firewalls(t *testing.T) {
+func TestAccServerResource_Firewalls(t *testing.T) {
 	var s hcloud.Server
 
 	fw := firewall.NewRData(t, "server-test", []firewall.RDataRule{
@@ -996,7 +996,7 @@ func TestServerResource_Firewalls(t *testing.T) {
 	})
 }
 
-func TestServerResource_PlacementGroup(t *testing.T) {
+func TestAccServerResource_PlacementGroup(t *testing.T) {
 	var (
 		pg  hcloud.PlacementGroup
 		srv hcloud.Server
@@ -1099,7 +1099,7 @@ func TestServerResource_PlacementGroup(t *testing.T) {
 	})
 }
 
-func TestServerResource_Protection(t *testing.T) {
+func TestAccServerResource_Protection(t *testing.T) {
 	var (
 		srv hcloud.Server
 
@@ -1156,7 +1156,7 @@ func TestServerResource_Protection(t *testing.T) {
 	})
 }
 
-func TestServerResource_EmptySSHKey(t *testing.T) {
+func TestAccServerResource_EmptySSHKey(t *testing.T) {
 	// Regression Test for https://github.com/hetznercloud/terraform-provider-hcloud/issues/727
 	var srv hcloud.Server
 

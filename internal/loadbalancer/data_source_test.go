@@ -8,13 +8,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancer"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestAccHcloudDataSourceLoadBalancerTest(t *testing.T) {
+func TestAccLoadBalancerDataSource_Basic(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	res := &loadbalancer.RData{
@@ -79,7 +80,7 @@ func TestAccHcloudDataSourceLoadBalancerTest(t *testing.T) {
 	})
 }
 
-func TestAccHcloudDataSourceLoadBalancerListTest(t *testing.T) {
+func TestAccLoadBalancerDataSource_List(t *testing.T) {
 	res := &loadbalancer.RData{
 		Name:         "some-load-balancer",
 		LocationName: teste2e.TestLocationName,

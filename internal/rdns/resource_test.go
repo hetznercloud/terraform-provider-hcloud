@@ -19,7 +19,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestRDNSResource_Server(t *testing.T) {
+func TestAccRDNSResource_Server(t *testing.T) {
 	tests := []struct {
 		name        string
 		dns         string
@@ -96,7 +96,7 @@ func TestRDNSResource_Server(t *testing.T) {
 	}
 }
 
-func TestRDNSResource_PrimaryIP(t *testing.T) {
+func TestAccRDNSResource_PrimaryIP(t *testing.T) {
 	tests := []struct {
 		name          string
 		dns           string
@@ -161,7 +161,7 @@ func TestRDNSResource_PrimaryIP(t *testing.T) {
 	}
 }
 
-func TestRDNSResource_FloatingIP(t *testing.T) {
+func TestAccRDNSResource_FloatingIP(t *testing.T) {
 	tests := []struct {
 		name           string
 		dns            string
@@ -225,7 +225,7 @@ func TestRDNSResource_FloatingIP(t *testing.T) {
 	}
 }
 
-func TestRDNSResource_LoadBalancer(t *testing.T) {
+func TestAccRDNSResource_LoadBalancer(t *testing.T) {
 	tests := []struct {
 		name        string
 		ipAddress   string

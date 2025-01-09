@@ -13,7 +13,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestAccHcloudDataSourceSSHKeyTest(t *testing.T) {
+func TestAccSSHKeyDataSource_Basic(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	res := sshkey.NewRData(t, "datasource-test")
@@ -66,7 +66,7 @@ func TestAccHcloudDataSourceSSHKeyTest(t *testing.T) {
 	})
 }
 
-func TestAccHcloudDatasourceSSHKey_UpgradePluginFramework(t *testing.T) {
+func TestAccSSHKeyDataSource_Basic_UpgradePluginFramework(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	res := sshkey.NewRData(t, "datasource-test")

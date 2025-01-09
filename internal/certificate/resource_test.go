@@ -10,6 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
@@ -21,7 +22,7 @@ var (
 	certDomain = os.Getenv("CERT_DOMAIN")
 )
 
-func TestCertificateResource_Uploaded_Basic(t *testing.T) {
+func TestAccCertificateResource_Uploaded_Basic(t *testing.T) {
 	var cert hcloud.Certificate
 
 	res := certificate.NewUploadedRData(t, "basic-cert", "TFAccTests")
@@ -63,7 +64,7 @@ func TestCertificateResource_Uploaded_Basic(t *testing.T) {
 	})
 }
 
-func TestCertificateResource_Uploaded_ChangeCertRequiresNewResource(t *testing.T) {
+func TestAccCertificateResource_Uploaded_ChangeCertRequiresNewResource(t *testing.T) {
 	var cert, newCert hcloud.Certificate
 
 	res := certificate.NewUploadedRData(t, "basic-cert", "TFAccTests")
@@ -113,7 +114,7 @@ func TestCertificateResource_Uploaded_ChangeCertRequiresNewResource(t *testing.T
 	})
 }
 
-func TestCertificateResource_Managed_Basic(t *testing.T) {
+func TestAccCertificateResource_Managed_Basic(t *testing.T) {
 	if certDomain == "" {
 		t.Skip("Skipping because CERT_DOMAIN is not set")
 	}

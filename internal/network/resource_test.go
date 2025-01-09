@@ -8,12 +8,13 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestNetworkResource_Basic(t *testing.T) {
+func TestAccNetworkResource_Basic(t *testing.T) {
 	var cert hcloud.Network
 
 	res := &network.RData{
@@ -62,7 +63,7 @@ func TestNetworkResource_Basic(t *testing.T) {
 	})
 }
 
-func TestNetworkResource_IncreaseNetwork(t *testing.T) {
+func TestAccNetworkResource_IncreaseNetwork(t *testing.T) {
 	var cert hcloud.Network
 
 	res := &network.RData{
@@ -111,7 +112,7 @@ func TestNetworkResource_IncreaseNetwork(t *testing.T) {
 	})
 }
 
-func TestNetworkResource_Protection(t *testing.T) {
+func TestAccNetworkResource_Protection(t *testing.T) {
 	var (
 		cert hcloud.Network
 
@@ -161,7 +162,7 @@ func TestNetworkResource_Protection(t *testing.T) {
 	})
 }
 
-func TestNetworkResource_ExposeRouteToVSwitch(t *testing.T) {
+func TestAccNetworkResource_ExposeRouteToVSwitch(t *testing.T) {
 	var (
 		cert hcloud.Network
 

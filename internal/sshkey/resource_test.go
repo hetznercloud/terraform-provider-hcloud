@@ -14,7 +14,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestSSHKeyResource_Basic(t *testing.T) {
+func TestAccSSHKeyResource_Basic(t *testing.T) {
 	var sk hcloud.SSHKey
 
 	tmplMan := testtemplate.Manager{}
@@ -60,7 +60,7 @@ func TestSSHKeyResource_Basic(t *testing.T) {
 	})
 }
 
-func TestAccSSHKeyResource_UpgradePluginFramework(t *testing.T) {
+func TestAccSSHKeyResource_Basic_UpgradePluginFramework(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	res := sshkey.NewRData(t, "upgrade-plugin-framework-test")

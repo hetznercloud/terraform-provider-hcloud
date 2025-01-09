@@ -8,11 +8,12 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestAccHcloudDataSourceCertificateTest(t *testing.T) {
+func TestAccCertificateDataSource_Basic(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	res := certificate.NewUploadedRData(t, "datasource-test", "TFtestAcc")
@@ -65,7 +66,7 @@ func TestAccHcloudDataSourceCertificateTest(t *testing.T) {
 	})
 }
 
-func TestAccHcloudDataSourceCertificateListTest(t *testing.T) {
+func TestAccCertificateDataSource_List(t *testing.T) {
 	res := certificate.NewUploadedRData(t, "datasource-test", "TFtestAcc")
 
 	certificateBySel := &certificate.DDataList{

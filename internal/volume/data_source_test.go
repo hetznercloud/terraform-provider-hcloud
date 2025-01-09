@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
@@ -16,7 +17,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/volume"
 )
 
-func TestAccHcloudDataSourceVolumeTest(t *testing.T) {
+func TestAccVolumeDataSource_Basic(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	res := &volume.RData{
@@ -83,7 +84,7 @@ func TestAccHcloudDataSourceVolumeTest(t *testing.T) {
 	})
 }
 
-func TestAccHcloudDataSourceAttachedVolumeTest(t *testing.T) {
+func TestAccVolumeDataSource_Attached(t *testing.T) {
 	var s hcloud.Server
 
 	resServer := &server.RData{
@@ -171,7 +172,7 @@ func TestAccHcloudDataSourceAttachedVolumeTest(t *testing.T) {
 	})
 }
 
-func TestAccHcloudDataSourceVolumeListTest(t *testing.T) {
+func TestAccVolumeDataSource_List(t *testing.T) {
 	res := &volume.RData{
 		Name:         "volume-ds-test",
 		Size:         10,

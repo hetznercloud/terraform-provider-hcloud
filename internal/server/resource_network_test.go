@@ -5,19 +5,21 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/network"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
-	"github.com/stretchr/testify/assert"
 )
 
-func TestAccHcloudServerNetwork_NetworkID(t *testing.T) {
+func TestAccServerNetworkResource_NetworkID(t *testing.T) {
 	var (
 		nw hcloud.Network
 		s  hcloud.Server
@@ -86,7 +88,7 @@ func TestAccHcloudServerNetwork_NetworkID(t *testing.T) {
 	})
 }
 
-func TestAccHcloudServerNetwork_SubNetID(t *testing.T) {
+func TestAccServerNetworkResource_SubNetID(t *testing.T) {
 	var (
 		nw hcloud.Network
 		s  hcloud.Server

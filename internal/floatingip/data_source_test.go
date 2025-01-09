@@ -6,15 +6,17 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/floatingip"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestAccHcloudDataSourceFloatingIPTest(t *testing.T) {
+func TestAccFloatingIPDataSource_Basic(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	res := &floatingip.RData{
@@ -75,7 +77,7 @@ func TestAccHcloudDataSourceFloatingIPTest(t *testing.T) {
 	})
 }
 
-func TestAccHcloudDataSourceFloatingIPListTest(t *testing.T) {
+func TestAccFloatingIPDataSource_List(t *testing.T) {
 	res := &floatingip.RData{
 		Name: "floatingip-ds-test",
 		Type: "ipv4",

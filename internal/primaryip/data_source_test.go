@@ -14,7 +14,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestAccHcloudDataSourcePrimaryIPTest(t *testing.T) {
+func TestAccPrimaryIPDataSource_Basic(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	res := &primaryip.RData{
@@ -83,7 +83,7 @@ func TestAccHcloudDataSourcePrimaryIPTest(t *testing.T) {
 	})
 }
 
-func TestAccHcloudDataSourcePrimaryIPListTest(t *testing.T) {
+func TestAccPrimaryIPDataSource_List(t *testing.T) {
 	res := &primaryip.RData{
 		Name: "primary-ds-test",
 		Type: "ipv4",

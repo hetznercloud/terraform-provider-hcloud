@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/placementgroup"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
@@ -12,7 +13,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestAccHcloudDataSourcePlacementGroupTest(t *testing.T) {
+func TestAccPlacementGroupDataSource_Basic(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	res := placementgroup.NewRData(t, "basic-placement-group", "spread")
@@ -66,7 +67,7 @@ func TestAccHcloudDataSourcePlacementGroupTest(t *testing.T) {
 	})
 }
 
-func TestAccHcloudDataSourcePlacementGroupListTest(t *testing.T) {
+func TestAccPlacementGroupDataSource_List(t *testing.T) {
 	res := placementgroup.NewRData(t, "basic-placement-group", "spread")
 	res.SetRName("placement-group-ds-test")
 

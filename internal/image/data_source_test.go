@@ -7,12 +7,13 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancer"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestAccHcloudDataSourceImageTest(t *testing.T) {
+func TestAccImageDataSource_Basic(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	imageByName := &image.DData{
@@ -49,7 +50,7 @@ func TestAccHcloudDataSourceImageTest(t *testing.T) {
 	})
 }
 
-func TestAccHcloudDataSourceImageWithFiltersTest(t *testing.T) {
+func TestAccImageDataSource_WithFilters(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	imageByName := &image.DData{
@@ -80,7 +81,7 @@ func TestAccHcloudDataSourceImageWithFiltersTest(t *testing.T) {
 	})
 }
 
-func TestAccHcloudDataSourceImageListTest(t *testing.T) {
+func TestAccImageDataSource_List(t *testing.T) {
 	allImagesSel := &image.DDataList{}
 	allImagesSel.SetRName("all_images_sel")
 

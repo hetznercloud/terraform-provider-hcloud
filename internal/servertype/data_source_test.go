@@ -10,7 +10,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestAccDataSource(t *testing.T) {
+func TestAccServerTypeDataSource_Basic(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	byName := &servertype.DData{ServerTypeName: teste2e.TestServerType}
@@ -61,7 +61,7 @@ func TestAccDataSource(t *testing.T) {
 	})
 }
 
-func TestAccDataSource_UpgradePluginFramework(t *testing.T) {
+func TestAccServerTypeDataSource_Basic_UpgradePluginFramework(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	byName := &servertype.DData{ServerTypeName: teste2e.TestServerType}
@@ -104,7 +104,7 @@ func TestAccDataSource_UpgradePluginFramework(t *testing.T) {
 	})
 }
 
-func TestAccDataSourceList(t *testing.T) {
+func TestAccServerTypeDataSource_List(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	all := &servertype.DDataList{}
@@ -145,7 +145,7 @@ func TestAccDataSourceList(t *testing.T) {
 	})
 }
 
-func TestAccDataSourceList_UpgradePluginFramework(t *testing.T) {
+func TestAccServerTypeDataSource_List_UpgradePluginFramework(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	all := &servertype.DDataList{}

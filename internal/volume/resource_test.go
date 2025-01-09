@@ -9,12 +9,13 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/volume"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestVolumeResource_Basic(t *testing.T) {
+func TestAccVolumeResource_Basic(t *testing.T) {
 	var vol hcloud.Volume
 
 	res := VolumeRData()
@@ -72,7 +73,7 @@ func TestVolumeResource_Basic(t *testing.T) {
 	})
 }
 
-func TestVolumeResource_Resize(t *testing.T) {
+func TestAccVolumeResource_Resize(t *testing.T) {
 	var vol hcloud.Volume
 
 	res := VolumeRData()
@@ -125,7 +126,7 @@ func TestVolumeResource_Resize(t *testing.T) {
 	})
 }
 
-func TestVolumeResource_WithServer(t *testing.T) {
+func TestAccVolumeResource_WithServer(t *testing.T) {
 	var vol hcloud.Volume
 	tmplMan := testtemplate.Manager{}
 	resServer1 := &server.RData{
@@ -200,7 +201,7 @@ func TestVolumeResource_WithServer(t *testing.T) {
 	})
 }
 
-func TestVolumeResource_WithServerMultipleVolumes(t *testing.T) {
+func TestAccVolumeResource_WithServerMultipleVolumes(t *testing.T) {
 	var vol, vol2 hcloud.Volume
 	tmplMan := testtemplate.Manager{}
 	resServer1 := &server.RData{
@@ -250,7 +251,7 @@ func TestVolumeResource_WithServerMultipleVolumes(t *testing.T) {
 	})
 }
 
-func TestVolumeResource_Protection(t *testing.T) {
+func TestAccVolumeResource_Protection(t *testing.T) {
 	var (
 		vol hcloud.Volume
 

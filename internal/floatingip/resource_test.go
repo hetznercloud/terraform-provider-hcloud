@@ -11,12 +11,13 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestFloatingIPResource_Basic(t *testing.T) {
+func TestAccFloatingIPResource_Basic(t *testing.T) {
 	var fip hcloud.FloatingIP
 
 	res := &floatingip.RData{
@@ -65,7 +66,7 @@ func TestFloatingIPResource_Basic(t *testing.T) {
 		},
 	})
 }
-func TestFloatingIPResource_WithServer(t *testing.T) {
+func TestAccFloatingIPResource_WithServer(t *testing.T) {
 	var fip hcloud.FloatingIP
 	tmplMan := testtemplate.Manager{}
 
@@ -117,7 +118,7 @@ func TestFloatingIPResource_WithServer(t *testing.T) {
 	})
 }
 
-func TestFloatingIPResource_Protection(t *testing.T) {
+func TestAccFloatingIPResource_Protection(t *testing.T) {
 	var (
 		fip hcloud.FloatingIP
 

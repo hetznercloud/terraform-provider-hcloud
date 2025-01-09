@@ -7,10 +7,11 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestAccDataSource(t *testing.T) {
+func TestAccLoadBalancerTypeDataSource_Basic(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	byName := &loadbalancertype.DData{LoadBalancerTypeName: teste2e.TestLoadBalancerType}
@@ -51,7 +52,7 @@ func TestAccDataSource(t *testing.T) {
 	})
 }
 
-func TestAccDataSourceList(t *testing.T) {
+func TestAccLoadBalancerTypeDataSource_List(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	all := &loadbalancertype.DDataList{}
