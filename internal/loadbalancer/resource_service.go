@@ -16,6 +16,7 @@ import (
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/control"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/timeutil"
 )
 
 // ServiceResourceType is the type name of the Hetzner Cloud Load Balancer
@@ -440,7 +441,7 @@ func parseTFHTTP(tfHTTP []interface{}) *hcloud.LoadBalancerAddServiceOptsHTTP {
 		http.CookieName = hcloud.Ptr(cookieName.(string))
 	}
 	if cookieLifetime, ok := httpMap["cookie_lifetime"]; ok && cookieLifetime != 0 {
-		http.CookieLifetime = hcloud.Ptr(time.Duration(cookieLifetime.(int)) * time.Second)
+		http.CookieLifetime = hcloud.Ptr(timeutil.DurationFromSeconds(cookieLifetime.(int)))
 	}
 
 	if certificates, ok := httpMap["certificates"]; ok {
@@ -468,7 +469,7 @@ func parseUpdateTFHTTP(tfHTTP []interface{}) *hcloud.LoadBalancerUpdateServiceOp
 		http.CookieName = hcloud.Ptr(cookieName.(string))
 	}
 	if cookieLifetime, ok := httpMap["cookie_lifetime"]; ok {
-		http.CookieLifetime = hcloud.Ptr(time.Duration(cookieLifetime.(int)) * time.Second)
+		http.CookieLifetime = hcloud.Ptr(timeutil.DurationFromSeconds(cookieLifetime.(int)))
 	}
 
 	if certificates, ok := httpMap["certificates"]; ok {
@@ -534,10 +535,10 @@ func parseTFHealthCheckAdd(tfHealthCheck []interface{}) *hcloud.LoadBalancerAddS
 		healthCheckOpts.Port = hcloud.Ptr(port.(int))
 	}
 	if interval, ok := healthCheckMap["interval"]; ok {
-		healthCheckOpts.Interval = hcloud.Ptr(time.Duration(interval.(int)) * time.Second)
+		healthCheckOpts.Interval = hcloud.Ptr(timeutil.DurationFromSeconds(interval.(int)))
 	}
 	if timeout, ok := healthCheckMap["timeout"]; ok {
-		healthCheckOpts.Timeout = hcloud.Ptr(time.Duration(timeout.(int)) * time.Second)
+		healthCheckOpts.Timeout = hcloud.Ptr(timeutil.DurationFromSeconds(timeout.(int)))
 	}
 	if retries, ok := healthCheckMap["retries"]; ok {
 		healthCheckOpts.Retries = hcloud.Ptr(retries.(int))
@@ -561,10 +562,10 @@ func parseTFHealthCheckUpdate(tfHealthCheck []interface{}) *hcloud.LoadBalancerU
 		healthCheckOpts.Port = hcloud.Ptr(port.(int))
 	}
 	if interval, ok := healthCheckMap["interval"]; ok {
-		healthCheckOpts.Interval = hcloud.Ptr(time.Duration(interval.(int)) * time.Second)
+		healthCheckOpts.Interval = hcloud.Ptr(timeutil.DurationFromSeconds(interval.(int)))
 	}
 	if timeout, ok := healthCheckMap["timeout"]; ok {
-		healthCheckOpts.Timeout = hcloud.Ptr(time.Duration(timeout.(int)) * time.Second)
+		healthCheckOpts.Timeout = hcloud.Ptr(timeutil.DurationFromSeconds(timeout.(int)))
 	}
 	if retries, ok := healthCheckMap["retries"]; ok {
 		healthCheckOpts.Retries = hcloud.Ptr(retries.(int))
