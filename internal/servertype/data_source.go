@@ -66,8 +66,12 @@ func newResourceData(ctx context.Context, in *hcloud.ServerType) (resourceData, 
 	data.ID = types.Int64Value(int64(in.ID))
 	data.Name = types.StringValue(in.Name)
 	data.Description = types.StringValue(in.Description)
+	// No integer overflow
+	// nolint: gosec
 	data.Cores = types.Int32Value(int32(in.Cores))
 	data.Memory = types.Int32Value(int32(in.Memory))
+	// No integer overflow
+	// nolint: gosec
 	data.Disk = types.Int32Value(int32(in.Disk))
 	data.StorageType = types.StringValue(string(in.StorageType))
 	data.CPUType = types.StringValue(string(in.CPUType))
