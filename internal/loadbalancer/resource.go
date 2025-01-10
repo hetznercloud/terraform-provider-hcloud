@@ -7,9 +7,9 @@ import (
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
@@ -375,7 +375,7 @@ func resourceLoadBalancerDelete(ctx context.Context, d *schema.ResourceData, m i
 }
 
 func resourceLoadBalancerIsNotFound(err error, d *schema.ResourceData) bool {
-	if hcerr, ok := err.(hcloud.Error); ok && hcerr.Code == hcloud.ErrorCodeNotFound {
+	if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
 		log.Printf("[WARN] Load Balancer (%s) not found, removing from state", d.Id())
 		d.SetId("")
 		return true

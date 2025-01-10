@@ -4,8 +4,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/timeutil"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/timeutil"
 )
 
 func TestConvertFormat(t *testing.T) {
@@ -71,7 +73,7 @@ func TestConvertFormat(t *testing.T) {
 				assert.Error(t, err)
 				return
 			}
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, tt.newVal, v)
 		})
 	}

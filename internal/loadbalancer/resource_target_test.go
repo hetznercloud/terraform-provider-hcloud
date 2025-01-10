@@ -5,9 +5,6 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
-
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
@@ -15,6 +12,8 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancer"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/network"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )

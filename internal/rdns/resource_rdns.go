@@ -9,8 +9,8 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
@@ -209,7 +209,7 @@ func resourceReverseDNSDelete(ctx context.Context, d *schema.ResourceData, m int
 	action, _, err := c.RDNS.ChangeDNSPtr(ctx, rdns, ip, nil)
 
 	if err != nil {
-		if hcerr, ok := err.(hcloud.Error); ok && hcerr.Code == hcloud.ErrorCodeNotFound {
+		if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
 			// resource has already been deleted
 			return nil
 		}

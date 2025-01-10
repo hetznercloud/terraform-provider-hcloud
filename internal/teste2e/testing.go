@@ -7,13 +7,12 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
-	"github.com/joho/godotenv"
-
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/joho/godotenv"
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	tfhcloud "github.com/hetznercloud/terraform-provider-hcloud/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 )
 
 var (

@@ -10,8 +10,8 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/control"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
@@ -99,7 +99,7 @@ func resourceNetworkRouteRead(ctx context.Context, d *schema.ResourceData, m int
 	client := m.(*hcloud.Client)
 
 	network, route, err := lookupNetworkRouteID(ctx, d.Id(), client)
-	if err == errInvalidNetworkRouteID {
+	if errors.Is(err, errInvalidNetworkRouteID) {
 		log.Printf("[WARN] Invalid id (%s), removing from state: %s", d.Id(), err)
 		d.SetId("")
 		return nil

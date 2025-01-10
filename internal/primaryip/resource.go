@@ -7,13 +7,12 @@ import (
 	"math/rand"
 	"strconv"
 
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/control"
-
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hetznercloud/hcloud-go/hcloud"
 
+	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/control"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
@@ -301,7 +300,7 @@ func resourcePrimaryIPDelete(ctx context.Context, d *schema.ResourceData, m inte
 }
 
 func resourcePrimaryIPIsNotFound(err error, d *schema.ResourceData) bool {
-	if hcerr, ok := err.(hcloud.Error); ok && hcerr.Code == hcloud.ErrorCodeNotFound {
+	if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
 		log.Printf("[WARN] Primary IP (%s) not found, removing from state", d.Id())
 		d.SetId("")
 		return true
@@ -407,5 +406,5 @@ func CreateRandomPrimaryIP(ctx context.Context, c *hcloud.Client, server *hcloud
 }
 
 func randomNumberBetween(low, hi int) int {
-	return low + rand.Intn(hi-low)
+	return low + rand.Intn(hi-low) // nolint: gosec
 }

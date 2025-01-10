@@ -4,8 +4,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 )
 
 func TestProjectRoot(t *testing.T) {

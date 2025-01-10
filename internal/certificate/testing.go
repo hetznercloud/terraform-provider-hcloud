@@ -6,11 +6,11 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
 	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 

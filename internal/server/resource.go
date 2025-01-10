@@ -2,7 +2,7 @@ package server
 
 import (
 	"context"
-	"crypto/sha1"
+	"crypto/sha1" // nolint: gosec
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -270,7 +270,7 @@ func Resource() *schema.Resource {
 }
 
 func userDataHashSum(userData string) string {
-	sum := sha1.Sum([]byte(userData))
+	sum := sha1.Sum([]byte(userData)) // nolint: gosec
 	return base64.StdEncoding.EncodeToString(sum[:])
 }
 
@@ -899,7 +899,7 @@ func resourceServerDelete(ctx context.Context, d *schema.ResourceData, m interfa
 }
 
 func resourceServerIsNotFound(err error, d *schema.ResourceData) bool {
-	if hcerr, ok := err.(hcloud.Error); ok && hcerr.Code == hcloud.ErrorCodeNotFound {
+	if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
 		log.Printf("[WARN] Server (%s) not found, removing from state", d.Id())
 		d.SetId("")
 		return true
@@ -987,10 +987,10 @@ func setRescue(ctx context.Context, c *hcloud.Client, server *hcloud.Server, res
 		rescueChanged = true
 		a, _, err := c.Server.DisableRescue(ctx, server)
 		if err != nil {
-			return fmt.Errorf("%s: %v", op, err)
+			return fmt.Errorf("%s: %w", op, err)
 		}
 		if err := hcloudutil.WaitForAction(ctx, &c.Action, a); err != nil {
-			return fmt.Errorf("%s: %v", op, err)
+			return fmt.Errorf("%s: %w", op, err)
 		}
 	}
 	if rescue != "" {
@@ -1006,19 +1006,19 @@ func setRescue(ctx context.Context, c *hcloud.Client, server *hcloud.Server, res
 			return hcloudutil.WaitForAction(ctx, &c.Action, res.Action)
 		})
 		if err != nil {
-			return fmt.Errorf("%s: %v", op, err)
+			return fmt.Errorf("%s: %w", op, err)
 		}
 	}
 	if rescueChanged {
 		err := control.Retry(control.DefaultRetries*2, func() error {
 			action, _, err := c.Server.Reset(ctx, server)
 			if err != nil {
-				return fmt.Errorf("%s: %v", op, err)
+				return fmt.Errorf("%s: %w", op, err)
 			}
 			return hcloudutil.WaitForAction(ctx, &c.Action, action)
 		})
 		if err != nil {
-			return fmt.Errorf("%s: %v", op, err)
+			return fmt.Errorf("%s: %w", op, err)
 		}
 	}
 	return nil
@@ -1053,7 +1053,7 @@ func inlineAttachServerToNetwork(ctx context.Context, c *hcloud.Client, s *hclou
 		aliasIPs = append(aliasIPs, aliasIP)
 	}
 	if err := attachServerToNetwork(ctx, c, s, nw, ip, aliasIPs); err != nil {
-		return fmt.Errorf("%s: %v", op, err)
+		return fmt.Errorf("%s: %w", op, err)
 	}
 
 	return nil
@@ -1077,7 +1077,7 @@ func updateServerInlineNetworkAttachments(ctx context.Context, c *hcloud.Client,
 			// The server should no longer be a member of this network.
 			// Detach it.
 			if err := detachServerFromNetwork(ctx, c, s, n.Network); err != nil {
-				return fmt.Errorf("%s: %v", op, err)
+				return fmt.Errorf("%s: %w", op, err)
 			}
 			continue
 		}
@@ -1090,10 +1090,10 @@ func updateServerInlineNetworkAttachments(ctx context.Context, c *hcloud.Client,
 			// need to detach and re-attach. Alias IPs are updated, too. This
 			// saves us from the next step.
 			if err := detachServerFromNetwork(ctx, c, s, n.Network); err != nil {
-				return fmt.Errorf("%s: %v", op, err)
+				return fmt.Errorf("%s: %w", op, err)
 			}
 			if err := inlineAttachServerToNetwork(ctx, c, s, nwData); err != nil {
-				return fmt.Errorf("%s: %v", op, err)
+				return fmt.Errorf("%s: %w", op, err)
 			}
 			continue
 		}
@@ -1101,7 +1101,7 @@ func updateServerInlineNetworkAttachments(ctx context.Context, c *hcloud.Client,
 		curAliasIPs := newIPSet(cfgAliasIPs.F, n.Aliases)
 		if !cfgAliasIPs.Equal(curAliasIPs) {
 			if err := updateServerAliasIPs(ctx, c, s, n.Network, cfgAliasIPs); err != nil {
-				return fmt.Errorf("%s: %v", op, err)
+				return fmt.Errorf("%s: %w", op, err)
 			}
 			continue
 		}
@@ -1111,7 +1111,7 @@ func updateServerInlineNetworkAttachments(ctx context.Context, c *hcloud.Client,
 	// the server to it.
 	for _, nwData := range cfgNetworks {
 		if err := inlineAttachServerToNetwork(ctx, c, s, nwData); err != nil {
-			return fmt.Errorf("%s: %v", op, err)
+			return fmt.Errorf("%s: %w", op, err)
 		}
 	}
 

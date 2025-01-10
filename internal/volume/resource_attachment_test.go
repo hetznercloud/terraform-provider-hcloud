@@ -4,19 +4,16 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
+	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
-
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/volume"
-
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-
-	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/volume"
 )
 
 func TestAccVolumeAttachmentResource(t *testing.T) {

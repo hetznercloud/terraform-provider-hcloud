@@ -10,8 +10,8 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/network"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/control"
@@ -107,7 +107,7 @@ func resourceServerNetworkCreate(ctx context.Context, d *schema.ResourceData, m 
 func resourceServerNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 	server, network, _, err := lookupServerNetworkID(ctx, d.Id(), client)
-	if err == errInvalidServerNetworkID {
+	if errors.Is(err, errInvalidServerNetworkID) {
 		log.Printf("[WARN] Invalid id (%s), removing from state: %s", d.Id(), err)
 		d.SetId("")
 		return nil
@@ -138,7 +138,7 @@ func resourceServerNetworkRead(ctx context.Context, d *schema.ResourceData, m in
 	client := m.(*hcloud.Client)
 
 	server, network, privateNet, err := lookupServerNetworkID(ctx, d.Id(), client)
-	if err == errInvalidServerNetworkID {
+	if errors.Is(err, errInvalidServerNetworkID) {
 		log.Printf("[WARN] Invalid id (%s), removing from state: %s", d.Id(), err)
 		d.SetId("")
 		return nil
@@ -238,10 +238,10 @@ func attachServerToNetwork(ctx context.Context, c *hcloud.Client, srv *hcloud.Se
 		return nil
 	}
 	if err != nil {
-		return fmt.Errorf("attach server to network: %v", err)
+		return fmt.Errorf("attach server to network: %w", err)
 	}
 	if err := hcloudutil.WaitForAction(ctx, &c.Action, a); err != nil {
-		return fmt.Errorf("attach server to network: %v", err)
+		return fmt.Errorf("attach server to network: %w", err)
 	}
 	return nil
 }
@@ -318,10 +318,10 @@ func updateServerAliasIPs(ctx context.Context, c *hcloud.Client, s *hcloud.Serve
 	}
 	a, _, err := c.Server.ChangeAliasIPs(ctx, s, opts)
 	if err != nil {
-		return fmt.Errorf("%s: %v", op, err)
+		return fmt.Errorf("%s: %w", op, err)
 	}
 	if err := hcloudutil.WaitForAction(ctx, &c.Action, a); err != nil {
-		return fmt.Errorf("%s: %v", op, err)
+		return fmt.Errorf("%s: %w", op, err)
 	}
 	return nil
 }
@@ -346,11 +346,11 @@ func detachServerFromNetwork(ctx context.Context, c *hcloud.Client, s *hcloud.Se
 			// network has already been deleted
 			return nil
 		}
-		return fmt.Errorf("%s: %v", op, err)
+		return fmt.Errorf("%s: %w", op, err)
 	}
 
 	if err := hcloudutil.WaitForAction(ctx, &c.Action, a); err != nil {
-		return fmt.Errorf("%s: %v", op, err)
+		return fmt.Errorf("%s: %w", op, err)
 	}
 	return nil
 }

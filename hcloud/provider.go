@@ -6,27 +6,24 @@ import (
 	"log"
 	"time"
 
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/firewall"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/placementgroup"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/primaryip"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
-
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/snapshot"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/logging"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/certificate"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/firewall"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/floatingip"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/image"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancer"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/network"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/placementgroup"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/primaryip"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/rdns"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/snapshot"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/volume"
 )
 

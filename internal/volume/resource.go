@@ -9,8 +9,8 @@ import (
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/control"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
@@ -375,7 +375,7 @@ func resourceVolumeDelete(ctx context.Context, d *schema.ResourceData, m interfa
 }
 
 func resourceVolumeIsNotFound(err error, d *schema.ResourceData) bool {
-	if hcerr, ok := err.(hcloud.Error); ok && hcerr.Code == hcloud.ErrorCodeNotFound {
+	if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
 		log.Printf("[WARN] volume (%s) not found, removing from state", d.Id())
 		d.SetId("")
 		return true

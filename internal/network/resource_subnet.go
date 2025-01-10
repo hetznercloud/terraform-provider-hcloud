@@ -10,10 +10,8 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/control"
@@ -126,7 +124,7 @@ func resourceNetworkSubnetRead(ctx context.Context, d *schema.ResourceData, m in
 	client := m.(*hcloud.Client)
 
 	network, subnet, err := lookupNetworkSubnetID(ctx, d.Id(), client)
-	if err == errInvalidNetworkSubnetID {
+	if errors.Is(err, errInvalidNetworkSubnetID) {
 		log.Printf("[WARN] Invalid id (%s), removing from state: %s", d.Id(), err)
 		d.SetId("")
 		return nil

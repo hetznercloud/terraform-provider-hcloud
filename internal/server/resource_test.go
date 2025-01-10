@@ -2,7 +2,7 @@ package server_test
 
 import (
 	"context"
-	"crypto/sha1"
+	"crypto/sha1" // nolint: gosec
 	"encoding/base64"
 	"fmt"
 	"regexp"
@@ -13,7 +13,6 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/hetznercloud/hcloud-go/hcloud"
-
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/firewall"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/image"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/network"
@@ -722,8 +721,8 @@ func TestAccServerResource_PrimaryIPNetworkTests(t *testing.T) {
 					testsupport.CheckResourceExists(sResWithPrimaryIP.TFID(), server.ByID(t, &s)),
 					testsupport.LiftTCF(func() error {
 						assert.Equal(t, p.AssigneeID, s.ID)
-						assert.Equal(t, s.PublicNet.IPv4.ID, p.ID)
-						assert.Equal(t, s.PublicNet.IPv6.ID, 0)
+						assert.Equal(t, p.ID, s.PublicNet.IPv4.ID)
+						assert.Equal(t, 0, s.PublicNet.IPv6.ID)
 						return nil
 					}),
 				),
@@ -1197,6 +1196,6 @@ func isRecreated(newServer, oldServer *hcloud.Server) func() error {
 }
 
 func userDataHashSum(userData string) string {
-	sum := sha1.Sum([]byte(userData))
+	sum := sha1.Sum([]byte(userData)) // nolint: gosec
 	return base64.StdEncoding.EncodeToString(sum[:])
 }
