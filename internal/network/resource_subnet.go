@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -14,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/control"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
@@ -80,7 +80,7 @@ func resourceNetworkSubnetCreate(ctx context.Context, d *schema.ResourceData, m 
 		return hcloudutil.ErrorToDiag(err)
 	}
 	networkID := d.Get("network_id")
-	network := &hcloud.Network{ID: networkID.(int)}
+	network := &hcloud.Network{ID: util.CastInt64(networkID)}
 
 	subnetType := hcloud.NetworkSubnetType(d.Get("type").(string))
 	opts := hcloud.NetworkAddSubnetOpts{
@@ -93,7 +93,7 @@ func resourceNetworkSubnetCreate(ctx context.Context, d *schema.ResourceData, m 
 
 	if subnetType == hcloud.NetworkSubnetTypeVSwitch {
 		vSwitchID := d.Get("vswitch_id")
-		opts.Subnet.VSwitchID = vSwitchID.(int)
+		opts.Subnet.VSwitchID = util.CastInt64(vSwitchID)
 	}
 
 	err = control.Retry(control.DefaultRetries, func() error {
@@ -213,7 +213,7 @@ func generateNetworkSubnetID(network *hcloud.Network, ipRange string) string {
 // The faux subnet ID is created by the hcloud_network_subnet resource
 // during creation. Using this method it can be read from the state and
 // used in the implementation of other resources.
-func ParseSubnetID(s string) (int, *net.IPNet, error) {
+func ParseSubnetID(s string) (int64, *net.IPNet, error) {
 	if s == "" {
 		return 0, nil, errInvalidNetworkSubnetID
 	}
@@ -222,7 +222,7 @@ func ParseSubnetID(s string) (int, *net.IPNet, error) {
 		return 0, nil, errInvalidNetworkSubnetID
 	}
 
-	networkID, err := strconv.Atoi(parts[0])
+	networkID, err := util.ParseID(parts[0])
 	if err != nil {
 		return 0, nil, errInvalidNetworkSubnetID
 	}

@@ -3,13 +3,13 @@ package placementgroup
 import (
 	"log"
 	"sort"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"golang.org/x/net/context"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/datasourceutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/merge"
@@ -101,7 +101,7 @@ func DataSourceList() *schema.Resource {
 func dataSourceHcloudPlacementGroupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 	if id, ok := d.GetOk("id"); ok {
-		i, _, err := client.PlacementGroup.GetByID(ctx, id.(int))
+		i, _, err := client.PlacementGroup.GetByID(ctx, util.CastInt64(id))
 		if err != nil {
 			return hcloudutil.ErrorToDiag(err)
 		}
@@ -164,7 +164,7 @@ func dataSourceHcloudPlacementGroupListRead(ctx context.Context, d *schema.Resou
 	ids := make([]string, len(allPlacementGroups))
 	tfPlacementGroups := make([]map[string]interface{}, len(allPlacementGroups))
 	for i, firewall := range allPlacementGroups {
-		ids[i] = strconv.Itoa(firewall.ID)
+		ids[i] = util.FormatID(firewall.ID)
 		tfPlacementGroups[i] = getAttributes(firewall)
 	}
 	d.Set("placement_groups", tfPlacementGroups)

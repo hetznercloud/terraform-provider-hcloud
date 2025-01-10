@@ -2,7 +2,6 @@ package loadbalancer_test
 
 import (
 	"fmt"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -14,6 +13,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 )
 
 func TestAccLoadBalancerResource(t *testing.T) {
@@ -180,10 +180,10 @@ func TestAccLoadBalancerResource_InlineTarget(t *testing.T) {
 					testsupport.CheckResourceExists(resServer1.TFID(), server.ByID(t, &srv0)),
 					testsupport.CheckResourceExists(resServer2.TFID(), server.ByID(t, &srv1)),
 					testsupport.CheckResourceAttrFunc(res.TFID(), "target.0.server_id", func() []string {
-						return []string{strconv.Itoa(srv0.ID), strconv.Itoa(srv1.ID)}
+						return []string{util.FormatID(srv0.ID), util.FormatID(srv1.ID)}
 					}),
 					testsupport.CheckResourceAttrFunc(res.TFID(), "target.1.server_id", func() []string {
-						return []string{strconv.Itoa(srv0.ID), strconv.Itoa(srv1.ID)}
+						return []string{util.FormatID(srv0.ID), util.FormatID(srv1.ID)}
 					}),
 				),
 			},

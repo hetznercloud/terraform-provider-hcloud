@@ -2,7 +2,6 @@ package loadbalancer_test
 
 import (
 	"fmt"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -16,6 +15,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 )
 
 func TestAccLoadBalancerTargetResource_ServerTarget(t *testing.T) {
@@ -63,11 +63,11 @@ func TestAccLoadBalancerTargetResource_ServerTarget(t *testing.T) {
 						loadbalancer.TargetResourceType+".lb-test-target", "type", "server"),
 					testsupport.CheckResourceAttrFunc(
 						loadbalancer.TargetResourceType+".lb-test-target", "load_balancer_id", func() string {
-							return strconv.Itoa(lb.ID)
+							return util.FormatID(lb.ID)
 						}),
 					testsupport.CheckResourceAttrFunc(
 						loadbalancer.TargetResourceType+".lb-test-target", "server_id", func() string {
-							return strconv.Itoa(srv.ID)
+							return util.FormatID(srv.ID)
 						}),
 					testsupport.LiftTCF(hasServerTarget(&lb, &srv)),
 				),

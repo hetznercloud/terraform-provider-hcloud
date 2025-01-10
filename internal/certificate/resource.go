@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"log"
-	"strconv"
 	"time"
 
 	"github.com/hashicorp/go-cty/cty"
@@ -12,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/timeutil"
 )
@@ -201,7 +201,7 @@ func createUploadedResource(ctx context.Context, d *schema.ResourceData, m inter
 	if err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
-	d.SetId(strconv.Itoa(res.ID))
+	d.SetId(util.FormatID(res.ID))
 	return readResource(ctx, d, m)
 }
 
@@ -230,7 +230,7 @@ func createManagedResource(ctx context.Context, d *schema.ResourceData, m interf
 	if err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
-	d.SetId(strconv.Itoa(res.Certificate.ID))
+	d.SetId(util.FormatID(res.Certificate.ID))
 	if err := hcloudutil.WaitForAction(ctx, &c.Action, res.Action); err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
@@ -268,13 +268,7 @@ func resourceCertificateNotFound(err error, d *schema.ResourceData) bool {
 }
 
 func setCertificateSchema(d *schema.ResourceData, cert *hcloud.Certificate) {
-	for key, val := range getCertificateAttributes(cert) {
-		if key == "id" {
-			d.SetId(strconv.Itoa(val.(int)))
-		} else {
-			d.Set(key, val)
-		}
-	}
+	util.SetSchemaFromAttributes(d, getCertificateAttributes(cert))
 }
 
 func getCertificateAttributes(cert *hcloud.Certificate) map[string]interface{} {
@@ -331,7 +325,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, m interface{}) 
 func deleteResource(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
-	certID, err := strconv.Atoi(d.Id())
+	certID, err := util.ParseID(d.Id())
 	if err != nil {
 		log.Printf("[WARN] invalid certificate id (%s), removing from state: %v", d.Id(), err)
 		d.SetId("")

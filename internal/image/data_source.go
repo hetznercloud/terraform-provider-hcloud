@@ -4,13 +4,13 @@ import (
 	"context"
 	"log"
 	"sort"
-	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/datasourceutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/merge"
@@ -165,7 +165,7 @@ func DataSourceList() *schema.Resource {
 func dataSourceHcloudImageRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 	if id, ok := d.GetOk("id"); ok {
-		i, _, err := client.Image.GetByID(ctx, id.(int))
+		i, _, err := client.Image.GetByID(ctx, util.CastInt64(id))
 		if err != nil {
 			return hcloudutil.ErrorToDiag(err)
 		}
@@ -268,7 +268,7 @@ func dataSourceHcloudImageListRead(ctx context.Context, d *schema.ResourceData, 
 	ids := make([]string, len(allImages))
 	tfImages := make([]map[string]interface{}, len(allImages))
 	for i, image := range allImages {
-		ids[i] = strconv.Itoa(image.ID)
+		ids[i] = util.FormatID(image.ID)
 		tfImages[i] = getImageAttributes(image)
 	}
 	d.Set("images", tfImages)
@@ -284,13 +284,7 @@ func sortImageListByCreated(imageList []*hcloud.Image) {
 }
 
 func setImageSchema(d *schema.ResourceData, i *hcloud.Image) {
-	for key, val := range getImageAttributes(i) {
-		if key == "id" {
-			d.SetId(strconv.Itoa(val.(int)))
-		} else {
-			d.Set(key, val)
-		}
-	}
+	util.SetSchemaFromAttributes(d, getImageAttributes(i))
 }
 
 func getImageAttributes(i *hcloud.Image) map[string]interface{} {

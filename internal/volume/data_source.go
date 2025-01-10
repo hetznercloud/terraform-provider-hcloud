@@ -2,12 +2,12 @@ package volume
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/datasourceutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/merge"
@@ -122,7 +122,7 @@ func dataSourceHcloudVolumeRead(ctx context.Context, d *schema.ResourceData, m i
 	client := m.(*hcloud.Client)
 
 	if id, ok := d.GetOk("id"); ok {
-		v, _, err := client.Volume.GetByID(ctx, id.(int))
+		v, _, err := client.Volume.GetByID(ctx, util.CastInt64(id))
 		if err != nil {
 			return hcloudutil.ErrorToDiag(err)
 		}
@@ -204,7 +204,7 @@ func dataSourceHcloudVolumeListRead(ctx context.Context, d *schema.ResourceData,
 	ids := make([]string, len(allVolumes))
 	tfVolume := make([]map[string]interface{}, len(allVolumes))
 	for i, volume := range allVolumes {
-		ids[i] = strconv.Itoa(volume.ID)
+		ids[i] = util.FormatID(volume.ID)
 		tfVolume[i] = getVolumeAttributes(volume)
 	}
 	d.Set("volumes", tfVolume)

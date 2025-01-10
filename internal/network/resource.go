@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 	"net"
-	"strconv"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -12,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
@@ -91,7 +91,7 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 		return hcloudutil.ErrorToDiag(err)
 	}
 
-	d.SetId(strconv.Itoa(network.ID))
+	d.SetId(util.FormatID(network.ID))
 
 	deleteProtection := d.Get("delete_protection").(bool)
 	if deleteProtection {
@@ -190,7 +190,7 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interf
 func resourceNetworkDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
-	networkID, err := strconv.Atoi(d.Id())
+	networkID, err := util.ParseID(d.Id())
 
 	if err != nil {
 		log.Printf("[WARN] invalid network id (%s), removing from state: %v", d.Id(), err)
@@ -218,13 +218,7 @@ func resourceNetworkIsNotFound(err error, d *schema.ResourceData) bool {
 }
 
 func setNetworkSchema(d *schema.ResourceData, n *hcloud.Network) {
-	for key, val := range getNetworkAttributes(n) {
-		if key == "id" {
-			d.SetId(strconv.Itoa(val.(int)))
-		} else {
-			d.Set(key, val)
-		}
-	}
+	util.SetSchemaFromAttributes(d, getNetworkAttributes(n))
 }
 
 func getNetworkAttributes(n *hcloud.Network) map[string]interface{} {

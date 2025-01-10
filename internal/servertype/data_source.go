@@ -2,7 +2,6 @@ package servertype
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -14,6 +13,7 @@ import (
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/deprecation"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/datasourceutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/merge"
@@ -63,7 +63,7 @@ func newResourceData(ctx context.Context, in *hcloud.ServerType) (resourceData, 
 	var diags diag.Diagnostics
 	var newDiags diag.Diagnostics
 
-	data.ID = types.Int64Value(int64(in.ID))
+	data.ID = types.Int64Value(in.ID)
 	data.Name = types.StringValue(in.Name)
 	data.Description = types.StringValue(in.Description)
 	// No integer overflow
@@ -201,7 +201,7 @@ func (d *dataSource) Read(ctx context.Context, req datasource.ReadRequest, resp 
 
 	switch {
 	case !data.ID.IsNull():
-		result, _, err = d.client.ServerType.GetByID(ctx, int(data.ID.ValueInt64()))
+		result, _, err = d.client.ServerType.GetByID(ctx, data.ID.ValueInt64())
 		if err != nil {
 			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
 			return
@@ -315,7 +315,7 @@ func newResourceDataList(ctx context.Context, in []*hcloud.ServerType) (resource
 	tfItems := make([]resourceData, len(in))
 
 	for i, item := range in {
-		ids[i] = strconv.Itoa(item.ID)
+		ids[i] = util.FormatID(item.ID)
 		names[i] = item.Name
 		descriptions[i] = item.Description
 

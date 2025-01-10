@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"strconv"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/control"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
@@ -179,7 +179,7 @@ func resourceFirewallCreate(ctx context.Context, d *schema.ResourceData, m inter
 			return hcloudutil.ErrorToDiag(err)
 		}
 	}
-	d.SetId(strconv.Itoa(res.Firewall.ID))
+	d.SetId(util.FormatID(res.Firewall.ID))
 
 	return resourceFirewallRead(ctx, d, m)
 }
@@ -253,7 +253,7 @@ func toTFRule(hcloudRule hcloud.FirewallRule) map[string]interface{} {
 func resourceFirewallRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
-	id, err := strconv.Atoi(d.Id())
+	id, err := util.ParseID(d.Id())
 	if err != nil {
 		log.Printf("[WARN] invalid firewall id (%s), removing from state: %v", d.Id(), err)
 		d.SetId("")
@@ -277,7 +277,7 @@ func resourceFirewallRead(ctx context.Context, d *schema.ResourceData, m interfa
 func resourceFirewallUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
-	id, err := strconv.Atoi(d.Id())
+	id, err := util.ParseID(d.Id())
 	if err != nil {
 		log.Printf("[WARN] invalid firewall id (%s), removing from state: %v", d.Id(), err)
 		d.SetId("")
@@ -410,7 +410,7 @@ func toHcloudFirewallResource(field map[string]interface{}) (hcloud.FirewallReso
 	if labelSelector, ok := field["label_selector"].(string); ok && labelSelector != "" {
 		return hcloud.FirewallResource{Type: hcloud.FirewallResourceTypeLabelSelector, LabelSelector: &hcloud.FirewallResourceLabelSelector{Selector: labelSelector}}, nil
 	} else if server, ok := field["server"].(int); ok && server != 0 {
-		return hcloud.FirewallResource{Type: hcloud.FirewallResourceTypeServer, Server: &hcloud.FirewallResourceServer{ID: server}}, nil
+		return hcloud.FirewallResource{Type: hcloud.FirewallResourceTypeServer, Server: &hcloud.FirewallResourceServer{ID: util.CastInt64(server)}}, nil
 	}
 	return hcloud.FirewallResource{}, fmt.Errorf("%s: unknown apply to resource", op)
 }
@@ -418,7 +418,7 @@ func toHcloudFirewallResource(field map[string]interface{}) (hcloud.FirewallReso
 func resourceFirewallDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
-	firewallID, err := strconv.Atoi(d.Id())
+	firewallID, err := util.ParseID(d.Id())
 	if err != nil {
 		log.Printf("[WARN] invalid firewall id (%s), removing from state: %v", d.Id(), err)
 		d.SetId("")
@@ -481,13 +481,7 @@ func resourceFirewallIsNotFound(err error, d *schema.ResourceData) bool {
 }
 
 func setFirewallSchema(d *schema.ResourceData, f *hcloud.Firewall) {
-	for key, val := range getFirewallAttributes(f) {
-		if key == "id" {
-			d.SetId(strconv.Itoa(val.(int)))
-		} else {
-			d.Set(key, val)
-		}
-	}
+	util.SetSchemaFromAttributes(d, getFirewallAttributes(f))
 }
 
 func getFirewallAttributes(f *hcloud.Firewall) map[string]interface{} {
