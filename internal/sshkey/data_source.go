@@ -36,7 +36,7 @@ func populateResourceDataWithSelector(ctx context.Context, data *resourceDataWit
 	var resourceDataWithoutSelector resourceData
 	diags.Append(populateResourceData(ctx, &resourceDataWithoutSelector, in)...)
 
-	data.ID = types.Int64Value(int64(in.ID))
+	data.ID = types.Int64Value(in.ID)
 	data.Name = resourceDataWithoutSelector.Name
 	data.Fingerprint = resourceDataWithoutSelector.Fingerprint
 	data.PublicKey = resourceDataWithoutSelector.PublicKey
@@ -156,7 +156,7 @@ func (d *dataSource) Read(ctx context.Context, req datasource.ReadRequest, resp 
 
 	switch {
 	case !data.ID.IsNull():
-		result, _, err = d.client.SSHKey.GetByID(ctx, int(data.ID.ValueInt64()))
+		result, _, err = d.client.SSHKey.GetByID(ctx, data.ID.ValueInt64())
 		if err != nil {
 			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
 			return

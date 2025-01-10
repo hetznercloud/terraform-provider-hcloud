@@ -3,7 +3,6 @@ package loadbalancer
 import (
 	"context"
 	"log"
-	"strconv"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -11,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
@@ -164,7 +164,7 @@ func resourceLoadBalancerCreate(ctx context.Context, d *schema.ResourceData, m i
 		return hcloudutil.ErrorToDiag(err)
 	}
 
-	d.SetId(strconv.Itoa(res.LoadBalancer.ID))
+	d.SetId(util.FormatID(res.LoadBalancer.ID))
 	if err := hcloudutil.WaitForAction(ctx, &c.Action, res.Action); err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
@@ -384,13 +384,7 @@ func resourceLoadBalancerIsNotFound(err error, d *schema.ResourceData) bool {
 }
 
 func setLoadBalancerSchema(d *schema.ResourceData, lb *hcloud.LoadBalancer) {
-	for key, val := range getLoadBalancerAttributes(lb) {
-		if key == "id" {
-			d.SetId(strconv.Itoa(val.(int)))
-		} else {
-			d.Set(key, val)
-		}
-	}
+	util.SetSchemaFromAttributes(d, getLoadBalancerAttributes(lb))
 }
 
 func getLoadBalancerAttributes(lb *hcloud.LoadBalancer) map[string]interface{} {
@@ -423,7 +417,7 @@ func parseTerraformTarget(tfTargets *schema.Set) (opts []hcloud.LoadBalancerCrea
 			Type: hcloud.LoadBalancerTargetType(tfTarget["type"].(string)),
 		}
 		if serverID, ok := tfTarget["server_id"]; ok {
-			opt.Server = hcloud.LoadBalancerCreateOptsTargetServer{Server: &hcloud.Server{ID: serverID.(int)}}
+			opt.Server = hcloud.LoadBalancerCreateOptsTargetServer{Server: &hcloud.Server{ID: util.CastInt64(serverID)}}
 		}
 		opts = append(opts, opt)
 	}

@@ -3,7 +3,6 @@ package primaryip_test
 import (
 	"fmt"
 	"regexp"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -15,6 +14,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 )
 
 func TestAccPrimaryIPResource(t *testing.T) {
@@ -170,7 +170,7 @@ func TestAccPrimaryIPResource_WithServer(t *testing.T) {
 						fmt.Sprintf("server-test--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(primaryIPv4OneRes.TFID(), "type", primaryIPv4OneRes.Type),
 					resource.TestCheckResourceAttr(testServerRes.TFID(), "server_type", testServerRes.Type),
-					resource.TestCheckResourceAttr(primaryIPv4OneRes.TFID(), "assignee_id", strconv.Itoa(primaryIPv4One.ID)),
+					resource.TestCheckResourceAttr(primaryIPv4OneRes.TFID(), "assignee_id", util.FormatID(primaryIPv4One.ID)),
 				),
 			},
 			{

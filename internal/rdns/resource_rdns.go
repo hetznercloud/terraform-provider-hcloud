@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
@@ -125,16 +125,16 @@ func resourceReverseDNSCreate(ctx context.Context, d *schema.ResourceData, m int
 
 	switch {
 	case serverOK:
-		rdns, _, err = c.Server.GetByID(ctx, serverID.(int))
+		rdns, _, err = c.Server.GetByID(ctx, util.CastInt64(serverID))
 		resourceName = "Server"
 	case primaryIPOK:
-		rdns, _, err = c.PrimaryIP.GetByID(ctx, primaryIPID.(int))
+		rdns, _, err = c.PrimaryIP.GetByID(ctx, util.CastInt64(primaryIPID))
 		resourceName = "Primary IP"
 	case floatingIPOK:
-		rdns, _, err = c.FloatingIP.GetByID(ctx, floatingIPID.(int))
+		rdns, _, err = c.FloatingIP.GetByID(ctx, util.CastInt64(floatingIPID))
 		resourceName = "Floating IP"
 	case loadBalancerOK:
-		rdns, _, err = c.LoadBalancer.GetByID(ctx, loadBalancerID.(int))
+		rdns, _, err = c.LoadBalancer.GetByID(ctx, util.CastInt64(loadBalancerID))
 		resourceName = "Load Balancer"
 	}
 	if err != nil {
@@ -263,7 +263,7 @@ func lookupRDNSID(ctx context.Context, terraformID string, client *hcloud.Client
 		return nil, nil, InvalidRDNSIDError{terraformID}
 	}
 
-	id, err := strconv.Atoi(parts[1])
+	id, err := util.ParseID(parts[1])
 	if err != nil {
 		return nil, nil, InvalidRDNSIDError{terraformID}
 	}

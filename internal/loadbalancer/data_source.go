@@ -2,12 +2,12 @@ package loadbalancer
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/datasourceutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/merge"
@@ -259,7 +259,7 @@ func DataSourceList() *schema.Resource {
 func dataSourceHcloudLoadBalancerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 	if id, ok := d.GetOk("id"); ok {
-		lb, _, err := client.LoadBalancer.GetByID(ctx, id.(int))
+		lb, _, err := client.LoadBalancer.GetByID(ctx, util.CastInt64(id))
 		if err != nil {
 			return hcloudutil.ErrorToDiag(err)
 		}
@@ -320,7 +320,7 @@ func dataSourceHcloudLoadBalancerListRead(ctx context.Context, d *schema.Resourc
 	ids := make([]string, len(allLoadBalancers))
 	tfLoadBalancers := make([]map[string]interface{}, len(allLoadBalancers))
 	for i, loadBalancer := range allLoadBalancers {
-		ids[i] = strconv.Itoa(loadBalancer.ID)
+		ids[i] = util.FormatID(loadBalancer.ID)
 		tfLoadBalancers[i] = getLoadBalancerAttributes(loadBalancer)
 	}
 	d.Set("load_balancers", tfLoadBalancers)

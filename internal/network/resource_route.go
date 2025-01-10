@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/control"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
@@ -67,7 +67,7 @@ func resourceNetworkRouteCreate(ctx context.Context, d *schema.ResourceData, m i
 		return nil
 	}
 	networkID := d.Get("network_id")
-	network := &hcloud.Network{ID: networkID.(int)}
+	network := &hcloud.Network{ID: util.CastInt64(networkID)}
 	opts := hcloud.NetworkAddRouteOpts{
 		Route: hcloud.NetworkRoute{
 			Destination: destination,
@@ -182,7 +182,7 @@ func lookupNetworkRouteID(ctx context.Context, terraformID string, client *hclou
 		return
 	}
 
-	networkID, err := strconv.Atoi(parts[0])
+	networkID, err := util.ParseID(parts[0])
 	if err != nil {
 		err = errInvalidNetworkRouteID
 		return

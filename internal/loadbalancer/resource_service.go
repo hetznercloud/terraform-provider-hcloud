@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/control"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/timeutil"
@@ -182,7 +183,7 @@ func resourceLoadBalancerServiceCreate(ctx context.Context, d *schema.ResourceDa
 
 	c := m.(*hcloud.Client)
 
-	lbID, err := strconv.Atoi(d.Get("load_balancer_id").(string))
+	lbID, err := util.ParseID(d.Get("load_balancer_id").(string))
 	if err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
@@ -346,7 +347,7 @@ func setLoadBalancerServiceSchema(d *schema.ResourceData, lb *hcloud.LoadBalance
 	svcID := fmt.Sprintf("%d__%d", lb.ID, svc.ListenPort)
 
 	d.SetId(svcID)
-	d.Set("load_balancer_id", strconv.Itoa(lb.ID))
+	d.Set("load_balancer_id", util.FormatID(lb.ID))
 	d.Set("protocol", string(svc.Protocol))
 	d.Set("listen_port", svc.ListenPort)
 	d.Set("destination_port", svc.DestinationPort)
@@ -402,7 +403,7 @@ func lookupLoadBalancerServiceID(
 		return nil, nil, errInvalidLoadBalancerServiceID
 	}
 
-	loadBalancerID, err := strconv.Atoi(parts[0])
+	loadBalancerID, err := util.ParseID(parts[0])
 	if err != nil {
 		return nil, nil, errInvalidLoadBalancerServiceID
 	}
@@ -488,7 +489,7 @@ func parseTFCertificates(tfCerts *schema.Set) []*hcloud.Certificate {
 	}
 	certs := make([]*hcloud.Certificate, tfCerts.Len())
 	for i, c := range tfCerts.List() {
-		certs[i] = &hcloud.Certificate{ID: c.(int)}
+		certs[i] = &hcloud.Certificate{ID: util.CastInt64(c)}
 	}
 	return certs
 }

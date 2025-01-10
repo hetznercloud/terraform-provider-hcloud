@@ -2,12 +2,12 @@ package primaryip
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/datasourceutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/merge"
@@ -114,7 +114,7 @@ func dataSourceHcloudPrimaryIPRead(ctx context.Context, d *schema.ResourceData, 
 	client := m.(*hcloud.Client)
 
 	if id, ok := d.GetOk("id"); ok {
-		f, _, err := client.PrimaryIP.GetByID(ctx, id.(int))
+		f, _, err := client.PrimaryIP.GetByID(ctx, util.CastInt64(id))
 		if err != nil {
 			return hcloudutil.ErrorToDiag(err)
 		}
@@ -193,7 +193,7 @@ func dataSourceHcloudPrimaryIPListRead(ctx context.Context, d *schema.ResourceDa
 	ids := make([]string, len(allIPs))
 	tfIPs := make([]map[string]interface{}, len(allIPs))
 	for i, ip := range allIPs {
-		ids[i] = strconv.Itoa(ip.ID)
+		ids[i] = util.FormatID(ip.ID)
 		tfIPs[i] = getPrimaryIPAttributes(ip)
 	}
 	d.Set("primary_ips", tfIPs)
