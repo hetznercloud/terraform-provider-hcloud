@@ -19,6 +19,7 @@ import (
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/primaryip"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/control"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
@@ -352,12 +353,12 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 
 	if firewallIDs, ok := d.GetOk("firewall_ids"); ok {
 		for _, firewallID := range firewallIDs.(*schema.Set).List() {
-			opts.Firewalls = append(opts.Firewalls, &hcloud.ServerCreateFirewall{Firewall: hcloud.Firewall{ID: firewallID.(int)}})
+			opts.Firewalls = append(opts.Firewalls, &hcloud.ServerCreateFirewall{Firewall: hcloud.Firewall{ID: util.CastInt64(firewallID)}})
 		}
 	}
 
 	if placementGroupID, ok := d.GetOk("placement_group_id"); ok {
-		placementGroup, err := getPlacementGroup(ctx, c, placementGroupID.(int))
+		placementGroup, err := getPlacementGroup(ctx, c, util.CastInt64(placementGroupID))
 		if err != nil {
 			return hcloudutil.ErrorToDiag(err)
 		}
@@ -377,11 +378,11 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 			}
 			if ipv4, err := toServerPublicNet[int](publicNetEntry, "ipv4"); err == nil && ipv4 != 0 {
 				createPublicNet.EnableIPv4 = true
-				createPublicNet.IPv4 = &hcloud.PrimaryIP{ID: ipv4}
+				createPublicNet.IPv4 = &hcloud.PrimaryIP{ID: util.CastInt64(ipv4)}
 			}
 			if ipv6, err := toServerPublicNet[int](publicNetEntry, "ipv6"); err == nil && ipv6 != 0 {
 				createPublicNet.EnableIPv6 = true
-				createPublicNet.IPv6 = &hcloud.PrimaryIP{ID: ipv6}
+				createPublicNet.IPv6 = &hcloud.PrimaryIP{ID: util.CastInt64(ipv6)}
 			}
 		}
 		opts.PublicNet = &createPublicNet
@@ -397,7 +398,7 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	if err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
-	d.SetId(strconv.Itoa(res.Server.ID))
+	d.SetId(util.FormatID(res.Server.ID))
 
 	if err := hcloudutil.WaitForAction(ctx, &c.Action, res.Action); err != nil {
 		return hcloudutil.ErrorToDiag(err)
@@ -580,7 +581,7 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		for _, f := range server.PublicNet.Firewalls {
 			found := false
 			for _, i := range firewallIDs {
-				fID := i.(int)
+				fID := util.CastInt64(i)
 				if f.Firewall.ID == fID {
 					found = true
 
@@ -609,7 +610,7 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		}
 
 		for _, i := range firewallIDs {
-			fID := i.(int)
+			fID := util.CastInt64(i)
 			found := false
 			for _, f := range server.PublicNet.Firewalls {
 				if f.Firewall.ID == fID {
@@ -648,7 +649,7 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 
 	if d.HasChange("placement_group_id") {
-		placementGroupID := d.Get("placement_group_id").(int)
+		placementGroupID := util.CastInt64(d.Get("placement_group_id"))
 		if err := setPlacementGroup(ctx, c, server, placementGroupID); err != nil {
 			return hcloudutil.ErrorToDiag(err)
 		}
@@ -670,8 +671,8 @@ func updatePublicNet(ctx context.Context, o interface{}, n interface{}, c *hclou
 	diffToRemove := o.(*schema.Set).Difference(n.(*schema.Set))
 	diffToAdd := n.(*schema.Set).Difference(o.(*schema.Set))
 
-	ipv4IDToRemove := 0
-	ipv6IDToRemove := 0
+	var ipv4IDToRemove int64
+	var ipv6IDToRemove int64
 	ipv4EnabledInRemoveDiff := true
 	ipv6EnabledInRemoveDiff := true
 	// collect ip IDs which got removed
@@ -758,10 +759,10 @@ func publicNetUpdateDecision(ctx context.Context,
 	c *hcloud.Client,
 	ipEnabled bool,
 	ipEnabledInRemoveDiff bool,
-	ipID int,
-	ipIDInRemoveDiff int,
+	ipID int64,
+	ipIDInRemoveDiff int64,
 	server *hcloud.Server,
-	serverIPID int,
+	serverIPID int64,
 	ipType hcloud.PrimaryIPType) diag.Diagnostics {
 	switch {
 	// if ip set true + ip id, remove all previous assigned ipv4 + assign new
@@ -840,7 +841,7 @@ func publicNetUpdateDecision(ctx context.Context,
 func resourceServerDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
-	serverID, err := strconv.Atoi(d.Id())
+	serverID, err := util.ParseID(d.Id())
 	if err != nil {
 		log.Printf("[WARN] invalid server id (%s), removing from state: %v", d.Id(), err)
 		d.SetId("")
@@ -1044,7 +1045,7 @@ func getSSHkeys(ctx context.Context, client *hcloud.Client, d *schema.ResourceDa
 func inlineAttachServerToNetwork(ctx context.Context, c *hcloud.Client, s *hcloud.Server, nwData map[string]interface{}) error {
 	const op = "hcloud/inlineAttachServerToNetwork"
 
-	nw := &hcloud.Network{ID: nwData["network_id"].(int)}
+	nw := &hcloud.Network{ID: util.CastInt64(nwData["network_id"])}
 	ip := net.ParseIP(nwData["ip"].(string))
 
 	aliasIPs := make([]net.IP, 0, nwData["alias_ips"].(*schema.Set).Len())
@@ -1064,10 +1065,10 @@ func updateServerInlineNetworkAttachments(ctx context.Context, c *hcloud.Client,
 
 	log.Printf("[INFO] Updating inline network attachments for server %d", s.ID)
 
-	cfgNetworks := make(map[int]map[string]interface{}, data.Len())
+	cfgNetworks := make(map[int64]map[string]interface{}, data.Len())
 	for _, v := range data.List() {
 		nwData := v.(map[string]interface{})
-		nwID := nwData["network_id"].(int)
+		nwID := util.CastInt64(nwData["network_id"])
 		cfgNetworks[nwID] = nwData
 	}
 
@@ -1127,23 +1128,13 @@ func newIPSet(f schema.SchemaSetFunc, ips []net.IP) *schema.Set {
 }
 
 func setServerSchema(d *schema.ResourceData, s *hcloud.Server) {
-	for key, val := range getServerAttributes(d, s) {
-		switch key {
-		case "id":
-			d.SetId(strconv.Itoa(val.(int)))
-		default:
-			err := d.Set(key, val)
-			if err != nil {
-				log.Fatal(err)
-			}
-		}
-	}
+	util.SetSchemaFromAttributes(d, getServerAttributes(d, s))
 }
 
 func getServerAttributes(d *schema.ResourceData, s *hcloud.Server) map[string]interface{} {
 	firewallIDs := make([]int, len(s.PublicNet.Firewalls))
 	for i, firewall := range s.PublicNet.Firewalls {
-		firewallIDs[i] = firewall.Firewall.ID
+		firewallIDs[i] = int(firewall.Firewall.ID)
 	}
 
 	res := map[string]interface{}{
@@ -1177,7 +1168,7 @@ func getServerAttributes(d *schema.ResourceData, s *hcloud.Server) map[string]in
 	}
 
 	if s.Image != nil {
-		if s.Image.Name != "" && strconv.Itoa(s.Image.ID) != d.Get("image") {
+		if s.Image.Name != "" && util.FormatID(s.Image.ID) != d.Get("image") {
 			// Only use the image name if the image is official (Name != "")
 			// AND the user did not explicitly specify the image id
 			res["image"] = s.Image.Name
@@ -1199,7 +1190,7 @@ func getServerAttributes(d *schema.ResourceData, s *hcloud.Server) map[string]in
 	}
 
 	if s.PlacementGroup != nil {
-		res["placement_group_id"] = s.PlacementGroup.ID
+		res["placement_group_id"] = int(s.PlacementGroup.ID)
 	} else {
 		res["placement_group_id"] = nil
 	}
@@ -1224,7 +1215,7 @@ func networkToTerraformNetworks(privateNetworks []hcloud.ServerPrivateNet) []map
 	return tfPrivateNetworks
 }
 
-func getPlacementGroup(ctx context.Context, c *hcloud.Client, id int) (*hcloud.PlacementGroup, error) {
+func getPlacementGroup(ctx context.Context, c *hcloud.Client, id int64) (*hcloud.PlacementGroup, error) {
 	placementGroup, _, err := c.PlacementGroup.GetByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -1237,7 +1228,7 @@ func getPlacementGroup(ctx context.Context, c *hcloud.Client, id int) (*hcloud.P
 	return placementGroup, nil
 }
 
-func setPlacementGroup(ctx context.Context, c *hcloud.Client, server *hcloud.Server, id int) error {
+func setPlacementGroup(ctx context.Context, c *hcloud.Client, server *hcloud.Server, id int64) error {
 	if server.PlacementGroup != nil {
 		if server.Status != hcloud.ServerStatusOff {
 			// Removing PG requires the server to be shut down before, this is an invasive operation. We do not currently
@@ -1348,8 +1339,8 @@ func powerOnServer(ctx context.Context, c *hcloud.Client, server *hcloud.Server)
 func publicNetRemovedDecision(ctx context.Context,
 	c *hcloud.Client,
 	server *hcloud.Server,
-	serverIPID int,
-	ipIDToRemove int,
+	serverIPID int64,
+	ipIDToRemove int64,
 	ipType hcloud.PrimaryIPType) diag.Diagnostics {
 	if server.PublicNet.IPv4.ID != 0 && ipIDToRemove != 0 {
 		if err := primaryip.UnassignPrimaryIP(ctx, c, serverIPID); err != nil {
@@ -1374,7 +1365,7 @@ func validateUniqueNetworkIDs(d *schema.ResourceDiff) error {
 			return fmt.Errorf("network has unexpected type: %T", n)
 		}
 
-		uniqueNetworkIDs := map[int]bool{}
+		uniqueNetworkIDs := map[int64]bool{}
 
 		for _, networkI := range networks.List() {
 			network, ok := networkI.(map[string]interface{})
@@ -1382,11 +1373,11 @@ func validateUniqueNetworkIDs(d *schema.ResourceDiff) error {
 				return fmt.Errorf("network item has unexpected type: %T", networkI)
 			}
 
-			networkID, ok := network["network_id"]
+			networkIDI, ok := network["network_id"]
 			if !ok {
 				continue
 			}
-			if networkID == 0 {
+			if util.CastInt64(networkIDI) == 0 {
 				// ID is 0 if Network will be created in same apply, we are unable to reliably detect if the
 				// "to-be-created" networks are the same.
 				// See https://github.com/hetznercloud/terraform-provider-hcloud/issues/899
@@ -1397,13 +1388,9 @@ func validateUniqueNetworkIDs(d *schema.ResourceDiff) error {
 				continue
 			}
 
-			id, ok := networkID.(int)
-			if !ok {
-				return fmt.Errorf("network id has unexpected type: %T", networkID)
-			}
-
+			id := util.CastInt64(networkIDI)
 			if uniqueNetworkIDs[id] {
-				return fmt.Errorf("server is only allowed to be attached to each network once: %d", networkID)
+				return fmt.Errorf("server is only allowed to be attached to each network once: %d", networkIDI)
 			}
 
 			uniqueNetworkIDs[id] = true
