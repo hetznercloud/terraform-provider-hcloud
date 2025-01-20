@@ -1,7 +1,6 @@
 package firewall
 
 import (
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -9,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 )
 
 func TestAttachment_FromResourceData(t *testing.T) {
@@ -27,7 +27,7 @@ func TestAttachment_FromResourceData(t *testing.T) {
 			},
 			att: attachment{
 				FirewallID:     4711,
-				ServerIDs:      []int{1, 2, 3},
+				ServerIDs:      []int64{1, 2, 3},
 				LabelSelectors: []string{"key1=value1", "key2=value2"},
 			},
 		},
@@ -39,7 +39,7 @@ func TestAttachment_FromResourceData(t *testing.T) {
 			},
 			att: attachment{
 				FirewallID: 4712,
-				ServerIDs:  []int{4, 5, 6},
+				ServerIDs:  []int64{4, 5, 6},
 			},
 		},
 		{
@@ -94,7 +94,7 @@ func TestAttachment_ToResourceData(t *testing.T) {
 			name: "server_ids and label_selectors present",
 			att: attachment{
 				FirewallID:     4711,
-				ServerIDs:      []int{1, 2, 3},
+				ServerIDs:      []int64{1, 2, 3},
 				LabelSelectors: []string{"key1=value1", "key2=value2"},
 			},
 		},
@@ -102,7 +102,7 @@ func TestAttachment_ToResourceData(t *testing.T) {
 			name: "only server_ids present",
 			att: attachment{
 				FirewallID: 4712,
-				ServerIDs:  []int{4, 5, 6},
+				ServerIDs:  []int64{4, 5, 6},
 			},
 		},
 		{
@@ -131,7 +131,7 @@ func TestAttachment_ToResourceData(t *testing.T) {
 			},
 			att: attachment{
 				FirewallID: 4714,
-				ServerIDs:  []int{1, 2, 3},
+				ServerIDs:  []int64{1, 2, 3},
 			},
 		},
 	}
@@ -143,8 +143,8 @@ func TestAttachment_ToResourceData(t *testing.T) {
 
 			tt.att.ToResourceData(data)
 
-			assert.Equal(t, data.Id(), strconv.Itoa(tt.att.FirewallID))
-			assert.Equal(t, data.Get("firewall_id"), tt.att.FirewallID)
+			assert.Equal(t, data.Id(), util.FormatID(tt.att.FirewallID))
+			assert.Equal(t, data.Get("firewall_id"), int(tt.att.FirewallID))
 
 			srvIDdata, ok := data.GetOk("server_ids")
 			if len(tt.att.ServerIDs) > 0 {
@@ -152,7 +152,7 @@ func TestAttachment_ToResourceData(t *testing.T) {
 
 				// Need to iterate as the types of the slices don't match: []int vs []interface{}
 				for _, id := range tt.att.ServerIDs {
-					assert.Contains(t, srvIDdata.(*schema.Set).List(), id)
+					assert.Contains(t, srvIDdata.(*schema.Set).List(), int(id))
 				}
 			} else {
 				assert.False(t, ok, "expected no server_ids in data")
@@ -195,7 +195,7 @@ func TestAttachment_FromFirewall(t *testing.T) {
 			},
 			att: attachment{
 				FirewallID: 4712,
-				ServerIDs:  []int{1, 2},
+				ServerIDs:  []int64{1, 2},
 			},
 		},
 		{
@@ -257,7 +257,7 @@ func TestAttachment_AllResources(t *testing.T) {
 			name: "servers and label selectors attached",
 			att: attachment{
 				FirewallID:     4712,
-				ServerIDs:      []int{1, 2},
+				ServerIDs:      []int64{1, 2},
 				LabelSelectors: []string{"key1=value1", "key2=value2"},
 			},
 			res: []hcloud.FirewallResource{
@@ -290,12 +290,12 @@ func TestAttachment_DiffResources(t *testing.T) {
 			name: "nothing changed",
 			att: attachment{
 				FirewallID:     4711,
-				ServerIDs:      []int{1, 2, 3},
+				ServerIDs:      []int64{1, 2, 3},
 				LabelSelectors: []string{"key1=value1", "key2=value2"},
 			},
 			other: attachment{
 				FirewallID:     4711,
-				ServerIDs:      []int{1, 2, 3},
+				ServerIDs:      []int64{1, 2, 3},
 				LabelSelectors: []string{"key1=value1", "key2=value2"},
 			},
 		},
@@ -303,12 +303,12 @@ func TestAttachment_DiffResources(t *testing.T) {
 			name: "resources in att but not in other",
 			att: attachment{
 				FirewallID:     4711,
-				ServerIDs:      []int{1, 2, 3},
+				ServerIDs:      []int64{1, 2, 3},
 				LabelSelectors: []string{"key1=value1", "key2=value2"},
 			},
 			other: attachment{
 				FirewallID:     4711,
-				ServerIDs:      []int{1, 2},
+				ServerIDs:      []int64{1, 2},
 				LabelSelectors: []string{"key1=value1"},
 			},
 			more: []hcloud.FirewallResource{
@@ -320,12 +320,12 @@ func TestAttachment_DiffResources(t *testing.T) {
 			name: "resources in other but not in att",
 			att: attachment{
 				FirewallID:     4711,
-				ServerIDs:      []int{1, 2},
+				ServerIDs:      []int64{1, 2},
 				LabelSelectors: []string{"key1=value1"},
 			},
 			other: attachment{
 				FirewallID:     4711,
-				ServerIDs:      []int{1, 2, 3},
+				ServerIDs:      []int64{1, 2, 3},
 				LabelSelectors: []string{"key1=value1", "key2=value2"},
 			},
 			less: []hcloud.FirewallResource{
