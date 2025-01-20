@@ -367,7 +367,7 @@ func setLoadBalancerServiceSchema(d *schema.ResourceData, lb *hcloud.LoadBalance
 		if len(svc.HTTP.Certificates) > 0 {
 			certIDs := make([]int, len(svc.HTTP.Certificates))
 			for i := 0; i < len(svc.HTTP.Certificates); i++ {
-				certIDs[i] = svc.HTTP.Certificates[i].ID
+				certIDs[i] = int(svc.HTTP.Certificates[i].ID)
 			}
 			httpMap["certificates"] = certIDs
 		}
