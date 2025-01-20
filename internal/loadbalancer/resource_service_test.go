@@ -2,18 +2,18 @@ package loadbalancer_test
 
 import (
 	"fmt"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
-	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/certificate"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancer"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 )
 
 func TestAccLoadBalancerServiceResource_TCP(t *testing.T) {
@@ -47,7 +47,7 @@ func TestAccLoadBalancerServiceResource_TCP(t *testing.T) {
 					testsupport.CheckResourceExists(lbResName, loadbalancer.ByID(t, &lb)),
 					testsupport.LiftTCF(hasService(&lb, 70)),
 					testsupport.CheckResourceAttrFunc(svcResName, "load_balancer_id", func() string {
-						return strconv.Itoa(lb.ID)
+						return util.FormatID(lb.ID)
 					}),
 					resource.TestCheckResourceAttr(svcResName, "protocol", "tcp"),
 					resource.TestCheckResourceAttr(svcResName, "listen_port", "70"),
@@ -80,7 +80,7 @@ func TestAccLoadBalancerServiceResource_TCP(t *testing.T) {
 					testsupport.CheckResourceExists(lbResName, loadbalancer.ByID(t, &lb)),
 					testsupport.LiftTCF(hasService(&lb, 70)),
 					testsupport.CheckResourceAttrFunc(svcResName, "load_balancer_id", func() string {
-						return strconv.Itoa(lb.ID)
+						return util.FormatID(lb.ID)
 					}),
 					resource.TestCheckResourceAttr(svcResName, "protocol", "tcp"),
 					resource.TestCheckResourceAttr(svcResName, "listen_port", "70"),
@@ -121,7 +121,7 @@ func TestAccLoadBalancerServiceResource_HTTP(t *testing.T) {
 					testsupport.CheckResourceExists(lbResName, loadbalancer.ByID(t, &lb)),
 					testsupport.LiftTCF(hasService(&lb, 80)),
 					testsupport.CheckResourceAttrFunc(svcResName, "load_balancer_id", func() string {
-						return strconv.Itoa(lb.ID)
+						return util.FormatID(lb.ID)
 					}),
 					resource.TestCheckResourceAttr(svcResName, "protocol", "http"),
 					resource.TestCheckResourceAttr(svcResName, "listen_port", "80"),
@@ -149,7 +149,7 @@ func TestAccLoadBalancerServiceResource_HTTP(t *testing.T) {
 					testsupport.CheckResourceExists(lbResName, loadbalancer.ByID(t, &lb)),
 					testsupport.LiftTCF(hasService(&lb, 81)),
 					testsupport.CheckResourceAttrFunc(svcResName, "load_balancer_id", func() string {
-						return strconv.Itoa(lb.ID)
+						return util.FormatID(lb.ID)
 					}),
 					resource.TestCheckResourceAttr(svcResName, "protocol", "http"),
 					resource.TestCheckResourceAttr(svcResName, "listen_port", "81"),
@@ -187,7 +187,7 @@ func TestAccLoadBalancerServiceResource_HTTP(t *testing.T) {
 					testsupport.CheckResourceExists(lbResName, loadbalancer.ByID(t, &lb)),
 					testsupport.LiftTCF(hasService(&lb, 81)),
 					testsupport.CheckResourceAttrFunc(svcResName, "load_balancer_id", func() string {
-						return strconv.Itoa(lb.ID)
+						return util.FormatID(lb.ID)
 					}),
 					resource.TestCheckResourceAttr(svcResName, "protocol", "http"),
 					resource.TestCheckResourceAttr(svcResName, "listen_port", "81"),
@@ -242,7 +242,7 @@ func TestAccLoadBalancerServiceResource_HTTP_StickySessions(t *testing.T) {
 					testsupport.CheckResourceExists(lbResName, loadbalancer.ByID(t, &lb)),
 					testsupport.LiftTCF(hasService(&lb, 80)),
 					testsupport.CheckResourceAttrFunc(svcResName, "load_balancer_id", func() string {
-						return strconv.Itoa(lb.ID)
+						return util.FormatID(lb.ID)
 					}),
 					resource.TestCheckResourceAttr(svcResName, "protocol", "http"),
 					resource.TestCheckResourceAttr(svcResName, "http.0.cookie_lifetime", "1800"),
@@ -293,7 +293,7 @@ func TestAccLoadBalancerServiceResource_HTTPS(t *testing.T) {
 					testsupport.CheckResourceExists(certData.TFID(), certificate.ByID(t, &cert)),
 					testsupport.LiftTCF(hasService(&lb, 443)),
 					testsupport.CheckResourceAttrFunc(svcResName, "http.0.certificates.0", func() string {
-						return strconv.Itoa(cert.ID)
+						return util.FormatID(cert.ID)
 					}),
 					resource.TestCheckResourceAttr(svcResName, "protocol", "https"),
 					resource.TestCheckResourceAttr(svcResName, "listen_port", "443"),
@@ -435,7 +435,7 @@ func TestAccLoadBalancerServiceResource_ChangeListenPort(t *testing.T) {
 					testsupport.CheckResourceExists(lbResName, loadbalancer.ByID(t, &lb)),
 					testsupport.LiftTCF(hasService(&lb, 70)),
 					testsupport.CheckResourceAttrFunc(svcResName, "load_balancer_id", func() string {
-						return strconv.Itoa(lb.ID)
+						return util.FormatID(lb.ID)
 					}),
 					resource.TestCheckResourceAttr(svcResName, "protocol", "tcp"),
 					resource.TestCheckResourceAttr(svcResName, "listen_port", "70"),
@@ -443,7 +443,7 @@ func TestAccLoadBalancerServiceResource_ChangeListenPort(t *testing.T) {
 
 					testsupport.LiftTCF(hasService(&lb, 443)),
 					testsupport.CheckResourceAttrFunc(svcResName2, "load_balancer_id", func() string {
-						return strconv.Itoa(lb.ID)
+						return util.FormatID(lb.ID)
 					}),
 					resource.TestCheckResourceAttr(svcResName2, "protocol", "tcp"),
 					resource.TestCheckResourceAttr(svcResName2, "listen_port", "443"),
@@ -473,7 +473,7 @@ func TestAccLoadBalancerServiceResource_ChangeListenPort(t *testing.T) {
 					testsupport.CheckResourceExists(lbResName, loadbalancer.ByID(t, &lb)),
 					testsupport.LiftTCF(hasService(&lb, 71)),
 					testsupport.CheckResourceAttrFunc(svcResName, "load_balancer_id", func() string {
-						return strconv.Itoa(lb.ID)
+						return util.FormatID(lb.ID)
 					}),
 					resource.TestCheckResourceAttr(svcResName, "protocol", "tcp"),
 					resource.TestCheckResourceAttr(svcResName, "listen_port", "71"),
@@ -481,7 +481,7 @@ func TestAccLoadBalancerServiceResource_ChangeListenPort(t *testing.T) {
 
 					testsupport.LiftTCF(hasService(&lb, 443)),
 					testsupport.CheckResourceAttrFunc(svcResName2, "load_balancer_id", func() string {
-						return strconv.Itoa(lb.ID)
+						return util.FormatID(lb.ID)
 					}),
 					resource.TestCheckResourceAttr(svcResName2, "protocol", "tcp"),
 					resource.TestCheckResourceAttr(svcResName2, "listen_port", "443"),

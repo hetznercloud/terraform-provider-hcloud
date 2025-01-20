@@ -3,13 +3,13 @@ package placementgroup
 import (
 	"context"
 	"log"
-	"strconv"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
@@ -83,7 +83,7 @@ func resourcePlacementGroupCreate(ctx context.Context, d *schema.ResourceData, m
 	if err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
-	d.SetId(strconv.Itoa(res.PlacementGroup.ID))
+	d.SetId(util.FormatID(res.PlacementGroup.ID))
 
 	if res.Action != nil {
 		if err := hcloudutil.WaitForAction(ctx, &client.Action, res.Action); err != nil {
@@ -97,7 +97,7 @@ func resourcePlacementGroupCreate(ctx context.Context, d *schema.ResourceData, m
 func resourcePlacementGroupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
-	id, err := strconv.Atoi(d.Id())
+	id, err := util.ParseID(d.Id())
 	if err != nil {
 		log.Printf("[WARN] invalid placement group id (%s), removing from state: %v", d.Id(), err)
 		d.SetId("")
@@ -121,7 +121,7 @@ func resourcePlacementGroupRead(ctx context.Context, d *schema.ResourceData, m i
 func resourcePlacementGroupUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
-	id, err := strconv.Atoi(d.Id())
+	id, err := util.ParseID(d.Id())
 	if err != nil {
 		log.Printf("[WARN] invalid placement group id (%s), removing from state: %v", d.Id(), err)
 		d.SetId("")
@@ -175,7 +175,7 @@ func resourcePlacementGroupUpdate(ctx context.Context, d *schema.ResourceData, m
 func resourcePlacementGroupDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
-	id, err := strconv.Atoi(d.Id())
+	id, err := util.ParseID(d.Id())
 	if err != nil {
 		log.Printf("[WARN] invalid placement group id (%s), removing from state: %v", d.Id(), err)
 		d.SetId("")
@@ -198,13 +198,7 @@ func handleNotFound(err error, d *schema.ResourceData) bool {
 }
 
 func setSchema(d *schema.ResourceData, pg *hcloud.PlacementGroup) {
-	for key, val := range getAttributes(pg) {
-		if key == "id" {
-			d.SetId(strconv.Itoa(val.(int)))
-		} else {
-			d.Set(key, val)
-		}
-	}
+	util.SetSchemaFromAttributes(d, getAttributes(pg))
 }
 
 func getAttributes(pg *hcloud.PlacementGroup) map[string]interface{} {

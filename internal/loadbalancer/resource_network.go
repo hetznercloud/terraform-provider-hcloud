@@ -6,14 +6,14 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/network"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/control"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
@@ -84,10 +84,10 @@ func resourceLoadBalancerNetworkCreate(ctx context.Context, d *schema.ResourceDa
 		networkID = nwID
 	}
 
-	loadBalancerID := d.Get("load_balancer_id").(int)
+	loadBalancerID := util.CastInt64(d.Get("load_balancer_id"))
 	lb := &hcloud.LoadBalancer{ID: loadBalancerID}
 
-	nw := &hcloud.Network{ID: networkID.(int)}
+	nw := &hcloud.Network{ID: util.CastInt64(networkID)}
 	opts := hcloud.LoadBalancerAttachToNetworkOpts{
 		Network: nw,
 		IP:      ip,
@@ -307,7 +307,7 @@ func lookupLoadBalancerNetworkID(
 		return nil, nil, nil, errInvalidLoadBalancerNetworkID
 	}
 
-	loadBalancerID, err := strconv.Atoi(parts[0])
+	loadBalancerID, err := util.ParseID(parts[0])
 	if err != nil {
 		return nil, nil, nil, errInvalidLoadBalancerNetworkID
 	}
@@ -320,7 +320,7 @@ func lookupLoadBalancerNetworkID(
 		return nil, nil, nil, errInvalidLoadBalancerNetworkID
 	}
 
-	networkID, err := strconv.Atoi(parts[1])
+	networkID, err := util.ParseID(parts[1])
 	if err != nil {
 		return nil, nil, nil, errInvalidLoadBalancerNetworkID
 	}

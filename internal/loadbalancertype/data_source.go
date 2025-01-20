@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
-	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/datasourceutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
@@ -48,7 +48,7 @@ func newResourceData(_ context.Context, in *hcloud.LoadBalancerType) (resourceDa
 	var data resourceData
 	var diags diag.Diagnostics
 
-	data.ID = types.Int64Value(int64(in.ID))
+	data.ID = types.Int64Value(in.ID)
 	data.Name = types.StringValue(in.Name)
 	data.Description = types.StringValue(in.Description)
 
@@ -163,7 +163,7 @@ func (d *dataSource) Read(ctx context.Context, req datasource.ReadRequest, resp 
 
 	switch {
 	case !data.ID.IsNull():
-		result, _, err = d.client.LoadBalancerType.GetByID(ctx, int(data.ID.ValueInt64()))
+		result, _, err = d.client.LoadBalancerType.GetByID(ctx, data.ID.ValueInt64())
 		if err != nil {
 			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
 			return
@@ -256,7 +256,7 @@ func newResourceDataList(ctx context.Context, in []*hcloud.LoadBalancerType) (re
 	ids := make([]int64, len(in))
 	tfItems := make([]resourceData, len(in))
 	for i, item := range in {
-		ids[i] = int64(item.ID)
+		ids[i] = item.ID
 
 		tfItem, newDiags := newResourceData(ctx, item)
 		diags.Append(newDiags...)

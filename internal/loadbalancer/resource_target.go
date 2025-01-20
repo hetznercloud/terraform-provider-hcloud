@@ -13,7 +13,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
-	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/control"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
@@ -91,7 +92,7 @@ func resourceLoadBalancerTargetCreate(ctx context.Context, d *schema.ResourceDat
 
 	c := m.(*hcloud.Client)
 
-	lbID := d.Get("load_balancer_id").(int)
+	lbID := util.CastInt64(d.Get("load_balancer_id"))
 	lb, _, err = c.LoadBalancer.GetByID(ctx, lbID)
 	if err != nil {
 		return diag.Errorf("get load balancer by id: %d: %v", lbID, err)
@@ -137,7 +138,7 @@ func resourceLoadBalancerCreateServerTarget(
 	if !ok {
 		return nil, tgt, fmt.Errorf("target type server: missing server_id")
 	}
-	serverID := sid.(int)
+	serverID := util.CastInt64(sid)
 
 	server, _, err := client.Server.GetByID(ctx, serverID)
 	if err != nil {
@@ -259,7 +260,7 @@ func resourceLoadBalancerCreateIPTarget(
 
 func resourceLoadBalancerTargetRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	lbID := d.Get("load_balancer_id").(int)
+	lbID := util.CastInt64(d.Get("load_balancer_id"))
 	tgtType := hcloud.LoadBalancerTargetType(d.Get("type").(string))
 
 	_, tgt, err := findLoadBalancerTarget(ctx, client, lbID, tgtType, d)
@@ -334,7 +335,7 @@ func resourceLoadBalancerTargetImport(ctx context.Context, d *schema.ResourceDat
 
 func resourceLoadBalancerTargetUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
-	lbID := d.Get("load_balancer_id").(int)
+	lbID := util.CastInt64(d.Get("load_balancer_id"))
 	tgtType := hcloud.LoadBalancerTargetType(d.Get("type").(string))
 
 	lb, tgt, err := findLoadBalancerTarget(ctx, client, lbID, tgtType, d)
@@ -354,7 +355,7 @@ func resourceLoadBalancerTargetUpdate(ctx context.Context, d *schema.ResourceDat
 func resourceLoadBalancerTargetDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 	tgtType := hcloud.LoadBalancerTargetType(d.Get("type").(string))
-	lbID := d.Get("load_balancer_id").(int)
+	lbID := util.CastInt64(d.Get("load_balancer_id"))
 
 	lb, tgt, err := findLoadBalancerTarget(ctx, client, lbID, tgtType, d)
 	if errors.Is(err, errLoadBalancerTargetNotFound) || errors.Is(err, errLoadBalancerNotFound) {
@@ -408,10 +409,10 @@ func removeLoadBalancerTarget(ctx context.Context, c *hcloud.Client, lb *hcloud.
 }
 
 func findLoadBalancerTarget(
-	ctx context.Context, client *hcloud.Client, lbID int, tgtType hcloud.LoadBalancerTargetType, d *schema.ResourceData,
+	ctx context.Context, client *hcloud.Client, lbID int64, tgtType hcloud.LoadBalancerTargetType, d *schema.ResourceData,
 ) (*hcloud.LoadBalancer, hcloud.LoadBalancerTarget, error) {
 	var (
-		serverID      int
+		serverID      int64
 		labelSelector string
 		ip            string
 	)
@@ -424,7 +425,7 @@ func findLoadBalancerTarget(
 		return nil, hcloud.LoadBalancerTarget{}, errLoadBalancerNotFound
 	}
 	if v, ok := d.GetOk("server_id"); ok {
-		serverID = v.(int)
+		serverID = util.CastInt64(v)
 	}
 	if v, ok := d.GetOk("label_selector"); ok {
 		labelSelector = v.(string)
@@ -455,7 +456,7 @@ func findLoadBalancerTarget(
 	return nil, hcloud.LoadBalancerTarget{}, errLoadBalancerTargetNotFound
 }
 
-func setLoadBalancerTarget(d *schema.ResourceData, lbID int, tgt hcloud.LoadBalancerTarget) {
+func setLoadBalancerTarget(d *schema.ResourceData, lbID int64, tgt hcloud.LoadBalancerTarget) {
 	d.Set("type", tgt.Type)
 	d.Set("load_balancer_id", lbID)
 
@@ -481,16 +482,16 @@ func setLoadBalancerTarget(d *schema.ResourceData, lbID int, tgt hcloud.LoadBala
 	}
 }
 
-func generateLoadBalancerServerTargetID(srv *hcloud.Server, lbID int) string {
+func generateLoadBalancerServerTargetID(srv *hcloud.Server, lbID int64) string {
 	return fmt.Sprintf("lb-srv-tgt-%d-%d", srv.ID, lbID)
 }
 
-func generateLoadBalancerLabelSelectorTargetID(selector string, lbID int) string {
+func generateLoadBalancerLabelSelectorTargetID(selector string, lbID int64) string {
 	h := sha256.Sum256([]byte(selector))
 	return fmt.Sprintf("lb-label-selector-tgt-%x-%d", h, lbID)
 }
 
-func generateLoadBalancerIPTargetID(ip string, lbID int) string {
+func generateLoadBalancerIPTargetID(ip string, lbID int64) string {
 	h := sha256.Sum256([]byte(ip))
 	return fmt.Sprintf("lb-ip-tgt-%x-%d", h, lbID)
 }

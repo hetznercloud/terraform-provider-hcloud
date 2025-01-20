@@ -3,20 +3,20 @@ package testsupport
 import (
 	"errors"
 	"fmt"
-	"strconv"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
-	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 )
 
 // KeyFunc allows to retrieve a resource from the Hetzner Cloud backend using
 // its ID.
 //
 // KeyFunc must return true if the resource was found.
-type KeyFunc func(c *hcloud.Client, id int) bool
+type KeyFunc func(c *hcloud.Client, id int64) bool
 
 // CheckResourceExists checks that a resource with the passed name exists.
 //
@@ -64,7 +64,7 @@ func backendResourceByKey(s *terraform.State, name string, k KeyFunc) error {
 	if rs.Primary.ID == "" {
 		return fmt.Errorf("%s: resource %s: no primary id", op, name)
 	}
-	id, err := strconv.Atoi(rs.Primary.ID)
+	id, err := util.ParseID(rs.Primary.ID)
 	if err != nil {
 		return fmt.Errorf("%s: resource %s: primary id: %w", op, name, err)
 	}

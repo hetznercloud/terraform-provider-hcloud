@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/joho/godotenv"
 
-	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	tfhcloud "github.com/hetznercloud/terraform-provider-hcloud/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 )
@@ -35,10 +35,10 @@ var (
 	TestLoadBalancerType = "lb11"
 
 	// TestDataCenter is the default datacenter where we execute our tests.
-	TestDataCenter = getEnv("TEST_DATACENTER", "nbg1-dc3")
+	TestDataCenter = getEnv("TEST_DATACENTER", "hel1-dc2")
 
 	// TestLocationName is the default location where we execute our tests.
-	TestLocationName = getEnv("TEST_LOCATION", "nbg1")
+	TestLocationName = getEnv("TEST_LOCATION", "hel1")
 )
 
 func ProtoV6ProviderFactories() map[string]func() (tfprotov6.ProviderServer, error) {

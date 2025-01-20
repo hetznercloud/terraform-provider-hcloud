@@ -2,7 +2,6 @@ package sshkey
 
 import (
 	"context"
-	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -11,7 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
-	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/resourceutil"
 )
@@ -97,7 +97,7 @@ func populateResourceDataList(ctx context.Context, data *resourceDataList, in []
 		var diags diag.Diagnostics
 		var newDiags diag.Diagnostics
 
-		data.ID = types.Int64Value(int64(in.ID))
+		data.ID = types.Int64Value(in.ID)
 		data.Name = types.StringValue(in.Name)
 		data.Fingerprint = types.StringValue(in.Fingerprint)
 		data.PublicKey = types.StringValue(in.PublicKey)
@@ -112,7 +112,7 @@ func populateResourceDataList(ctx context.Context, data *resourceDataList, in []
 	sshKeys := make([]resourceDataList, len(in))
 
 	for i, item := range in {
-		sshKeyIDs[i] = strconv.Itoa(item.ID)
+		sshKeyIDs[i] = util.FormatID(item.ID)
 
 		var sshKey resourceDataList
 		diags.Append(populateResourceDataList(ctx, &sshKey, item)...)

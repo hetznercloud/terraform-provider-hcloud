@@ -3,13 +3,13 @@ package floatingip
 import (
 	"context"
 	"log"
-	"strconv"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
@@ -90,7 +90,7 @@ func resourceFloatingIPCreate(ctx context.Context, d *schema.ResourceData, m int
 		opts.Name = hcloud.Ptr(name.(string))
 	}
 	if serverID, ok := d.GetOk("server_id"); ok {
-		opts.Server = &hcloud.Server{ID: serverID.(int)}
+		opts.Server = &hcloud.Server{ID: util.CastInt64(serverID)}
 	}
 	if homeLocation, ok := d.GetOk("home_location"); ok {
 		opts.HomeLocation = &hcloud.Location{Name: homeLocation.(string)}
@@ -108,7 +108,7 @@ func resourceFloatingIPCreate(ctx context.Context, d *schema.ResourceData, m int
 		return hcloudutil.ErrorToDiag(err)
 	}
 
-	d.SetId(strconv.Itoa(res.FloatingIP.ID))
+	d.SetId(util.FormatID(res.FloatingIP.ID))
 	if res.Action != nil {
 		if err := hcloudutil.WaitForAction(ctx, &client.Action, res.Action); err != nil {
 			return hcloudutil.ErrorToDiag(err)
@@ -128,7 +128,7 @@ func resourceFloatingIPCreate(ctx context.Context, d *schema.ResourceData, m int
 func resourceFloatingIPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
-	id, err := strconv.Atoi(d.Id())
+	id, err := util.ParseID(d.Id())
 	if err != nil {
 		log.Printf("[WARN] invalid Floating IP id (%s), removing from state: %v", d.Id(), err)
 		d.SetId("")
@@ -152,7 +152,7 @@ func resourceFloatingIPRead(ctx context.Context, d *schema.ResourceData, m inter
 func resourceFloatingIPUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
-	id, err := strconv.Atoi(d.Id())
+	id, err := util.ParseID(d.Id())
 	if err != nil {
 		log.Printf("[WARN] invalid Floating IP id (%s), removing from state: %v", d.Id(), err)
 		d.SetId("")
@@ -189,7 +189,7 @@ func resourceFloatingIPUpdate(ctx context.Context, d *schema.ResourceData, m int
 	}
 
 	if d.HasChange("server_id") {
-		serverID := d.Get("server_id").(int)
+		serverID := util.CastInt64(d.Get("server_id"))
 		if serverID == 0 {
 			action, _, err := client.FloatingIP.Unassign(ctx, floatingIP)
 			if err != nil {
@@ -246,7 +246,7 @@ func resourceFloatingIPUpdate(ctx context.Context, d *schema.ResourceData, m int
 func resourceFloatingIPDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
-	floatingIPID, err := strconv.Atoi(d.Id())
+	floatingIPID, err := util.ParseID(d.Id())
 	if err != nil {
 		log.Printf("[WARN] invalid Floating IP id (%s), removing from state: %v", d.Id(), err)
 		d.SetId("")
@@ -273,13 +273,7 @@ func resourceFloatingIPIsNotFound(err error, d *schema.ResourceData) bool {
 }
 
 func setFloatingIPSchema(d *schema.ResourceData, f *hcloud.FloatingIP) {
-	for key, val := range getFloatingIPAttributes(f) {
-		if key == "id" {
-			d.SetId(strconv.Itoa(val.(int)))
-		} else {
-			d.Set(key, val)
-		}
-	}
+	util.SetSchemaFromAttributes(d, getFloatingIPAttributes(f))
 }
 
 func getFloatingIPAttributes(f *hcloud.FloatingIP) map[string]interface{} {

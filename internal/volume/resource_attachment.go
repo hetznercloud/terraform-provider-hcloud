@@ -3,12 +3,12 @@ package volume
 import (
 	"context"
 	"log"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/control"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
@@ -53,11 +53,11 @@ func resourceVolumeAttachmentCreate(ctx context.Context, d *schema.ResourceData,
 	c := m.(*hcloud.Client)
 
 	volumeID := d.Get("volume_id")
-	volume := &hcloud.Volume{ID: volumeID.(int)}
+	volume := &hcloud.Volume{ID: util.CastInt64(volumeID)}
 
 	serverID := d.Get("server_id")
 
-	server := &hcloud.Server{ID: serverID.(int)}
+	server := &hcloud.Server{ID: util.CastInt64(serverID)}
 
 	opts := hcloud.VolumeAttachOpts{
 		Server: server,
@@ -80,7 +80,7 @@ func resourceVolumeAttachmentCreate(ctx context.Context, d *schema.ResourceData,
 	}
 	// Since a volume can only be attached to one server
 	// we can use the volume id as volume attachment id.
-	d.SetId(strconv.Itoa(volume.ID))
+	d.SetId(util.FormatID(volume.ID))
 
 	if err := hcloudutil.WaitForAction(ctx, &c.Action, a); err != nil {
 		return hcloudutil.ErrorToDiag(err)
@@ -92,7 +92,7 @@ func resourceVolumeAttachmentCreate(ctx context.Context, d *schema.ResourceData,
 func resourceVolumeAttachmentRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
-	volumeID, err := strconv.Atoi(d.Id())
+	volumeID, err := util.ParseID(d.Id())
 	if err != nil {
 		log.Printf("[WARN] Volume ID (%s) not found, removing from state: %v", d.Id(), err)
 		d.SetId("")
@@ -121,7 +121,7 @@ func resourceVolumeAttachmentRead(ctx context.Context, d *schema.ResourceData, m
 	// because only the terraform ID (volume ID in this case)
 	// is available, so we need to get the ID from the volume
 	// instead of from the configuration
-	serverID := d.Get("server_id").(int)
+	serverID := util.CastInt64(d.Get("server_id"))
 	if serverID == 0 {
 		serverID = volume.Server.ID
 	}
@@ -144,7 +144,7 @@ func resourceVolumeAttachmentRead(ctx context.Context, d *schema.ResourceData, m
 func resourceVolumeAttachmentDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*hcloud.Client)
 
-	volumeID, err := strconv.Atoi(d.Id())
+	volumeID, err := util.ParseID(d.Id())
 	if err != nil {
 		log.Printf("[WARN] Invalid id (%s), removing from state: %v", d.Id(), err)
 		d.SetId("")
