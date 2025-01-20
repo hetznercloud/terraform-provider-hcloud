@@ -10,6 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/firewall"
@@ -1198,4 +1199,30 @@ func isRecreated(newServer, oldServer *hcloud.Server) func() error {
 func userDataHashSum(userData string) string {
 	sum := sha1.Sum([]byte(userData)) // nolint: gosec
 	return base64.StdEncoding.EncodeToString(sum[:])
+}
+
+func TestToPublicNetField(t *testing.T) {
+	t.Run("int", func(t *testing.T) {
+		got, err := server.ToPublicNetField[int](map[string]any{"key": int(1)}, "key")
+		require.NoError(t, err)
+		require.Equal(t, int(1), got)
+	})
+
+	t.Run("bool", func(t *testing.T) {
+		got, err := server.ToPublicNetField[bool](map[string]any{"key": true}, "key")
+		require.NoError(t, err)
+		require.Equal(t, true, got)
+	})
+
+	t.Run("int not found", func(t *testing.T) {
+		got, err := server.ToPublicNetField[int](map[string]any{}, "key")
+		require.EqualError(t, err, "ToPublicNetField: field does not contain key: key")
+		require.Equal(t, int(0), got)
+	})
+
+	t.Run("bool not found", func(t *testing.T) {
+		got, err := server.ToPublicNetField[bool](map[string]any{}, "key")
+		require.EqualError(t, err, "ToPublicNetField: field does not contain key: key")
+		require.Equal(t, false, got)
+	})
 }
