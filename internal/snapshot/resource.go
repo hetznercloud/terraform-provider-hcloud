@@ -187,7 +187,7 @@ func resourceSnapshotIsNotFound(err error, d *schema.ResourceData) bool {
 func setSnapshotSchema(d *schema.ResourceData, s *hcloud.Image) {
 	d.SetId(util.FormatID(s.ID))
 	if s.CreatedFrom != nil {
-		d.Set("server_id", int(s.CreatedFrom.ID))
+		d.Set("server_id", util.CastInt(s.CreatedFrom.ID))
 	}
 	d.Set("description", s.Description)
 	d.Set("labels", s.Labels)

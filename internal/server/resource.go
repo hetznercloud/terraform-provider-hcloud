@@ -1133,7 +1133,7 @@ func setServerSchema(d *schema.ResourceData, s *hcloud.Server) {
 func getServerAttributes(d *schema.ResourceData, s *hcloud.Server) map[string]interface{} {
 	firewallIDs := make([]int, len(s.PublicNet.Firewalls))
 	for i, firewall := range s.PublicNet.Firewalls {
-		firewallIDs[i] = int(firewall.Firewall.ID)
+		firewallIDs[i] = util.CastInt(firewall.Firewall.ID)
 	}
 
 	res := map[string]interface{}{
@@ -1189,7 +1189,7 @@ func getServerAttributes(d *schema.ResourceData, s *hcloud.Server) map[string]in
 	}
 
 	if s.PlacementGroup != nil {
-		res["placement_group_id"] = int(s.PlacementGroup.ID)
+		res["placement_group_id"] = util.CastInt(s.PlacementGroup.ID)
 	} else {
 		res["placement_group_id"] = nil
 	}

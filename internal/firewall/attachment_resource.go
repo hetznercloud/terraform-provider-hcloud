@@ -216,7 +216,7 @@ func (a *attachment) ToResourceData(d *schema.ResourceData) {
 	if len(a.ServerIDs) > 0 {
 		vals := make([]interface{}, len(a.ServerIDs))
 		for i, id := range a.ServerIDs {
-			vals[i] = int(id)
+			vals[i] = util.CastInt(id)
 		}
 		f := d.Get("server_ids").(*schema.Set).F // Returns a default value if server_ids is not present in HCL.
 		srvIDs = schema.NewSet(f, vals)
@@ -233,7 +233,7 @@ func (a *attachment) ToResourceData(d *schema.ResourceData) {
 	}
 	d.Set("label_selectors", lSels)
 
-	d.Set("firewall_id", int(a.FirewallID))
+	d.Set("firewall_id", util.CastInt(a.FirewallID))
 	d.SetId(util.FormatID(a.FirewallID))
 }
 
