@@ -16,5 +16,10 @@ func CreateClient() (*hcloud.Client, error) {
 	opts := []hcloud.ClientOption{
 		hcloud.WithToken(os.Getenv("HCLOUD_TOKEN")),
 	}
+
+	if value := os.Getenv("HCLOUD_ENDPOINT"); value != "" {
+		opts = append(opts, hcloud.WithEndpoint(value))
+	}
+
 	return hcloud.NewClient(opts...), nil
 }
