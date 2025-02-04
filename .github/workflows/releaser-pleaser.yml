@@ -1,18 +1,22 @@
-name: Release-please
+name: Releaser-pleaser
 
 on:
   push:
     branches: [main]
+  pull_request_target:
+    types:
+      - edited
+      - labeled
+      - unlabeled
 
 jobs:
-  release-please:
+  releaser-pleaser:
     # Do not run on forks.
     if: github.repository == 'hetznercloud/terraform-provider-hcloud'
 
     runs-on: ubuntu-latest
     steps:
-      - uses: googleapis/release-please-action@v4
+      - name: releaser-pleaser
+        uses: apricote/releaser-pleaser@v0.5.0
         with:
           token: ${{ secrets.HCLOUD_BOT_TOKEN }}
-          config-file: .github/release-please-config.json
-          manifest-file: .github/release-please-manifest.json
