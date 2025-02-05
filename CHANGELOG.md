@@ -1,5 +1,19 @@
 # Changelog
 
+## [v1.50.0-rc.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.50.0-rc.0)
+
+In this release, we upgraded the underlying Hetzner Cloud API client ([hcloud-go](https://github.com/hetznercloud/hcloud-go)) for the entire provider, which involves risk of breakage. Please make sure to test this new version before using it on production environments.
+
+### Features
+
+- drop support for terraform v1.8 (#1066)
+- add support for terraform v1.10 (#1067)
+- add support for opentofu v1.9 (#1071)
+
+### Bug Fixes
+
+- upgrade hcloud-go to v2 (#1062)
+
 ## [1.49.1](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.49.0...v1.49.1) (2024-11-21)
 
 
