@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.50.0](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.49.1...v1.50.0) (2025-02-05)
+
+
+### Features
+
+* add support for opentofu v1.9 ([#1071](https://github.com/hetznercloud/terraform-provider-hcloud/issues/1071)) ([41d7a7f](https://github.com/hetznercloud/terraform-provider-hcloud/commit/41d7a7f6831553bb4ae41813141b2865544bcec0))
+* add support for terraform v1.10 ([#1067](https://github.com/hetznercloud/terraform-provider-hcloud/issues/1067)) ([d5916b8](https://github.com/hetznercloud/terraform-provider-hcloud/commit/d5916b893f10d8a980fb99e8b6dd1b685b099049))
+* drop support for terraform v1.8 ([#1066](https://github.com/hetznercloud/terraform-provider-hcloud/issues/1066)) ([103bca0](https://github.com/hetznercloud/terraform-provider-hcloud/commit/103bca03a0520c9891fb24fe327e08f64244e2c3))
+
+
+### Bug Fixes
+
+* upgrade hcloud-go to v2 ([#1062](https://github.com/hetznercloud/terraform-provider-hcloud/issues/1062)) ([6f04b15](https://github.com/hetznercloud/terraform-provider-hcloud/commit/6f04b156c903180a044b187b164752a71a3e2de6))
+
 ## [1.49.1](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.49.0...v1.49.1) (2024-11-21)
 
 
