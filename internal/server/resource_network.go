@@ -6,14 +6,14 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/network"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/control"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/merge"
@@ -87,8 +87,8 @@ func resourceServerNetworkCreate(ctx context.Context, d *schema.ResourceData, m 
 		networkID = nwID
 	}
 
-	server := &hcloud.Server{ID: d.Get("server_id").(int)}
-	n := &hcloud.Network{ID: networkID.(int)}
+	server := &hcloud.Server{ID: util.CastInt64(d.Get("server_id"))}
+	n := &hcloud.Network{ID: util.CastInt64(networkID)}
 	aliasIPs := make([]net.IP, 0, d.Get("alias_ips").(*schema.Set).Len())
 	for _, aliasIP := range d.Get("alias_ips").(*schema.Set).List() {
 		ip := net.ParseIP(aliasIP.(string))
@@ -268,7 +268,7 @@ func lookupServerNetworkID(ctx context.Context, terraformID string, client *hclo
 		return
 	}
 
-	serverID, err := strconv.Atoi(parts[0])
+	serverID, err := util.ParseID(parts[0])
 	if err != nil {
 		err = errInvalidServerNetworkID
 		return
@@ -284,7 +284,7 @@ func lookupServerNetworkID(ctx context.Context, terraformID string, client *hclo
 		return
 	}
 
-	networkID, err := strconv.Atoi(parts[1])
+	networkID, err := util.ParseID(parts[1])
 	if err != nil {
 		err = errInvalidServerNetworkID
 		return

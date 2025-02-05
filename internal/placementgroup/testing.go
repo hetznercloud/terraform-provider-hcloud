@@ -8,13 +8,13 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 
-	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
 // ByID returns a function that obtains a placement_group by its ID.
-func ByID(t *testing.T, placementGroup *hcloud.PlacementGroup) func(*hcloud.Client, int) bool {
-	return func(c *hcloud.Client, id int) bool {
+func ByID(t *testing.T, placementGroup *hcloud.PlacementGroup) func(*hcloud.Client, int64) bool {
+	return func(c *hcloud.Client, id int64) bool {
 		found, _, err := c.PlacementGroup.GetByID(context.Background(), id)
 		if err != nil {
 			t.Fatalf("find placement group %d: %v", id, err)

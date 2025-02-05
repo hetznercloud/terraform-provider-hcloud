@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"log"
 	"sort"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
@@ -170,8 +170,8 @@ func deleteAttachment(ctx context.Context, d *schema.ResourceData, m interface{}
 }
 
 type attachment struct {
-	FirewallID     int
-	ServerIDs      []int
+	FirewallID     int64
+	ServerIDs      []int64
 	LabelSelectors []string
 }
 
@@ -179,12 +179,12 @@ type attachment struct {
 func (a *attachment) FromResourceData(d *schema.ResourceData) error {
 	// The terraform schema definition above ensures this is always set and
 	// of the correct type. Thus there is no need to check such things.
-	a.FirewallID = d.Get("firewall_id").(int)
+	a.FirewallID = util.CastInt64(d.Get("firewall_id"))
 
 	srvIDs, ok := d.GetOk("server_ids")
 	if ok {
 		for _, v := range srvIDs.(*schema.Set).List() {
-			a.ServerIDs = append(a.ServerIDs, v.(int))
+			a.ServerIDs = append(a.ServerIDs, util.CastInt64(v))
 		}
 		sort.Slice(a.ServerIDs, func(i, j int) bool {
 			return a.ServerIDs[i] < a.ServerIDs[j]
@@ -216,7 +216,7 @@ func (a *attachment) ToResourceData(d *schema.ResourceData) {
 	if len(a.ServerIDs) > 0 {
 		vals := make([]interface{}, len(a.ServerIDs))
 		for i, id := range a.ServerIDs {
-			vals[i] = id
+			vals[i] = util.CastInt(id)
 		}
 		f := d.Get("server_ids").(*schema.Set).F // Returns a default value if server_ids is not present in HCL.
 		srvIDs = schema.NewSet(f, vals)
@@ -233,8 +233,8 @@ func (a *attachment) ToResourceData(d *schema.ResourceData) {
 	}
 	d.Set("label_selectors", lSels)
 
-	d.Set("firewall_id", a.FirewallID)
-	d.SetId(strconv.Itoa(a.FirewallID))
+	d.Set("firewall_id", util.CastInt(a.FirewallID))
+	d.SetId(util.FormatID(a.FirewallID))
 }
 
 // FromFirewall reads the attachment data from fw into a.
@@ -285,7 +285,7 @@ func (a *attachment) AllResources() []hcloud.FirewallResource {
 func (a *attachment) DiffResources(o attachment) ([]hcloud.FirewallResource, []hcloud.FirewallResource) {
 	var more, less []hcloud.FirewallResource // nolint: prealloc
 
-	aSrvs := make(map[int]bool, len(a.ServerIDs))
+	aSrvs := make(map[int64]bool, len(a.ServerIDs))
 	for _, id := range a.ServerIDs {
 		aSrvs[id] = true
 	}
@@ -307,7 +307,7 @@ func (a *attachment) DiffResources(o attachment) ([]hcloud.FirewallResource, []h
 		less = append(less, labelSelectorResource(ls))
 	}
 
-	oSrvs := make(map[int]bool, len(o.ServerIDs))
+	oSrvs := make(map[int64]bool, len(o.ServerIDs))
 	for _, id := range o.ServerIDs {
 		oSrvs[id] = true
 	}
@@ -332,7 +332,7 @@ func (a *attachment) DiffResources(o attachment) ([]hcloud.FirewallResource, []h
 	return less, more
 }
 
-func serverResource(id int) hcloud.FirewallResource {
+func serverResource(id int64) hcloud.FirewallResource {
 	return hcloud.FirewallResource{
 		Type:   hcloud.FirewallResourceTypeServer,
 		Server: &hcloud.FirewallResourceServer{ID: id},

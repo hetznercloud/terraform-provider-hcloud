@@ -2,7 +2,6 @@ package location
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -12,7 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
-	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/datasourceutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
@@ -51,7 +51,7 @@ func newResourceData(_ context.Context, in *hcloud.Location) (resourceData, diag
 	var data resourceData
 	var diags diag.Diagnostics
 
-	data.ID = types.Int64Value(int64(in.ID))
+	data.ID = types.Int64Value(in.ID)
 	data.Name = types.StringValue(in.Name)
 	data.Description = types.StringValue(in.Description)
 	data.Country = types.StringValue(in.Country)
@@ -169,7 +169,7 @@ func (d *dataSource) Read(ctx context.Context, req datasource.ReadRequest, resp 
 
 	switch {
 	case !data.ID.IsNull():
-		result, _, err = d.client.Location.GetByID(ctx, int(data.ID.ValueInt64()))
+		result, _, err = d.client.Location.GetByID(ctx, data.ID.ValueInt64())
 		if err != nil {
 			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
 			return
@@ -285,7 +285,7 @@ func newResourceDataList(ctx context.Context, in []*hcloud.Location) (resourceDa
 	locations := make([]resourceData, len(in))
 
 	for i, item := range in {
-		locationIDs[i] = strconv.Itoa(item.ID)
+		locationIDs[i] = util.FormatID(item.ID)
 		names[i] = item.Name
 		descriptions[i] = item.Description
 

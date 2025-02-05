@@ -8,11 +8,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
-	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/volume"
 )
 
@@ -148,21 +149,21 @@ func TestAccVolumeDataSource_Attached(t *testing.T) {
 					resource.TestCheckResourceAttr(volByName.TFID(),
 						"name", fmt.Sprintf("%s--%d", resVolume.Name, tmplMan.RandInt)),
 					testsupport.CheckResourceAttrFunc(volBySel.TFID(), "server_id", func() string {
-						return strconv.Itoa(s.ID)
+						return util.FormatID(s.ID)
 					}),
 					resource.TestCheckResourceAttr(volByName.TFID(), "size", strconv.Itoa(resVolume.Size)),
 
 					resource.TestCheckResourceAttr(volByID.TFID(),
 						"name", fmt.Sprintf("%s--%d", resVolume.Name, tmplMan.RandInt)),
 					testsupport.CheckResourceAttrFunc(volBySel.TFID(), "server_id", func() string {
-						return strconv.Itoa(s.ID)
+						return util.FormatID(s.ID)
 					}),
 					resource.TestCheckResourceAttr(volByID.TFID(), "size", strconv.Itoa(resVolume.Size)),
 
 					resource.TestCheckResourceAttr(volBySel.TFID(),
 						"name", fmt.Sprintf("%s--%d", resVolume.Name, tmplMan.RandInt)),
 					testsupport.CheckResourceAttrFunc(volBySel.TFID(), "server_id", func() string {
-						return strconv.Itoa(s.ID)
+						return util.FormatID(s.ID)
 					}),
 					resource.TestCheckResourceAttr(volBySel.TFID(), "size", strconv.Itoa(resVolume.Size)),
 				),

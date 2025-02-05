@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"sort"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -14,7 +13,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
-	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/datasourceutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
@@ -50,12 +50,12 @@ func newResourceData(ctx context.Context, in *hcloud.Datacenter) (resourceData, 
 	var diags diag.Diagnostics
 	var newDiags diag.Diagnostics
 
-	data.ID = types.Int64Value(int64(in.ID))
+	data.ID = types.Int64Value(in.ID)
 	data.Name = types.StringValue(in.Name)
 	data.Description = types.StringValue(in.Description)
 
 	data.Location, newDiags = types.MapValue(types.StringType, map[string]attr.Value{
-		"id":          types.StringValue(strconv.Itoa(in.Location.ID)),
+		"id":          types.StringValue(util.FormatID(in.Location.ID)),
 		"name":        types.StringValue(in.Location.Name),
 		"description": types.StringValue(in.Location.Description),
 		"country":     types.StringValue(in.Location.Country),
@@ -67,11 +67,11 @@ func newResourceData(ctx context.Context, in *hcloud.Datacenter) (resourceData, 
 
 	supportedServerTypeIDs := make([]int64, len(in.ServerTypes.Supported))
 	for i, v := range in.ServerTypes.Supported {
-		supportedServerTypeIDs[i] = int64(v.ID)
+		supportedServerTypeIDs[i] = v.ID
 	}
 	availableServerTypeIDs := make([]int64, len(in.ServerTypes.Available))
 	for i, v := range in.ServerTypes.Available {
-		availableServerTypeIDs[i] = int64(v.ID)
+		availableServerTypeIDs[i] = v.ID
 	}
 	sort.Slice(supportedServerTypeIDs, func(i, j int) bool { return supportedServerTypeIDs[i] < supportedServerTypeIDs[j] })
 	sort.Slice(availableServerTypeIDs, func(i, j int) bool { return availableServerTypeIDs[i] < availableServerTypeIDs[j] })
@@ -186,7 +186,7 @@ func (d *dataSource) Read(ctx context.Context, req datasource.ReadRequest, resp 
 
 	switch {
 	case !data.ID.IsNull():
-		result, _, err = d.client.Datacenter.GetByID(ctx, int(data.ID.ValueInt64()))
+		result, _, err = d.client.Datacenter.GetByID(ctx, data.ID.ValueInt64())
 		if err != nil {
 			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
 			return
@@ -302,7 +302,7 @@ func newResourceDataList(ctx context.Context, in []*hcloud.Datacenter) (resource
 	datacenters := make([]resourceData, len(in))
 
 	for i, item := range in {
-		datacenterIDs[i] = strconv.Itoa(item.ID)
+		datacenterIDs[i] = util.FormatID(item.ID)
 		names[i] = item.Name
 		descriptions[i] = item.Description
 

@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 )
 
 // DefaultRetries is a constant for the maximum number of retries we usually do.

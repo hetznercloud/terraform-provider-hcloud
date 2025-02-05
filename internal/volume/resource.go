@@ -4,14 +4,14 @@ import (
 	"context"
 	"errors"
 	"log"
-	"strconv"
 	"strings"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/control"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
@@ -90,7 +90,7 @@ func resourceVolumeCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 
 	if serverID, ok := d.GetOk("server_id"); ok {
-		opts.Server = &hcloud.Server{ID: serverID.(int)}
+		opts.Server = &hcloud.Server{ID: util.CastInt64(serverID)}
 	}
 	if location, ok := d.GetOk("location"); ok {
 		opts.Location = &hcloud.Location{Name: location.(string)}
@@ -116,7 +116,7 @@ func resourceVolumeCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		}
 		return hcloudutil.ErrorToDiag(err)
 	}
-	d.SetId(strconv.Itoa(result.Volume.ID))
+	d.SetId(util.FormatID(result.Volume.ID))
 
 	if err := hcloudutil.WaitForAction(ctx, &c.Action, result.Action); err != nil {
 		return hcloudutil.ErrorToDiag(err)
@@ -176,7 +176,7 @@ func resourceVolumeCreate(ctx context.Context, d *schema.ResourceData, m interfa
 func resourceVolumeRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
-	id, err := strconv.Atoi(d.Id())
+	id, err := util.ParseID(d.Id())
 	if err != nil {
 		log.Printf("[WARN] invalid volume id (%s), removing from state: %v", d.Id(), err)
 		d.SetId("")
@@ -200,7 +200,7 @@ func resourceVolumeRead(ctx context.Context, d *schema.ResourceData, m interface
 func resourceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*hcloud.Client)
 
-	id, err := strconv.Atoi(d.Id())
+	id, err := util.ParseID(d.Id())
 	if err != nil {
 		log.Printf("[WARN] invalid volume id (%s), removing from state: %v", d.Id(), err)
 		d.SetId("")
@@ -230,7 +230,7 @@ func resourceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 
 	if d.HasChange("server_id") {
-		serverID := d.Get("server_id").(int)
+		serverID := util.CastInt64(d.Get("server_id"))
 		if serverID == 0 {
 			err := control.Retry(control.DefaultRetries, func() error {
 				a, _, err := c.Volume.Detach(ctx, volume)
@@ -331,7 +331,7 @@ func resourceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 func resourceVolumeDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*hcloud.Client)
 
-	volumeID, err := strconv.Atoi(d.Id())
+	volumeID, err := util.ParseID(d.Id())
 	if err != nil {
 		log.Printf("[WARN] invalid volume id (%s), removing from state: %v", d.Id(), err)
 		d.SetId("")
@@ -384,13 +384,7 @@ func resourceVolumeIsNotFound(err error, d *schema.ResourceData) bool {
 }
 
 func setVolumeSchema(d *schema.ResourceData, v *hcloud.Volume) {
-	for key, val := range getVolumeAttributes(v) {
-		if key == "id" {
-			d.SetId(strconv.Itoa(val.(int)))
-		} else {
-			d.Set(key, val)
-		}
-	}
+	util.SetSchemaFromAttributes(d, getVolumeAttributes(v))
 }
 
 func getVolumeAttributes(v *hcloud.Volume) map[string]interface{} {

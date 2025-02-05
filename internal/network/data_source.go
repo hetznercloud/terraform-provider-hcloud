@@ -2,12 +2,12 @@ package network
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/datasourceutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/merge"
@@ -100,7 +100,7 @@ func dataSourceHcloudNetworkRead(ctx context.Context, d *schema.ResourceData, m 
 	client := m.(*hcloud.Client)
 
 	if id, ok := d.GetOk("id"); ok {
-		n, _, err := client.Network.GetByID(ctx, id.(int))
+		n, _, err := client.Network.GetByID(ctx, util.CastInt64(id))
 		if err != nil {
 			return hcloudutil.ErrorToDiag(err)
 		}
@@ -165,7 +165,7 @@ func dataSourceHcloudNetworkListRead(ctx context.Context, d *schema.ResourceData
 	ids := make([]string, len(allNetworks))
 	tsNetworks := make([]map[string]interface{}, len(allNetworks))
 	for i, firewall := range allNetworks {
-		ids[i] = strconv.Itoa(firewall.ID)
+		ids[i] = util.FormatID(firewall.ID)
 		tsNetworks[i] = getNetworkAttributes(firewall)
 	}
 	d.Set("networks", tsNetworks)

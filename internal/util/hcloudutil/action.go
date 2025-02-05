@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 )
 
 // WaitForAction uses [hcloud.ActionWaiter.WaitFor] to wait for the completion of an action.

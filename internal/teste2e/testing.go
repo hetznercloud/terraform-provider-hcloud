@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/joho/godotenv"
 
-	"github.com/hetznercloud/hcloud-go/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	tfhcloud "github.com/hetznercloud/terraform-provider-hcloud/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 )
