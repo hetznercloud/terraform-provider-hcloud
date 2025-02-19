@@ -19,6 +19,6 @@ resource "hcloud_load_balancer_target" "{{ .Name }}" {
   use_private_ip   = {{ .UsePrivateIP }}
   {{- end }}
   {{- if .DependsOn }}
-  depends_on       = [{{ StringsJoin .DependsOn ", " }}]
+  depends_on       = [{{ .DependsOn | join ", " }}]
   {{- end }}
 }

@@ -3,9 +3,9 @@
 resource "hcloud_firewall_attachment" "{{ .RName }}" {
     firewall_id = {{ .FirewallIDRef }}
     {{- if .ServerIDRefs }}
-    server_ids = [{{ StringsJoin .ServerIDRefs ", " }}]
+    server_ids = [{{ .ServerIDRefs | join ", " }}]
     {{- end }}
     {{- if .LabelSelectors }}
-    label_selectors = [{{ with DQuoteS .LabelSelectors }}{{ StringsJoin . ", " }}{{ end }}]
+    label_selectors = [{{ .LabelSelectors | quoteEach | join ", " }}]
     {{- end }}
 }

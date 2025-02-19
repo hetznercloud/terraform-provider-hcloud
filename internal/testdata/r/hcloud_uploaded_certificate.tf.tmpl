@@ -3,10 +3,10 @@
 resource "hcloud_uploaded_certificate" "{{ .RName }}" {
   name        = "{{ .Name }}--{{ .RInt }}"
   private_key =<<EOT
-{{ StringsTrimSpace .PrivateKey }}
+{{ .PrivateKey | trim }}
   EOT
   certificate =<<EOT
-{{ StringsTrimSpace .Certificate }}
+{{ .Certificate | trim }}
   EOT
   {{- if .Labels }}
     labels = {
