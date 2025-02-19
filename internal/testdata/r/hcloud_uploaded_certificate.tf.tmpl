@@ -9,10 +9,6 @@ resource "hcloud_uploaded_certificate" "{{ .RName }}" {
 {{ .Certificate | trim }}
   EOT
   {{- if .Labels }}
-    labels = {
-    {{- range $k,$v := .Labels }}
-      {{ $k }} = "{{ $v }}"
-    {{- end }}
-  }
+  labels = {{ .Labels | toPrettyJson }}
   {{- end }}
 }

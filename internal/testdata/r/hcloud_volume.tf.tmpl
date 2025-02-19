@@ -10,13 +10,10 @@ resource "hcloud_volume" "{{ .RName }}" {
   {{- if .ServerID }}
   server_id          =  {{ .ServerID }}
   {{ end }}
+
   {{- if .Labels }}
-  labels = {
-  {{- range $k,$v := .Labels }}
-    {{ $k }} = "{{ $v }}"
+  labels = {{ .Labels | toPrettyJson }}
   {{- end }}
-  }
-  {{ end }}
 
   {{- if .DeleteProtection }}
   delete_protection = {{ .DeleteProtection }}

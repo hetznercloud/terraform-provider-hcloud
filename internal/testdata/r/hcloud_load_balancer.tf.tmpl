@@ -23,12 +23,9 @@ resource "hcloud_load_balancer" "{{ .Name }}" {
     server_id = {{ .ServerID }}
   }
   {{ end }}
+
   {{- if .Labels }}
-  labels = {
-  {{- range $k,$v := .Labels }}
-    {{ $k }} = "{{ $v }}"
-  {{- end }}
-  }
+  labels = {{ .Labels | toPrettyJson }}
   {{- end }}
 
   {{- if .DeleteProtection }}

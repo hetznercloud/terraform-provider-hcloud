@@ -4,10 +4,6 @@ resource "hcloud_ssh_key" "{{ .RName }}" {
   name        = "{{ .Name }}--{{ .RInt }}"
   public_key  = "{{ .PublicKey | trim }}"
   {{- if .Labels }}
-    labels = {
-    {{- range $k,$v := .Labels }}
-      {{ $k }} = "{{ $v }}"
-    {{- end }}
-  }
+  labels = {{ .Labels | toPrettyJson }}
   {{- end }}
 }
