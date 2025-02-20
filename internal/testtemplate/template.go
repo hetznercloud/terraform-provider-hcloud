@@ -13,6 +13,7 @@ import (
 	"testing"
 	"text/template"
 
+	"github.com/Masterminds/sprig"
 	hcl "github.com/hashicorp/hcl/v2"
 	hclwrite "github.com/hashicorp/hcl/v2/hclwrite"
 )
@@ -73,17 +74,16 @@ func (ts *Manager) init(t *testing.T) {
 		}
 
 		ts.tmpl = template.New("testdata")
-		ts.tmpl.Funcs(template.FuncMap{
-			"StringsJoin":      strings.Join,
-			"StringsTrimSpace": strings.TrimSpace,
-			"DQuoteS": func(ss []string) []string {
-				res := make([]string, len(ss))
-				for i, s := range ss {
-					res[i] = fmt.Sprintf("\"%s\"", s)
-				}
-				return res
-			},
-		})
+
+		funMap := sprig.TxtFuncMap()
+		funMap["quoteEach"] = func(items []string) []string {
+			result := make([]string, 0, len(items))
+			for _, item := range items {
+				result = append(result, fmt.Sprintf("%q", item))
+			}
+			return result
+		}
+		ts.tmpl.Funcs(funMap)
 
 		// We can't use template/Template.ParseGlob here since we want to add a
 		// prefix to the name.

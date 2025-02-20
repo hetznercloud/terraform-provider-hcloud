@@ -18,7 +18,7 @@ resource "hcloud_load_balancer_service" "{{ .Name }}" {
     {{ if .HTTP.CookieName -}}    cookie_name      = "{{ .HTTP.CookieName }}"{{ end }}
     {{ if .HTTP.CookieLifeTime -}}cookie_lifetime  = "{{ .HTTP.CookieLifeTime }}"{{ end }}
     {{ if .HTTP.RedirectHTTP -}}  redirect_http    = {{ .HTTP.RedirectHTTP }}{{ end }}
-    {{ if .HTTP.Certificates -}}  certificates     = [{{ StringsJoin .HTTP.Certificates ", " }}]{{ end }}
+    {{ if .HTTP.Certificates -}}  certificates     = [{{ .HTTP.Certificates | join ", " }}]{{ end }}
     {{ if .HTTP.StickySessions -}} sticky_sessions = "{{ .HTTP.StickySessions }}"{{ end }}
   }
   {{ end }}
@@ -45,9 +45,7 @@ resource "hcloud_load_balancer_service" "{{ .Name }}" {
       {{ if .HealthCheck.HTTP.TLS -}}
       tls          = {{ .HealthCheck.HTTP.TLS }}
       {{- end }}
-      {{ with DQuoteS .HealthCheck.HTTP.StatusCodes -}}
-      status_codes = [{{ StringsJoin . ", "}}]
-      {{- end }}
+      status_codes = [{{ .HealthCheck.HTTP.StatusCodes | quoteEach | join ", "}}]
     }
     {{ end }}
   }

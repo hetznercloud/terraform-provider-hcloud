@@ -16,6 +16,6 @@ resource "hcloud_load_balancer_network" "{{ .Name }}" {
   ip                       = "{{ .IP }}"
   {{ end }}
   {{- if .DependsOn }}
-  depends_on               = [{{ StringsJoin .DependsOn ", " }}]
+  depends_on               = [{{ .DependsOn | join ", " }}]
   {{ end }}
 }

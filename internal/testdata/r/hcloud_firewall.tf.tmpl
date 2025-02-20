@@ -42,11 +42,8 @@ resource "hcloud_firewall" "{{ .RName }}" {
    }
 {{- end }}
 {{- end }}
-{{- if .Labels }}
-    labels = {
-    {{- range $k,$v := .Labels }}
-      {{ $k }} = "{{ $v }}"
-    {{- end }}
-  }
+
+  {{- if .Labels }}
+  labels = {{ .Labels | toPrettyJson }}
   {{- end }}
 }

@@ -14,7 +14,7 @@ resource "hcloud_server" "{{ .RName }}" {
   datacenter  = "{{ .Datacenter }}"
   {{ end }}
   {{- if .SSHKeys }}
-  ssh_keys    = [{{ StringsJoin .SSHKeys ", " }}]
+  ssh_keys    = [{{ .SSHKeys | join ", " }}]
   {{ end }}
   {{- if .KeepDisk }}
   keep_disk   = {{ .KeepDisk }}
@@ -40,7 +40,7 @@ resource "hcloud_server" "{{ .RName }}" {
       ip         = "{{ .IP }}"
       {{ end }}
       {{- if .AliasIPs }}
-      alias_ips = {{ with DQuoteS .AliasIPs }}[{{ StringsJoin . ", " }}]{{ end }}
+      alias_ips = [{{ .AliasIPs | quoteEach | join ", " }}]
       {{- else }}
       # Workaround for https://github.com/hetznercloud/terraform-provider-hcloud/issues/650
       alias_ips = []
@@ -58,12 +58,8 @@ resource "hcloud_server" "{{ .RName }}" {
   {{ end }}
 
   {{- if .Labels }}
-  labels = {
-  {{- range $k,$v := .Labels }}
-    {{ $k }} = "{{ $v }}"
+  labels = {{ .Labels | toPrettyJson }}
   {{- end }}
-  }
-  {{ end }}
 
   {{- if .UserData }}
   user_data   = <<EOF
@@ -80,7 +76,7 @@ EOF
   {{ end }}
 
   {{- if .DependsOn }}
-  depends_on               = [{{ StringsJoin .DependsOn ", " }}]
+  depends_on               = [{{ .DependsOn | join ", " }}]
   {{ end }}
 
   {{- if .PlacementGroupID }}

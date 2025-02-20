@@ -7,10 +7,6 @@ resource "hcloud_snapshot" "{{ .RName }}" {
   description       = "{{ .Description }}"
   {{ end }}
   {{- if .Labels }}
-  labels = {
-  {{- range $k,$v := .Labels }}
-    {{ $k }} = "{{ $v }}"
+  labels = {{ .Labels | toPrettyJson }}
   {{- end }}
-  }
-  {{ end }}
 }
