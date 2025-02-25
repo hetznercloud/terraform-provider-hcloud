@@ -6,7 +6,7 @@ toolchain go1.23.6
 
 require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
-	github.com/google/go-cmp v0.6.0
+	github.com/google/go-cmp v0.7.0
 	github.com/hashicorp/go-cty v1.4.1-0.20241127173709-a0325cb22c13
 	github.com/hashicorp/go-hclog v1.6.3
 	github.com/hashicorp/go-multierror v1.1.1
