@@ -122,7 +122,7 @@ func (ts *Manager) Render(t *testing.T, args ...interface{}) string {
 		case string:
 			data = arg
 		default:
-			t.Fatalf("args[%d]: data or string required: %T", i+1, args[i+1])
+			t.Fatalf("args[%d]: data or string required: %#v", i+1, args[i+1])
 		}
 
 		tmpl := ts.tmpl.Lookup(tmplName)
@@ -151,6 +151,7 @@ func (ts *Manager) Render(t *testing.T, args ...interface{}) string {
 		buf := bytes.NewBuffer(nil)
 		file, diags := hclwrite.ParseConfig([]byte(definition), "testing.tf", hcl.InitialPos)
 		if diags.HasErrors() {
+			t.Logf("\n\nHCL:\n%s\n", addLineNumbers(definition))
 			t.Fatal(diags.Error())
 		}
 		if _, err := file.WriteTo(buf); err != nil {
