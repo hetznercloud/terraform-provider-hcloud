@@ -33,10 +33,6 @@ func CheckAPIResourcePresent[T any](tfID string, getter GetAPIResourceFunc[T]) r
 			return fmt.Errorf("resource not in state: %s", tfID)
 		}
 
-		if state.Primary.ID == "" {
-			return fmt.Errorf("resource instance has no id: %s", tfID)
-		}
-
 		client, err := CreateClient()
 		if err != nil {
 			return fmt.Errorf("could not create api client: %w", err)
