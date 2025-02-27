@@ -6,7 +6,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
-	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
@@ -14,23 +13,23 @@ import (
 )
 
 func TestAccSSHKeyResource(t *testing.T) {
-	var sk hcloud.SSHKey
-
 	tmplMan := testtemplate.Manager{}
+
 	res := sshkey.NewRData(t, "basic-ssh-key")
 	resRenamed := &sshkey.RData{Name: res.Name + "-renamed", PublicKey: res.PublicKey}
 	resRenamed.SetRName(res.Name)
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
 		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
-		CheckDestroy:             testsupport.CheckResourcesDestroyed(sshkey.ResourceType, sshkey.ByID(t, &sk)),
+		CheckDestroy:             testsupport.CheckAPIResourceAllAbsent(sshkey.ResourceType, sshkey.GetAPIResource()),
 		Steps: []resource.TestStep{
 			{
 				// Create a new SSH Key using the required values
 				// only.
 				Config: tmplMan.Render(t, "testdata/r/hcloud_ssh_key", res),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(res.TFID(), sshkey.ByID(t, &sk)),
+					testsupport.CheckAPIResourcePresent(res.TFID(), sshkey.GetAPIResource()),
 					resource.TestCheckResourceAttr(res.TFID(), "name", fmt.Sprintf("basic-ssh-key--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(res.TFID(), "public_key", res.PublicKey),
 					resource.TestCheckResourceAttrSet(res.TFID(), "fingerprint"),

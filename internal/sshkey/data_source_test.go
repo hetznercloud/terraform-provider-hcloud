@@ -32,7 +32,7 @@ func TestAccSSHKeyDataSource(t *testing.T) {
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
 		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
-		CheckDestroy:             testsupport.CheckResourcesDestroyed(sshkey.ResourceType, sshkey.ByID(t, nil)),
+		CheckDestroy:             testsupport.CheckAPIResourceAllAbsent(sshkey.ResourceType, sshkey.GetAPIResource()),
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
