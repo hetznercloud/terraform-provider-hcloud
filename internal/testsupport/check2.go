@@ -28,7 +28,7 @@ func CopyAPIResource[T any](target *T, getter GetAPIResourceFunc[T]) GetAPIResou
 // CheckAPIResourcePresent checks that the terraform resource 'tfID' is present in the API.
 func CheckAPIResourcePresent[T any](tfID string, getter GetAPIResourceFunc[T]) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		state, ok := s.RootModule().Resources[tfID]
+		res, ok := s.RootModule().Resources[tfID]
 		if !ok {
 			return fmt.Errorf("resource not in state: %s", tfID)
 		}
@@ -38,12 +38,12 @@ func CheckAPIResourcePresent[T any](tfID string, getter GetAPIResourceFunc[T]) r
 			return fmt.Errorf("could not create api client: %w", err)
 		}
 
-		res, err := getter(client, state.Primary.Attributes)
+		result, err := getter(client, res.Primary.Attributes)
 		if err != nil {
 			return fmt.Errorf("could not get resource from api: %w", err)
 		}
 
-		if res == nil {
+		if result == nil {
 			return fmt.Errorf("resource is not present in api: %s", tfID)
 		}
 		return nil
@@ -63,12 +63,12 @@ func CheckAPIResourceAllAbsent[T any](resType string, getter GetAPIResourceFunc[
 				return fmt.Errorf("could not create api client: %w", err)
 			}
 
-			res, err := getter(client, res.Primary.Attributes)
+			result, err := getter(client, res.Primary.Attributes)
 			if err != nil {
 				return fmt.Errorf("could not get resource from api: %w", err)
 			}
 
-			if res != nil {
+			if result != nil {
 				return fmt.Errorf("resource is not absent from api: %s", tfID)
 			}
 		}
