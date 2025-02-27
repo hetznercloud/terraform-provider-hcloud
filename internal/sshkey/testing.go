@@ -44,20 +44,11 @@ func Sweep(r string) error {
 	return nil
 }
 
-// ByID returns a function that obtains a sshkey by its ID.
-func ByID(t *testing.T, cert *hcloud.SSHKey) func(*hcloud.Client, int64) bool {
-	return func(c *hcloud.Client, id int64) bool {
-		found, _, err := c.SSHKey.GetByID(context.Background(), id)
-		if err != nil {
-			t.Fatalf("find sshkey %d: %v", id, err)
-		}
-		if found == nil {
-			return false
-		}
-		if cert != nil {
-			*cert = *found
-		}
-		return true
+// GetAPIResource returns a [testsupport.GetAPIResourceFunc] for [hcloud.SSHKey].
+func GetAPIResource() testsupport.GetAPIResourceFunc[hcloud.SSHKey] {
+	return func(c *hcloud.Client, attrs map[string]string) (*hcloud.SSHKey, error) {
+		result, _, err := c.SSHKey.Get(context.Background(), attrs["id"])
+		return result, err
 	}
 }
 
