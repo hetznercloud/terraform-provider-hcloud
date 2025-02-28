@@ -3,6 +3,7 @@
 /*.json
 /*.sh
 /*.tf
+/*.tfrc
 /*.tfstate
 /*.tfstate.backup
 /*.yaml
