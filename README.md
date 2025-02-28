@@ -85,3 +85,50 @@ $ go test -v -timeout=30m -parallel=8 ./internal/server
 === RUN   TestAccHcloudDataSourceServerTest
 # ...
 ```
+
+## Running a local build
+
+Choose a terraform cli config file path:
+
+```sh
+export TF_CLI_CONFIG_FILE="terraform.tfrc"
+```
+
+In the terraform cli config file, override the lookup path for the `hetznercloud/hcloud` provider to use the local build:
+
+```sh
+cat <<EOF >"$TF_CLI_CONFIG_FILE"
+provider_installation {
+  dev_overrides {
+    "hetznercloud/hcloud" = "$PWD"
+  }
+
+  direct {}
+}
+EOF
+```
+
+Build the provider, resulting in a `terraform-provider-hcloud` binary:
+
+```sh
+make build
+```
+
+Finally, run your terraform plan to see if it works:
+
+```sh
+tofu plan
+```
+
+You should see the following warning:
+
+```
+╷
+│ Warning: Provider development overrides are in effect
+│
+│ The following provider development overrides are set in the CLI configuration:
+│  - hetznercloud/hcloud in /home/user/code/github.com/hetznercloud/terraform-provider-hcloud
+│
+│ The behavior may therefore not match any released version of the provider and applying changes may cause the state to become incompatible with published releases.
+╵
+```
