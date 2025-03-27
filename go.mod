@@ -18,7 +18,7 @@ require (
 	github.com/hashicorp/terraform-plugin-mux v0.18.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.36.1
 	github.com/hashicorp/terraform-plugin-testing v1.11.0
-	github.com/hetznercloud/hcloud-go/v2 v2.20.1
+	github.com/hetznercloud/hcloud-go/v2 v2.21.0
 	github.com/joho/godotenv v1.5.1
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/net v0.37.0
