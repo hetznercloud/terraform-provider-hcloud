@@ -7,7 +7,7 @@ toolchain go1.24.1
 require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/google/go-cmp v0.7.0
-	github.com/hashicorp/go-cty v1.4.1-0.20241127173709-a0325cb22c13
+	github.com/hashicorp/go-cty v1.5.0
 	github.com/hashicorp/go-hclog v1.6.3
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/hcl/v2 v2.23.0
@@ -17,7 +17,7 @@ require (
 	github.com/hashicorp/terraform-plugin-log v0.9.0
 	github.com/hashicorp/terraform-plugin-mux v0.18.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.36.1
-	github.com/hashicorp/terraform-plugin-testing v1.11.0
+	github.com/hashicorp/terraform-plugin-testing v1.12.0
 	github.com/hetznercloud/hcloud-go/v2 v2.21.0
 	github.com/joho/godotenv v1.5.1
 	github.com/stretchr/testify v1.10.0
