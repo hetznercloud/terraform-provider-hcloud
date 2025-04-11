@@ -91,6 +91,31 @@ func getCommonDataSchema() map[string]*schema.Schema {
 			Computed: true,
 			Elem:     &schema.Schema{Type: schema.TypeInt},
 		},
+		"network": {
+			Type:     schema.TypeSet,
+			Optional: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"network_id": {
+						Type:     schema.TypeInt,
+						Computed: true,
+					},
+					"ip": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+					"alias_ips": {
+						Type:     schema.TypeSet,
+						Elem:     &schema.Schema{Type: schema.TypeString},
+						Computed: true,
+					},
+					"mac_address": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+				},
+			},
+		},
 		"placement_group_id": {
 			Type:     schema.TypeInt,
 			Optional: true,
@@ -167,6 +192,13 @@ func DataSourceList() *schema.Resource {
 	}
 }
 
+func dataSourceServerItem() *schema.Resource {
+	return &schema.Resource{
+		ReadContext: dataSourceHcloudServerListRead,
+		Schema:      getCommonDataSchema(),
+	}
+}
+
 func dataSourceHcloudServerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
@@ -178,7 +210,7 @@ func dataSourceHcloudServerRead(ctx context.Context, d *schema.ResourceData, m i
 		if s == nil {
 			return diag.Errorf("no Server found with id %d", id)
 		}
-		setServerSchema(d, s)
+		setServerSchema(d, s, true)
 		return nil
 	}
 
@@ -190,7 +222,7 @@ func dataSourceHcloudServerRead(ctx context.Context, d *schema.ResourceData, m i
 		if s == nil {
 			return diag.Errorf("no Server found with name %s", name)
 		}
-		setServerSchema(d, s)
+		setServerSchema(d, s, true)
 		return nil
 	}
 
@@ -223,7 +255,7 @@ func dataSourceHcloudServerRead(ctx context.Context, d *schema.ResourceData, m i
 		if len(allServers) > 1 {
 			return diag.Errorf("more than one Server found for selector %q", selector)
 		}
-		setServerSchema(d, allServers[0])
+		setServerSchema(d, allServers[0], true)
 		return nil
 	}
 
@@ -255,7 +287,7 @@ func dataSourceHcloudServerListRead(ctx context.Context, d *schema.ResourceData,
 	tfServers := make([]map[string]interface{}, len(allServers))
 	for i, server := range allServers {
 		ids[i] = util.FormatID(server.ID)
-		tfServers[i] = getServerAttributes(d, server)
+		tfServers[i] = getServerAttributes(d, server, true)
 	}
 	d.Set("servers", tfServers)
 	d.SetId(datasourceutil.ListID(ids))
