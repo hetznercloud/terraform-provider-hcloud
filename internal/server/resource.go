@@ -103,6 +103,14 @@ func Resource() *schema.Resource {
 					}},
 				ForceNew: true,
 			},
+			"volumes": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				ForceNew: true,
+			},
 			"keep_disk": {
 				Type:     schema.TypeBool,
 				Optional: true,
@@ -331,6 +339,11 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 
 	opts.SSHKeys, err = getSSHkeys(ctx, c, d)
+	if err != nil {
+		return hcloudutil.ErrorToDiag(err)
+	}
+
+	opts.Volumes, err = getVolumes(ctx, c, d)
 	if err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
@@ -1037,6 +1050,23 @@ func getSSHkeys(ctx context.Context, client *hcloud.Client, d *schema.ResourceDa
 			return
 		}
 		sshKeys = append(sshKeys, sshKey)
+	}
+	return
+}
+
+func getVolumes(ctx context.Context, client *hcloud.Client, d *schema.ResourceData) (volumes []*hcloud.Volume, err error) {
+	for _, volumeIdValue := range d.Get("volumes").([]interface{}) {
+		volumeIdOrName := volumeIdValue.(string)
+		var volume *hcloud.Volume
+		volume, _, err = client.Volume.Get(ctx, volumeIdOrName)
+		if err != nil {
+			return
+		}
+		if volume == nil {
+			err = fmt.Errorf("volume not found: %s", volumeIdOrName)
+			return
+		}
+		volumes = append(volumes, volume)
 	}
 	return
 }
