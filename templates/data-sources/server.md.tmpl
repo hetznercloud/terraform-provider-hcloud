@@ -36,8 +36,16 @@ This resource is useful if you want to use a non-terraform managed server.
 - `ipv6_network` - (string) The IPv6 network.
 - `status` - (string) The status of the server.
 - `labels` - (map) User-defined labels (key-value pairs)
+- `network` - (map) Private Network the server is attached to.
 - `firewall_ids` - (Optional, list) Firewall IDs the server is attached to.
 - `placement_group_id` - (Optional, string) Placement Group ID the server is assigned to.
 - `delete_protection` - (bool) Whether delete protection is enabled.
 - `rebuild_protection` - (bool) Whether rebuild protection is enabled.
 - `primary_disk_size` - (int) The size of the primary disk in GB.
+
+a single entry in `network` support the following fields:
+
+- `network_id` - (int) The unique identifier for the network.
+- `ip` - (string) The server's IP address within the network.
+- `alias_ips` - (list) A list of alias IP addresses assigned to the server in the network.
+- `mac_address` - (string) The MAC address associated with the server's private network interface.

@@ -67,6 +67,12 @@ type DData struct {
 	ServerID      string
 	ServerName    string
 	LabelSelector string
+	Network       []struct {
+		NetworkID string
+		IP        string
+		AliasIPs  []string
+		Mac       string
+	}
 }
 
 // TFID returns the data source identifier.

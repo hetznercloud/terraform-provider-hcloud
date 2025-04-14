@@ -466,7 +466,7 @@ func resourceServerRead(ctx context.Context, d *schema.ResourceData, m interface
 		d.SetId("")
 		return nil
 	}
-	setServerSchema(d, server)
+	setServerSchema(d, server, false)
 
 	d.SetConnInfo(map[string]string{
 		"type": "ssh",
@@ -1126,11 +1126,11 @@ func newIPSet(f schema.SchemaSetFunc, ips []net.IP) *schema.Set {
 	return schema.NewSet(f, ss)
 }
 
-func setServerSchema(d *schema.ResourceData, s *hcloud.Server) {
-	util.SetSchemaFromAttributes(d, getServerAttributes(d, s))
+func setServerSchema(d *schema.ResourceData, s *hcloud.Server, forceSetNetworkAttribute bool) {
+	util.SetSchemaFromAttributes(d, getServerAttributes(d, s, forceSetNetworkAttribute))
 }
 
-func getServerAttributes(d *schema.ResourceData, s *hcloud.Server) map[string]interface{} {
+func getServerAttributes(d *schema.ResourceData, s *hcloud.Server, forceSetNetworkAttribute bool) map[string]interface{} {
 	firewallIDs := make([]int, len(s.PublicNet.Firewalls))
 	for i, firewall := range s.PublicNet.Firewalls {
 		firewallIDs[i] = util.CastInt(firewall.Firewall.ID)
@@ -1184,7 +1184,8 @@ func getServerAttributes(d *schema.ResourceData, s *hcloud.Server) map[string]in
 	//
 	// The easiest would be to use schema.ComputedWhen but this is marked
 	// as currently not working.
-	if _, ok := d.GetOk("network"); ok {
+	_, ok := d.GetOk("network")
+	if ok || forceSetNetworkAttribute {
 		res["network"] = networkToTerraformNetworks(s.PrivateNet)
 	}
 
