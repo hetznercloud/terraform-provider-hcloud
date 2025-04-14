@@ -103,6 +103,23 @@ func Resource() *schema.Resource {
 					}},
 				ForceNew: true,
 			},
+			"volume": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"volume_id": {
+							Type:     schema.TypeInt,
+							Required: true,
+						},
+						"automount": {
+							Type:     schema.TypeBool,
+							Optional: true,
+							Computed: true,
+						},
+					},
+				},
+			},
 			"keep_disk": {
 				Type:     schema.TypeBool,
 				Optional: true,
@@ -331,6 +348,11 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 
 	opts.SSHKeys, err = getSSHkeys(ctx, c, d)
+	if err != nil {
+		return hcloudutil.ErrorToDiag(err)
+	}
+
+	opts.Volumes, err = getVolumes(ctx, c, d)
 	if err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
@@ -571,6 +593,13 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 	if d.HasChange("network") {
 		data := d.Get("network").(*schema.Set)
 		if err := updateServerInlineNetworkAttachments(ctx, c, data, server); err != nil {
+			return hcloudutil.ErrorToDiag(err)
+		}
+	}
+
+	if d.HasChange("volume") {
+		data := d.Get("volume").(*schema.Set)
+		if err := updateServerInlineVolumeAttachments(ctx, c, data, server); err != nil {
 			return hcloudutil.ErrorToDiag(err)
 		}
 	}
@@ -1041,6 +1070,31 @@ func getSSHkeys(ctx context.Context, client *hcloud.Client, d *schema.ResourceDa
 	return
 }
 
+func getVolumes(ctx context.Context, client *hcloud.Client, d *schema.ResourceData) (volumes []*hcloud.Volume, err error) {
+	volumesSet := d.Get("volume").(*schema.Set)
+	if volumesSet == nil || volumesSet.Len() == 0 {
+		err = nil
+		return
+	}
+
+	for _, v := range volumesSet.List() {
+		vlData := v.(map[string]interface{})
+		vlId := util.CastInt64(vlData["volume_id"])
+		volumeIdOrName := fmt.Sprintf("%d", vlId)
+		var volume *hcloud.Volume
+		volume, _, err = client.Volume.Get(ctx, volumeIdOrName)
+		if err != nil {
+			return
+		}
+		if volume == nil {
+			err = fmt.Errorf("volume not found: %s", volumeIdOrName)
+			return
+		}
+		volumes = append(volumes, volume)
+	}
+	return
+}
+
 func inlineAttachServerToNetwork(ctx context.Context, c *hcloud.Client, s *hcloud.Server, nwData map[string]interface{}) error {
 	const op = "hcloud/inlineAttachServerToNetwork"
 
@@ -1113,6 +1167,112 @@ func updateServerInlineNetworkAttachments(ctx context.Context, c *hcloud.Client,
 		if err := inlineAttachServerToNetwork(ctx, c, s, nwData); err != nil {
 			return fmt.Errorf("%s: %w", op, err)
 		}
+	}
+
+	return nil
+}
+
+func updateServerInlineVolumeAttachments(ctx context.Context, c *hcloud.Client, data *schema.Set, s *hcloud.Server) error {
+	const op = "hcloud/updateServerInlineVolumeAttachments"
+
+	log.Printf("[INFO] Updating inline volume attachments for server %d", s.ID)
+
+	cfgVolumes := make(map[int64]map[string]interface{}, data.Len())
+	for _, v := range data.List() {
+		nwData := v.(map[string]interface{})
+		nwID := util.CastInt64(nwData["volume_id"])
+		cfgVolumes[nwID] = nwData
+	}
+
+	for _, v := range s.Volumes {
+		_, ok := cfgVolumes[v.ID]
+		if !ok {
+			// The server should no longer have this volume attached.
+			// Detach it.
+			if err := updateServerDetachVolume(ctx, c, s, v); err != nil {
+				return fmt.Errorf("%s: %w", op, err)
+			}
+			continue
+		}
+		// Remove the volume from the cfgVolumes map. We are going to
+		// handle it right now.
+		delete(cfgVolumes, v.ID)
+	}
+
+	// Whatever remains in cfgVolumes now is a newly added volume.
+	// We attach it to the server.
+	for _, vData := range cfgVolumes {
+		if err := updateServerAttachVolume(ctx, c, s, vData); err != nil {
+			return fmt.Errorf("%s: %w", op, err)
+		}
+	}
+
+	return nil
+}
+
+func updateServerDetachVolume(ctx context.Context, c *hcloud.Client, s *hcloud.Server, volume *hcloud.Volume) error {
+	const op = "hcloud/updateServerDetachVolume"
+	if volume.Server == nil {
+		return fmt.Errorf("%s: volume is not attached to server", op)
+	}
+	if volume.Server.ID != s.ID {
+		return fmt.Errorf("%s: volume is attached to another server", op)
+	}
+
+	var a *hcloud.Action
+
+	err := control.Retry(control.DefaultRetries, func() error {
+		var err error
+
+		a, _, err = c.Volume.Detach(ctx, volume)
+		if hcloud.IsError(err, hcloud.ErrorCodeLocked) {
+			return err
+		}
+		return control.AbortRetry(err)
+	})
+	if err != nil {
+		return err
+	}
+
+	if err := hcloudutil.WaitForAction(ctx, &c.Action, a); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func updateServerAttachVolume(ctx context.Context, c *hcloud.Client, s *hcloud.Server, volumeData map[string]interface{}) error {
+	const op = "hcloud/updateServerAttachVolume"
+	var a *hcloud.Action
+
+	if _, ok := volumeData["volume_id"]; !ok {
+		return fmt.Errorf("%s: volume_id not found in volume map", op)
+	}
+	volumeID := util.CastInt64(volumeData["volume_id"])
+	volume := &hcloud.Volume{ID: util.CastInt64(volumeID)}
+
+	opts := hcloud.VolumeAttachOpts{
+		Server: s,
+	}
+	if automount, ok := volumeData["automount"]; ok {
+		opts.Automount = hcloud.Ptr(automount.(bool))
+	}
+
+	err := control.Retry(control.DefaultRetries, func() error {
+		var err error
+
+		a, _, err = c.Volume.AttachWithOpts(ctx, volume, opts)
+		if hcloud.IsError(err, hcloud.ErrorCodeLocked) {
+			return err
+		}
+		return control.AbortRetry(err)
+	})
+	if err != nil {
+		return err
+	}
+
+	if err := hcloudutil.WaitForAction(ctx, &c.Action, a); err != nil {
+		return err
 	}
 
 	return nil

@@ -54,6 +54,35 @@ resource "hcloud_server" "server_test" {
 }
 ```
 
+```hcl
+### Server creation with volumes attached at the creation time
+resource "hcloud_volume" "server_volume" {
+  name     = "test-volume"
+  size     = 50
+  location = "fsn1"
+  format   = "ext4"
+}
+
+resource "hcloud_server" "server_test" {
+  name        = "test-server"
+  image       = "ubuntu-20.04"
+  server_type = "cx22"
+  datacenter  = "fsn1-dc14"
+  labels = {
+    "test" : "tessst1"
+  }
+  
+  
+  volume {
+    volume_id = hcloud_volume.server_volume.id
+
+    # Automount flag is used for volumes attached after server is created (i.e. you're introducing disk to existing server)
+    # It is automatically mounting new attached volume to the server
+    automount = true 
+  }
+}
+```
+
 ### Server creation with network
 
 ```hcl
