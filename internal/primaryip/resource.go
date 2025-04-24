@@ -352,8 +352,9 @@ func setProtection(ctx context.Context, c *hcloud.Client, primaryIP *hcloud.Prim
 
 func AssignPrimaryIP(ctx context.Context, c *hcloud.Client, primaryIPID int64, serverID int64) diag.Diagnostics {
 	action, _, err := c.PrimaryIP.Assign(ctx, hcloud.PrimaryIPAssignOpts{
-		ID:         primaryIPID,
-		AssigneeID: serverID,
+		ID:           primaryIPID,
+		AssigneeID:   serverID,
+		AssigneeType: "server",
 	})
 	if err != nil {
 		return hcloudutil.ErrorToDiag(err)
