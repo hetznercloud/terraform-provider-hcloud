@@ -1,5 +1,11 @@
 # Changelog
 
+## [v1.50.1](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.50.1)
+
+### Bug Fixes
+
+- missing assignee_type in assign primary ip call (#1117)
+
 ## [v1.50.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.50.0)
 
 In this release, we upgraded the underlying Hetzner Cloud API client ([hcloud-go](https://github.com/hetznercloud/hcloud-go)) for the entire provider, which involves risk of breakage. Please make sure to test this new version before using it on production environments.
