@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancer"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/network"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
@@ -66,6 +67,68 @@ func TestAccServerDataSource(t *testing.T) {
 						"name", fmt.Sprintf("%s--%d", res.Name, tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(serverBySel.TFID(),
 						"name", fmt.Sprintf("%s--%d", res.Name, tmplMan.RandInt)),
+				),
+			},
+		},
+	})
+}
+
+func TestAccServerDataSourceWithNetwork(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
+	nwRes := &network.RData{
+		Name:    "server-ds-network",
+		IPRange: "10.0.0.0/16",
+	}
+	nwRes.SetRName("network")
+	snwRes := &network.RDataSubnet{
+		Type:        "cloud",
+		NetworkID:   nwRes.TFID() + ".id",
+		NetworkZone: "eu-central",
+		IPRange:     "10.0.1.0/24",
+	}
+	snwRes.SetRName("subnet")
+
+	res := &server.RData{
+		Name:  "server-ds-network",
+		Type:  teste2e.TestServerType,
+		Image: teste2e.TestImage,
+		Labels: map[string]string{
+			"key": strconv.Itoa(acctest.RandInt()),
+		},
+		Networks: []server.RDataInlineNetwork{
+			{
+				NetworkID: nwRes.TFID() + ".id",
+				IP:        "10.0.1.5",
+				AliasIPs: []string{
+					"10.0.1.6",
+				},
+			},
+		},
+	}
+	res.SetRName("server")
+	serverByName := &server.DData{
+		ServerName: res.TFID() + ".name",
+	}
+	serverByName.SetRName("server_by_name")
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_network", nwRes,
+					"testdata/r/hcloud_network_subnet", snwRes,
+					"testdata/r/hcloud_server", res,
+					"testdata/d/hcloud_server", serverByName,
+				),
+
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(serverByName.TFID(), "network.#", "1"),
+					resource.TestCheckResourceAttr(serverByName.TFID(), "network.0.ip", "10.0.1.5"),
+					resource.TestCheckResourceAttr(serverByName.TFID(), "network.0.alias_ips.#", "1"),
+					resource.TestCheckResourceAttr(serverByName.TFID(), "network.0.alias_ips.0", "10.0.1.6"),
 				),
 			},
 		},
