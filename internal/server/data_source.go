@@ -192,13 +192,6 @@ func DataSourceList() *schema.Resource {
 	}
 }
 
-func dataSourceServerItem() *schema.Resource {
-	return &schema.Resource{
-		ReadContext: dataSourceHcloudServerListRead,
-		Schema:      getCommonDataSchema(),
-	}
-}
-
 func dataSourceHcloudServerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
