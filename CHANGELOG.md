@@ -1,5 +1,11 @@
 # Changelog
 
+## [v1.51.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.51.0)
+
+### Features
+
+- **server**: add private networks in data_source (#1115)
+
 ## [v1.50.1](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.50.1)
 
 ### Bug Fixes
