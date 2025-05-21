@@ -54,8 +54,6 @@ jobs:
           - tool: opentofu
             version: v1.9.x
           - tool: terraform
-            version: v1.9.x
-          - tool: terraform
             version: v1.10.x
 
     steps:
