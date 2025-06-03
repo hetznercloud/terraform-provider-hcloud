@@ -29,6 +29,12 @@ func TestTerraformLabelsToHCloud(t *testing.T) {
 			wantDiagnostics: false,
 		},
 		{
+			name:            "Unknown Labels",
+			inputLabels:     types.MapUnknown(types.StringType),
+			wantLabels:      &map[string]string{},
+			wantDiagnostics: false,
+		},
+		{
 			name:            "Invalid Map Labels",
 			inputLabels:     types.MapValueMust(types.BoolType, map[string]attr.Value{"key1": types.BoolValue(true)}),
 			wantLabels:      &map[string]string{},
