@@ -15,9 +15,13 @@ import (
 func TestAccSSHKeyResource(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
-	res := sshkey.NewRData(t, "basic-ssh-key")
-	resRenamed := &sshkey.RData{Name: res.Name + "-renamed", PublicKey: res.PublicKey}
-	resRenamed.SetRName(res.Name)
+	res := sshkey.NewRData(t, "main")
+
+	res2 := &sshkey.RData{Name: res.Name, PublicKey: res.PublicKey}
+	res2.SetRName(res.RName())
+
+	res3 := &sshkey.RData{Name: res.Name + "-renamed", PublicKey: res.PublicKey, Labels: res.Labels}
+	res3.SetRName(res.RName())
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
@@ -25,33 +29,37 @@ func TestAccSSHKeyResource(t *testing.T) {
 		CheckDestroy:             testsupport.CheckAPIResourceAllAbsent(sshkey.ResourceType, sshkey.GetAPIResource()),
 		Steps: []resource.TestStep{
 			{
-				// Create a new SSH Key using the required values
-				// only.
 				Config: tmplMan.Render(t, "testdata/r/hcloud_ssh_key", res),
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckAPIResourcePresent(res.TFID(), sshkey.GetAPIResource()),
-					resource.TestCheckResourceAttr(res.TFID(), "name", fmt.Sprintf("basic-ssh-key--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(res.TFID(), "name", fmt.Sprintf("main--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(res.TFID(), "public_key", res.PublicKey),
 					resource.TestCheckResourceAttrSet(res.TFID(), "fingerprint"),
 					resource.TestCheckResourceAttr(res.TFID(), "labels.key", res.Labels["key"]),
 				),
 			},
 			{
-				// Try to import the newly created SSH Key
+				Config: tmplMan.Render(t, "testdata/r/hcloud_ssh_key", res2),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckAPIResourcePresent(res2.TFID(), sshkey.GetAPIResource()),
+					resource.TestCheckResourceAttr(res2.TFID(), "name", fmt.Sprintf("main--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(res2.TFID(), "public_key", res2.PublicKey),
+					resource.TestCheckResourceAttrSet(res2.TFID(), "fingerprint"),
+					resource.TestCheckResourceAttr(res2.TFID(), "labels.key.#", "0"),
+				),
+			},
+			{
 				ResourceName:      res.TFID(),
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
 			{
-				// Update the SSH Key created in the previous step by
-				// setting all optional fields and renaming the SSH
-				// Key.
-				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", resRenamed,
-				),
+				Config: tmplMan.Render(t, "testdata/r/hcloud_ssh_key", res3),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resRenamed.TFID(), "name", fmt.Sprintf("basic-ssh-key-renamed--%d", tmplMan.RandInt)),
-					resource.TestCheckResourceAttr(resRenamed.TFID(), "public_key", res.PublicKey),
+					resource.TestCheckResourceAttr(res3.TFID(), "name", fmt.Sprintf("main-renamed--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(res3.TFID(), "public_key", res3.PublicKey),
+					resource.TestCheckResourceAttrSet(res3.TFID(), "fingerprint"),
+					resource.TestCheckResourceAttr(res3.TFID(), "labels.key", res3.Labels["key"]),
 				),
 			},
 		},
