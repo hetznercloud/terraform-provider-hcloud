@@ -95,8 +95,11 @@ func (r *resourceImpl) Create(ctx context.Context, req resource.CreateRequest, r
 		Name:      data.Name.ValueString(),
 		PublicKey: data.PublicKey.ValueString(),
 	}
-	if !data.Labels.IsNull() {
-		hcloudutil.TerraformLabelsToHCloud(ctx, data.Labels, &opts.Labels)
+
+	resp.Diagnostics.Append(hcloudutil.TerraformLabelsToHCloud(ctx, data.Labels, &opts.Labels)...)
+
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
 	in, _, err := r.client.SSHKey.Create(ctx, opts)
@@ -162,7 +165,11 @@ func (r *resourceImpl) Update(ctx context.Context, req resource.UpdateRequest, r
 	}
 
 	if !plan.Labels.Equal(data.Labels) {
-		hcloudutil.TerraformLabelsToHCloud(ctx, plan.Labels, &opts.Labels)
+		resp.Diagnostics.Append(hcloudutil.TerraformLabelsToHCloud(ctx, plan.Labels, &opts.Labels)...)
+	}
+
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
 	id, newDiags := resourceutil.ParseID(data.ID)

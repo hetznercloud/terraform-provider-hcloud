@@ -11,7 +11,7 @@ func TerraformLabelsToHCloud(ctx context.Context, inputLabels types.Map, outputL
 	var diagnostics diag.Diagnostics
 	*outputLabels = make(map[string]string, len(inputLabels.Elements()))
 
-	if !inputLabels.IsNull() {
+	if !inputLabels.IsUnknown() && !inputLabels.IsNull() {
 		diagnostics.Append(inputLabels.ElementsAs(ctx, outputLabels, false)...)
 	}
 
