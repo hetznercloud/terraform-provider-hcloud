@@ -1,10 +1,10 @@
 default: lint install generate
 
 build:
-	go build -v ./...
+	go build -v .
 
 install: build
-	go install -v ./...
+	go install -v .
 
 lint:
 	golangci-lint run --fix
