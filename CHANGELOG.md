@@ -1,5 +1,14 @@
 # Changelog
 
+## [v1.52.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.52.0)
+
+### Features
+
+- drop support for terraform v1.9 (#1125)
+- drop support for terraform v1.10 (#1126)
+- add support for terraform v1.11 (#1127)
+- add support for terraform v1.12 (#1128)
+
 ## [v1.51.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.51.0)
 
 ### Features
