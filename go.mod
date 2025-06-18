@@ -2,7 +2,7 @@ module github.com/hetznercloud/terraform-provider-hcloud
 
 go 1.23.0
 
-toolchain go1.24.3
+toolchain go1.24.4
 
 require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
@@ -21,7 +21,7 @@ require (
 	github.com/hetznercloud/hcloud-go/v2 v2.21.1
 	github.com/joho/godotenv v1.5.1
 	github.com/stretchr/testify v1.10.0
-	golang.org/x/net v0.40.0
+	golang.org/x/net v0.41.0
 )
 
 require (
