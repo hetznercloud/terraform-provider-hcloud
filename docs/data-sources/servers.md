@@ -19,7 +19,7 @@ data "hcloud_servers" "s_3" {
 
 ## Argument Reference
 
-- `with_selector` - (Optional, string) Label Selector. For more information about possible values, visit the [Hetzner Cloud Documentation](https://docs.hetzner.cloud/#overview-label-selector).
+- `with_selector` - (Optional, string) Label Selector. For more information about possible values, visit the [Hetzner Cloud Documentation](https://docs.hetzner.cloud/reference/cloud#label-selector).
 - `with_status` - (Optional, list) List only servers with the specified status, could contain `initializing`, `starting`, `running`, `stopping`, `off`, `deleting`, `rebuilding`, `migrating`, `unknown`.
 
 ## Attributes Reference

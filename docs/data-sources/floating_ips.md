@@ -18,7 +18,7 @@ data "hcloud_floating_ips" "ip_2" {
 
 ## Argument Reference
 
-- `with_selector` - (Optional, string) [Label selector](https://docs.hetzner.cloud/#overview-label-selector)
+- `with_selector` - (Optional, string) [Label selector](https://docs.hetzner.cloud/reference/cloud#label-selector)
 
 ## Attributes Reference
 

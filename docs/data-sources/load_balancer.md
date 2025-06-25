@@ -26,7 +26,7 @@ data "hcloud_load_balancer" "lb_3" {
 
 - `id` - ID of the Load Balancer.
 - `name` - Name of the Load Balancer.
-- `with_selector` - Label Selector. For more information about possible values, visit the [Hetzner Cloud Documentation](https://docs.hetzner.cloud/#overview-label-selector).
+- `with_selector` - Label Selector. For more information about possible values, visit the [Hetzner Cloud Documentation](https://docs.hetzner.cloud/reference/cloud#label-selector).
 
 ## Attributes Reference
 

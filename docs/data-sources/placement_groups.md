@@ -22,7 +22,7 @@ data "hcloud_placement_groups" "sample_placement_group_2" {
 
 ## Argument Reference
 
-- `with_selector` - (Optional, string) [Label selector](https://docs.hetzner.cloud/#overview-label-selector)
+- `with_selector` - (Optional, string) [Label selector](https://docs.hetzner.cloud/reference/cloud#label-selector)
 - `most_recent` - (Optional, bool) Sorts list by date.
 
 ## Attribute Reference

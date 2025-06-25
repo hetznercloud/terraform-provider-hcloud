@@ -25,7 +25,7 @@ data "hcloud_images" "by_label" {
 
 ## Argument Reference
 
-- `with_selector` - (Optional, string) [Label selector](https://docs.hetzner.cloud/#overview-label-selector)
+- `with_selector` - (Optional, string) [Label selector](https://docs.hetzner.cloud/reference/cloud#label-selector)
 - `most_recent` - (Optional, bool) Sorts list by date.
 - `with_status` - (Optional, list) List only images with the specified status, could contain `creating` or `available`.
 - `with_architecture` - (Optional, list) List only images with this architecture, could contain `x86` or `arm`.

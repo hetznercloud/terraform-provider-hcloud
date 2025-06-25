@@ -27,7 +27,7 @@ data "hcloud_network" "network_3" {
 
 - `id` - ID of the Network.
 - `name` - Name of the Network.
-- `with_selector` - Label Selector. For more information about possible values, visit the [Hetzner Cloud Documentation](https://docs.hetzner.cloud/#overview-label-selector).
+- `with_selector` - Label Selector. For more information about possible values, visit the [Hetzner Cloud Documentation](https://docs.hetzner.cloud/reference/cloud#label-selector).
 
 ## Attributes Reference
 

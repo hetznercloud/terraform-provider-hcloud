@@ -22,7 +22,7 @@ data "hcloud_certificate" "sample_certificate_2" {
 
 - `id` - ID of the certificate.
 - `name` - Name of the certificate.
-- `with_selector` - (Optional, string) [Label selector](https://docs.hetzner.cloud/#overview-label-selector)
+- `with_selector` - (Optional, string) [Label selector](https://docs.hetzner.cloud/reference/cloud#label-selector)
 
 ## Attribute Reference
 

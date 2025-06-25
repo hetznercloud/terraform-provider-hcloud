@@ -29,7 +29,7 @@ resource "hcloud_ssh_key" "main" {
 
 ### Optional
 
-- `labels` (Map of String) User-defined [labels](https://docs.hetzner.cloud/#labels) (key-value pairs) for the resource.
+- `labels` (Map of String) User-defined [labels](https://docs.hetzner.cloud/reference/cloud#labels) (key-value pairs) for the resource.
 
 ### Read-Only
 
