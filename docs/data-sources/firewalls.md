@@ -18,7 +18,7 @@ data "hcloud_firewalls" "sample_firewall_1" {
 
 ## Argument Reference
 
-- `with_selector` - (Optional, string) [Label selector](https://docs.hetzner.cloud/#overview-label-selector)
+- `with_selector` - (Optional, string) [Label selector](https://docs.hetzner.cloud/reference/cloud#label-selector)
 - `most_recent` - (Optional, bool) Sorts list by date.
 
 ## Attribute Reference

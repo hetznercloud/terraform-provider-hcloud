@@ -67,7 +67,7 @@ func getCommonDataSourceSchema(readOnly bool) map[string]schema.Attribute {
 			Computed:            true,
 		},
 		"labels": schema.MapAttribute{
-			MarkdownDescription: "User-defined [labels](https://docs.hetzner.cloud/#labels) (key-value pairs) for the resource.",
+			MarkdownDescription: "User-defined [labels](https://docs.hetzner.cloud/reference/cloud#labels) (key-value pairs) for the resource.",
 			ElementType:         types.StringType,
 			Computed:            true,
 		},
@@ -116,12 +116,12 @@ This resource is useful if you want to use a non-terraform managed SSH Key.
 	resp.Schema.Attributes = getCommonDataSourceSchema(false)
 	maps.Copy(resp.Schema.Attributes, map[string]schema.Attribute{
 		"selector": schema.StringAttribute{
-			MarkdownDescription: "Filter results using a [Label Selector](https://docs.hetzner.cloud/#label-selector).",
+			MarkdownDescription: "Filter results using a [Label Selector](https://docs.hetzner.cloud/reference/cloud#label-selector).",
 			Optional:            true,
 			DeprecationMessage:  "Please use the with_selector property instead.",
 		},
 		"with_selector": schema.StringAttribute{
-			MarkdownDescription: "Filter results using a [Label Selector](https://docs.hetzner.cloud/#label-selector).",
+			MarkdownDescription: "Filter results using a [Label Selector](https://docs.hetzner.cloud/reference/cloud#label-selector).",
 			Optional:            true,
 		},
 	})

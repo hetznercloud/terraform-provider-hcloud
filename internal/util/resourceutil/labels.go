@@ -18,11 +18,11 @@ var _ validator.Map = (*labelsValidator)(nil)
 type labelsValidator struct{}
 
 func (l labelsValidator) Description(_ context.Context) string {
-	return "labels must conform to the labels format: https://docs.hetzner.cloud/#labels"
+	return "labels must conform to the labels format: https://docs.hetzner.cloud/reference/cloud#labels"
 }
 
 func (l labelsValidator) MarkdownDescription(_ context.Context) string {
-	return "labels must conform to the [labels format](https://docs.hetzner.cloud/#labels)"
+	return "labels must conform to the [labels format](https://docs.hetzner.cloud/reference/cloud#labels)"
 }
 
 func (l labelsValidator) ValidateMap(_ context.Context, req validator.MapRequest, resp *validator.MapResponse) {
@@ -42,7 +42,7 @@ func (l labelsValidator) ValidateMap(_ context.Context, req validator.MapRequest
 // LabelsSchema returns a map attribute schema with validation for the labels field shared by multiple resources.
 func LabelsSchema() schema.MapAttribute {
 	return schema.MapAttribute{
-		MarkdownDescription: "User-defined [labels](https://docs.hetzner.cloud/#labels) (key-value pairs) for the resource.",
+		MarkdownDescription: "User-defined [labels](https://docs.hetzner.cloud/reference/cloud#labels) (key-value pairs) for the resource.",
 		Optional:            true,
 		Computed:            true, // Required to use Default
 		ElementType:         types.StringType,

@@ -32,7 +32,7 @@ resource "hcloud_server" "main" {
 
 ### Optional
 
-- `with_selector` (String) Filter results using a [Label Selector](https://docs.hetzner.cloud/#label-selector)
+- `with_selector` (String) Filter results using a [Label Selector](https://docs.hetzner.cloud/reference/cloud#label-selector)
 
 ### Read-Only
 
@@ -46,6 +46,6 @@ Read-Only:
 
 - `fingerprint` (String) Fingerprint of the SSH Key.
 - `id` (Number) ID of the SSH Key.
-- `labels` (Map of String) User-defined [labels](https://docs.hetzner.cloud/#labels) (key-value pairs) for the resource.
+- `labels` (Map of String) User-defined [labels](https://docs.hetzner.cloud/reference/cloud#labels) (key-value pairs) for the resource.
 - `name` (String) Name of the SSH Key.
 - `public_key` (String) Public key of the SSH Key pair.

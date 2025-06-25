@@ -21,7 +21,7 @@ data "hcloud_load_balancers" "lb_3" {
 
 ## Argument Reference
 
-- `with_selector` - (Optional, string) [Label selector](https://docs.hetzner.cloud/#overview-label-selector)
+- `with_selector` - (Optional, string) [Label selector](https://docs.hetzner.cloud/reference/cloud#label-selector)
 
 ## Attributes Reference
 

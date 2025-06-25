@@ -21,7 +21,7 @@ data "hcloud_volumes" "volume_3" {
 
 ## Argument Reference
 
-- `with_selector` - (Optional, string) [Label selector](https://docs.hetzner.cloud/#overview-label-selector)
+- `with_selector` - (Optional, string) [Label selector](https://docs.hetzner.cloud/reference/cloud#label-selector)
 - `with_status` - (Optional, list) List only volumes with the specified status, could contain `creating` or `available`.
 
 ## Attributes Reference

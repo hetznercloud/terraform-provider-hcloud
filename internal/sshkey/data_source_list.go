@@ -67,7 +67,7 @@ This resource is useful if you want to use a non-terraform managed SSH Key.
 			Computed: true,
 		},
 		"with_selector": schema.StringAttribute{
-			MarkdownDescription: "Filter results using a [Label Selector](https://docs.hetzner.cloud/#label-selector)",
+			MarkdownDescription: "Filter results using a [Label Selector](https://docs.hetzner.cloud/reference/cloud#label-selector)",
 			Optional:            true,
 		},
 	}

@@ -56,7 +56,7 @@ resource "hcloud_server" "server_test" {
 - `id` - (Optional, string) ID of the Primary IP.
 - `name` - (Optional, string) Name of the Primary IP.
 - `ip_address` - (Optional, string) IP address of the Primary IP.
-- `with_selector` - (Optional, string) [Label selector](https://docs.hetzner.cloud/#overview-label-selector)
+- `with_selector` - (Optional, string) [Label selector](https://docs.hetzner.cloud/reference/cloud#label-selector)
 
 ## Attributes Reference
 
