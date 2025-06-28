@@ -19,8 +19,14 @@ var (
 	// TestImage is the system image that is used in all tests
 	TestImage = getEnv("TEST_IMAGE", "ubuntu-24.04")
 
-	// TestImage is the system image ID that is used in all tests
+	// TestImageID is the system image ID that is used in all tests
 	TestImageID = getEnv("TEST_IMAGE_ID", "161547269")
+
+	// TestISO is the ISO name that is used in all tests
+	TestISO = getEnv("TEST_ISO_ID", "nixos-minimal-24.11.712431.cbd8ec4de446-x86_64-linux.iso")
+
+	// TestIsoID is the ISO ID that is used in all tests
+	TestIsoID = getEnv("TEST_ISO_ID", "117577")
 
 	// TestServerType is the default server type used in all tests
 	TestServerType = getEnv("TEST_SERVER_TYPE", "cpx11")

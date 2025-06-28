@@ -1,0 +1,39 @@
+---
+page_title: "Hetzner Cloud: hcloud_isos"
+description: |-
+  Provides details about multiple Hetzner Cloud ISOs.
+---
+
+# Data Source: hcloud_isos
+
+Provides details about multiple Hetzner Cloud ISOs.
+
+When relevant, it is recommended to always provide the targeted architecture
+(`with_architecture`) when fetching ISOs.
+
+## Example Usage
+
+```terraform
+data "hcloud_isos" "by_architecture" {
+  with_architecture = ["x86"]
+}
+
+data "hcloud_isos" "by_name_prefix" {
+  name_prefix = "nixos"
+}
+
+data "hcloud_isos" "by_type" {
+  type = "private"
+}
+```
+
+## Argument Reference
+
+- `name_prefix` - (Optional, string) List only ISOs with names starting with this prefix.
+- `type` - (Optional, string) List only ISOs with the associated type, could be `public` or `private`.
+- `with_architecture` - (Optional, list) List only ISOs with this architecture, could contain `x86` or `arm`.
+- `include_architecture_wildcard` - (Optional, boolean) If set to `true`, return custom ISOs that have no architecture set
+
+## Attributes Reference
+
+- `isos` - (list) List of all matching ISOs. See `data.hcloud_iso` for schema.
