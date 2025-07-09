@@ -1,0 +1,10 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+data "hcloud_iso" "{{ .RName }}" {
+  {{ if .IsoID -}}   id            = "{{ .IsoID }}"{{ end -}}
+  {{ if .IsoName -}} name          = "{{ .IsoName }}"{{ end -}}
+  {{ if .IsoNamePrefix -}}    name_prefix = "{{ .IsoNamePrefix }}"{{ end }}
+  {{ if .IsoType -}} type          = "{{ .IsoType }}"{{ end -}}
+  {{ if .Architecture -}}    with_architecture = "{{ .Architecture }}"{{ end }}
+  {{ if .IncludeArchitectureWildcard -}}    include_architecture_wildcard = {{ .IncludeArchitectureWildcard }}{{ end }}
+}
