@@ -52,3 +52,16 @@ This can also be configured through Terraform through the `delete_protection` ar
 
 Please note, that this does not protect deletion from Terraform itself, as the Provider will lift the lock in that case.
 If you also want to protect your resources from deletion by Terraform, you can use the [`prevent_destroy` lifecycle attribute](https://developer.hashicorp.com/terraform/tutorials/state/resource-lifecycle#prevent-resource-deletion).
+
+## Experimental features
+
+Experimental features are published as part of our regular releases (e.g. a product
+public beta). During an experimental phase, breaking changes on those features may occur
+within minor releases.
+
+While experimental features will be announced in the release notes, you can also find
+whether a resource, datasource or function is experimental in its documentation:
+
+```markdown
+Experimental: Product is experimental, breaking changes may occur within minor releases. See https://docs.hetzner.cloud/changelog#new-product for more details.
+```

@@ -132,3 +132,30 @@ You should see the following warning:
 │ The behavior may therefore not match any released version of the provider and applying changes may cause the state to become incompatible with published releases.
 ╵
 ```
+
+## Releasing experimental features
+
+To publish experimental features as part of regular releases:
+
+- an announcement, including a link to a changelog entry, must written in the release notes.
+
+- an `Experimental` notice, must be added to the experimental resource, datasource, and functions descriptions:
+
+  ```go
+  func (r *Resource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+    resp.Schema.MarkdownDescription = `
+  Manage a Hetzner Cloud Product.
+
+  See https://docs.hetzner.cloud/reference/cloud#product for more details.
+  `
+    experimental.Product.AppendNotice(&resp.Schema.MarkdownDescription)
+  }
+  ```
+
+- a `Experimental` warning must be logged when experimental resource, datasource, or functions are being used:
+
+  ```go
+  func (r *Resource) Configure(_ context.Context, _ resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+    experimental.Product.AppendDiagnostic(&resp.Diagnostics)
+  }
+  ```
