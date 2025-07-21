@@ -137,7 +137,7 @@ You should see the following warning:
 
 To publish experimental features as part of regular releases:
 
-- an announcement, including a link to a changelog entry, must written in the release notes.
+- an announcement, including a link to a changelog entry, must be added to the release notes.
 
 - an `Experimental` notice, must be added to the experimental resource, datasource, and functions descriptions:
 
