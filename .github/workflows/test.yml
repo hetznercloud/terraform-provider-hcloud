@@ -48,8 +48,6 @@ jobs:
       matrix:
         include:
           - tool: opentofu
-            version: v1.7.x
-          - tool: opentofu
             version: v1.8.x
           - tool: opentofu
             version: v1.9.x
