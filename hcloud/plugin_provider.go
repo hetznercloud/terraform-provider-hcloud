@@ -126,6 +126,13 @@ func (p *PluginProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		)
 	}
 
+	pollOpts := hcloud.PollOpts{
+		BackoffFunc: hcloud.ExponentialBackoffWithOpts(hcloud.ExponentialBackoffOpts{
+			Base:       500 * time.Millisecond,
+			Multiplier: 2.0,
+			Cap:        10 * time.Second,
+		}),
+	}
 	if data.PollInterval.ValueString() != "" {
 		pollInterval, err := time.ParseDuration(data.PollInterval.ValueString())
 		if err != nil {
@@ -136,11 +143,12 @@ func (p *PluginProvider) Configure(ctx context.Context, req provider.ConfigureRe
 			)
 		}
 		if data.PollFunction.ValueString() == "constant" {
-			opts = append(opts, hcloud.WithPollOpts(hcloud.PollOpts{BackoffFunc: hcloud.ConstantBackoff(pollInterval)}))
+			pollOpts.BackoffFunc = hcloud.ConstantBackoff(pollInterval)
 		} else {
-			opts = append(opts, hcloud.WithPollOpts(hcloud.PollOpts{BackoffFunc: hcloud.ExponentialBackoff(2, pollInterval)}))
+			pollOpts.BackoffFunc = hcloud.ExponentialBackoff(2, pollInterval)
 		}
 	}
+	opts = append(opts, hcloud.WithPollOpts(pollOpts))
 
 	if resp.Diagnostics.HasError() {
 		return
