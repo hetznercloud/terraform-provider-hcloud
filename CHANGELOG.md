@@ -1,5 +1,11 @@
 # Changelog
 
+## [v1.52.1](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.52.1)
+
+### Bug Fixes
+
+- ensure exponential poll backoff is configured (#1160)
+
 ## [v1.52.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.52.0)
 
 ### Features
