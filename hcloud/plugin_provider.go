@@ -58,6 +58,10 @@ func (p *PluginProvider) Schema(_ context.Context, _ provider.SchemaRequest, res
 				Description: "The Hetzner Cloud API endpoint, can be used to override the default API Endpoint https://api.hetzner.cloud/v1.",
 				Optional:    true,
 			},
+			"endpoint_hetzner": schema.StringAttribute{
+				Description: "The Hetzner API endpoint, can be used to override the default API Endpoint https://api.hetzner.com/v1.",
+				Optional:    true,
+			},
 			"poll_interval": schema.StringAttribute{
 				Description: "The interval at which actions are polled by the client. Default `500ms`. Increase this interval if you run into rate limiting errors.",
 				Optional:    true,
@@ -79,10 +83,11 @@ func (p *PluginProvider) Schema(_ context.Context, _ provider.SchemaRequest, res
 
 // PluginProviderModel describes the provider data model.
 type PluginProviderModel struct {
-	Token        types.String `tfsdk:"token"`
-	Endpoint     types.String `tfsdk:"endpoint"`
-	PollInterval types.String `tfsdk:"poll_interval"`
-	PollFunction types.String `tfsdk:"poll_function"`
+	Token           types.String `tfsdk:"token"`
+	Endpoint        types.String `tfsdk:"endpoint"`
+	EndpointHetzner types.String `tfsdk:"endpoint_hetzner"`
+	PollInterval    types.String `tfsdk:"poll_interval"`
+	PollFunction    types.String `tfsdk:"poll_function"`
 }
 
 // Configure is called at the beginning of the provider lifecycle, when
@@ -110,6 +115,14 @@ func (p *PluginProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	}
 	if endpoint != "" {
 		opts = append(opts, hcloud.WithEndpoint(endpoint))
+	}
+
+	endpointHetzner := os.Getenv("HETZNER_ENDPOINT")
+	if data.EndpointHetzner.ValueString() != "" {
+		endpointHetzner = data.Endpoint.ValueString()
+	}
+	if endpointHetzner != "" {
+		opts = append(opts, hcloud.WithHetznerEndpoint(endpointHetzner))
 	}
 
 	token := os.Getenv("HCLOUD_TOKEN")
