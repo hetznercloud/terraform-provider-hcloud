@@ -48,3 +48,7 @@ issues:
     - linters:
         - errcheck
       text: Error return value of `d.Set` is not checked
+
+    - linters:
+        - gomoddirectives
+      text: replacement are not allowed
