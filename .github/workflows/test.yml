@@ -13,7 +13,7 @@ jobs:
   unit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: actions/setup-go@v5
         with:
@@ -59,7 +59,7 @@ jobs:
             version: v1.12.x
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - if: matrix.tool == 'terraform'
         uses: hashicorp/setup-terraform@v3
