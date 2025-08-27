@@ -20,7 +20,7 @@ require (
 	github.com/hashicorp/terraform-plugin-testing v1.13.2
 	github.com/hetznercloud/hcloud-go/v2 v2.22.0
 	github.com/joho/godotenv v1.5.1
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.1
 	golang.org/x/net v0.42.0
 )
 
