@@ -43,6 +43,7 @@ resource "hcloud_server" "main" {
 ### Read-Only
 
 - `architecture` (String) Architecture of the cpu for a Server of this type.
+- `category` (String) Category of the Server Type.
 - `cores` (Number) Number of cpu cores for a Server of this type.
 - `cpu_type` (String) Type of cpu for a Server of this type.
 - `deprecation_announced` (String) Date of the Server Type deprecation announcement.

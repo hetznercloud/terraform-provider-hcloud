@@ -32,6 +32,7 @@ func TestAccServerTypeDataSource(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(byName.TFID(), "id", "22"),
 					resource.TestCheckResourceAttr(byName.TFID(), "name", "cpx11"),
+					resource.TestCheckResourceAttr(byName.TFID(), "category", "Shared vCPU"),
 					resource.TestCheckResourceAttr(byName.TFID(), "cores", "2"),
 					resource.TestCheckResourceAttr(byName.TFID(), "memory", "2"),
 					resource.TestCheckResourceAttr(byName.TFID(), "disk", "40"),
@@ -45,6 +46,7 @@ func TestAccServerTypeDataSource(t *testing.T) {
 
 					resource.TestCheckResourceAttr(byID.TFID(), "id", "22"),
 					resource.TestCheckResourceAttr(byID.TFID(), "name", "cpx11"),
+					resource.TestCheckResourceAttr(byID.TFID(), "category", "Shared vCPU"),
 					resource.TestCheckResourceAttr(byID.TFID(), "cores", "2"),
 					resource.TestCheckResourceAttr(byID.TFID(), "memory", "2"),
 					resource.TestCheckResourceAttr(byID.TFID(), "disk", "40"),

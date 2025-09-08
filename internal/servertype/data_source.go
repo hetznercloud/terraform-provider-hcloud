@@ -31,6 +31,7 @@ type resourceData struct {
 	ID              types.Int64  `tfsdk:"id"`
 	Name            types.String `tfsdk:"name"`
 	Description     types.String `tfsdk:"description"`
+	Category        types.String `tfsdk:"category"`
 	Cores           types.Int32  `tfsdk:"cores"`
 	Memory          types.Int32  `tfsdk:"memory"`
 	Disk            types.Int32  `tfsdk:"disk"`
@@ -47,6 +48,7 @@ var resourceDataAttrTypes = merge.Maps(
 		"id":               types.Int64Type,
 		"name":             types.StringType,
 		"description":      types.StringType,
+		"category":         types.StringType,
 		"cores":            types.Int32Type,
 		"memory":           types.Int32Type,
 		"disk":             types.Int32Type,
@@ -66,6 +68,7 @@ func newResourceData(ctx context.Context, in *hcloud.ServerType) (resourceData, 
 	data.ID = types.Int64Value(in.ID)
 	data.Name = types.StringValue(in.Name)
 	data.Description = types.StringValue(in.Description)
+	data.Category = types.StringValue(in.Category)
 	// No integer overflow
 	// nolint: gosec
 	data.Cores = types.Int32Value(int32(in.Cores))
@@ -96,6 +99,10 @@ func getCommonDataSchema(readOnly bool) map[string]schema.Attribute {
 				MarkdownDescription: "Name of the Server Type.",
 				Optional:            !readOnly,
 				Computed:            readOnly,
+			},
+			"category": schema.StringAttribute{
+				MarkdownDescription: "Category of the Server Type.",
+				Computed:            true,
 			},
 			"description": schema.StringAttribute{
 				MarkdownDescription: "Description of the Server Type.",
