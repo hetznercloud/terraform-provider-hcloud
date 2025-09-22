@@ -341,6 +341,11 @@ func resourceVolumeDelete(ctx context.Context, d *schema.ResourceData, m interfa
 	if err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
+	if volume == nil {
+		log.Printf("[WARN] volume (%s) not found, removing from state", d.Id())
+		d.SetId("")
+		return nil
+	}
 
 	if volume.Server != nil {
 		err := control.Retry(control.DefaultRetries, func() error {
