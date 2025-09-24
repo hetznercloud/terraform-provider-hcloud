@@ -22,7 +22,7 @@ cache:
 
 build:
   stage: build
-  image: golang:1.24
+  image: golang:1.25
   script:
     - go env
     - go mod download
@@ -35,6 +35,6 @@ test:lint:
 
 test:unit:
   stage: test
-  image: golang:1.24
+  image: golang:1.25
   script:
     - make test
