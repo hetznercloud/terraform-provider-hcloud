@@ -50,8 +50,11 @@ func resourceFloatingIPAssignmentCreate(ctx context.Context, d *schema.ResourceD
 
 	server := &hcloud.Server{ID: util.CastInt64(serverID)}
 
-	_, _, err := client.FloatingIP.Assign(ctx, floatingIP, server)
+	action, _, err := client.FloatingIP.Assign(ctx, floatingIP, server)
 	if err != nil {
+		return hcloudutil.ErrorToDiag(err)
+	}
+	if err := hcloudutil.WaitForAction(ctx, &client.Action, action); err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
 
