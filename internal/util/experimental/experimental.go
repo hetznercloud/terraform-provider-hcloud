@@ -11,7 +11,7 @@ import (
 //
 // Usage:
 //
-//	var Product = New("Product name", "https://docs.hetzner.cloud/changelog#new-product")
+//	var Product = New("Product name", "in beta", "https://docs.hetzner.cloud/changelog#new-product")
 //
 //	func (r *Resource) Configure(_ context.Context, _ resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 //		experimental.Product.AppendDiagnostic(&resp.Diagnostics)
@@ -26,28 +26,29 @@ import (
 //		experimental.Product.AppendNotice(&resp.Schema.MarkdownDescription)
 //	}
 type Experimental struct {
-	product string
-	url     string
+	product  string
+	maturity string
+	url      string
 
 	diagnostic diag.Diagnostic
 	notice     string
 }
 
-func New(product string, url string) Experimental {
-	e := Experimental{product: product, url: url}
+func New(product string, maturity string, url string) Experimental {
+	e := Experimental{product: product, maturity: maturity, url: url}
 
 	e.diagnostic = diag.NewWarningDiagnostic(
 		fmt.Sprintf("Experimental: %s", e.product),
-		fmt.Sprintf(`%s is experimental, breaking changes may occur within minor releases.
+		fmt.Sprintf(`%s is %s, breaking changes may occur within minor releases.
 
 See %s for more details.
-`, e.product, e.url))
+`, e.product, e.maturity, e.url))
 
 	e.notice = fmt.Sprintf(`
 
-**Experimental:** %s is experimental, breaking changes may occur within minor releases.
+**Experimental:** %s is %s, breaking changes may occur within minor releases.
 See %s for more details.
-`, e.product, e.url)
+`, e.product, e.maturity, e.url)
 
 	return e
 }
