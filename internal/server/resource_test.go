@@ -87,6 +87,32 @@ func TestAccServerResource(t *testing.T) {
 	})
 }
 
+func TestAccServerResource_UnavailableServerType(t *testing.T) {
+	var s hcloud.Server
+
+	res := &server.RData{
+		Name:  "unavailable-server-type",
+		Type:  "1",
+		Image: teste2e.TestImage,
+	}
+	res.SetRName(res.Name)
+
+	tmplMan := testtemplate.Manager{}
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
+		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_server", res,
+				),
+				ExpectError: regexp.MustCompile(`Server Type "cx11" is unavailable in all locations and can no longer be ordered.`),
+			},
+		},
+	})
+}
+
 func TestAccServerResource_ImageID(t *testing.T) {
 	var s hcloud.Server
 

@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud/exp/deprecationutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/primaryip"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/control"
@@ -284,6 +285,11 @@ func userDataDiffSuppress(k, oldValue, newValue string, d *schema.ResourceData) 
 	return strings.TrimSpace(oldValue) == strings.TrimSpace(newValue)
 }
 
+const ChangeDeprecatedServerTypeMessage = (`Existing servers of that plan will ` +
+	`continue to work as before and no action is required on your part. ` +
+	`It is possible to migrate this Server to another Server Type by using ` +
+	`the "hcloud server change-type" command.`)
+
 func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*hcloud.Client)
 
@@ -294,14 +300,6 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 	if serverType == nil {
 		return diag.Errorf("server type %s not found", d.Get("server_type"))
-	}
-
-	if serverType.IsDeprecated() {
-		if time.Now().Before(serverType.UnavailableAfter()) {
-			tflog.Warn(ctx, fmt.Sprintf("Attention: The server plan %q is deprecated and will no longer be available for order as of %s. Existing servers of that plan will continue to work as before and no action is required on your part. It is possible to migrate this server to another server plan by using the \"hcloud server change-type\" command.\n\n", serverType.Name, serverType.UnavailableAfter().Format("2006-01-02")))
-		} else {
-			return diag.Errorf("Attention: The server plan %q is deprecated and can no longer be ordered. Existing servers of that plan will continue to work as before and no action is required on your part. It is possible to migrate this server to another server plan by using the \"hcloud server change-type\" command.\n\n", serverType.Name)
-		}
 	}
 
 	imageNameOrID := d.Get("image").(string)
@@ -330,18 +328,31 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		UserData: d.Get("user_data").(string),
 	}
 
+	var serverTypeLocationName string
+	if datacenter, ok := d.GetOk("datacenter"); ok {
+		opts.Datacenter = &hcloud.Datacenter{Name: datacenter.(string)}
+		if parts := strings.SplitN(opts.Datacenter.Name, "-", 2); len(parts) == 2 {
+			serverTypeLocationName = parts[0]
+		}
+	}
+
+	if location, ok := d.GetOk("location"); ok {
+		opts.Location = &hcloud.Location{Name: location.(string)}
+		serverTypeLocationName = opts.Location.Name
+	}
+
+	if warnMessage, warnIsError := deprecationutil.ServerTypeWarning(serverType, serverTypeLocationName); warnMessage != "" {
+		if warnIsError {
+			return diag.Errorf("%s\n\n%s\n", warnMessage, ChangeDeprecatedServerTypeMessage)
+		}
+		tflog.Warn(ctx, fmt.Sprintf("%s\n\n%s\n", warnMessage, ChangeDeprecatedServerTypeMessage))
+	}
+
 	opts.SSHKeys, err = getSSHkeys(ctx, c, d)
 	if err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
 
-	if datacenter, ok := d.GetOk("datacenter"); ok {
-		opts.Datacenter = &hcloud.Datacenter{Name: datacenter.(string)}
-	}
-
-	if location, ok := d.GetOk("location"); ok {
-		opts.Location = &hcloud.Location{Name: location.(string)}
-	}
 	if labels, ok := d.GetOk("labels"); ok {
 		tmpLabels := make(map[string]string)
 		for k, v := range labels.(map[string]interface{}) {

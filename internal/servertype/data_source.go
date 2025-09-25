@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/deprecation"
@@ -28,18 +29,21 @@ const (
 )
 
 type resourceData struct {
-	ID              types.Int64  `tfsdk:"id"`
-	Name            types.String `tfsdk:"name"`
-	Description     types.String `tfsdk:"description"`
-	Category        types.String `tfsdk:"category"`
-	Cores           types.Int32  `tfsdk:"cores"`
-	Memory          types.Int32  `tfsdk:"memory"`
-	Disk            types.Int32  `tfsdk:"disk"`
-	StorageType     types.String `tfsdk:"storage_type"`
-	CPUType         types.String `tfsdk:"cpu_type"`
-	Architecture    types.String `tfsdk:"architecture"`
-	IncludedTraffic types.Int64  `tfsdk:"included_traffic"`
+	ID           types.Int64  `tfsdk:"id"`
+	Name         types.String `tfsdk:"name"`
+	Description  types.String `tfsdk:"description"`
+	Category     types.String `tfsdk:"category"`
+	Cores        types.Int32  `tfsdk:"cores"`
+	Memory       types.Int32  `tfsdk:"memory"`
+	Disk         types.Int32  `tfsdk:"disk"`
+	StorageType  types.String `tfsdk:"storage_type"`
+	CPUType      types.String `tfsdk:"cpu_type"`
+	Architecture types.String `tfsdk:"architecture"`
+	Locations    types.List   `tfsdk:"locations"`
 
+	// Deprecated
+	IncludedTraffic types.Int64 `tfsdk:"included_traffic"`
+	// Deprecated
 	deprecation.DeprecationModel
 }
 
@@ -55,10 +59,32 @@ var resourceDataAttrTypes = merge.Maps(
 		"storage_type":     types.StringType,
 		"cpu_type":         types.StringType,
 		"architecture":     types.StringType,
+		"locations":        types.ListType{ElemType: (&resourceDataLocation{}).tfType()},
 		"included_traffic": types.Int64Type,
 	},
 	deprecation.AttrTypes(),
 )
+
+type resourceDataLocation struct {
+	ID   types.Int64  `tfsdk:"id"`
+	Name types.String `tfsdk:"name"`
+
+	deprecation.DeprecationModel
+}
+
+func (m *resourceDataLocation) tfType() attr.Type {
+	return basetypes.ObjectType{AttrTypes: m.tfAttributesTypes()}
+}
+
+func (m *resourceDataLocation) tfAttributesTypes() map[string]attr.Type {
+	return merge.Maps(
+		map[string]attr.Type{
+			"id":   types.Int64Type,
+			"name": types.StringType,
+		},
+		deprecation.AttrTypes(),
+	)
+}
 
 func newResourceData(ctx context.Context, in *hcloud.ServerType) (resourceData, diag.Diagnostics) {
 	var data resourceData
@@ -79,6 +105,29 @@ func newResourceData(ctx context.Context, in *hcloud.ServerType) (resourceData, 
 	data.StorageType = types.StringValue(string(in.StorageType))
 	data.CPUType = types.StringValue(string(in.CPUType))
 	data.Architecture = types.StringValue(string(in.Architecture))
+
+	{
+		tfItems := make([]attr.Value, 0, len(in.Locations))
+		for _, hcItem := range in.Locations {
+			m := &resourceDataLocation{
+				ID:   types.Int64Value(hcItem.Location.ID),
+				Name: types.StringValue(hcItem.Location.Name),
+			}
+			m.DeprecationModel, newDiags = deprecation.NewDeprecationModel(ctx, hcItem)
+			diags.Append(newDiags...)
+
+			tfItem, newDiags := types.ObjectValueFrom(ctx, m.tfAttributesTypes(), m)
+			diags.Append(newDiags...)
+
+			tfItems = append(tfItems, tfItem)
+		}
+
+		tf, newDiags := types.ListValue((&resourceDataLocation{}).tfType(), tfItems)
+		diags.Append(newDiags...)
+
+		data.Locations = tf
+	}
+
 	data.IncludedTraffic = types.Int64Value(in.IncludedTraffic) // nolint:staticcheck // Keep as long as it is available
 
 	data.DeprecationModel, newDiags = deprecation.NewDeprecationModel(ctx, in)
@@ -132,12 +181,45 @@ func getCommonDataSchema(readOnly bool) map[string]schema.Attribute {
 				MarkdownDescription: "Architecture of the cpu for a Server of this type.",
 				Computed:            true,
 			},
+			"locations": schema.ListNestedAttribute{
+				MarkdownDescription: "List of supported Locations for this Server Type.",
+				Computed:            true,
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: merge.Maps(
+						map[string]schema.Attribute{
+							"id": schema.Int64Attribute{
+								MarkdownDescription: "ID of the Location.",
+								Computed:            true,
+							},
+							"name": schema.StringAttribute{
+								MarkdownDescription: "Name of the Location.",
+								Computed:            true,
+							},
+						},
+						deprecation.DataSourceSchema("Server Type"),
+					),
+				},
+			},
 			"included_traffic": schema.Int64Attribute{
 				Computed:           true,
 				DeprecationMessage: "The field is deprecated and will always report 0 after 2024-08-05.",
 			},
+			"is_deprecated": schema.BoolAttribute{
+				MarkdownDescription: "Whether the Server Type is deprecated.",
+				Computed:            true,
+				DeprecationMessage:  "The field is deprecated and will gradually be phased out starting 2025-09-24. Use the deprecation in the locations list instead.",
+			},
+			"deprecation_announced": schema.StringAttribute{
+				MarkdownDescription: "Date of the Server Type deprecation announcement.",
+				Computed:            true,
+				DeprecationMessage:  "The field is deprecated and will gradually be phased out starting 2025-09-24. Use the deprecation in the locations list instead.",
+			},
+			"unavailable_after": schema.StringAttribute{
+				MarkdownDescription: "Date of the Server Type removal. After this date, the Server Type cannot be used anymore.",
+				Computed:            true,
+				DeprecationMessage:  "The field is deprecated and will gradually be phased out starting 2025-09-24. Use the deprecation in the locations list instead.",
+			},
 		},
-		deprecation.DataSourceSchema("Server Type"),
 	)
 }
 
