@@ -315,14 +315,10 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		return
 	}
 
-	if image.IsDeprecated() {
+	if message, _ := deprecationutil.ImageMessage(image); message != "" {
 		deprecationDiag := diag.Diagnostic{
 			Severity: diag.Warning,
-			Summary: fmt.Sprintf(
-				"Image %q is deprecated and will no longer be available for order as of %s.",
-				image.Name,
-				image.Deprecated.AddDate(0, 3, 0).Format(time.DateOnly),
-			),
+			Summary:  message,
 		}
 		if d.Get("allow_deprecated_images").(bool) {
 			diags = append(diags, deprecationDiag)
@@ -333,6 +329,7 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 			return
 		}
 	}
+
 	opts := hcloud.ServerCreateOpts{
 		Name: d.Get("name").(string),
 		ServerType: &hcloud.ServerType{
@@ -355,7 +352,7 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		serverTypeLocationName = opts.Location.Name
 	}
 
-	if message, isUnavailable := deprecationutil.ServerTypeWarning(serverType, serverTypeLocationName); message != "" {
+	if message, isUnavailable := deprecationutil.ServerTypeMessage(serverType, serverTypeLocationName); message != "" {
 		deprecationDiag := diag.Diagnostic{
 			Severity: diag.Warning,
 			Summary:  message,
