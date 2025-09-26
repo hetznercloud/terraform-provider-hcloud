@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-cty/cty"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -290,33 +289,48 @@ const ChangeDeprecatedServerTypeMessage = (`Existing servers of that plan will `
 	`It is possible to migrate this Server to another Server Type by using ` +
 	`the "hcloud server change-type" command.`)
 
-func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interface{}) (diags diag.Diagnostics) {
 	c := m.(*hcloud.Client)
 
 	// Get server type to select correct image (based on arch)
 	serverType, _, err := c.ServerType.Get(ctx, d.Get("server_type").(string))
 	if err != nil {
-		return hcloudutil.ErrorToDiag(err)
+		diags = append(diags, hcloudutil.ErrorToDiag(err)...)
+		return
 	}
 	if serverType == nil {
-		return diag.Errorf("server type %s not found", d.Get("server_type"))
+		diags = append(diags, diag.Errorf("server type %s not found", d.Get("server_type"))...)
+		return
 	}
 
 	imageNameOrID := d.Get("image").(string)
 	image, _, err := c.Image.GetForArchitecture(ctx, imageNameOrID, serverType.Architecture)
 	if err != nil {
-		return hcloudutil.ErrorToDiag(err)
+		diags = append(diags, hcloudutil.ErrorToDiag(err)...)
+		return
 	}
 
 	if image == nil {
-		return diag.Errorf("image %s for architecture %s not found", imageNameOrID, serverType.Architecture)
+		diags = append(diags, diag.Errorf("image %s for architecture %s not found", imageNameOrID, serverType.Architecture)...)
+		return
 	}
 
 	if image.IsDeprecated() {
+		deprecationDiag := diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary: fmt.Sprintf(
+				"Image %q is deprecated and will no longer be available for order as of %s.",
+				image.Name,
+				image.Deprecated.AddDate(0, 3, 0).Format(time.DateOnly),
+			),
+		}
 		if d.Get("allow_deprecated_images").(bool) {
-			tflog.Warn(ctx, fmt.Sprintf("image %s is deprecated. It will continue to be available until %s", image.Name, image.Deprecated.AddDate(0, 3, 0).Format("2006-01-02")))
+			diags = append(diags, deprecationDiag)
 		} else {
-			return diag.Errorf("image %s is deprecated. It will continue to be available until %s. If you want to use it, specify the allow_deprecated_images option.", image.Name, image.Deprecated.AddDate(0, 3, 0).Format("2006-01-02"))
+			deprecationDiag.Severity = diag.Error
+			deprecationDiag.Detail = "To continue using deprecated images, specify the allow_deprecated_images option."
+			diags = append(diags, deprecationDiag)
+			return
 		}
 	}
 	opts := hcloud.ServerCreateOpts{
@@ -341,16 +355,25 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		serverTypeLocationName = opts.Location.Name
 	}
 
-	if warnMessage, warnIsError := deprecationutil.ServerTypeWarning(serverType, serverTypeLocationName); warnMessage != "" {
-		if warnIsError {
-			return diag.Errorf("%s\n\n%s\n", warnMessage, ChangeDeprecatedServerTypeMessage)
+	if message, isUnavailable := deprecationutil.ServerTypeWarning(serverType, serverTypeLocationName); message != "" {
+		deprecationDiag := diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  message,
+			Detail:   ChangeDeprecatedServerTypeMessage,
 		}
-		tflog.Warn(ctx, fmt.Sprintf("%s\n\n%s\n", warnMessage, ChangeDeprecatedServerTypeMessage))
+		if isUnavailable {
+			deprecationDiag.Severity = diag.Error
+			diags = append(diags, deprecationDiag)
+			return
+		}
+
+		diags = append(diags, deprecationDiag)
 	}
 
 	opts.SSHKeys, err = getSSHkeys(ctx, c, d)
 	if err != nil {
-		return hcloudutil.ErrorToDiag(err)
+		diags = append(diags, hcloudutil.ErrorToDiag(err)...)
+		return
 	}
 
 	if labels, ok := d.GetOk("labels"); ok {
@@ -370,7 +393,8 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	if placementGroupID, ok := d.GetOk("placement_group_id"); ok {
 		placementGroup, err := getPlacementGroup(ctx, c, util.CastInt64(placementGroupID))
 		if err != nil {
-			return hcloudutil.ErrorToDiag(err)
+			diags = append(diags, hcloudutil.ErrorToDiag(err)...)
+			return
 		}
 
 		opts.PlacementGroup = placementGroup
@@ -401,21 +425,25 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 			opts.StartAfterCreate = hcloud.Ptr(false)
 			return nil
 		}); err != nil {
-			return err
+			diags = append(diags, err...)
+			return
 		}
 	}
 	res, _, err := c.Server.Create(ctx, opts)
 	if err != nil {
-		return hcloudutil.ErrorToDiag(err)
+		diags = append(diags, hcloudutil.ErrorToDiag(err)...)
+		return
 	}
 	d.SetId(util.FormatID(res.Server.ID))
 
 	if err := hcloudutil.WaitForAction(ctx, &c.Action, res.Action); err != nil {
-		return hcloudutil.ErrorToDiag(err)
+		diags = append(diags, hcloudutil.ErrorToDiag(err)...)
+		return
 	}
 	for _, nextAction := range res.NextActions {
 		if err := hcloudutil.WaitForAction(ctx, &c.Action, nextAction); err != nil {
-			return hcloudutil.ErrorToDiag(err)
+			diags = append(diags, hcloudutil.ErrorToDiag(err)...)
+			return
 		}
 	}
 
@@ -423,7 +451,8 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		for _, item := range nwSet.(*schema.Set).List() {
 			nwData := item.(map[string]interface{})
 			if err := inlineAttachServerToNetwork(ctx, c, res.Server, nwData); err != nil {
-				return hcloudutil.ErrorToDiag(err)
+				diags = append(diags, hcloudutil.ErrorToDiag(err)...)
+				return
 			}
 		}
 		// if the server was created without public net, the server is now still offline and has to be powered on after
@@ -431,24 +460,28 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		if err := onServerCreateWithoutPublicNet(&opts, d, func(_ *hcloud.ServerCreateOpts) error {
 			return powerOnServer(ctx, c, res.Server)
 		}); err != nil {
-			return err
+			diags = append(diags, err...)
+			return
 		}
 	}
 
 	backups := d.Get("backups").(bool)
 	if err := setBackups(ctx, c, res.Server, backups); err != nil {
-		return hcloudutil.ErrorToDiag(err)
+		diags = append(diags, hcloudutil.ErrorToDiag(err)...)
+		return
 	}
 
 	if iso, ok := d.GetOk("iso"); ok {
 		if err := setISO(ctx, c, res.Server, iso.(string)); err != nil {
-			return hcloudutil.ErrorToDiag(err)
+			diags = append(diags, hcloudutil.ErrorToDiag(err)...)
+			return
 		}
 	}
 
 	if rescue, ok := d.GetOk("rescue"); ok {
 		if err := setRescue(ctx, c, res.Server, rescue.(string), opts.SSHKeys); err != nil {
-			return hcloudutil.ErrorToDiag(err)
+			diags = append(diags, hcloudutil.ErrorToDiag(err)...)
+			return
 		}
 	}
 
@@ -456,11 +489,14 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	rebuildProtection := d.Get("rebuild_protection").(bool)
 	if deleteProtection || rebuildProtection {
 		if err := setProtection(ctx, c, res.Server, deleteProtection, rebuildProtection); err != nil {
-			return hcloudutil.ErrorToDiag(err)
+			diags = append(diags, hcloudutil.ErrorToDiag(err)...)
+			return
 		}
 	}
 
-	return resourceServerRead(ctx, d, m)
+	diags = append(diags, resourceServerRead(ctx, d, m)...)
+
+	return
 }
 
 func resourceServerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
