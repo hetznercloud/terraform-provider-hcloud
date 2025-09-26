@@ -30,8 +30,7 @@ func TestAccFirewallDataSource(t *testing.T) {
 	}
 	firewallBySel.SetRName("firewall_by_sel")
 
-	// TODO: Move to parallel test once API endpoint supports higher parallelism
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
 		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(firewall.ResourceType, firewall.ByID(t, nil)),
@@ -76,8 +75,7 @@ func TestAccFirewallDataSourceList(t *testing.T) {
 	allFirewallsSel.SetRName("all_firewalls_sel")
 
 	tmplMan := testtemplate.Manager{}
-	// TODO: Move to parallel test once API endpoint supports higher parallelism
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
 		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(firewall.ResourceType, firewall.ByID(t, nil)),

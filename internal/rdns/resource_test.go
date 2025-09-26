@@ -62,8 +62,7 @@ func TestAccRDNSResource_Server(t *testing.T) {
 			resServer.SetRName(tt.name)
 			resRDNS := rdns.NewRDataServer(t, tt.name, resServer.TFID()+".id", resServer.TFID()+tt.ipAddress, tt.dns)
 
-			// TODO: Debug issues that causes this to fail when running in parallel
-			resource.Test(t, resource.TestCase{
+			resource.ParallelTest(t, resource.TestCase{
 				PreCheck:                 teste2e.PreCheck(t),
 				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 				CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
@@ -128,8 +127,7 @@ func TestAccRDNSResource_PrimaryIP(t *testing.T) {
 			restPrimaryIP.SetRName(tt.name)
 			resRDNS := rdns.NewRDataPrimaryIP(t, tt.name, restPrimaryIP.TFID()+".id", restPrimaryIP.TFID()+".ip_address", tt.dns)
 
-			// TODO: Debug issues that causes this to fail when running in parallel
-			resource.Test(t, resource.TestCase{
+			resource.ParallelTest(t, resource.TestCase{
 				PreCheck:                 teste2e.PreCheck(t),
 				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 				CheckDestroy:             testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &primaryIP)),
@@ -192,8 +190,7 @@ func TestAccRDNSResource_FloatingIP(t *testing.T) {
 			restFloatingIP.SetRName(tt.name)
 			resRDNS := rdns.NewRDataFloatingIP(t, tt.name, restFloatingIP.TFID()+".id", restFloatingIP.TFID()+".ip_address", tt.dns)
 
-			// TODO: Debug issues that causes this to fail when running in parallel
-			resource.Test(t, resource.TestCase{
+			resource.ParallelTest(t, resource.TestCase{
 				PreCheck:                 teste2e.PreCheck(t),
 				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 				CheckDestroy:             testsupport.CheckResourcesDestroyed(floatingip.ResourceType, floatingip.ByID(t, &fl)),
@@ -263,8 +260,7 @@ func TestAccRDNSResource_LoadBalancer(t *testing.T) {
 
 			resRDNS := rdns.NewRDataLoadBalancer(t, tt.name, restLoadBalancer.TFID()+".id", restLoadBalancer.TFID()+tt.ipAddress, tt.dns)
 
-			// TODO: Debug issues that causes this to fail when running in parallel
-			resource.Test(t, resource.TestCase{
+			resource.ParallelTest(t, resource.TestCase{
 				PreCheck:                 teste2e.PreCheck(t),
 				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 				CheckDestroy:             testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, &lb)),

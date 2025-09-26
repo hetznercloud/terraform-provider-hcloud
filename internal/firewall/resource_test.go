@@ -66,8 +66,7 @@ func TestAccFirewallResource(t *testing.T) {
 	}, nil)
 	updated.SetRName(res.RName())
 	tmplMan := testtemplate.Manager{}
-	// TODO: Move to parallel test once API endpoint supports higher parallelism
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
 		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(firewall.ResourceType, firewall.ByID(t, &f)),
@@ -144,8 +143,7 @@ func TestAccFirewallResource_ApplyTo(t *testing.T) {
 	})
 	resUpdated.SetRName(res.RName())
 	tmplMan := testtemplate.Manager{}
-	// TODO: Move to parallel test once API endpoint is fixed
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
 		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(firewall.ResourceType, firewall.ByID(t, &f)),
@@ -214,8 +212,7 @@ func TestAccFirewallResource_Normalization(t *testing.T) {
 	}, nil)
 	tmplMan := testtemplate.Manager{}
 
-	// TODO: Move to parallel test once API endpoint supports higher parallelism
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
 		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(firewall.ResourceType, firewall.ByID(t, &f)),
