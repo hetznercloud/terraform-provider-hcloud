@@ -352,7 +352,9 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		serverTypeLocationName = opts.Location.Name
 	}
 
+	serverTypeDeprecationPrinted := false
 	if message, isUnavailable := deprecationutil.ServerTypeMessage(serverType, serverTypeLocationName); message != "" {
+		serverTypeDeprecationPrinted = true
 		deprecationDiag := diag.Diagnostic{
 			Severity: diag.Warning,
 			Summary:  message,
@@ -432,6 +434,18 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		return
 	}
 	d.SetId(util.FormatID(res.Server.ID))
+
+	if !serverTypeDeprecationPrinted {
+		// We now know the server location and can check the server type deprecation again.
+		if message, _ := deprecationutil.ServerTypeMessage(res.Server.ServerType, res.Server.Datacenter.Location.Name); message != "" {
+			deprecationDiag := diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  message,
+				Detail:   ChangeDeprecatedServerTypeMessage,
+			}
+			diags = append(diags, deprecationDiag)
+		}
+	}
 
 	if err := hcloudutil.WaitForAction(ctx, &c.Action, res.Action); err != nil {
 		diags = append(diags, hcloudutil.ErrorToDiag(err)...)
