@@ -1,5 +1,12 @@
 # Changelog
 
+## [v1.53.1](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.53.1)
+
+### Bug Fixes
+
+- show warnings using diagnostics instead of logs (#1197)
+- also check server type deprecation after server creation (#1201)
+
 ## [v1.53.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.53.0)
 
 [Server Types](https://docs.hetzner.cloud/reference/cloud#server-types) now depend on [Locations](https://docs.hetzner.cloud/reference/cloud#locations).
