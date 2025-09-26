@@ -1,5 +1,72 @@
 # Changelog
 
+## [v1.53.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.53.0)
+
+[Server Types](https://docs.hetzner.cloud/reference/cloud#server-types) now depend on [Locations](https://docs.hetzner.cloud/reference/cloud#locations).
+
+- We added a new `locations` property to the [Server Types](https://docs.hetzner.cloud/reference/cloud#server-types) resource. The new property defines a list of supported [Locations](https://docs.hetzner.cloud/reference/cloud#locations) and additional per [Locations](https://docs.hetzner.cloud/reference/cloud#locations) details such as deprecations information.
+
+- We deprecated the `deprecation` property from the [Server Types](https://docs.hetzner.cloud/reference/cloud#server-types) resource. The property will gradually be phased out as per [Locations](https://docs.hetzner.cloud/reference/cloud#locations) deprecations are being announced. Please use the new per [Locations](https://docs.hetzner.cloud/reference/cloud#locations) deprecation information instead.
+
+See our [changelog](https://docs.hetzner.cloud/changelog#2025-09-24-per-location-server-types) for more details.
+
+**Upgrading**
+
+```tf
+// Before
+data "hcloud_server_type" "main" {
+  name = "cx22"
+}
+
+check "server_type" {
+  assert {
+    condition     = !data.hcloud_server_type.main.is_deprecated
+    error_message = "Server Type ${data.hcloud_server_type.main.name} is deprecated"
+  }
+}
+```
+
+```tf
+// After
+data "hcloud_location" "main" {
+  name = "fsn1"
+}
+
+data "hcloud_server_type" "main" {
+  name = "cx22"
+}
+
+locals {
+  server_type_location = one([
+    for o in data.hcloud_server_type.main.locations : o
+    if o.name == data.hcloud_location.main.name
+  ])
+}
+
+check "server_type_location" {
+  assert {
+    condition     = local.server_type_location != null
+    error_message = "Server Type ${data.hcloud_server_type.main.name} does not exists in Location ${data.hcloud_location.main.name}"
+  }
+  assert {
+    condition     = !local.server_type_location.is_deprecated
+    error_message = "Server Type ${data.hcloud_server_type.main.name} is deprecated in Location ${data.hcloud_location.main.name}"
+  }
+}
+```
+
+### Features
+
+- add category property to server type (#1184)
+- per locations server types (#1193)
+
+### Bug Fixes
+
+- ensure exponential poll backoff is configured (#1160)
+- handle not found volume deletion (#1189)
+- wait for floating_ip assign action to complete (#1195)
+- add experimental features maturity (#1191)
+
 ## [v1.52.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.52.0)
 
 ### Features
