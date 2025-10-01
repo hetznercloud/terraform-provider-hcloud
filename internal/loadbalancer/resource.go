@@ -241,7 +241,7 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, m i
 	if d.HasChange("algorithm") {
 		algorithm := d.Get("algorithm")
 		hcloudAlgorithm := parseTerraformAlgorithm(algorithm.([]interface{}))
-		ao := hcloud.LoadBalancerChangeAlgorithmOpts{ //nolint:gosimple
+		ao := hcloud.LoadBalancerChangeAlgorithmOpts{ //nolint:staticcheck
 			Type: hcloudAlgorithm.Type,
 		}
 		action, _, err := c.LoadBalancer.ChangeAlgorithm(ctx, loadBalancer, ao)
