@@ -493,9 +493,10 @@ func getFirewallAttributes(f *hcloud.Firewall) map[string]interface{} {
 	var applyTo []map[string]interface{}
 
 	for _, a := range f.AppliedTo {
-		if a.Type == hcloud.FirewallResourceTypeLabelSelector {
+		switch a.Type {
+		case hcloud.FirewallResourceTypeLabelSelector:
 			applyTo = append(applyTo, map[string]interface{}{"label_selector": a.LabelSelector.Selector})
-		} else if a.Type == hcloud.FirewallResourceTypeServer {
+		case hcloud.FirewallResourceTypeServer:
 			applyTo = append(applyTo, map[string]interface{}{"server": a.Server.ID})
 		}
 	}

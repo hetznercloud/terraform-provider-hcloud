@@ -928,7 +928,7 @@ func resourceServerDelete(ctx context.Context, d *schema.ResourceData, m interfa
 			}
 
 			if server.Status != hcloud.ServerStatusOff {
-				return fmt.Errorf("Server has not shut down yet")
+				return fmt.Errorf("server has not shut down yet")
 			}
 
 			// Server has shut down successfully

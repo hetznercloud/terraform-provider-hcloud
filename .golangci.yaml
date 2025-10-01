@@ -1,50 +1,93 @@
----
+version: "2"
+
+run:
+  timeout: 5m
+
 linters:
-  presets:
-    - bugs
-    - error
-    - import
-    - metalinter
-    - module
-    - unused
-
   enable:
+    - asasalint
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - contextcheck
+    - durationcheck
+    - errchkjson
+    - errorlint
+    - exhaustive
+    - gocheckcompilerdirectives
+    - gochecksumtype
+    - gocritic
+    - gomoddirectives
+    - gomodguard
+    - gosec
+    - gosmopolitan
+    - loggercheck
+    - makezero
+    - musttag
+    - nilerr
+    - nilnesserr
+    - noctx
+    - protogetter
+    - reassign
+    - recvcheck
+    - revive
+    - rowserrcheck
+    - spancheck
+    - sqlclosecheck
     - testifylint
+    - unparam
+    - zerologlint
 
-  disable:
-    # preset error
-    - err113 # Very annoying to define static errors everywhere
-    - wrapcheck # Very annoying to wrap errors everywhere
-    # preset import
-    - depguard
+  settings:
+    exhaustive:
+      default-signifies-exhaustive: true
+    staticcheck:
+      checks: ["all", "-QF1008"]
 
-linters-settings:
-  gci:
-    sections:
-      - standard
-      - default
-      - prefix(github.com/hetznercloud)
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - std-error-handling
+    rules:
+      - linters:
+          - errcheck
+          - gosec
+        path: _test\.go
+      - path: testing\.go
+        text: unused-parameter
+      - linters:
+          - testifylint
+        text: bool-compare
+      - linters:
+          - testifylint
+        text: empty
 
-  exhaustive:
-    # Switch cases with a default case should be exhaustive.
-    default-signifies-exhaustive: true
-
-issues:
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - gosec
-        - errcheck
-    - path: testing\.go
-      text: unused-parameter
-    - linters:
-        - testifylint
-      text: bool-compare
-    - linters:
-        - testifylint
-      text: empty
+      - linters:
+          - revive
+        path: internal/util/.+\.go
+        text: var-naming
 
       # Can be removed once we migrated to the plugin framework.
-    - linters:
-        - errcheck
-      text: Error return value of `d.Set` is not checked
+      - linters:
+          - errcheck
+        text: Error return value of `d.Set` is not checked
+      - linters:
+          - gosec
+        text: G104
+
+formatters:
+  enable:
+    - gci
+    - goimports
+
+  settings:
+    gci:
+      sections:
+        - standard
+        - default
+        - prefix(github.com/hetznercloud)
+
+  exclusions:
+    generated: lax
