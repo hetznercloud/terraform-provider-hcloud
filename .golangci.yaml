@@ -69,6 +69,7 @@ linters:
         path: internal/util/.+\.go
         text: var-naming
 
+      # Can be removed once we migrated to the plugin framework.
       - linters:
           - errcheck
         text: Error return value of `d.Set` is not checked
