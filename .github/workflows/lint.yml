@@ -28,10 +28,6 @@ jobs:
         with:
           go-version: "1.24"
 
-      - uses: golangci/golangci-lint-action@v6
+      - uses: golangci/golangci-lint-action@v8
         with:
           version: v2.5.0 # renovate: datasource=github-releases depName=golangci/golangci-lint
-
-          # In general linting is quite fast with warm caches, but a fresh run might
-          # take some time.
-          args: --timeout 5m
