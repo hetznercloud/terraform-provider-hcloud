@@ -107,7 +107,7 @@ func TestAccServerResource_UnavailableServerType(t *testing.T) {
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_server", res,
 				),
-				ExpectError: regexp.MustCompile(`Server Type "cx11" is unavailable in all locations and can no longer be ordered.`),
+				ExpectError: regexp.MustCompile(`Server Type "cx11" is unavailable in all locations and can no longer be ordered`),
 			},
 		},
 	})
