@@ -1,0 +1,28 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+resource "hcloud_zone_rrset" "{{ .RName }}" {
+  zone  = {{ .Zone }}
+  name  = "{{ .Name }}"
+  type  = "{{ .Type }}"
+
+  {{- if .Labels }}
+  labels = {{ .Labels | toPrettyJson }}
+  {{- end }}
+
+  {{ if .TTL }}ttl = {{ .TTL }}{{- end }}
+
+  {{- if .Records }}
+    records = [
+    {{- range $v := .Records }}
+      {
+        value = "{{ $v.Value }}",
+        {{ if $v.Comment }}comment = "{{  $v.Comment }}",{{- end }}
+      },
+    {{- end }}
+    ]
+  {{- end }}
+
+  {{- if .Raw }}
+  {{ .Raw | indent 2 }}
+  {{- end }}
+}

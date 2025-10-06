@@ -42,7 +42,7 @@ linters:
     exhaustive:
       default-signifies-exhaustive: true
     staticcheck:
-      checks: ["all", "-QF1008"]
+      checks: ["all", "-QF1008", "-S1016"]
 
   exclusions:
     generated: lax

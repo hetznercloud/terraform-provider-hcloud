@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/function"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
@@ -24,6 +25,8 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/servertype"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/tflogutil"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/zone"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/zonerrset"
 )
 
 type PluginProvider struct{}
@@ -188,6 +191,10 @@ func (p *PluginProvider) DataSources(_ context.Context) []func() datasource.Data
 		servertype.NewDataSourceList,
 		sshkey.NewDataSource,
 		sshkey.NewDataSourceList,
+		zone.NewDataSource,
+		zone.NewDataSourceList,
+		zonerrset.NewDataSource,
+		zonerrset.NewDataSourceList,
 	}
 }
 
@@ -199,5 +206,13 @@ func (p *PluginProvider) DataSources(_ context.Context) []func() datasource.Data
 func (p *PluginProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		sshkey.NewResource,
+		zone.NewResource,
+		zonerrset.NewResource,
+	}
+}
+
+func (p *PluginProvider) Functions(_ context.Context) []func() function.Function {
+	return []func() function.Function{
+		zone.NewIDNAFunction,
 	}
 }
