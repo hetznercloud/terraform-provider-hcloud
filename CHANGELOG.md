@@ -1,5 +1,42 @@
 # Changelog
 
+## [v1.54.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.54.0)
+
+### DNS API Beta
+
+This release adds support for the new [DNS API](https://docs.hetzner.cloud/reference/cloud#dns).
+
+The DNS API is currently in **beta**, which will likely end on 10 November 2025. After the beta ended, it will no longer be possible to create new zones in the old DNS system. See the [DNS Beta FAQ](https://docs.hetzner.com/networking/dns/faq/beta) for more details.
+
+Future minor releases of this project may include breaking changes for features that are related to the DNS API.
+
+See the [DNS API Beta changelog](https://docs.hetzner.cloud/changelog#2025-10-07-dns-beta) for more details.
+
+**Examples**
+
+```terraform
+resource "hcloud_zone" "example" {
+  name = "example.com"
+  mode = "primary"
+  labels = {
+    key = "value"
+  }
+}
+
+resource "hcloud_zone_rrset" "apex_a_example" {
+  zone = hcloud_zone.example.name
+  name = "@"
+  type = "A"
+  records = [
+    { value = "201.78.10.45", comment = "server1" },
+  ]
+}
+```
+
+### Features
+
+- support the new DNS API (#1210)
+
 ## [v1.53.1](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.53.1)
 
 ### Bug Fixes
