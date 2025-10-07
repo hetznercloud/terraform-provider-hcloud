@@ -1,0 +1,7 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+data "hcloud_zone_rrsets" "{{ .RName }}" {
+  zone = {{ .Zone }}
+
+  {{ if .LabelSelector -}}with_selector = "{{ .LabelSelector }}"{{ end }}
+}

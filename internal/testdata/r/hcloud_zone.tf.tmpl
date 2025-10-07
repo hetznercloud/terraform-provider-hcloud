@@ -1,0 +1,29 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+resource "hcloud_zone" "{{ .RName }}" {
+  name  = "{{ .Name }}"
+  mode  = "{{ .Mode }}"
+
+  {{- if .Labels }}
+  labels = {{ .Labels | toPrettyJson }}
+  {{- end }}
+
+  {{ if .TTL }}ttl = {{ .TTL }}{{- end }}
+
+  {{- if .PrimaryNameservers }}
+    primary_nameservers = [
+    {{- range $v := .PrimaryNameservers }}
+      {
+        address = "{{ $v.Address }}",
+        {{ if $v.Port }}port = {{  $v.Port }},{{- end }}
+        {{ if $v.TSIGAlgorithm }}tsig_algorithm = "{{  $v.TSIGAlgorithm }}",{{- end }}
+        {{ if $v.TSIGKey }}tsig_key = "{{  $v.TSIGKey }}",{{- end }}
+      },
+    {{- end }}
+    ]
+  {{- end }}
+
+{{- if .Raw }}
+{{ .Raw | indent 2 }}
+{{- end }}
+}

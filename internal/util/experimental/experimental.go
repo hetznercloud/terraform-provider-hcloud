@@ -62,3 +62,7 @@ func (e Experimental) AppendDiagnostic(diags *diag.Diagnostics) {
 func (e Experimental) AppendNotice(description *string) {
 	*description = strings.TrimSuffix(*description, "\n") + e.notice
 }
+
+var (
+	DNS = New("DNS API", "in beta", "https://docs.hetzner.cloud/changelog#2025-10-07-dns-beta")
+)
