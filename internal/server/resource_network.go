@@ -196,9 +196,9 @@ func (r *networkResourceImpl) Create(ctx context.Context, req resource.CreateReq
 					path.Root("subnet_id"),
 					"Invalid Subnet ID",
 					fmt.Sprintf(
-						"The network ID '%d' and the subnet ID '%s' do not refer to the same network ID.",
-						data.NetworkID.ValueInt64(),
-						data.SubnetID.ValueString(),
+						"The network ID (%s) and the subnet ID (%s) do not refer to the same network ID.",
+						data.NetworkID,
+						data.SubnetID,
 					),
 				)
 			}
@@ -260,12 +260,19 @@ func (r *networkResourceImpl) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
+	if server == nil {
+		resp.Diagnostics.AddError(
+			"Resource vanished",
+			fmt.Sprintf("Server (%s) vanished", data.ServerID),
+		)
+		return
+	}
+
 	attachment := server.PrivateNetFor(opts.Network)
 	if attachment == nil {
-		// Should not happen
 		resp.Diagnostics.AddError(
-			"Unexpected internal error",
-			fmt.Sprintf("Attachment of server %d to network %d vanished", server.ID, opts.Network.ID),
+			"Resource vanished",
+			fmt.Sprintf("Attachment of server (%s) to network (%s) vanished", data.ServerID, data.NetworkID),
 		)
 		return
 	}
@@ -369,7 +376,11 @@ func (r *networkResourceImpl) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	if server == nil {
-		resp.State.RemoveResource(ctx)
+		// Should not happen
+		resp.Diagnostics.AddError(
+			"Resource vanished",
+			fmt.Sprintf("Server (%s) vanished", data.ServerID),
+		)
 		return
 	}
 
@@ -377,8 +388,8 @@ func (r *networkResourceImpl) Update(ctx context.Context, req resource.UpdateReq
 	if attachment == nil {
 		// Should not happen
 		resp.Diagnostics.AddError(
-			"Unexpected internal error",
-			fmt.Sprintf("Attachment of server %d to network %d vanished", server.ID, network.ID),
+			"Resource vanished",
+			fmt.Sprintf("Attachment of server (%s) to network (%s) vanished", data.ServerID, data.NetworkID),
 		)
 		return
 	}
