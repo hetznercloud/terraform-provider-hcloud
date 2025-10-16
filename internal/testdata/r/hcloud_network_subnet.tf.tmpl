@@ -9,4 +9,8 @@ resource "hcloud_network_subnet" "{{ .RName }}" {
   {{- if .VSwitchID }}
   vswitch_id   = {{ .VSwitchID }}
   {{ end }}
+
+  {{- if .DependsOn }}
+  depends_on               = [{{ .DependsOn | join ", " }}]
+  {{ end }}
 }
