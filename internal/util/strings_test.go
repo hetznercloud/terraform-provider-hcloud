@@ -3,6 +3,7 @@ package util
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -52,4 +53,10 @@ func TestMarkdownDescription(t *testing.T) {
 			require.Equal(t, testCase.want, MarkdownDescription(testCase.given))
 		})
 	}
+}
+
+func TestTitleCase(t *testing.T) {
+	assert.Equal(t, "Hello world", TitleCase("hello world"))
+	assert.Equal(t, "A", TitleCase("a"))
+	assert.Equal(t, "", TitleCase(""))
 }
