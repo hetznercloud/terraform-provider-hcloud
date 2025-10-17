@@ -15,7 +15,7 @@ resource "hcloud_server_network" "{{ .Name }}" {
   ip         = "{{ .IP }}"
   {{ end }}
   {{- if .AliasIPs }}
-  alias_ips  = [{{ .AliasIPs | join ", " }}]
+  alias_ips = [{{ .AliasIPs | quoteEach | join ", " }}]
   {{ end }}
   {{- if .DependsOn }}
   depends_on               = [{{ .DependsOn | join ", " }}]

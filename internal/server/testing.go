@@ -138,3 +138,8 @@ type RDataNetwork struct {
 	AliasIPs  []string
 	DependsOn []string
 }
+
+// TFID returns the resource identifier.
+func (d *RDataNetwork) TFID() string {
+	return fmt.Sprintf("%s.%s", NetworkResourceType, d.RName())
+}
