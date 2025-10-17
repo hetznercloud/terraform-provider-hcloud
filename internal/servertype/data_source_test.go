@@ -32,7 +32,7 @@ func TestAccServerTypeDataSource(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(byName.TFID(), "id", "22"),
 					resource.TestCheckResourceAttr(byName.TFID(), "name", "cpx11"),
-					resource.TestCheckResourceAttr(byName.TFID(), "category", "Shared vCPU"),
+					resource.TestCheckResourceAttr(byName.TFID(), "category", "regular_purpose"),
 					resource.TestCheckResourceAttr(byName.TFID(), "cores", "2"),
 					resource.TestCheckResourceAttr(byName.TFID(), "memory", "2"),
 					resource.TestCheckResourceAttr(byName.TFID(), "disk", "40"),
@@ -42,9 +42,9 @@ func TestAccServerTypeDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr(byName.TFID(), "locations.#", "6"),
 					resource.TestCheckResourceAttr(byName.TFID(), "locations.0.id", "1"),
 					resource.TestCheckResourceAttr(byName.TFID(), "locations.0.name", "fsn1"),
-					resource.TestCheckResourceAttr(byName.TFID(), "locations.0.is_deprecated", "false"),
-					resource.TestCheckResourceAttr(byName.TFID(), "locations.0.deprecation_announced", ""),
-					resource.TestCheckResourceAttr(byName.TFID(), "locations.0.unavailable_after", ""),
+					resource.TestCheckResourceAttr(byName.TFID(), "locations.0.is_deprecated", "true"),
+					resource.TestCheckResourceAttr(byName.TFID(), "locations.0.deprecation_announced", "2025-10-16T06:00:00Z"),
+					resource.TestCheckResourceAttr(byName.TFID(), "locations.0.unavailable_after", "2025-12-31T23:59:59Z"),
 
 					resource.TestCheckResourceAttr(byName.TFID(), "included_traffic", "0"),
 					resource.TestCheckResourceAttr(byName.TFID(), "is_deprecated", "false"),
@@ -53,7 +53,7 @@ func TestAccServerTypeDataSource(t *testing.T) {
 
 					resource.TestCheckResourceAttr(byID.TFID(), "id", "22"),
 					resource.TestCheckResourceAttr(byID.TFID(), "name", "cpx11"),
-					resource.TestCheckResourceAttr(byID.TFID(), "category", "Shared vCPU"),
+					resource.TestCheckResourceAttr(byID.TFID(), "category", "regular_purpose"),
 					resource.TestCheckResourceAttr(byID.TFID(), "cores", "2"),
 					resource.TestCheckResourceAttr(byID.TFID(), "memory", "2"),
 					resource.TestCheckResourceAttr(byID.TFID(), "disk", "40"),
@@ -63,9 +63,9 @@ func TestAccServerTypeDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr(byName.TFID(), "locations.#", "6"),
 					resource.TestCheckResourceAttr(byName.TFID(), "locations.0.id", "1"),
 					resource.TestCheckResourceAttr(byName.TFID(), "locations.0.name", "fsn1"),
-					resource.TestCheckResourceAttr(byName.TFID(), "locations.0.is_deprecated", "false"),
-					resource.TestCheckResourceAttr(byName.TFID(), "locations.0.deprecation_announced", ""),
-					resource.TestCheckResourceAttr(byName.TFID(), "locations.0.unavailable_after", ""),
+					resource.TestCheckResourceAttr(byName.TFID(), "locations.0.is_deprecated", "true"),
+					resource.TestCheckResourceAttr(byName.TFID(), "locations.0.deprecation_announced", "2025-10-16T06:00:00Z"),
+					resource.TestCheckResourceAttr(byName.TFID(), "locations.0.unavailable_after", "2025-12-31T23:59:59Z"),
 
 					resource.TestCheckResourceAttr(byID.TFID(), "included_traffic", "0"),
 					resource.TestCheckResourceAttr(byID.TFID(), "is_deprecated", "false"),
