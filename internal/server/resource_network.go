@@ -13,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -110,7 +109,6 @@ func (r *networkResourceImpl) Schema(_ context.Context, _ resource.SchemaRequest
 			ElementType:         types.StringType,
 			Optional:            true,
 			Computed:            true,
-			Default:             setdefault.StaticValue(types.SetValueMust(types.StringType, nil)),
 		},
 		"mac_address": schema.StringAttribute{
 			MarkdownDescription: "MAC address of the Server on the Network.",
@@ -155,13 +153,14 @@ func populateNetworkResourceData(
 	data.ServerID = types.Int64Value(server.ID)
 	data.NetworkID = types.Int64Value(attachment.Network.ID)
 	data.IP = types.StringValue(attachment.IP.String())
-	{
+	data.MACAddress = types.StringValue(attachment.MACAddress)
+
+	if !data.AliasIPs.IsNull() || len(attachment.Aliases) > 0 {
 		aliasIPsStrings := sliceutil.Transform(attachment.Aliases, func(e net.IP) string { return e.String() })
 
 		data.AliasIPs, newDiags = types.SetValueFrom(ctx, types.StringType, aliasIPsStrings)
 		diags.Append(newDiags...)
 	}
-	data.MACAddress = types.StringValue(attachment.MACAddress)
 
 	return diags
 }
@@ -319,6 +318,24 @@ func (r *networkResourceImpl) Read(ctx context.Context, req resource.ReadRequest
 	if attachment == nil {
 		resp.State.RemoveResource(ctx)
 		return
+	}
+
+	if !data.SubnetID.IsUnknown() && !data.SubnetID.IsNull() {
+		_, subnetIPRange, err := r.ParseSubnetID(data.SubnetID.ValueString())
+		if err != nil {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("subnet_id"),
+				"Invalid Subnet ID",
+				util.TitleCase(err.Error()),
+			)
+		}
+		if !subnetIPRange.Contains(attachment.IP) {
+			resp.Diagnostics.AddAttributeWarning(
+				path.Root("subnet_id"),
+				"Assigned IP is outside subnet IP range",
+				"",
+			)
+		}
 	}
 
 	resp.Diagnostics.Append(populateNetworkResourceData(ctx, &data, server, attachment)...)

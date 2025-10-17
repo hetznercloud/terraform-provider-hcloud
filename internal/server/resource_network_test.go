@@ -353,10 +353,8 @@ func TestAccServerNetworkResource_UpgradePluginFramework(t *testing.T) {
 				),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(res.TFID(),
-						tfjsonpath.New("ip"),
-						// Attach to subnet using ip_range is not yet suported, and we
-						// got assigned to subnet1
-						knownvalue.StringExact("10.0.1.1")),
+						tfjsonpath.New("alias_ips"),
+						knownvalue.Null()),
 				},
 			},
 			{
