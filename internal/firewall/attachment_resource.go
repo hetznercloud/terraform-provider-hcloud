@@ -124,7 +124,7 @@ func updateAttachment(ctx context.Context, d *schema.ResourceData, m interface{}
 
 	less, more := tf.DiffResources(hc)
 	as, _, err := client.Firewall.RemoveResources(ctx, fw, less)
-	if err != nil && !hcloud.IsError(err, hcloud.ErrorCodeFirewallAlreadyRemoved) {
+	if err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
 	actions = append(actions, as...)
@@ -157,9 +157,6 @@ func deleteAttachment(ctx context.Context, d *schema.ResourceData, m interface{}
 	}
 	client := m.(*hcloud.Client)
 	action, _, err := client.Firewall.RemoveResources(ctx, &hcloud.Firewall{ID: att.FirewallID}, att.AllResources())
-	if hcloud.IsError(err, hcloud.ErrorCodeFirewallAlreadyRemoved) {
-		return nil
-	}
 	if err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
