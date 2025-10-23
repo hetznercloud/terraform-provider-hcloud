@@ -2,6 +2,7 @@ package zonerrset
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
@@ -62,6 +63,16 @@ Provides a Hetzner Cloud Zone Resource Record Set (RRSet) resource.
 This can be used to create, modify, and delete Zone RRSets.
 
 See the [Zone RRSets API documentation](https://docs.hetzner.cloud/reference/cloud#zone-rrsets) for more details.
+
+**RRSets of type SOA:**
+
+SOA records are created or deleted by the Hetzner Cloud API when creating or deleting
+the parent Zone, therefor this Terraform resource will:
+
+- import the RRSet in the state, instead of creating it.
+- remove the RRSet from the state, instead of deleting it.
+- set the SOA record SERIAL value to 0 before saving it to the state, as this value is automatically
+  incremented by the API and would cause issues otherwise.
 `
 
 	experimental.DNS.AppendNotice(&resp.Schema.MarkdownDescription)
@@ -161,12 +172,33 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		return
 	}
 
-	actions := make([]*hcloud.Action, 0)
+	var result hcloud.ZoneRRSetCreateResult
+	var err error
+	var actions []*hcloud.Action
 
-	result, _, err := r.client.Zone.CreateRRSet(ctx, zone, opts)
-	if err != nil {
-		resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
-		return
+	// SOA records are managed by the backend
+	if data.Type.ValueString() == string(hcloud.ZoneRRSetTypeSOA) {
+		resp.Diagnostics.AddWarning(
+			"SOA records are managed by the API",
+			"Importing the SOA record (managed by the API) in the state.",
+		)
+
+		rrset, _, err := r.client.Zone.GetRRSetByNameAndType(ctx, zone, opts.Name, opts.Type)
+		if err != nil {
+			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+			return
+		}
+		if rrset == nil {
+			resp.Diagnostics.Append(hcloudutil.NotFoundDiagnostic("zone rrset", "id", fmt.Sprintf("%s/%s", opts.Name, opts.Type)))
+		}
+		result.RRSet = rrset
+	} else {
+
+		result, _, err = r.client.Zone.CreateRRSet(ctx, zone, opts)
+		if err != nil {
+			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+			return
+		}
 	}
 
 	actions = append(actions, result.Action)
@@ -194,6 +226,8 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
 		return
 	}
+
+	OverrideRecordsSOASerial(in)
 
 	resp.Diagnostics.Append(data.FromAPI(ctx, in)...)
 	if resp.Diagnostics.HasError() {
@@ -223,6 +257,8 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 		resp.State.RemoveResource(ctx)
 		return
 	}
+
+	OverrideRecordsSOASerial(in)
 
 	resp.Diagnostics.Append(data.FromAPI(ctx, in)...)
 	if resp.Diagnostics.HasError() {
@@ -335,6 +371,8 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 		in.Protection.Change = plan.ChangeProtection.ValueBool()
 	}
 
+	OverrideRecordsSOASerial(in)
+
 	resp.Diagnostics.Append(data.FromAPI(ctx, in)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -348,6 +386,15 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// SOA records are managed by the backend
+	if data.Type.ValueString() == string(hcloud.ZoneRRSetTypeSOA) {
+		resp.Diagnostics.AddWarning(
+			"SOA records are managed by the API",
+			"Removing the SOA record (managed by the API) from the state.",
+		)
 		return
 	}
 
@@ -381,4 +428,22 @@ func (r *Resource) ImportState(ctx context.Context, req resource.ImportStateRequ
 
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("zone"), parts[0])...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), parts[1])...)
+}
+
+// OverrideRecordsSOASerial set the serial value to 0 in a SOA Resource Record Set.
+func OverrideRecordsSOASerial(hc *hcloud.ZoneRRSet) {
+	if hc.Type != hcloud.ZoneRRSetTypeSOA {
+		return
+	}
+
+	// SOA should have only a single record, this is only defensive
+	for i := range hc.Records {
+		// hydrogen.ns.hetzner.com. dns.hetzner.com. 2025102142 86400 10800 3600000 3600
+		//                                           ^^^^^^^^^^
+		parts := strings.Split(hc.Records[i].Value, " ")
+		if len(parts) > 2 {
+			parts[2] = "0" // Serial
+		}
+		hc.Records[i].Value = strings.Join(parts, " ")
+	}
 }

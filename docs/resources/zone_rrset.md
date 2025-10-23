@@ -6,6 +6,11 @@ description: |-
   Provides a Hetzner Cloud Zone Resource Record Set (RRSet) resource.
   This can be used to create, modify, and delete Zone RRSets.
   See the Zone RRSets API documentation https://docs.hetzner.cloud/reference/cloud#zone-rrsets for more details.
+  RRSets of type SOA:
+  SOA records are created or deleted by the Hetzner Cloud API when creating or deleting
+  the parent Zone, therefor this Terraform resource will:
+  import the RRSet in the state, instead of creating it.remove the RRSet from the state, instead of deleting it.set the SOA record SERIAL value to 0 before saving it to the state, as this value is automatically
+  incremented by the API and would cause issues otherwise.
   Experimental: DNS API is in beta, breaking changes may occur within minor releases.
   See https://docs.hetzner.cloud/changelog#2025-10-07-dns-beta for more details.
 ---
@@ -17,6 +22,16 @@ Provides a Hetzner Cloud Zone Resource Record Set (RRSet) resource.
 This can be used to create, modify, and delete Zone RRSets.
 
 See the [Zone RRSets API documentation](https://docs.hetzner.cloud/reference/cloud#zone-rrsets) for more details.
+
+**RRSets of type SOA:**
+
+SOA records are created or deleted by the Hetzner Cloud API when creating or deleting
+the parent Zone, therefor this Terraform resource will:
+
+- import the RRSet in the state, instead of creating it.
+- remove the RRSet from the state, instead of deleting it.
+- set the SOA record SERIAL value to 0 before saving it to the state, as this value is automatically
+  incremented by the API and would cause issues otherwise.
 
 **Experimental:** DNS API is in beta, breaking changes may occur within minor releases.
 See https://docs.hetzner.cloud/changelog#2025-10-07-dns-beta for more details.
@@ -45,6 +60,19 @@ resource "hcloud_zone_rrset" "example" {
   ]
 
   change_protection = false
+}
+
+resource "hcloud_zone_rrset" "example_soa" {
+  zone = hcloud_zone.example.name
+  name = "@"
+  type = "SOA"
+
+  records = [
+    // SOA record SERIAL value will be set to 0, before saving it to the state. Make
+    // sure to use 0 as SERIAL value to prevent running into inconsistent state errors.
+    { value = "hydrogen.ns.hetzner.com. dns.hetzner.com. 0 86400 10800 3600000 3600" }
+    //                                                   ^ here
+  ]
 }
 ```
 
