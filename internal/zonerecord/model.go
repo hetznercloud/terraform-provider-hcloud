@@ -61,52 +61,36 @@ func (m *model) ToTerraform(ctx context.Context) (types.Object, diag.Diagnostics
 	return types.ObjectValueFrom(ctx, m.tfAttributesTypes(), m)
 }
 
-type modelRecord struct {
-	Value   types.String `tfsdk:"value"`
-	Comment types.String `tfsdk:"comment"`
-}
-
-var _ util.ModelFromAPI[hcloud.ZoneRRSetRecord] = &modelRecord{}
-var _ util.ModelFromTerraform[types.Object] = &modelRecord{}
-var _ util.ModelToAPI[hcloud.ZoneRRSetRecord] = &modelRecord{}
-var _ util.ModelToTerraform[types.Object] = &modelRecord{}
-
-func (m *modelRecord) tfAttributesTypes() map[string]attr.Type {
-	return map[string]attr.Type{
-		"value":   types.StringType,
-		"comment": types.StringType,
-	}
-}
-
-func (m *modelRecord) tfType() attr.Type {
-	return basetypes.ObjectType{AttrTypes: m.tfAttributesTypes()}
-}
-
-func (m *modelRecord) FromAPI(_ context.Context, hc hcloud.ZoneRRSetRecord) diag.Diagnostics {
+func (m *model) FromIdentity(_ context.Context, identity identityModel) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	m.Value = types.StringValue(hc.Value)
-	if hc.Comment != "" {
-		m.Comment = types.StringValue(hc.Comment)
-	}
+	m.Zone = identity.Zone
+	m.Name = identity.Name
+	m.Type = identity.Type
+	m.Value = identity.Value
 
 	return diags
 }
 
-func (m *modelRecord) ToAPI(_ context.Context) (hc hcloud.ZoneRRSetRecord, diags diag.Diagnostics) {
-	hc.Value = m.Value.ValueString()
-
-	if !m.Comment.IsNull() {
-		hc.Comment = m.Comment.ValueString()
-	}
-
-	return
+type identityModel struct {
+	Zone  types.String `tfsdk:"zone"`
+	Name  types.String `tfsdk:"name"`
+	Type  types.String `tfsdk:"type"`
+	Value types.String `tfsdk:"value"`
 }
 
-func (m *modelRecord) ToTerraform(ctx context.Context) (types.Object, diag.Diagnostics) {
-	return types.ObjectValueFrom(ctx, m.tfAttributesTypes(), m)
+func (i *identityModel) ToAPI(_ context.Context) (*hcloud.ZoneRRSet, string) {
+	return &hcloud.ZoneRRSet{
+		Zone: &hcloud.Zone{Name: i.Zone.ValueString()},
+		Name: i.Name.ValueString(),
+		Type: hcloud.ZoneRRSetType(i.Type.ValueString()),
+	}, i.Value.ValueString()
 }
 
-func (m *modelRecord) FromTerraform(ctx context.Context, tf types.Object) diag.Diagnostics {
-	return tf.As(ctx, m, basetypes.ObjectAsOptions{})
+func (i *identityModel) FromAPI(_ context.Context, in *hcloud.ZoneRRSet, value string) {
+	i.Zone = types.StringValue(in.Zone.Name)
+	i.Name = types.StringValue(in.Name)
+	i.Type = types.StringValue(string(in.Type))
+	// TODO: TXT transformation
+	i.Value = types.StringValue(value)
 }

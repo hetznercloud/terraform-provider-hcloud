@@ -3,18 +3,14 @@ package zonerecord
 import (
 	"context"
 	"slices"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/experimental"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
@@ -113,7 +109,31 @@ See the [Zone RRSets API documentation](https://docs.hetzner.cloud/reference/clo
 	}
 }
 
+func (r *Resource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
+	resp.IdentitySchema = identityschema.Schema{
+		Attributes: map[string]identityschema.Attribute{
+			"zone": identityschema.StringAttribute{
+				Description:       "ID or Name of the parent Zone.",
+				RequiredForImport: true,
+			},
+			"name": identityschema.StringAttribute{
+				Description:       "Name of the Zone Record.",
+				RequiredForImport: true,
+			},
+			"type": identityschema.StringAttribute{
+				Description:       "Type of the Zone Record.",
+				RequiredForImport: true,
+			},
+			"value": identityschema.StringAttribute{
+				Description:       "Value of the Zone Record.",
+				RequiredForImport: true,
+			},
+		},
+	}
+}
+
 func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	// Read request
 	var data model
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -121,6 +141,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		return
 	}
 
+	// Create in API
 	rrset := &hcloud.ZoneRRSet{
 		Zone: &hcloud.Zone{Name: data.Zone.ValueString()},
 		Name: data.Name.ValueString(),
@@ -148,9 +169,11 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		return
 	}
 
+	// Write state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 
-	identity := IdentityModel{
+	// Write identity
+	identity := identityModel{
 		Zone:  data.Zone,
 		Name:  data.Name,
 		Type:  data.Type,
@@ -160,15 +183,11 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 }
 
 func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	// Read identity
-	var identity IdentityModel
-	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	// Read model
+	// Read request
+	var identity identityModel
 	var data model
+
+	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -204,7 +223,7 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 
 	// Save identity
-	identity = IdentityModel{
+	identity = identityModel{
 		Zone:  data.Zone,
 		Name:  data.Name,
 		Type:  data.Type,
@@ -214,19 +233,19 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 }
 
 func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	// Read request
+	var identity identityModel
 	var data, plan model
 
+	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	rrset := &hcloud.ZoneRRSet{
-		Zone: &hcloud.Zone{Name: data.Zone.ValueString()},
-		Name: data.Name.ValueString(),
-		Type: hcloud.ZoneRRSetType(data.Type.ValueString()),
-	}
+	// Fetch API
+	rrset, _ := identity.ToAPI(ctx)
 
 	actions := make([]*hcloud.Action, 0)
 
@@ -254,6 +273,14 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 }
 
 func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	// Read identity
+	var identity identityModel
+	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Read state
 	var data model
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -261,17 +288,11 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 		return
 	}
 
-	// Fetch API
+	// Delete in API
 	rrset, recordValue := identity.ToAPI(ctx)
 
-	rrset := &hcloud.ZoneRRSet{
-		Zone: &hcloud.Zone{Name: data.Zone.ValueString()},
-		Name: data.Name.ValueString(),
-		Type: hcloud.ZoneRRSetType(data.Type.ValueString()),
-	}
-
 	opts := hcloud.ZoneRRSetRemoveRecordsOpts{Records: []hcloud.ZoneRRSetRecord{{
-		Value:   data.Value.ValueString(),
+		Value:   recordValue,
 		Comment: data.Comment.ValueString(), // Optional
 	}}}
 
@@ -286,60 +307,26 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 	}
 }
 
-type IdentityModel struct {
-	Zone  types.String `tfsdk:"zone"`
-	Name  types.String `tfsdk:"name"`
-	Type  types.String `tfsdk:"type"`
-	Value types.String `tfsdk:"value"`
-}
-
-func (i *IdentityModel) ToAPI(_ context.Context) (*hcloud.ZoneRRSet, string) {
-	return &hcloud.ZoneRRSet{
-		Zone: &hcloud.Zone{Name: i.Zone.ValueString()},
-		Name: i.Name.ValueString(),
-		Type: hcloud.ZoneRRSetType(i.Type.ValueString()),
-	}, i.Value.ValueString()
-}
-
-func (i *IdentityModel) FromAPI(_ context.Context, in *hcloud.ZoneRRSet, value string) {
-	i.Zone = types.StringValue(in.Zone.Name)
-	i.Name = types.StringValue(in.Name)
-	i.Type = types.StringValue(string(in.Type))
-	i.Value = types.StringValue(value)
-}
-
-func (r *Resource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
-	resp.IdentitySchema = identityschema.Schema{
-		Attributes: map[string]identityschema.Attribute{
-			"zone": identityschema.StringAttribute{
-				Description:       "ID or Name of the parent Zone.",
-				RequiredForImport: true,
-			},
-			"name": identityschema.StringAttribute{
-				Description:       "Name of the Zone Record.",
-				RequiredForImport: true,
-			},
-			"type": identityschema.StringAttribute{
-				Description:       "Type of the Zone Record.",
-				RequiredForImport: true,
-			},
-			"value": identityschema.StringAttribute{
-				Description:       "Value of the Zone Record.",
-				RequiredForImport: true,
-			},
-		},
-	}
-}
-
 func (r *Resource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	parts := strings.SplitN(req.ID, "/", 2)
-	if len(parts) != 2 {
-		resp.Diagnostics.Append(util.InvalidImportID("$ZONE_ID_OR_NAME/$RRSET_NAME/$RRSET_TYPE", req.ID))
+	// Fail if import was tried with ID
+	if req.ID != "" {
+		resp.Diagnostics.AddError("Import with ID not supported.", "Using an ID to import hcloud_zone_record resources is not supported. Instead you can use the identity feature to import this resource.")
 		return
 	}
 
-	// TODO: how to import a record? Use a hash for txt record; no transformation for the rest?
+	// Read request
+	var identity identityModel
+	resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("zone"), parts[0])...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), parts[1])...)
+	// Set state
+	var data model
+	resp.Diagnostics.Append(data.FromIdentity(ctx, identity)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, data)...)
 }
