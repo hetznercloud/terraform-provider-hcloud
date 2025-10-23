@@ -1,4 +1,4 @@
-package zonerrset_test
+package zonerecord_test
 
 import (
 	"fmt"

@@ -1,4 +1,4 @@
-package zonerrset
+package zonerecord
 
 import (
 	"context"
@@ -18,37 +18,7 @@ func GetAPIResource() testsupport.GetAPIResourceFunc[hcloud.ZoneRRSet] {
 	}
 }
 
-// DData defines the fields for the "testdata/d/hcloud_zone_rrset" template.
-type DData struct {
-	testtemplate.DataCommon
-
-	Zone          string
-	ID            string
-	Name          string
-	Type          string
-	LabelSelector string
-}
-
-// TFID returns the data source identifier.
-func (d *DData) TFID() string {
-	return fmt.Sprintf("data.%s.%s", DataSourceType, d.RName())
-}
-
-// DDataList defines the fields for the "testdata/d/hcloud_zone_rrsets"
-// template.
-type DDataList struct {
-	testtemplate.DataCommon
-
-	Zone          string
-	LabelSelector string
-}
-
-// TFID returns the data source identifier.
-func (d *DDataList) TFID() string {
-	return fmt.Sprintf("data.%s.%s", DataSourceListType, d.RName())
-}
-
-// RData defines the fields for the "testdata/r/hcloud_zone_rrset" template.
+// RData defines the fields for the "testdata/r/hcloud_zone_record" template.
 type RData struct {
 	testtemplate.DataCommon
 	Raw string

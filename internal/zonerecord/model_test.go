@@ -1,4 +1,4 @@
-package zonerrset
+package zonerecord_test
 
 import (
 	"context"
