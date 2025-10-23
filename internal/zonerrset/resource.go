@@ -71,7 +71,8 @@ the parent Zone, therefor this Terraform resource will:
 
 - import the RRSet in the state, instead of creating it.
 - remove the RRSet from the state, instead of deleting it.
-- set the SOA record SERIAL value to 0 before saving it to the state.
+- set the SOA record SERIAL value to 0 before saving it to the state, as this value is automatically
+  incremented by the API and would cause issues otherwise.
 `
 
 	experimental.DNS.AppendNotice(&resp.Schema.MarkdownDescription)
