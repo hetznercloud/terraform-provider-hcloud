@@ -36,7 +36,7 @@ Define services for Hetzner Cloud Load Balancers.
 - `port` - (Required, int) Port the health check tries to connect to, required if protocol is `tcp`. Can be everything between `1` and `65535`. Must be unique per Load Balancer.
 - `interval` - (Required, int) Interval how often the health check will be performed, in seconds.
 - `timeout` - (Required, int) Timeout when a health check try will be canceled if there is no response, in seconds.
-- `retries` - (Optional, int) Number of tries a health check will be performed until a target will be listed as `unhealthy`.
+- `retries` - (Required, int) Number of tries a health check will be performed until a target will be listed as `unhealthy`.
 - `http` - (Optional, block) HTTP configuration. Required if `protocol` is `http`.
 
 (health check) `http` supports the following fields:
