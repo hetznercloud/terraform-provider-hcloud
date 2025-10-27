@@ -24,6 +24,6 @@ resource "hcloud_firewall" "myfirewall" {
 resource "hcloud_server" "node1" {
   name         = "node1"
   image        = "debian-11"
-  server_type  = "cx22"
+  server_type  = "cx23"
   firewall_ids = [hcloud_firewall.myfirewall.id]
 }

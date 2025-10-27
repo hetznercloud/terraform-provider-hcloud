@@ -13,7 +13,7 @@ Provides a Hetzner Cloud Load Balancer to represent a Load Balancer in the Hetzn
 ```terraform
 resource "hcloud_server" "my_server" {
   name        = "server-%d"
-  server_type = "cx22"
+  server_type = "cx23"
   image       = "ubuntu-18.04"
 }
 
@@ -34,33 +34,42 @@ resource "hcloud_load_balancer_target" "load_balancer_target" {
 
 - `name` - (Required, string) Name of the Load Balancer.
 - `load_balancer_type` - (Required, string) Type of the Load Balancer.
-- `location` - (Optional, string) The location name of the Load Balancer. Require when no network_zone is set. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-locations-are-there) for more details about locations.
-- `network_zone` - (Optional, string) The Network Zone of the Load Balancer. Require when no location is set.
+-
+`location` - (Optional, string) The location name of the Load Balancer. Require when no network_zone is set. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-locations-are-there) for more details about locations.
+-
+`network_zone` - (Optional, string) The Network Zone of the Load Balancer. Require when no location is set.
 - `algorithm` - (Optional) Configuration of the algorithm the Load Balancer use.
-- `labels` - (Optional, map) User-defined labels (key-value pairs) should be created with.
-- `delete_protection` - (Optional, bool) Enable or disable delete protection. See ["Delete Protection"](../index.html.markdown#delete-protection) in the Provider Docs for details.
+-
+`labels` - (Optional, map) User-defined labels (key-value pairs) should be created with.
+-
+`delete_protection` - (Optional, bool) Enable or disable delete protection. See ["Delete Protection"](../index.html.markdown#delete-protection) in the Provider Docs for details.
 
 `algorithm` support the following fields:
 
-- `type` - (Required, string) Type of the Load Balancer Algorithm. `round_robin` or `least_connections`
+- `type` - (Required, string) Type of the Load Balancer Algorithm.
+  `round_robin` or `least_connections`
 
 ## Attributes Reference
 
 - `id` - (int) Unique ID of the Load Balancer.
 - `load_balancer_type` - (string) Name of the Type of the Load Balancer.
 - `name` - (string) Name of the Load Balancer.
-- `location` - (string) Name of the location the Load Balancer is in. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-locations-are-there) for more details about locations.
+-
+`location` - (string) Name of the location the Load Balancer is in. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-locations-are-there) for more details about locations.
 - `ipv4` - (string) IPv4 Address of the Load Balancer.
 - `ipv6` - (string) IPv6 Address of the Load Balancer.
 - `algorithm` - (Optional) Configuration of the algorithm the Load Balancer use.
 - `labels` - (map) User-defined labels (key-value pairs).
 - `delete_protection` - (bool) Whether delete protection is enabled.
-- `network_id` - (int) ID of the first private network that this Load Balancer is connected to.
-- `network_ip` - (string) IP of the Load Balancer in the first private network that it is connected to.
+-
+`network_id` - (int) ID of the first private network that this Load Balancer is connected to.
+-
+`network_ip` - (string) IP of the Load Balancer in the first private network that it is connected to.
 
 `algorithm` support the following fields:
 
-- `type` - (string) Type of the Load Balancer Algorithm. `round_robin` or `least_connections`
+- `type` - (string) Type of the Load Balancer Algorithm. `round_robin` or
+  `least_connections`
 
 ## Import
 

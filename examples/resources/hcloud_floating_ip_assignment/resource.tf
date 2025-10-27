@@ -6,7 +6,7 @@ resource "hcloud_floating_ip_assignment" "main" {
 resource "hcloud_server" "node1" {
   name        = "node1"
   image       = "debian-11"
-  server_type = "cx22"
+  server_type = "cx23"
   datacenter  = "fsn1-dc8"
 }
 

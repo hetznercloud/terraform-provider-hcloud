@@ -14,7 +14,7 @@ Provides a Hetzner Cloud Server Network to represent a private network on a serv
 resource "hcloud_server" "node1" {
   name        = "node1"
   image       = "debian-11"
-  server_type = "cx22"
+  server_type = "cx23"
 }
 resource "hcloud_network" "mynet" {
   name     = "my-net"

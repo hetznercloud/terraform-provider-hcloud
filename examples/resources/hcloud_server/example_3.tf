@@ -12,7 +12,7 @@ resource "hcloud_network_subnet" "network-subnet" {
 
 resource "hcloud_server" "server" {
   name        = "server"
-  server_type = "cx22"
+  server_type = "cx23"
   image       = "ubuntu-20.04"
   location    = "nbg1"
 

@@ -17,7 +17,7 @@ Provides an Hetzner Cloud server resource. This can be used to create, modify, a
 resource "hcloud_server" "node1" {
   name        = "node1"
   image       = "debian-11"
-  server_type = "cx22"
+  server_type = "cx23"
   public_net {
     ipv4_enabled = true
     ipv6_enabled = true
@@ -41,7 +41,7 @@ auto_delete   = true
 resource "hcloud_server" "server_test" {
   name        = "test-server"
   image       = "ubuntu-20.04"
-  server_type = "cx22"
+  server_type = "cx23"
   datacenter  = "fsn1-dc14"
   labels = {
     "test" : "tessst1"
@@ -71,7 +71,7 @@ resource "hcloud_network_subnet" "network-subnet" {
 
 resource "hcloud_server" "server" {
   name        = "server"
-  server_type = "cx22"
+  server_type = "cx23"
   image       = "ubuntu-20.04"
   location    = "nbg1"
 
@@ -107,7 +107,7 @@ data "hcloud_image" "packer_snapshot" {
 resource "hcloud_server" "from_snapshot" {
   name        = "from-snapshot"
   image       = data.hcloud_image.packer_snapshot.id
-  server_type = "cx22"
+  server_type = "cx23"
   public_net {
     ipv4_enabled = true
     ipv6_enabled = true
@@ -128,7 +128,7 @@ resource "hcloud_server" "server_test" {
   //...
   public_net {
     ipv4_enabled = true
-    ipv4 = hcloud_primary_ip.primary_ip_1.id
+    ipv4         = hcloud_primary_ip.primary_ip_1.id
     ipv6_enabled = false
   }
   //...
@@ -138,7 +138,7 @@ resource "hcloud_server" "server_test" {
   //...
   public_net {
     ipv4_enabled = true
-    ipv4 = hcloud_primary_ip.primary_ip_1.id
+    ipv4         = hcloud_primary_ip.primary_ip_1.id
     ipv6_enabled = true
   }
   //...
@@ -158,40 +158,69 @@ resource "hcloud_server" "server_test" {
 
 The following arguments are supported:
 
-- `name` - (Required, string) Name of the server to create (must be unique per project and a valid hostname as per RFC 1123).
-- `server_type` - (Required, string) Name of the server type this server should be created with.
-- `image` - (Required, string) Name or ID of the image the server is created from. **Note** the `image` property is only required when using the resource to create servers. As the Hetzner Cloud API may return servers without an image ID set it is not marked as required in the Terraform Provider itself. Thus, users will get an error from the underlying client library if they forget to set the property and try to create a server.
-- `location` - (Optional, string) The location name to create the server in. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-locations-are-there) for more details about locations.
-- `datacenter` - (Optional, string) The datacenter name to create the server in. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-datacenters-are-there) for more details about datacenters.
-- `user_data` - (Optional, string) Cloud-Init user data to use during server creation
-- `ssh_keys` - (Optional, list) SSH key IDs or names which should be injected into the server at creation time. Once the server is created, you can not update the list of SSH Keys. If you do change this, you will be prompted to destroy and recreate the server. You can avoid this by setting [lifecycle.ignore_changes](https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle#ignore_changes) to `[ ssh_keys ]`.
-- `public_net` - (Optional, block) In this block you can either enable / disable ipv4 and ipv6 or link existing primary IPs (checkout the examples).
-  If this block is not defined, two primary (ipv4 & ipv6) ips getting auto generated.
-- `keep_disk` - (Optional, bool) If true, do not upgrade the disk. This allows downgrading the server type later.
+-
+`name` - (Required, string) Name of the server to create (must be unique per project and a valid hostname as per RFC 1123).
+-
+`server_type` - (Required, string) Name of the server type this server should be created with.
+-
+`image` - (Required, string) Name or ID of the image the server is created from.
+**Note** the
+`image` property is only required when using the resource to create servers. As the Hetzner Cloud API may return servers without an image ID set it is not marked as required in the Terraform Provider itself. Thus, users will get an error from the underlying client library if they forget to set the property and try to create a server.
+-
+`location` - (Optional, string) The location name to create the server in. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-locations-are-there) for more details about locations.
+-
+`datacenter` - (Optional, string) The datacenter name to create the server in. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-datacenters-are-there) for more details about datacenters.
+-
+`user_data` - (Optional, string) Cloud-Init user data to use during server creation
+-
+`ssh_keys` - (Optional, list) SSH key IDs or names which should be injected into the server at creation time. Once the server is created, you can not update the list of SSH Keys. If you do change this, you will be prompted to destroy and recreate the server. You can avoid this by setting [lifecycle.ignore_changes](https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle#ignore_changes) to
+`[ ssh_keys ]`.
+-
+`public_net` - (Optional, block) In this block you can either enable / disable ipv4 and ipv6 or link existing primary IPs (checkout the examples).
+If this block is not defined, two primary (ipv4 & ipv6) ips getting auto generated.
+-
+`keep_disk` - (Optional, bool) If true, do not upgrade the disk. This allows downgrading the server type later.
 - `iso` - (Optional, string) ID or Name of an ISO image to mount.
-- `rescue` - (Optional, string) Enable and boot in to the specified rescue system. This enables simple installation of custom operating systems. `linux64` or `linux32`
-- `labels` - (Optional, map) User-defined labels (key-value pairs) should be created with.
+-
+`rescue` - (Optional, string) Enable and boot in to the specified rescue system. This enables simple installation of custom operating systems.
+`linux64` or `linux32`
+-
+`labels` - (Optional, map) User-defined labels (key-value pairs) should be created with.
 - `backups` - (Optional, bool) Enable or disable backups.
-- `firewall_ids` - (Optional, list) Firewall IDs the server should be attached to on creation.
+-
+`firewall_ids` - (Optional, list) Firewall IDs the server should be attached to on creation.
 - `ignore_remote_firewall_ids` - (Optional, bool) Ignores any updates
   to the `firewall_ids` argument which were received from the server.
   This should not be used in normal cases. See the documentation of the
   `hcloud_firewall_attachment` resource for a reason to use this
   argument.
-- `network` - (Optional) Network the server should be attached to on creation. (Can be specified multiple times)
-- `placement_group_id` - (Optional, string) Placement Group ID the server added to on creation.
-- `delete_protection` - (Optional, bool) Enable or disable delete protection (Needs to be the same as `rebuild_protection`). See ["Delete Protection"](../index.html.markdown#delete-protection) in the Provider Docs for details.
-- `rebuild_protection` - (Optional, bool) Enable or disable rebuild protection (Needs to be the same as `delete_protection`).
-- `allow_deprecated_images` - (Optional, bool) Enable the use of deprecated images (default: false). **Note** Deprecated images will be removed after three months. Using them is then no longer possible.
-- `shutdown_before_deletion` - (bool) Whether to try shutting the server down gracefully before deleting it.
+-
+`network` - (Optional) Network the server should be attached to on creation. (Can be specified multiple times)
+-
+`placement_group_id` - (Optional, string) Placement Group ID the server added to on creation.
+-
+`delete_protection` - (Optional, bool) Enable or disable delete protection (Needs to be the same as
+`rebuild_protection`). See ["Delete Protection"](../index.html.markdown#delete-protection) in the Provider Docs for details.
+-
+`rebuild_protection` - (Optional, bool) Enable or disable rebuild protection (Needs to be the same as
+`delete_protection`).
+-
+`allow_deprecated_images` - (Optional, bool) Enable the use of deprecated images (default: false).
+**Note
+** Deprecated images will be removed after three months. Using them is then no longer possible.
+-
+`shutdown_before_deletion` - (bool) Whether to try shutting the server down gracefully before deleting it.
 
 `network` support the following fields:
 
 - `network_id` - (Required, int) ID of the network
 - `ip` - (Optional, string) Specify the IP the server should get in the network
-- `alias_ips` - (Optional, list) Alias IPs the server should have in the Network.
+-
+`alias_ips` - (Optional, list) Alias IPs the server should have in the Network.
 
-There is a bug with Terraform `1.4+` which causes the network to be detached & attached on every apply. Set `alias_ips = []` to avoid this. See [#650](https://github.com/hetznercloud/terraform-provider-hcloud/issues/650#issuecomment-1497160625) for details.
+There is a bug with Terraform
+`1.4+` which causes the network to be detached & attached on every apply. Set
+`alias_ips = []` to avoid this. See [#650](https://github.com/hetznercloud/terraform-provider-hcloud/issues/650#issuecomment-1497160625) for details.
 
 ## Attributes Reference
 
@@ -201,8 +230,10 @@ The following attributes are exported:
 - `name` - (string) Name of the server.
 - `server_type` - (string) Name of the server type.
 - `image` - (string) Name or ID of the image the server was created from.
-- `location` - (string) The location name. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-locations-are-there) for more details about locations.
-- `datacenter` - (string) The datacenter name. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-datacenters-are-there) for more details about datacenters.
+-
+`location` - (string) The location name. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-locations-are-there) for more details about locations.
+-
+`datacenter` - (string) The datacenter name. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-datacenters-are-there) for more details about datacenters.
 - `backup_window` - (string) The backup window of the server, if enabled.
 - `backups` - (bool) Whether backups are enabled.
 - `iso` - (string) ID or Name of the mounted ISO image.
@@ -219,19 +250,24 @@ The following attributes are exported:
   issue. It is therefore necessary to use `depends_on` to link the server
   to the respective subnetwork. See examples.
 - `firewall_ids` - (Optional, list) Firewall IDs the server is attached to.
-- `network` - (Optional, list) Network the server should be attached to on creation. (Can be specified multiple times)
-- `placement_group_id` - (Optional, string) Placement Group ID the server is assigned to.
+-
+`network` - (Optional, list) Network the server should be attached to on creation. (Can be specified multiple times)
+-
+`placement_group_id` - (Optional, string) Placement Group ID the server is assigned to.
 - `delete_protection` - (bool) Whether delete protection is enabled.
 - `rebuild_protection` - (bool) Whether rebuild protection is enabled.
-- `shutdown_before_deletion` - (bool) Whether the server will try to shut down gracefully before being deleted.
+-
+`shutdown_before_deletion` - (bool) Whether the server will try to shut down gracefully before being deleted.
 - `primary_disk_size` - (int) The size of the primary disk in GB.
 
 a single entry in `network` support the following fields:
 
 - `network_id` - (Required, int) ID of the network
 - `ip` - (Optional, string) Specify the IP the server should get in the network
-- `alias_ips` - (Optional, list) Alias IPs the server should have in the Network.
-- `mac_address` - (Optional, string) The MAC address the private interface of the server has
+-
+`alias_ips` - (Optional, list) Alias IPs the server should have in the Network.
+-
+`mac_address` - (Optional, string) The MAC address the private interface of the server has
 
 ## Import
 

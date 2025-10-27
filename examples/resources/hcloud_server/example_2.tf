@@ -13,7 +13,7 @@ resource "hcloud_primary_ip" "primary_ip_1" {
 resource "hcloud_server" "server_test" {
   name        = "test-server"
   image       = "ubuntu-20.04"
-  server_type = "cx22"
+  server_type = "cx23"
   datacenter  = "fsn1-dc14"
   labels = {
     "test" : "tessst1"
