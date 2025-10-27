@@ -21,9 +21,10 @@ func TestAccFirewallAttachmentResource_Servers(t *testing.T) {
 
 	fwRes := firewall.NewRData(t, "basic_firewall", nil, nil)
 	srvRes := &server.RData{
-		Name:  "test-server",
-		Type:  teste2e.TestServerType,
-		Image: teste2e.TestImage,
+		Name:       "test-server",
+		Type:       teste2e.TestServerType,
+		Image:      teste2e.TestImage,
+		Datacenter: teste2e.TestDataCenter,
 	}
 	srvRes.SetRName("test_server")
 
@@ -51,6 +52,15 @@ func TestAccFirewallAttachmentResource_Servers(t *testing.T) {
 					testsupport.LiftTCF(hasServerResource(t, &fw, &srv)),
 				),
 			},
+			{
+				ResourceName: fwAttRes.TFID(),
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_server", srvRes,
+					"testdata/r/hcloud_firewall", fwRes,
+					"testdata/r/hcloud_firewall_attachment", fwAttRes,
+				),
+				ImportState: true,
+			},
 		},
 	})
 }
@@ -63,9 +73,10 @@ func TestAccFirewallAttachmentResource_LabelSelectors(t *testing.T) {
 
 	fwRes := firewall.NewRData(t, "basic_firewall", nil, nil)
 	srvRes := &server.RData{
-		Name:  "test-server",
-		Type:  teste2e.TestServerType,
-		Image: teste2e.TestImage,
+		Name:       "test-server",
+		Type:       teste2e.TestServerType,
+		Image:      teste2e.TestImage,
+		Datacenter: teste2e.TestDataCenter,
 		Labels: map[string]string{
 			"firewall-attachment": "test-server",
 		},
@@ -95,6 +106,15 @@ func TestAccFirewallAttachmentResource_LabelSelectors(t *testing.T) {
 					testsupport.CheckResourceExists(fwRes.TFID(), firewall.ByID(t, &fw)),
 					testsupport.LiftTCF(hasLabelSelectorResource(t, &fw, "firewall-attachment=test-server")),
 				),
+			},
+			{
+				ResourceName: fwAttRes.TFID(),
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_server", srvRes,
+					"testdata/r/hcloud_firewall", fwRes,
+					"testdata/r/hcloud_firewall_attachment", fwAttRes,
+				),
+				ImportState: true,
 			},
 		},
 	})

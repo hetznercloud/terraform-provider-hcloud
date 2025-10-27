@@ -2,6 +2,7 @@ package firewall
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"sort"
@@ -14,6 +15,8 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
+var errorNoResourcesReferenced = errors.New("no resources referenced")
+
 // AttachmentResourceType is the type of the hcloud_firewall_attachment resource.
 const AttachmentResourceType = "hcloud_firewall_attachment"
 
@@ -25,6 +28,9 @@ func AttachmentResource() *schema.Resource {
 		CreateContext: createAttachment,
 		UpdateContext: updateAttachment,
 		DeleteContext: deleteAttachment,
+		Importer: &schema.ResourceImporter{
+			StateContext: resourceFirewallAttachmentImport,
+		},
 
 		Schema: map[string]*schema.Schema{
 			"firewall_id": {
@@ -54,7 +60,11 @@ func readAttachment(ctx context.Context, d *schema.ResourceData, m interface{}) 
 	var att attachment
 
 	if err := att.FromResourceData(d); err != nil {
-		return diag.FromErr(err)
+		// This happens during an import of the resource,
+		// but we really only care about the FirewallID anyway
+		if !errors.Is(err, errorNoResourcesReferenced) {
+			return diag.FromErr(err)
+		}
 	}
 
 	client := m.(*hcloud.Client)
@@ -178,7 +188,7 @@ type attachment struct {
 // FromResourceData copies the contents of d into a
 func (a *attachment) FromResourceData(d *schema.ResourceData) error {
 	// The terraform schema definition above ensures this is always set and
-	// of the correct type. Thus there is no need to check such things.
+	// of the correct type. Thus, there is no need to check such things.
 	a.FirewallID = util.CastInt64(d.Get("firewall_id"))
 
 	srvIDs, ok := d.GetOk("server_ids")
@@ -202,7 +212,7 @@ func (a *attachment) FromResourceData(d *schema.ResourceData) error {
 	}
 
 	if len(a.ServerIDs) == 0 && len(a.LabelSelectors) == 0 {
-		return fmt.Errorf("no resources referenced")
+		return errorNoResourcesReferenced
 	}
 	return nil
 }
@@ -344,4 +354,14 @@ func labelSelectorResource(ls string) hcloud.FirewallResource {
 		Type:          hcloud.FirewallResourceTypeLabelSelector,
 		LabelSelector: &hcloud.FirewallResourceLabelSelector{Selector: ls},
 	}
+}
+
+func resourceFirewallAttachmentImport(_ context.Context, d *schema.ResourceData, _ interface{}) ([]*schema.ResourceData, error) {
+	firewallID, err := util.ParseID(d.Id())
+	if err != nil {
+		return nil, err
+	}
+	d.Set("firewall_id", util.CastInt(firewallID))
+
+	return []*schema.ResourceData{d}, nil
 }

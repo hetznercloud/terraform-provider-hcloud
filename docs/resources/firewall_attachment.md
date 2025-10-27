@@ -139,3 +139,11 @@ resource "hcloud_firewall_attachment" "allow_rules_att" {
 - `server_ids` (List) - List of Server IDs attached to the Firewall.
 - `label_selectors` (List) - List of label selectors attached to the
   Firewall.
+
+## Import
+
+Firewall Attachments can be imported using the `id` of the firewall:
+
+```shell
+terraform import hcloud_firewall_attachment.example "$FIREWALL_ID"
+```
