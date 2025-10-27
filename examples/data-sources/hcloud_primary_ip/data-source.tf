@@ -11,7 +11,7 @@ data "hcloud_primary_ip" "ip_3" {
 // Link a server to an existing primary IP
 resource "hcloud_server" "server_test" {
   name        = "test-server"
-  image       = "ubuntu-20.04"
+  image       = "ubuntu-24.04"
   server_type = "cx23"
   datacenter  = "fsn1-dc14"
   labels = {

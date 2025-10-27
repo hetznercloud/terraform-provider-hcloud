@@ -21,7 +21,7 @@ resource "hcloud_placement_group" "my-placement-group" {
 
 resource "hcloud_server" "node1" {
   name               = "node1"
-  image              = "debian-11"
+  image              = "debian-12"
   server_type        = "cx23"
   placement_group_id = hcloud_placement_group.my-placement-group.id
 }
@@ -31,8 +31,7 @@ resource "hcloud_server" "node1" {
 
 - `name` - (Optional, string) Name of the Placement Group.
 - `type` - (Required, string) Type of the Placement Group.
--
-`labels` - (Optional, map) User-defined labels (key-value pairs) should be created with.
+- `labels` - (Optional, map) User-defined labels (key-value pairs) should be created with.
 
 ## Attributes Reference
 

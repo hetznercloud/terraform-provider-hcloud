@@ -13,7 +13,7 @@ Provides a Hetzner Cloud Server Network to represent a private network on a serv
 ```terraform
 resource "hcloud_server" "node1" {
   name        = "node1"
-  image       = "debian-11"
+  image       = "debian-12"
   server_type = "cx23"
 }
 resource "hcloud_network" "mynet" {

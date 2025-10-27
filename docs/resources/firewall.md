@@ -34,9 +34,9 @@ resource "hcloud_firewall" "myfirewall" {
 }
 
 resource "hcloud_server" "node1" {
-  name        = "node1"
-  image       = "debian-11"
-  server_type = "cx23"
+  name         = "node1"
+  image        = "debian-12"
+  server_type  = "cx23"
   firewall_ids = [hcloud_firewall.myfirewall.id]
 }
 ```
@@ -44,39 +44,28 @@ resource "hcloud_server" "node1" {
 ## Argument Reference
 
 - `name` - (Optional, string) Name of the Firewall.
--
-`labels` - (Optional, map) User-defined labels (key-value pairs) should be created with.
+- `labels` - (Optional, map) User-defined labels (key-value pairs) should be created with.
 - `rule` - (Optional) Configuration of a Rule from this Firewall.
 - `apply_to` (Optional) Resources the firewall should be assigned to
 
 `rule` support the following fields:
 
 - `direction` - (Required, string) Direction of the Firewall Rule. `in`
-- `protocol` - (Required, string) Protocol of the Firewall Rule. `tcp`, `icmp`,
-  `udp`, `gre`, `esp`
-- `port` - (Required, string) Port of the Firewall Rule. Required when
-  `protocol` is `tcp` or `udp`. You can use `any`
-  to allow all ports for the specific protocol. Port ranges are also possible:
-  `80-85` allows all ports between 80 and 85.
--
-`source_ips` - (Required, List) List of IPs or CIDRs that are allowed within this Firewall Rule (when
-`direction`
-is `in`)
--
-`destination_ips` - (Required, List) List of IPs or CIDRs that are allowed within this Firewall Rule (when
-`direction`
-is `out`)
+- `protocol` - (Required, string) Protocol of the Firewall Rule. `tcp`, `icmp`, `udp`, `gre`, `esp`
+- `port` - (Required, string) Port of the Firewall Rule. Required when `protocol` is `tcp` or `udp`. You can use `any`
+  to allow all ports for the specific protocol. Port ranges are also possible: `80-85` allows all ports between 80 and 85.
+- `source_ips` - (Required, List) List of IPs or CIDRs that are allowed within this Firewall Rule (when `direction`
+  is `in`)
+- `destination_ips` - (Required, List) List of IPs or CIDRs that are allowed within this Firewall Rule (when `direction`
+  is `out`)
 - `description` - (Optional, string) Description of the firewall rule
 
 `apply_to` support the following fields:
 
--
-`label_selector` - (Optional, string) Label Selector to select servers the firewall should be applied to (only one
-of `server` and `label_selector`can be applied in one block)
--
-`server` - (Optional, int) ID of the server you want to apply the firewall to (only one of
-`server`
-and `label_selector`can be applied in one block)
+- `label_selector` - (Optional, string) Label Selector to select servers the firewall should be applied to (only one
+  of `server` and `label_selector`can be applied in one block)
+- `server` - (Optional, int) ID of the server you want to apply the firewall to (only one of `server`
+  and `label_selector`can be applied in one block)
 
 ## Attributes Reference
 
@@ -89,27 +78,19 @@ and `label_selector`can be applied in one block)
 `rule` support the following fields:
 
 - `direction` - (Required, string) Direction of the Firewall Rule. `in`, `out`
-- `protocol` - (Required, string) Protocol of the Firewall Rule. `tcp`, `icmp`,
-  `udp`, `gre`, `esp`
-- `port` - (Required, string) Port of the Firewall Rule. Required when
-  `protocol` is `tcp` or `udp`
--
-`source_ips` - (Required, List) List of IPs or CIDRs that are allowed within this Firewall Rule (when
-`direction`
-is `in`)
--
-`destination_ips` - (Required, List) List of IPs or CIDRs that are allowed within this Firewall Rule (when
-`direction`
-is `out`)
+- `protocol` - (Required, string) Protocol of the Firewall Rule. `tcp`, `icmp`, `udp`, `gre`, `esp`
+- `port` - (Required, string) Port of the Firewall Rule. Required when `protocol` is `tcp` or `udp`
+- `source_ips` - (Required, List) List of IPs or CIDRs that are allowed within this Firewall Rule (when `direction`
+  is `in`)
+- `destination_ips` - (Required, List) List of IPs or CIDRs that are allowed within this Firewall Rule (when `direction`
+  is `out`)
 - `description` - (Optional, string) Description of the firewall rule
 
 `apply_to` support the following fields:
 
--
-`label_selector` - (string) Label Selector to select servers the firewall is applied to. Empty if a server is directly
-referenced
-- `server` - (int) ID of a server where the firewall is applied to.
-  `0` if applied to a label_selector
+- `label_selector` - (string) Label Selector to select servers the firewall is applied to. Empty if a server is directly
+  referenced
+- `server` - (int) ID of a server where the firewall is applied to. `0` if applied to a label_selector
 
 ## Import
 

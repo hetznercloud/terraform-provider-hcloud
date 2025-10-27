@@ -13,7 +13,7 @@ Provides a Hetzner Cloud snapshot to represent an image with type snapshot in th
 ```terraform
 resource "hcloud_server" "node1" {
   name        = "node1"
-  image       = "debian-11"
+  image       = "debian-12"
   server_type = "cx23"
 }
 
@@ -26,8 +26,7 @@ resource "hcloud_snapshot" "my-snapshot" {
 
 - `server_id` - (Required, int) Server to the snapshot should be created from.
 - `description` - (Optional, string) Description of the snapshot.
--
-`labels` - (Optional, map) User-defined labels (key-value pairs) should be created with.
+- `labels` - (Optional, map) User-defined labels (key-value pairs) should be created with.
 
 ## Attributes Reference
 

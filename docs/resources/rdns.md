@@ -15,7 +15,7 @@ For servers:
 ```hcl
 resource "hcloud_server" "node1" {
   name        = "node1"
-  image       = "debian-11"
+  image       = "debian-12"
   server_type = "cx23"
 }
 
@@ -74,16 +74,12 @@ resource "hcloud_rdns" "load_balancer_master" {
 
 ## Argument Reference
 
-- `dns_ptr` - (Required, string) The DNS address the
-  `ip_address` should resolve to.
-- `ip_address` - (Required, string) The IP address that should point to
-  `dns_ptr`.
+- `dns_ptr` - (Required, string) The DNS address the `ip_address` should resolve to.
+- `ip_address` - (Required, string) The IP address that should point to `dns_ptr`.
 - `server_id` - (Required, int) The server the `ip_address` belongs to.
 - `primary_ip_id` - (Required, int) The Primary IP the `ip_address` belongs to.
-- `floating_ip_id` - (Required, int) The Floating IP the
-  `ip_address` belongs to.
-- `load_balancer_id` - (Required, int) The Load Balancer the
-  `ip_address` belongs to.
+- `floating_ip_id` - (Required, int) The Floating IP the `ip_address` belongs to.
+- `load_balancer_id` - (Required, int) The Load Balancer the `ip_address` belongs to.
 
 ## Attributes Reference
 

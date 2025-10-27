@@ -38,7 +38,7 @@ data "hcloud_primary_ip" "ip_3" {
 // Link a server to an existing primary IP
 resource "hcloud_server" "server_test" {
   name        = "test-server"
-  image       = "ubuntu-20.04"
+  image       = "ubuntu-24.04"
   server_type = "cx23"
   datacenter  = "fsn1-dc14"
   labels = {
@@ -56,22 +56,18 @@ resource "hcloud_server" "server_test" {
 - `id` - (Optional, string) ID of the Primary IP.
 - `name` - (Optional, string) Name of the Primary IP.
 - `ip_address` - (Optional, string) IP address of the Primary IP.
--
-`with_selector` - (Optional, string) [Label selector](https://docs.hetzner.cloud/reference/cloud#label-selector)
+- `with_selector` - (Optional, string) [Label selector](https://docs.hetzner.cloud/reference/cloud#label-selector)
 
 ## Attributes Reference
 
 - `id` - (int) Unique ID of the Primary IP.
 - `type` - (string) Type of the Primary IP.
 - `name` - (string) Name of the Primary IP.
--
-`datacenter` - (string) The datacenter name of the Primary IP. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-datacenters-are-there) for more details about datacenters.
+- `datacenter` - (string) The datacenter name of the Primary IP. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-datacenters-are-there) for more details about datacenters.
 - `auto_delete` - (bool) Whether auto delete is enabled.
 - `labels` - (map) User-defined labels (key-value pairs).
 - `ip_address` - (string) IP Address of the Primary IP.
--
-`ip_network` - (string) IPv6 subnet of the Primary IP for IPv6 addresses. (Only set if
-`type` is `ipv6`)
+- `ip_network` - (string) IPv6 subnet of the Primary IP for IPv6 addresses. (Only set if `type` is `ipv6`)
 - `assignee_id` - (int) ID of the assigned resource.
 - `assignee_type` - (string) The type of the assigned resource.
 - `delete_protection` - (bool) Whether delete protection is enabled.

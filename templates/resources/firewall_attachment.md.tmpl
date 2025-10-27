@@ -20,7 +20,7 @@ specified in that `hcloud_firewall_attachment`.
 resource "hcloud_server" "test_server" {
     name        = "test-server"
     server_type = "cx23"
-    image       = "ubuntu-20.04"
+    image       = "ubuntu-24.04"
 }
 
 resource "hcloud_firewall" "basic_firewall" {
@@ -39,7 +39,7 @@ resource "hcloud_firewall_attachment" "fw_ref" {
 resource "hcloud_server" "test_server" {
     name        = "test-server"
     server_type = "cx23"
-    image       = "ubuntu-20.04"
+    image       = "ubuntu-24.04"
 
     labels = {
       firewall-attachment = "test-server"
@@ -87,7 +87,7 @@ resource "hcloud_firewall" "deny_all" {
 resource "hcloud_server" "test_server" {
     name                       = "test-server"
     server_type                = "cx23"
-    image                      = "ubuntu-20.04"
+    image                      = "ubuntu-24.04"
     ignore_remote_firewall_ids = true
     firewall_ids               = [
         hcloud_firewall.deny_all.id
