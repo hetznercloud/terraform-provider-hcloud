@@ -16,7 +16,7 @@ func TestAccServerTypeDataSource(t *testing.T) {
 	byName := &servertype.DData{ServerTypeName: teste2e.TestServerType}
 	byName.SetRName("by_name")
 
-	byID := &servertype.DData{ServerTypeID: "22"}
+	byID := &servertype.DData{ServerTypeID: "109"}
 	byID.SetRName("by_id")
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -30,42 +30,38 @@ func TestAccServerTypeDataSource(t *testing.T) {
 				),
 
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(byName.TFID(), "id", "22"),
-					resource.TestCheckResourceAttr(byName.TFID(), "name", "cpx11"),
+					resource.TestCheckResourceAttr(byName.TFID(), "id", "109"),
+					resource.TestCheckResourceAttr(byName.TFID(), "name", "cpx22"),
 					resource.TestCheckResourceAttr(byName.TFID(), "category", "regular_purpose"),
 					resource.TestCheckResourceAttr(byName.TFID(), "cores", "2"),
-					resource.TestCheckResourceAttr(byName.TFID(), "memory", "2"),
-					resource.TestCheckResourceAttr(byName.TFID(), "disk", "40"),
+					resource.TestCheckResourceAttr(byName.TFID(), "memory", "4"),
+					resource.TestCheckResourceAttr(byName.TFID(), "disk", "80"),
 					resource.TestCheckResourceAttr(byName.TFID(), "storage_type", "local"),
 					resource.TestCheckResourceAttr(byName.TFID(), "cpu_type", "shared"),
 					resource.TestCheckResourceAttr(byName.TFID(), "architecture", "x86"),
-					resource.TestCheckResourceAttr(byName.TFID(), "locations.#", "6"),
+					resource.TestCheckResourceAttr(byName.TFID(), "locations.#", "4"),
 					resource.TestCheckResourceAttr(byName.TFID(), "locations.0.id", "1"),
 					resource.TestCheckResourceAttr(byName.TFID(), "locations.0.name", "fsn1"),
-					resource.TestCheckResourceAttr(byName.TFID(), "locations.0.is_deprecated", "true"),
-					resource.TestCheckResourceAttr(byName.TFID(), "locations.0.deprecation_announced", "2025-10-16T06:00:00Z"),
-					resource.TestCheckResourceAttr(byName.TFID(), "locations.0.unavailable_after", "2025-12-31T23:59:59Z"),
+					resource.TestCheckResourceAttr(byName.TFID(), "locations.0.is_deprecated", "false"),
 
 					resource.TestCheckResourceAttr(byName.TFID(), "included_traffic", "0"),
 					resource.TestCheckResourceAttr(byName.TFID(), "is_deprecated", "false"),
 					resource.TestCheckResourceAttr(byName.TFID(), "deprecation_announced", ""),
 					resource.TestCheckResourceAttr(byName.TFID(), "unavailable_after", ""),
 
-					resource.TestCheckResourceAttr(byID.TFID(), "id", "22"),
-					resource.TestCheckResourceAttr(byID.TFID(), "name", "cpx11"),
+					resource.TestCheckResourceAttr(byID.TFID(), "id", "109"),
+					resource.TestCheckResourceAttr(byID.TFID(), "name", "cpx22"),
 					resource.TestCheckResourceAttr(byID.TFID(), "category", "regular_purpose"),
 					resource.TestCheckResourceAttr(byID.TFID(), "cores", "2"),
-					resource.TestCheckResourceAttr(byID.TFID(), "memory", "2"),
-					resource.TestCheckResourceAttr(byID.TFID(), "disk", "40"),
+					resource.TestCheckResourceAttr(byID.TFID(), "memory", "4"),
+					resource.TestCheckResourceAttr(byID.TFID(), "disk", "80"),
 					resource.TestCheckResourceAttr(byID.TFID(), "storage_type", "local"),
 					resource.TestCheckResourceAttr(byID.TFID(), "cpu_type", "shared"),
 					resource.TestCheckResourceAttr(byID.TFID(), "architecture", "x86"),
-					resource.TestCheckResourceAttr(byName.TFID(), "locations.#", "6"),
+					resource.TestCheckResourceAttr(byName.TFID(), "locations.#", "4"),
 					resource.TestCheckResourceAttr(byName.TFID(), "locations.0.id", "1"),
 					resource.TestCheckResourceAttr(byName.TFID(), "locations.0.name", "fsn1"),
-					resource.TestCheckResourceAttr(byName.TFID(), "locations.0.is_deprecated", "true"),
-					resource.TestCheckResourceAttr(byName.TFID(), "locations.0.deprecation_announced", "2025-10-16T06:00:00Z"),
-					resource.TestCheckResourceAttr(byName.TFID(), "locations.0.unavailable_after", "2025-12-31T23:59:59Z"),
+					resource.TestCheckResourceAttr(byName.TFID(), "locations.0.is_deprecated", "false"),
 
 					resource.TestCheckResourceAttr(byID.TFID(), "included_traffic", "0"),
 					resource.TestCheckResourceAttr(byID.TFID(), "is_deprecated", "false"),

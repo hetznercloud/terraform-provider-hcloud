@@ -23,7 +23,7 @@ resource "hcloud_server" "workers" {
 
   name        = "node${count.index}"
   image       = "debian-12"
-  server_type = "cx22"
+  server_type = "cx23"
   location    = element(data.hcloud_locations.all.locations, count.index).name
 }
 ```

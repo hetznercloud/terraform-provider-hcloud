@@ -23,10 +23,10 @@ var (
 	TestImageID = getEnv("TEST_IMAGE_ID", "161547269")
 
 	// TestServerType is the default server type used in all tests
-	TestServerType = getEnv("TEST_SERVER_TYPE", "cpx11")
+	TestServerType = getEnv("TEST_SERVER_TYPE", "cpx22")
 
 	// TestServerTypeUpgrade is the upgrade server type used in all tests
-	TestServerTypeUpgrade = getEnv("TEST_SERVER_TYPE_UPGRADE", "cpx21")
+	TestServerTypeUpgrade = getEnv("TEST_SERVER_TYPE_UPGRADE", "cpx32")
 
 	// TestArchitecture is the default architecture used in all tests, should match the architecture of the TestServerType.
 	TestArchitecture = getEnv("TEST_ARCHITECTURE", string(hcloud.ArchitectureX86))
@@ -35,10 +35,10 @@ var (
 	TestLoadBalancerType = "lb11"
 
 	// TestDataCenter is the default datacenter where we execute our tests.
-	TestDataCenter = getEnv("TEST_DATACENTER", "nbg1-dc3")
+	TestDataCenter = getEnv("TEST_DATACENTER", "hel1-dc2")
 
 	// TestLocationName is the default location where we execute our tests.
-	TestLocationName = getEnv("TEST_LOCATION", "nbg1")
+	TestLocationName = getEnv("TEST_LOCATION", "hel1")
 )
 
 func ProtoV6ProviderFactories() map[string]func() (tfprotov6.ProviderServer, error) {

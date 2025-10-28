@@ -13,8 +13,8 @@ Provides a Hetzner Cloud Load Balancer to represent a Load Balancer in the Hetzn
 ```terraform
 resource "hcloud_server" "my_server" {
   name        = "server-%d"
-  server_type = "cx22"
-  image       = "ubuntu-18.04"
+  server_type = "cx23"
+  image       = "ubuntu-24.04"
 }
 
 resource "hcloud_load_balancer" "load_balancer" {

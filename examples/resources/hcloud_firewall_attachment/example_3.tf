@@ -13,8 +13,8 @@ resource "hcloud_firewall" "deny_all" {
 
 resource "hcloud_server" "test_server" {
   name                       = "test-server"
-  server_type                = "cx22"
-  image                      = "ubuntu-20.04"
+  server_type                = "cx23"
+  image                      = "ubuntu-24.04"
   ignore_remote_firewall_ids = true
   firewall_ids = [
     hcloud_firewall.deny_all.id

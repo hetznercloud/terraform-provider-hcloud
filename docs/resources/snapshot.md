@@ -13,8 +13,8 @@ Provides a Hetzner Cloud snapshot to represent an image with type snapshot in th
 ```terraform
 resource "hcloud_server" "node1" {
   name        = "node1"
-  image       = "debian-11"
-  server_type = "cx22"
+  image       = "debian-12"
+  server_type = "cx23"
 }
 
 resource "hcloud_snapshot" "my-snapshot" {

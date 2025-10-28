@@ -21,7 +21,7 @@ data "hcloud_server_type" "by_id" {
 }
 
 data "hcloud_server_type" "by_name" {
-  name = "cx22"
+  name = "cx23"
 }
 
 resource "hcloud_server" "main" {
