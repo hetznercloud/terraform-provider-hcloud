@@ -64,5 +64,6 @@ func (e Experimental) AppendNotice(description *string) {
 }
 
 var (
-	DNS = New("DNS API", "in beta", "https://docs.hetzner.cloud/changelog#2025-10-07-dns-beta")
+	DNS        = New("DNS API", "in beta", "https://docs.hetzner.cloud/changelog#2025-10-07-dns-beta")
+	StorageBox = New("Storage Box support", "experimental", "TODO") // TODO: Create and link ticket before release
 )
