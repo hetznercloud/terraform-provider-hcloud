@@ -135,8 +135,7 @@ func ServiceResource() *schema.Resource {
 						},
 						"retries": {
 							Type:     schema.TypeInt,
-							Optional: true,
-							Computed: true,
+							Required: true,
 						},
 						"http": {
 							Type:     schema.TypeList,
