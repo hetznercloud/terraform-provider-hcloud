@@ -57,9 +57,6 @@ See the [Storage Box Type API documentation](https://docs.hetzner.cloud/referenc
 	experimental.StorageBox.AppendNotice(&resp.Schema.MarkdownDescription)
 
 	resp.Schema.Attributes = map[string]schema.Attribute{
-		"id": schema.StringAttribute{
-			Computed: true,
-		},
 		"storage_box_types": schema.ListNestedAttribute{
 			NestedObject: schema.NestedAttributeObject{
 				Attributes: getCommonDataSourceSchema(true),

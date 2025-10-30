@@ -11,7 +11,6 @@ import (
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/deprecation"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/datasourceutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/merge"
 )
 
@@ -77,20 +76,16 @@ func intToInt64Ptr(i *int) *int64 {
 }
 
 type listModel struct {
-	ID              types.String `tfsdk:"id"`
-	StorageBoxTypes types.List   `tfsdk:"storage_box_types"`
+	StorageBoxTypes types.List `tfsdk:"storage_box_types"`
 }
 
 func (m *listModel) FromAPI(ctx context.Context, hc []*hcloud.StorageBoxType) diag.Diagnostics {
 	var diags diag.Diagnostics
 	var newDiags diag.Diagnostics
 
-	tfIDs := make([]string, 0, len(hc))
 	tfItems := make([]attr.Value, 0, len(hc))
 
 	for _, item := range hc {
-		tfIDs = append(tfIDs, util.FormatID(item.ID))
-
 		var value model
 		diags.Append(value.FromAPI(ctx, item)...)
 
@@ -100,7 +95,6 @@ func (m *listModel) FromAPI(ctx context.Context, hc []*hcloud.StorageBoxType) di
 		tfItems = append(tfItems, tfItem)
 	}
 
-	m.ID = types.StringValue(datasourceutil.ListID(tfIDs))
 	m.StorageBoxTypes, newDiags = types.ListValue((&model{}).tfType(), tfItems)
 	diags.Append(newDiags...)
 

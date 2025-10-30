@@ -25,7 +25,6 @@ See TODO for more details.
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
 - `storage_box_types` (Attributes List) (see [below for nested schema](#nestedatt--storage_box_types))
 
 <a id="nestedatt--storage_box_types"></a>
