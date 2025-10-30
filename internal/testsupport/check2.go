@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
@@ -74,4 +75,16 @@ func CheckAPIResourceAllAbsent[T any](resType string, getter GetAPIResourceFunc[
 		}
 		return nil
 	}
+}
+
+func StringExactFromFunc(fn func() string) knownvalue.Check {
+	return knownvalue.StringFunc(func(other string) error {
+		value := fn()
+
+		if other != value {
+			return fmt.Errorf("expected value %s for StringExact check, got: %s", value, other)
+		}
+
+		return nil
+	})
 }
