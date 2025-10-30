@@ -126,7 +126,7 @@ In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.
 ```terraform
 import {
   to = hcloud_zone.example_primary
-  id = "$SSH_KEY_ID"
+  id = "$ZONE_ID_OR_NAME"
 }
 ```
 
