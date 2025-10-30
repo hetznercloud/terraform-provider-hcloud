@@ -57,12 +57,19 @@ func (r *Resource) Configure(_ context.Context, req resource.ConfigureRequest, r
 }
 
 func (r *Resource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema.MarkdownDescription = `
+	resp.Schema.MarkdownDescription = util.MarkdownDescription(`
 Provides a Hetzner Cloud Zone Resource Record Set (RRSet) resource.
 
 This can be used to create, modify, and delete Zone RRSets.
 
 See the [Zone RRSets API documentation](https://docs.hetzner.cloud/reference/cloud#zone-rrsets) for more details.
+
+**RRSets of type TXT:**
+
+The format of TXT records must consist of one or many quoted strings of 255 characters.
+
+A helper function to format TXT record is available at ''provider::hcloud::txt_record''.
+See the examples for more details.
 
 **RRSets of type SOA:**
 
@@ -73,7 +80,7 @@ the parent Zone, therefor this Terraform resource will:
 - remove the RRSet from the state, instead of deleting it.
 - set the SOA record SERIAL value to 0 before saving it to the state, as this value is automatically
   incremented by the API and would cause issues otherwise.
-`
+`)
 
 	experimental.DNS.AppendNotice(&resp.Schema.MarkdownDescription)
 

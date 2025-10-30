@@ -214,5 +214,6 @@ func (p *PluginProvider) Resources(_ context.Context) []func() resource.Resource
 func (p *PluginProvider) Functions(_ context.Context) []func() function.Function {
 	return []func() function.Function{
 		zone.NewIDNAFunction,
+		zonerrset.NewTXTRecordFunction,
 	}
 }
