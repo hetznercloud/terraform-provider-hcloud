@@ -1,5 +1,17 @@
 # Changelog
 
+## [v1.55.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.55.0)
+
+### Features
+
+- support managing records of type SOA (#1225)
+- **firewall**: importing firewall attachments (#1231)
+- add `txt_record` helper function (#1227)
+
+### Bug Fixes
+
+- **load-balancer**: mark health check retries as required (#1232)
+
 ## [v1.54.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.54.0)
 
 ### DNS API Beta
