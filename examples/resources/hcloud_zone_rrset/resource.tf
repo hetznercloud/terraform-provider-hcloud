@@ -21,6 +21,18 @@ resource "hcloud_zone_rrset" "example" {
   change_protection = false
 }
 
+resource "hcloud_zone_rrset" "example_txt" {
+  zone = hcloud_zone.example.name
+  name = "@"
+  type = "TXT"
+  records = [
+    # Format the record using the txt_record helper
+    { value = provider::hcloud::txt_record("v=spf1 include:_spf.example.net ~all") },
+    # Or manually
+    { value = "\"v=spf1 include:_spf.example.net ~all\"" },
+  ]
+}
+
 resource "hcloud_zone_rrset" "example_soa" {
   zone = hcloud_zone.example.name
   name = "@"

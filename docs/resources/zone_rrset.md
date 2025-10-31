@@ -6,6 +6,10 @@ description: |-
   Provides a Hetzner Cloud Zone Resource Record Set (RRSet) resource.
   This can be used to create, modify, and delete Zone RRSets.
   See the Zone RRSets API documentation https://docs.hetzner.cloud/reference/cloud#zone-rrsets for more details.
+  RRSets of type TXT:
+  The format of TXT records must consist of one or many quoted strings of 255 characters.
+  A helper function to format TXT record is available at provider::hcloud::txt_record.
+  See the examples for more details.
   RRSets of type SOA:
   SOA records are created or deleted by the Hetzner Cloud API when creating or deleting
   the parent Zone, therefor this Terraform resource will:
@@ -22,6 +26,13 @@ Provides a Hetzner Cloud Zone Resource Record Set (RRSet) resource.
 This can be used to create, modify, and delete Zone RRSets.
 
 See the [Zone RRSets API documentation](https://docs.hetzner.cloud/reference/cloud#zone-rrsets) for more details.
+
+**RRSets of type TXT:**
+
+The format of TXT records must consist of one or many quoted strings of 255 characters.
+
+A helper function to format TXT record is available at `provider::hcloud::txt_record`.
+See the examples for more details.
 
 **RRSets of type SOA:**
 
@@ -60,6 +71,18 @@ resource "hcloud_zone_rrset" "example" {
   ]
 
   change_protection = false
+}
+
+resource "hcloud_zone_rrset" "example_txt" {
+  zone = hcloud_zone.example.name
+  name = "@"
+  type = "TXT"
+  records = [
+    # Format the record using the txt_record helper
+    { value = provider::hcloud::txt_record("v=spf1 include:_spf.example.net ~all") },
+    # Or manually
+    { value = "\"v=spf1 include:_spf.example.net ~all\"" },
+  ]
 }
 
 resource "hcloud_zone_rrset" "example_soa" {
