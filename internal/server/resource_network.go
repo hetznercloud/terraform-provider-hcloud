@@ -75,7 +75,6 @@ func (r *networkResourceImpl) Schema(_ context.Context, _ resource.SchemaRequest
 			Required:            true,
 			PlanModifiers: []planmodifier.Int64{
 				int64planmodifier.RequiresReplace(),
-				int64planmodifier.UseStateForUnknown(),
 			},
 		},
 		"network_id": schema.Int64Attribute{
