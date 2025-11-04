@@ -2,6 +2,7 @@ package storageboxtype
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -41,4 +42,20 @@ func TestModel(t *testing.T) {
 	assert.Equal(t, "2025-01-01T00:00:00Z", o.DeprecationAnnounced.ValueString())
 	assert.Equal(t, "2025-04-01T00:00:00Z", o.UnavailableAfter.ValueString())
 
+}
+
+func Test_intPtrToInt64Ptr(t *testing.T) {
+	tests := []struct {
+		arg  *int
+		want *int64
+	}{
+		{arg: hcloud.Ptr(0), want: hcloud.Ptr(int64(0))},
+		{arg: hcloud.Ptr(1337), want: hcloud.Ptr(int64(1337))},
+		{arg: nil, want: nil},
+	}
+	for i, tt := range tests {
+		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+			assert.Equal(t, tt.want, intPtrToInt64Ptr(tt.arg))
+		})
+	}
 }

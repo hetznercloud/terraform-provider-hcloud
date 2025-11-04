@@ -52,8 +52,8 @@ func (m *model) FromAPI(ctx context.Context, hc *hcloud.StorageBoxType) diag.Dia
 	m.ID = types.Int64Value(hc.ID)
 	m.Name = types.StringValue(hc.Name)
 	m.Description = types.StringValue(hc.Description)
-	m.SnapshotLimit = types.Int64PointerValue(intToInt64Ptr(hc.SnapshotLimit))
-	m.AutomaticSnapshotLimit = types.Int64PointerValue(intToInt64Ptr(hc.AutomaticSnapshotLimit))
+	m.SnapshotLimit = types.Int64PointerValue(intPtrToInt64Ptr(hc.SnapshotLimit))
+	m.AutomaticSnapshotLimit = types.Int64PointerValue(intPtrToInt64Ptr(hc.AutomaticSnapshotLimit))
 	m.SubaccountsLimit = types.Int64Value(int64(hc.SubaccountsLimit))
 	m.Size = types.Int64Value(hc.Size)
 
@@ -67,7 +67,7 @@ func (m *model) ToTerraform(ctx context.Context) (types.Object, diag.Diagnostics
 	return types.ObjectValueFrom(ctx, m.tfAttributesTypes(), m)
 }
 
-func intToInt64Ptr(i *int) *int64 {
+func intPtrToInt64Ptr(i *int) *int64 {
 	if i == nil {
 		return nil
 	}
