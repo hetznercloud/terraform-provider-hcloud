@@ -26,6 +26,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/servertype"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/storageboxtype"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/tflogutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/zone"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/zonerrset"
@@ -206,6 +207,8 @@ func (p *PluginProvider) DataSources(_ context.Context) []func() datasource.Data
 		servertype.NewDataSourceList,
 		sshkey.NewDataSource,
 		sshkey.NewDataSourceList,
+		storageboxtype.NewDataSource,
+		storageboxtype.NewDataSourceList,
 		zone.NewDataSource,
 		zone.NewDataSourceList,
 		zonerrset.NewDataSource,
