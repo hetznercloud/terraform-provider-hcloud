@@ -5,8 +5,6 @@ subcategory: ""
 description: |-
   Provides a list of Hetzner Cloud Zone.
   See the Zones API documentation https://docs.hetzner.cloud/reference/cloud#zones for more details.
-  Experimental: DNS API is in beta, breaking changes may occur within minor releases.
-  See https://docs.hetzner.cloud/changelog#2025-10-07-dns-beta for more details.
 ---
 
 # hcloud_zones (Data Source)
@@ -14,9 +12,6 @@ description: |-
 Provides a list of Hetzner Cloud Zone.
 
 See the [Zones API documentation](https://docs.hetzner.cloud/reference/cloud#zones) for more details.
-
-**Experimental:** DNS API is in beta, breaking changes may occur within minor releases.
-See https://docs.hetzner.cloud/changelog#2025-10-07-dns-beta for more details.
 
 ## Example Usage
 

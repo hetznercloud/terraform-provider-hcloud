@@ -17,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/experimental"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/resourceutil"
 )
@@ -47,8 +46,6 @@ func (r *Resource) Metadata(_ context.Context, _ resource.MetadataRequest, resp 
 // provider-defined DataSource type. It is separately executed for each
 // ReadDataSource RPC.
 func (r *Resource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
-	experimental.DNS.AppendDiagnostic(&resp.Diagnostics)
-
 	var newDiags diag.Diagnostics
 
 	r.client, newDiags = hcloudutil.ConfigureClient(req.ProviderData)
@@ -68,8 +65,6 @@ For Internationalized domain names (IDN), see the ` + "`provider::hcloud::idna`"
 
 See the [Zones API documentation](https://docs.hetzner.cloud/reference/cloud#zones) for more details.
 `
-
-	experimental.DNS.AppendNotice(&resp.Schema.MarkdownDescription)
 
 	resp.Schema.Attributes = map[string]schema.Attribute{
 		"id": schema.Int64Attribute{

@@ -16,7 +16,6 @@ import (
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/experimental"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/resourceutil"
 )
@@ -45,8 +44,6 @@ func (r *Resource) Metadata(_ context.Context, _ resource.MetadataRequest, resp 
 // provider-defined DataSource type. It is separately executed for each
 // ReadDataSource RPC.
 func (r *Resource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
-	experimental.DNS.AppendDiagnostic(&resp.Diagnostics)
-
 	var newDiags diag.Diagnostics
 
 	r.client, newDiags = hcloudutil.ConfigureClient(req.ProviderData)
@@ -81,8 +78,6 @@ the parent Zone, therefor this Terraform resource will:
 - set the SOA record SERIAL value to 0 before saving it to the state, as this value is automatically
   incremented by the API and would cause issues otherwise.
 `)
-
-	experimental.DNS.AppendNotice(&resp.Schema.MarkdownDescription)
 
 	resp.Schema.Attributes = map[string]schema.Attribute{
 		"zone": schema.StringAttribute{

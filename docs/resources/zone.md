@@ -7,8 +7,6 @@ description: |-
   This can be used to create, modify, and delete Zones.
   For Internationalized domain names (IDN), see the provider::hcloud::idna function.
   See the Zones API documentation https://docs.hetzner.cloud/reference/cloud#zones for more details.
-  Experimental: DNS API is in beta, breaking changes may occur within minor releases.
-  See https://docs.hetzner.cloud/changelog#2025-10-07-dns-beta for more details.
 ---
 
 # hcloud_zone (Resource)
@@ -20,9 +18,6 @@ This can be used to create, modify, and delete Zones.
 For Internationalized domain names (IDN), see the `provider::hcloud::idna` function.
 
 See the [Zones API documentation](https://docs.hetzner.cloud/reference/cloud#zones) for more details.
-
-**Experimental:** DNS API is in beta, breaking changes may occur within minor releases.
-See https://docs.hetzner.cloud/changelog#2025-10-07-dns-beta for more details.
 
 ## Example Usage
 

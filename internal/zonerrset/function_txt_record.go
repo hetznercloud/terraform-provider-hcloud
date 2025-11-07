@@ -7,7 +7,6 @@ import (
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud/exp/zoneutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/experimental"
 )
 
 func NewTXTRecordFunction() function.Function {
@@ -34,8 +33,6 @@ Format a TXT record by splitting it in quoted strings of 255 characters.
 		},
 		Return: function.StringReturn{},
 	}
-
-	experimental.DNS.AppendNotice(&resp.Definition.MarkdownDescription)
 }
 
 func (f *TXTRecordFunction) Run(ctx context.Context, req function.RunRequest, resp *function.RunResponse) {

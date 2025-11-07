@@ -12,7 +12,6 @@ import (
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/datasourceutil"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/experimental"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
@@ -39,8 +38,6 @@ func (d *DataSourceList) Metadata(_ context.Context, _ datasource.MetadataReques
 // provider-defined DataSource type. It is separately executed for each
 // ReadDataSource RPC.
 func (d *DataSourceList) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
-	experimental.DNS.AppendDiagnostic(&resp.Diagnostics)
-
 	var newDiags diag.Diagnostics
 
 	d.client, newDiags = hcloudutil.ConfigureClient(req.ProviderData)
@@ -57,8 +54,6 @@ Provides a list of Hetzner Cloud Zone.
 
 See the [Zones API documentation](https://docs.hetzner.cloud/reference/cloud#zones) for more details.
 `
-
-	experimental.DNS.AppendNotice(&resp.Schema.MarkdownDescription)
 
 	resp.Schema.Attributes = map[string]schema.Attribute{
 		"id": schema.StringAttribute{
