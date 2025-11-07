@@ -439,3 +439,70 @@ func TestAccServerNetworkResource_UpgradePluginFramework_AliasIPs(t *testing.T) 
 		},
 	})
 }
+
+func TestAccServerNetworkResource_UpgradePluginFramework_WrongSubnetID(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
+	b := makeServerNetworkBlueprint(t)
+
+	res := &server.RDataNetwork{
+		Name:     "attachment",
+		ServerID: b.server1.TFID() + ".id",
+		SubNetID: b.subnet1.TFID() + ".id",
+	}
+	res.SetRName("attachment")
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: teste2e.PreCheck(t),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"hcloud": {
+						VersionConstraint: "1.54.0",
+						Source:            "hetznercloud/hcloud",
+					},
+				},
+
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_network", b.network,
+					"testdata/r/hcloud_network_subnet", b.subnet1,
+					"testdata/r/hcloud_network_subnet", b.subnet2,
+					"testdata/r/hcloud_server", b.server1,
+					"testdata/r/hcloud_server_network", res,
+				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(res.TFID(),
+						tfjsonpath.New("ip"),
+						knownvalue.StringExact("10.0.2.1")),
+				},
+			},
+			{
+				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_network", b.network,
+					"testdata/r/hcloud_network_subnet", b.subnet1,
+					"testdata/r/hcloud_network_subnet", b.subnet2,
+					"testdata/r/hcloud_server", b.server1,
+					"testdata/r/hcloud_server_network", res,
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(res.TFID(), plancheck.ResourceActionReplace),
+					},
+					PostApplyPreRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+						plancheck.ExpectKnownValue(res.TFID(),
+							tfjsonpath.New("ip"),
+							knownvalue.StringExact("10.0.1.1")),
+					},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(res.TFID(),
+						tfjsonpath.New("ip"),
+						knownvalue.StringExact("10.0.1.1")),
+				},
+			},
+		},
+	})
+}

@@ -52,8 +52,8 @@ resource "hcloud_server_network" "node1_subnet1" {
 
 - `alias_ips` (Set of String) Additional IPs to assign to the Server.
 - `ip` (String) IP to assign to the Server.
-- `network_id` (Number) ID of the Network to attach the Server to. Using `subnet_id` is preferred. Required if `subnet_id` is not set. If `ip` is not set, the Server will be attached to the last subnet (ordered by `ip_range`).
-- `subnet_id` (String) ID of the Subnet to attach the Server to. Required if `network_id` is not set. If `ip` is not set, the Server will be attached to the last subnet (ordered by `ip_range`).
+- `network_id` (Number) ID of the Network to attach the Server to. Using `subnet_id` is preferred. Required if `subnet_id` is not set. If `subnet_id` or `ip` are not set, the Server will be attached to the last subnet (ordered by `ip_range`).
+- `subnet_id` (String) ID of the Subnet to attach the Server to. Required if `network_id` is not set.
 
 ### Read-Only
 
