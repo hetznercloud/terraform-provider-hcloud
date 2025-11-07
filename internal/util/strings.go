@@ -2,6 +2,7 @@ package util
 
 import (
 	"strings"
+	"unicode"
 )
 
 // Dedent is a helper function that dedent a tab indented text. The first line defines
@@ -34,4 +35,11 @@ func MarkdownDescription(s string) string {
 	s = Dedent(s)
 	s = strings.ReplaceAll(s, "''", "`")
 	return s
+}
+
+func TitleCase(s string) string {
+	if s == "" {
+		return ""
+	}
+	return string(unicode.ToTitle(rune(s[0]))) + s[1:]
 }

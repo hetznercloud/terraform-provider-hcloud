@@ -2,355 +2,495 @@ package server
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"log"
 	"net"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-framework-nettypes/iptypes"
+	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/network"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud/exp/kit/sliceutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/control"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/merge"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/validateutil"
 )
 
-// NetworkResourceType is the type name of the Hetzner Cloud Server
-// network resource.
 const NetworkResourceType = "hcloud_server_network"
 
-// NetworkResource creates a Terraform schema for the hcloud_server_network
-// resource.
-func NetworkResource() *schema.Resource {
-	return &schema.Resource{
-		CreateContext: resourceServerNetworkCreate,
-		ReadContext:   resourceServerNetworkRead,
-		UpdateContext: resourceServerNetworkUpdate,
-		DeleteContext: resourceServerNetworkDelete,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+var _ resource.Resource = (*NetworkResource)(nil)
+var _ resource.ResourceWithConfigure = (*NetworkResource)(nil)
+var _ resource.ResourceWithConfigValidators = (*NetworkResource)(nil)
+var _ resource.ResourceWithImportState = (*NetworkResource)(nil)
+var _ resource.ResourceWithModifyPlan = (*NetworkResource)(nil)
+
+type NetworkResource struct {
+	client *hcloud.Client
+}
+
+func NewNetworkResource() resource.Resource {
+	return &NetworkResource{}
+}
+
+func (r *NetworkResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = NetworkResourceType
+}
+
+func (r *NetworkResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+	var newDiags diag.Diagnostics
+
+	r.client, newDiags = hcloudutil.ConfigureClient(req.ProviderData)
+	resp.Diagnostics.Append(newDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+}
+
+func (r *NetworkResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema.MarkdownDescription = util.MarkdownDescription(`
+Manage the attachment of a Server in a Network in the Hetzner Cloud.
+`)
+
+	resp.Schema.Attributes = map[string]schema.Attribute{
+		"id": schema.StringAttribute{
+			Computed: true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
-		Schema: map[string]*schema.Schema{
-			"network_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				ForceNew: true,
+		"server_id": schema.Int64Attribute{
+			MarkdownDescription: "ID of the Server.",
+			Required:            true,
+			PlanModifiers: []planmodifier.Int64{
+				int64planmodifier.RequiresReplace(),
 			},
-			"subnet_id": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
+		},
+		"network_id": schema.Int64Attribute{
+			MarkdownDescription: "ID of the Network to attach the Server to. Using `subnet_id` is preferred. Required if `subnet_id` is not set. If `ip` is not set, the Server will be attached to the last subnet (ordered by `ip_range`).",
+			Optional:            true,
+			Computed:            true,
+			PlanModifiers: []planmodifier.Int64{
+				int64planmodifier.RequiresReplace(),
+				int64planmodifier.UseStateForUnknown(),
 			},
-			"server_id": {
-				Type:     schema.TypeInt,
-				Required: true,
-				ForceNew: true,
+		},
+		"subnet_id": schema.StringAttribute{
+			MarkdownDescription: "ID of the Subnet to attach the Server to. Required if `network_id` is not set. If `ip` is not set, the Server will be attached to the last subnet (ordered by `ip_range`).",
+			Optional:            true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.RequiresReplace(),
 			},
-			"ip": {
-				Type:     schema.TypeString,
-				Computed: true,
-				Optional: true,
-				ForceNew: true,
+		},
+		"ip": schema.StringAttribute{
+			CustomType:          iptypes.IPAddressType{},
+			MarkdownDescription: "IP to assign to the Server.",
+			Optional:            true,
+			Computed:            true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.RequiresReplace(),
+				stringplanmodifier.UseStateForUnknown(),
 			},
-			"alias_ips": {
-				Type:     schema.TypeSet,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Optional: true,
+			Validators: []validator.String{
+				validateutil.IP(),
 			},
-			"mac_address": {
-				Type:     schema.TypeString,
-				Computed: true,
+		},
+		"alias_ips": schema.SetAttribute{
+			MarkdownDescription: "Additional IPs to assign to the Server.",
+			ElementType:         iptypes.IPAddressType{},
+			Optional:            true,
+			Computed:            true,
+			Default:             setdefault.StaticValue(types.SetValueMust(iptypes.IPAddressType{}, nil)),
+			Validators: []validator.Set{
+				setvalidator.ValueStringsAre(validateutil.IP()),
+			},
+		},
+		"mac_address": schema.StringAttribute{
+			MarkdownDescription: "MAC address of the Server on the Network.",
+			Computed:            true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
 	}
 }
 
-func resourceServerNetworkCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*hcloud.Client)
-	ip := net.ParseIP(d.Get("ip").(string))
-
-	networkID, nwIDSet := d.GetOk("network_id")
-
-	subNetID, snIDSet := d.GetOk("subnet_id")
-	if (nwIDSet && snIDSet) || (!nwIDSet && !snIDSet) {
-		return diag.Errorf("either network_id or subnet_id must be set")
+func (r *NetworkResource) ConfigValidators(context.Context) []resource.ConfigValidator {
+	return []resource.ConfigValidator{
+		resourcevalidator.ExactlyOneOf(
+			path.MatchRoot("network_id"),
+			path.MatchRoot("subnet_id"),
+		),
 	}
-	if snIDSet {
-		nwID, _, err := network.ParseSubnetID(subNetID.(string))
+}
+
+func (r *NetworkResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	// Do not modify on resource creation.
+	if req.State.Raw.IsNull() {
+		return
+	}
+
+	// Do not modify on resource destroy.
+	if req.Plan.Raw.IsNull() {
+		return
+	}
+
+	var data networkResourceData
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if !data.SubnetID.IsUnknown() && !data.SubnetID.IsNull() {
+		subnetNetwork, _, err := r.ParseSubnetID(data.SubnetID.ValueString())
 		if err != nil {
-			return hcloudutil.ErrorToDiag(err)
+			resp.Diagnostics.AddAttributeError(
+				path.Root("subnet_id"),
+				"Invalid Subnet ID",
+				util.TitleCase(err.Error()),
+			)
 		}
-		networkID = nwID
-	}
 
-	server := &hcloud.Server{ID: util.CastInt64(d.Get("server_id"))}
-	n := &hcloud.Network{ID: util.CastInt64(networkID)}
-	aliasIPs := make([]net.IP, 0, d.Get("alias_ips").(*schema.Set).Len())
-	for _, aliasIP := range d.Get("alias_ips").(*schema.Set).List() {
-		ip := net.ParseIP(aliasIP.(string))
-		aliasIPs = append(aliasIPs, ip)
-	}
+		if !data.NetworkID.IsUnknown() && !data.NetworkID.IsNull() {
+			// Check if the attachment network ID (state) matches the subnet network ID.
+			attachmentNetworkID := data.NetworkID.ValueInt64()
+			if subnetNetwork.ID != data.NetworkID.ValueInt64() {
+				resp.Diagnostics.AddAttributeWarning(
+					path.Root("subnet_id"),
+					"Attachment network is different than the subnet network",
+					fmt.Sprintf(
+						"Attachment network (%d) is different that the subnet network (%d) (%s).",
+						attachmentNetworkID, subnetNetwork.ID, data.SubnetID.ValueString(),
+					),
+				)
 
-	err := attachServerToNetwork(ctx, client, server, n, ip, aliasIPs)
-	if err != nil {
-		return hcloudutil.ErrorToDiag(err)
-	}
-	d.SetId(generateServerNetworkID(server, n))
-
-	return resourceServerNetworkRead(ctx, d, m)
-}
-
-func resourceServerNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*hcloud.Client)
-	server, network, _, err := lookupServerNetworkID(ctx, d.Id(), client)
-	if errors.Is(err, errInvalidServerNetworkID) {
-		log.Printf("[WARN] Invalid id (%s), removing from state: %s", d.Id(), err)
-		d.SetId("")
-		return nil
-	}
-	if err != nil {
-		return hcloudutil.ErrorToDiag(err)
-	}
-	if server == nil {
-		log.Printf("[WARN] Server (%s) not found, removing from state", d.Id())
-		d.SetId("")
-		return nil
-	}
-	if network == nil {
-		log.Printf("[WARN] Network (%s) not found, removing from state", d.Id())
-		d.SetId("")
-		return nil
-	}
-
-	if d.HasChange("alias_ips") {
-		if err := updateServerAliasIPs(ctx, client, server, network, d.Get("alias_ips").(*schema.Set)); err != nil {
-			return hcloudutil.ErrorToDiag(err)
+				resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("network_id"), types.Int64Value(subnetNetwork.ID))...)
+				resp.RequiresReplace.Append(path.Root("network_id"))
+			}
 		}
 	}
-	return resourceServerNetworkRead(ctx, d, m)
 }
 
-func resourceServerNetworkRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*hcloud.Client)
+func (r *NetworkResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data networkResourceData
 
-	server, network, privateNet, err := lookupServerNetworkID(ctx, d.Id(), client)
-	if errors.Is(err, errInvalidServerNetworkID) {
-		log.Printf("[WARN] Invalid id (%s), removing from state: %s", d.Id(), err)
-		d.SetId("")
-		return nil
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if err != nil {
-		return hcloudutil.ErrorToDiag(err)
-	}
-	if server == nil {
-		log.Printf("[WARN] Server (%s) not found, removing from state", d.Id())
-		d.SetId("")
-		return nil
-	}
-	if network == nil {
-		log.Printf("[WARN] Network (%s) not found, removing from state", d.Id())
-		d.SetId("")
-		return nil
-	}
-	if privateNet == nil {
-		log.Printf("[WARN] Server Attachment (%s) not found, removing from state", d.Id())
-		d.SetId("")
-		return nil
-	}
-	d.SetId(generateServerNetworkID(server, network))
-	setServerNetworkSchema(d, server, network, privateNet)
-	return nil
-}
 
-func resourceServerNetworkDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*hcloud.Client)
+	server := &hcloud.Server{ID: data.ServerID.ValueInt64()}
 
-	server, network, _, err := lookupServerNetworkID(ctx, d.Id(), client)
-	if err != nil {
-		log.Printf("[WARN] Invalid id (%s), removing from state: %s", d.Id(), err)
-		d.SetId("")
-		return nil
-	}
-	if err := detachServerFromNetwork(ctx, client, server, network); err != nil {
-		return hcloudutil.ErrorToDiag(err)
-	}
-	return nil
-}
+	opts := hcloud.ServerAttachToNetworkOpts{}
 
-func setServerNetworkSchema(d *schema.ResourceData, server *hcloud.Server, network *hcloud.Network, serverPrivateNet *hcloud.ServerPrivateNet) {
-	d.SetId(generateServerNetworkID(server, network))
-	d.Set("ip", serverPrivateNet.IP.String())
-
-	// We need to ensure that order of the list of alias_ips is kept stable no
-	// matter what the Hetzner Cloud API returns. Therefore we merge the
-	// returned IPs with the currently known alias_ips.
-	tfAliasIPs := d.Get("alias_ips").(*schema.Set).List()
-	aliasIPs := make([]string, len(tfAliasIPs))
-	for i, v := range tfAliasIPs {
-		aliasIPs[i] = v.(string)
+	if !data.NetworkID.IsUnknown() && !data.NetworkID.IsNull() {
+		opts.Network = &hcloud.Network{ID: data.NetworkID.ValueInt64()}
 	}
-	hcAliasIPs := make([]string, len(serverPrivateNet.Aliases))
-	for i, ip := range serverPrivateNet.Aliases {
-		hcAliasIPs[i] = ip.String()
+	if !data.SubnetID.IsUnknown() && !data.SubnetID.IsNull() {
+		subnetNetwork, _, err := r.ParseSubnetID(data.SubnetID.ValueString())
+		if err != nil {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("subnet_id"),
+				"Invalid Subnet ID",
+				util.TitleCase(err.Error()),
+			)
+		}
+		opts.Network = subnetNetwork
 	}
-	aliasIPs = merge.StringSlice(aliasIPs, hcAliasIPs)
-	d.Set("alias_ips", aliasIPs)
 
-	d.Set("mac_address", serverPrivateNet.MACAddress)
-	if subnetID, ok := d.GetOk("subnet_id"); ok {
-		d.Set("subnet_id", subnetID.(string))
-	} else {
-		d.Set("network_id", network.ID)
+	if !data.IP.IsUnknown() && !data.IP.IsNull() {
+		opts.IP = net.ParseIP(data.IP.ValueString())
 	}
-	d.Set("server_id", server.ID)
-}
 
-func attachServerToNetwork(ctx context.Context, c *hcloud.Client, srv *hcloud.Server, nw *hcloud.Network, ip net.IP, aliasIPs []net.IP) error {
-	var a *hcloud.Action
+	if !data.AliasIPs.IsUnknown() && !data.AliasIPs.IsNull() {
+		aliasIPsRaw := make([]string, 0, len(data.AliasIPs.Elements()))
+		resp.Diagnostics.Append(data.AliasIPs.ElementsAs(ctx, &aliasIPsRaw, false)...)
 
-	opts := hcloud.ServerAttachToNetworkOpts{
-		Network:  nw,
-		IP:       ip,
-		AliasIPs: aliasIPs,
+		opts.AliasIPs = sliceutil.Transform(aliasIPsRaw, net.ParseIP)
 	}
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Apply changes
+	var action *hcloud.Action
 
 	err := control.Retry(control.DefaultRetries, func() error {
-		var err error
+		var innerErr error
 
-		a, _, err = c.Server.AttachToNetwork(ctx, srv, opts)
-		if hcloud.IsError(err, hcloud.ErrorCodeConflict) ||
-			hcloud.IsError(err, hcloud.ErrorCodeLocked) ||
-			hcloud.IsError(err, hcloud.ErrorCodeServiceError) ||
-			hcloud.IsError(err, hcloud.ErrorCodeNoSubnetAvailable) {
-			return err
+		action, _, innerErr = r.client.Server.AttachToNetwork(ctx, server, opts)
+		if hcloud.IsError(innerErr,
+			hcloud.ErrorCodeConflict,
+			hcloud.ErrorCodeLocked,
+			hcloud.ErrorCodeServiceError,
+			hcloud.ErrorCodeNoSubnetAvailable,
+		) {
+			return innerErr
 		}
-		if err != nil {
-			return control.AbortRetry(err)
+		if innerErr != nil {
+			return control.AbortRetry(innerErr)
 		}
 		return nil
 	})
-	if hcloud.IsError(err, hcloud.ErrorCodeServerAlreadyAttached) {
-		log.Printf("[INFO] Server (%v) already attachted to network %v", srv.ID, nw.ID)
-		return nil
-	}
 	if err != nil {
-		return fmt.Errorf("attach server to network: %w", err)
+		if !hcloud.IsError(err, hcloud.ErrorCodeServerAlreadyAttached) {
+			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+			return
+		}
 	}
-	if err := hcloudutil.WaitForAction(ctx, &c.Action, a); err != nil {
-		return fmt.Errorf("attach server to network: %w", err)
-	}
-	return nil
-}
-
-func generateServerNetworkID(server *hcloud.Server, network *hcloud.Network) string {
-	return fmt.Sprintf("%d-%d", server.ID, network.ID)
-}
-
-var errInvalidServerNetworkID = errors.New("invalid server network id")
-
-// lookupServerNetworkID parses the terraform server network record id and return the server, network and the ServerPrivateNet
-//
-// id format: <server id>-<network id>
-// Examples:
-// 123-456
-func lookupServerNetworkID(ctx context.Context, terraformID string, client *hcloud.Client) (server *hcloud.Server, network *hcloud.Network, serverPrivateNet *hcloud.ServerPrivateNet, err error) {
-	if terraformID == "" {
-		err = errInvalidServerNetworkID
+	if err := hcloudutil.WaitForAction(ctx, &r.client.Action, action); err != nil {
+		resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
 		return
 	}
-	parts := strings.SplitN(terraformID, "-", 2)
+
+	// Refresh server
+	server, _, err = r.client.Server.GetByID(ctx, server.ID)
+	if err != nil {
+		resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+		return
+	}
+
+	if server == nil {
+		resp.Diagnostics.AddError(
+			"Resource vanished",
+			fmt.Sprintf("Server (%s) vanished", data.ServerID),
+		)
+		return
+	}
+
+	attachment := server.PrivateNetFor(opts.Network)
+	if attachment == nil {
+		resp.Diagnostics.AddError(
+			"Resource vanished",
+			fmt.Sprintf("Attachment of server (%s) to network (%s) vanished", data.ServerID, data.NetworkID),
+		)
+		return
+	}
+
+	// Populate data
+	resp.Diagnostics.Append(populateNetworkResourceData(ctx, &data, server, attachment)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *NetworkResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var data networkResourceData
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	server, network, err := r.ParseID(data.ID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("id"),
+			"Invalid ID",
+			util.TitleCase(err.Error()),
+		)
+		return
+	}
+
+	server, _, err = r.client.Server.GetByID(ctx, server.ID)
+	if err != nil {
+		resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+		return
+	}
+
+	if server == nil {
+		resp.State.RemoveResource(ctx)
+		return
+	}
+
+	attachment := server.PrivateNetFor(network)
+	if attachment == nil {
+		resp.State.RemoveResource(ctx)
+		return
+	}
+
+	resp.Diagnostics.Append(populateNetworkResourceData(ctx, &data, server, attachment)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *NetworkResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var data, plan networkResourceData
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	server, network, err := r.ParseID(data.ID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("id"),
+			"Invalid ID",
+			util.TitleCase(err.Error()),
+		)
+		return
+	}
+
+	if !plan.AliasIPs.Equal(data.AliasIPs) {
+		opts := hcloud.ServerChangeAliasIPsOpts{
+			Network: network,
+		}
+
+		aliasIPsRaw := make([]string, 0, len(plan.AliasIPs.Elements()))
+		resp.Diagnostics.Append(plan.AliasIPs.ElementsAs(ctx, &aliasIPsRaw, false)...)
+
+		opts.AliasIPs = sliceutil.Transform(aliasIPsRaw, net.ParseIP)
+
+		action, _, err := r.client.Server.ChangeAliasIPs(ctx, server, opts)
+		if err != nil {
+			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+			return
+		}
+		if err := hcloudutil.WaitForAction(ctx, &r.client.Action, action); err != nil {
+			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+			return
+		}
+	}
+
+	server, _, err = r.client.Server.GetByID(ctx, server.ID)
+	if err != nil {
+		resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+		return
+	}
+
+	if server == nil {
+		// Should not happen
+		resp.Diagnostics.AddError(
+			"Resource vanished",
+			fmt.Sprintf("Server (%s) vanished", data.ServerID),
+		)
+		return
+	}
+
+	attachment := server.PrivateNetFor(network)
+	if attachment == nil {
+		// Should not happen
+		resp.Diagnostics.AddError(
+			"Resource vanished",
+			fmt.Sprintf("Attachment of server (%s) to network (%s) vanished", data.ServerID, data.NetworkID),
+		)
+		return
+	}
+
+	resp.Diagnostics.Append(populateNetworkResourceData(ctx, &data, server, attachment)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *NetworkResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var data networkResourceData
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	server, network, err := r.ParseID(data.ID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("id"),
+			"Invalid ID",
+			util.TitleCase(err.Error()),
+		)
+		return
+	}
+
+	opts := hcloud.ServerDetachFromNetworkOpts{
+		Network: network,
+	}
+
+	var action *hcloud.Action
+	err = control.Retry(control.DefaultRetries, func() error {
+		var innerErr error
+
+		action, _, innerErr = r.client.Server.DetachFromNetwork(ctx, server, opts)
+		if hcloud.IsError(innerErr,
+			hcloud.ErrorCodeConflict,
+			hcloud.ErrorCodeLocked,
+			hcloud.ErrorCodeServiceError) {
+			return innerErr
+		}
+		return control.AbortRetry(innerErr)
+	})
+	if err != nil {
+		if !hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
+			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+			return
+		}
+	}
+
+	if err := hcloudutil.WaitForAction(ctx, &r.client.Action, action); err != nil {
+		resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+		return
+	}
+}
+
+func (r *NetworkResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+}
+
+func (r *NetworkResource) ParseID(s string) (*hcloud.Server, *hcloud.Network, error) {
+	parts := strings.SplitN(s, "-", 2)
 	if len(parts) != 2 {
-		err = errInvalidServerNetworkID
-		return
+		return nil, nil, fmt.Errorf("unexpected id '%s', expected '$SERVER_ID-$NETWORK_ID'", s)
 	}
 
 	serverID, err := util.ParseID(parts[0])
 	if err != nil {
-		err = errInvalidServerNetworkID
-		return
-	}
-
-	server, _, err = client.Server.GetByID(ctx, serverID)
-	if err != nil {
-		err = errInvalidServerNetworkID
-		return
-	}
-	if server == nil {
-		err = errInvalidServerNetworkID
-		return
+		return nil, nil, fmt.Errorf("unexpected id '%s', expected '$SERVER_ID-$NETWORK_ID'", s)
 	}
 
 	networkID, err := util.ParseID(parts[1])
 	if err != nil {
-		err = errInvalidServerNetworkID
-		return
+		return nil, nil, fmt.Errorf("unexpected id '%s', expected '$SERVER_ID-$NETWORK_ID'", s)
 	}
 
-	network, _, err = client.Network.GetByID(ctx, networkID)
-	if network == nil {
-		err = errInvalidServerNetworkID
-		return
-	}
-
-	for _, pn := range server.PrivateNet {
-		if pn.Network.ID == network.ID {
-			pn := pn
-			serverPrivateNet = &pn
-			return
-		}
-	}
-	return
+	return &hcloud.Server{ID: serverID}, &hcloud.Network{ID: networkID}, nil
 }
 
-func updateServerAliasIPs(ctx context.Context, c *hcloud.Client, s *hcloud.Server, n *hcloud.Network, aliasIPs *schema.Set) error {
-	const op = "hcloud/updateServerAliasIPs"
+func (r *NetworkResource) ParseSubnetID(s string) (*hcloud.Network, *net.IPNet, error) {
+	parts := strings.SplitN(s, "-", 2)
+	if len(parts) != 2 {
+		return nil, nil, fmt.Errorf("unexpected subnet id '%s', expected '$NETWORK_ID-$SUBNET_IP_RANGE'", s)
+	}
 
-	opts := hcloud.ServerChangeAliasIPsOpts{
-		Network:  n,
-		AliasIPs: make([]net.IP, aliasIPs.Len()),
-	}
-	for i, v := range aliasIPs.List() {
-		opts.AliasIPs[i] = net.ParseIP(v.(string))
-	}
-	a, _, err := c.Server.ChangeAliasIPs(ctx, s, opts)
+	networkID, err := util.ParseID(parts[0])
 	if err != nil {
-		return fmt.Errorf("%s: %w", op, err)
-	}
-	if err := hcloudutil.WaitForAction(ctx, &c.Action, a); err != nil {
-		return fmt.Errorf("%s: %w", op, err)
-	}
-	return nil
-}
-
-func detachServerFromNetwork(ctx context.Context, c *hcloud.Client, s *hcloud.Server, n *hcloud.Network) error {
-	const op = "hcloud/detachServerFromNetwork"
-	var a *hcloud.Action
-
-	err := control.Retry(control.DefaultRetries, func() error {
-		var err error
-
-		a, _, err = c.Server.DetachFromNetwork(ctx, s, hcloud.ServerDetachFromNetworkOpts{Network: n})
-		if hcloud.IsError(err, hcloud.ErrorCodeConflict) ||
-			hcloud.IsError(err, hcloud.ErrorCodeLocked) ||
-			hcloud.IsError(err, hcloud.ErrorCodeServiceError) {
-			return err
-		}
-		return control.AbortRetry(err)
-	})
-	if err != nil {
-		if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
-			// network has already been deleted
-			return nil
-		}
-		return fmt.Errorf("%s: %w", op, err)
+		return nil, nil, fmt.Errorf("unexpected subnet id '%s', expected '$NETWORK_ID-$SUBNET_IP_RANGE'", s)
 	}
 
-	if err := hcloudutil.WaitForAction(ctx, &c.Action, a); err != nil {
-		return fmt.Errorf("%s: %w", op, err)
+	_, ipRange, err := net.ParseCIDR(parts[1])
+	if ipRange == nil || err != nil {
+		return nil, nil, fmt.Errorf("unexpected subnet id '%s', expected '$NETWORK_ID-$SUBNET_IP_RANGE'", s)
 	}
-	return nil
+
+	return &hcloud.Network{ID: networkID}, ipRange, nil
 }
