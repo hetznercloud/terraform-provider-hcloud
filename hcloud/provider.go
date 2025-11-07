@@ -88,7 +88,6 @@ func Provider() *schema.Provider {
 			network.RouteResourceType:         network.RouteResource(),
 			network.SubnetResourceType:        network.SubnetResource(),
 			rdns.ResourceType:                 rdns.Resource(),
-			server.NetworkResourceType:        server.NetworkResource(),
 			server.ResourceType:               server.Resource(),
 			snapshot.ResourceType:             snapshot.Resource(),
 			volume.AttachmentResourceType:     volume.AttachmentResource(),
