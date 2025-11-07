@@ -80,7 +80,6 @@ func Provider() *schema.Provider {
 			floatingip.AssignmentResourceType: floatingip.AssignmentResource(),
 			floatingip.ResourceType:           floatingip.Resource(),
 			primaryip.ResourceType:            primaryip.Resource(),
-			loadbalancer.NetworkResourceType:  loadbalancer.NetworkResource(),
 			loadbalancer.ResourceType:         loadbalancer.Resource(),
 			loadbalancer.ServiceResourceType:  loadbalancer.ServiceResource(),
 			loadbalancer.TargetResourceType:   loadbalancer.TargetResource(),

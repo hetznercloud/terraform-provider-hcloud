@@ -11,10 +11,14 @@ resource "hcloud_load_balancer_network" "{{ .Name }}" {
   {{ end }}
 
   {{- /* Optional properties */}}
-  enable_public_interface  = {{ .EnablePublicInterface }}
   {{- if .IP }}
   ip                       = "{{ .IP }}"
   {{ end }}
+
+  {{- if .EnablePublicInterface }}
+  enable_public_interface  = {{ .EnablePublicInterface }}
+  {{ end }}
+
   {{- if .DependsOn }}
   depends_on               = [{{ .DependsOn | join ", " }}]
   {{ end }}
