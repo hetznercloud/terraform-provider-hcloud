@@ -14,13 +14,11 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/resourceutil"
 )
 
-type model struct {
+type commonModel struct {
 	ID               types.Int64  `tfsdk:"id"`
 	Name             types.String `tfsdk:"name"`
 	Username         types.String `tfsdk:"username"`
 	StorageBoxType   types.String `tfsdk:"storage_box_type"`
-	Password         types.String `tfsdk:"password"`
-	SSHKeys          types.List   `tfsdk:"ssh_keys"`
 	Location         types.String `tfsdk:"location"`
 	AccessSettings   types.Object `tfsdk:"access_settings"`
 	Server           types.String `tfsdk:"server"`
@@ -32,16 +30,15 @@ type model struct {
 	// Omitted for Resource: status, stats, created
 }
 
-var _ util.ModelFromAPI[*hcloud.StorageBox] = &model{}
+var _ util.ModelFromAPI[*hcloud.StorageBox] = &commonModel{}
+var _ util.ModelToTerraform[types.Object] = &commonModel{}
 
-func (m *model) tfAttributesTypes() map[string]attr.Type {
+func (m *commonModel) tfAttributesTypes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"id":                types.Int64Type,
 		"name":              types.StringType,
 		"username":          types.StringType,
 		"storage_box_type":  types.StringType,
-		"password":          types.StringType,
-		"ssh_keys":          types.ListType{ElemType: types.StringType},
 		"location":          types.StringType,
 		"access_settings":   types.ObjectType{AttrTypes: (&modelAccessSettings{}).tfAttributesTypes()},
 		"server":            types.StringType,
@@ -52,7 +49,11 @@ func (m *model) tfAttributesTypes() map[string]attr.Type {
 	}
 }
 
-func (m *model) FromAPI(ctx context.Context, hc *hcloud.StorageBox) diag.Diagnostics {
+func (m *commonModel) tfType() attr.Type {
+	return basetypes.ObjectType{AttrTypes: m.tfAttributesTypes()}
+}
+
+func (m *commonModel) FromAPI(ctx context.Context, hc *hcloud.StorageBox) diag.Diagnostics {
 	var diags diag.Diagnostics
 	var newDiags diag.Diagnostics
 
@@ -89,6 +90,10 @@ func (m *model) FromAPI(ctx context.Context, hc *hcloud.StorageBox) diag.Diagnos
 	}
 
 	return diags
+}
+
+func (m *commonModel) ToTerraform(ctx context.Context) (types.Object, diag.Diagnostics) {
+	return types.ObjectValueFrom(ctx, m.tfAttributesTypes(), m)
 }
 
 type modelAccessSettings struct {

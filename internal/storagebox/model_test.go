@@ -36,7 +36,7 @@ func TestModel(t *testing.T) {
 			DayOfWeek:    hcloud.Ptr(time.Weekday(3)),
 		},
 	}
-	o := &model{}
+	o := &commonModel{}
 	assert.Nil(t, o.FromAPI(ctx, in))
 	assert.Equal(t, int64(1234), o.ID.ValueInt64())
 	assert.Equal(t, "backups", o.Name.ValueString())

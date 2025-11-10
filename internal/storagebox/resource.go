@@ -23,6 +23,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/experimental"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/merge"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/resourceutil"
 )
 
@@ -224,6 +225,30 @@ See the [Storage Box API documentation](https://docs.hetzner.cloud/reference/het
 	}
 }
 
+type resourceModel struct {
+	commonModel
+
+	Password types.String `tfsdk:"password"`
+	SSHKeys  types.List   `tfsdk:"ssh_keys"`
+}
+
+var _ util.ModelFromAPI[*hcloud.StorageBox] = &resourceModel{} // reuse commonModel, as the fields from resourceModel are not readable anyway
+var _ util.ModelToTerraform[types.Object] = &resourceModel{}
+
+func (m *resourceModel) tfAttributesTypes() map[string]attr.Type {
+	return merge.Maps(
+		(&commonModel{}).tfAttributesTypes(),
+		map[string]attr.Type{
+			"password": types.StringType,
+			"ssh_keys": types.ListType{ElemType: types.StringType},
+		},
+	)
+}
+
+func (m *resourceModel) ToTerraform(ctx context.Context) (types.Object, diag.Diagnostics) {
+	return types.ObjectValueFrom(ctx, m.tfAttributesTypes(), m)
+}
+
 func (r *Resource) ConfigValidators(_ context.Context) []resource.ConfigValidator {
 	return []resource.ConfigValidator{
 		resourcevalidator.Conflicting(
@@ -234,7 +259,7 @@ func (r *Resource) ConfigValidators(_ context.Context) []resource.ConfigValidato
 }
 
 func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data model
+	var data resourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -312,7 +337,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 }
 
 func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data model
+	var data resourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -339,7 +364,7 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 }
 
 func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data, plan model
+	var data, plan resourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
@@ -391,7 +416,7 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 }
 
 func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data model
+	var data resourceModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {

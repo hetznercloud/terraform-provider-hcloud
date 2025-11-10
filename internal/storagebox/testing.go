@@ -67,9 +67,9 @@ type DData struct {
 }
 
 // TFID returns the data source identifier.
-//func (d *DData) TFID() string {
-//	return fmt.Sprintf("data.%s.%s", DataSourceType, d.RName())
-//}
+func (d *DData) TFID() string {
+	return fmt.Sprintf("data.%s.%s", DataSourceType, d.RName())
+}
 
 // DDataList defines the fields for the "testdata/d/hcloud_storage_boxes" template.
 type DDataList struct {
@@ -78,10 +78,10 @@ type DDataList struct {
 	LabelSelector string
 }
 
-//// TFID returns the data source identifier.
-//func (d *DDataList) TFID() string {
-//	return fmt.Sprintf("data.%s.%s", DataSourceListType, d.RName())
-//}
+// TFID returns the data source identifier.
+func (d *DDataList) TFID() string {
+	return fmt.Sprintf("data.%s.%s", DataSourceListType, d.RName())
+}
 
 // RData defines the fields for the "testdata/r/hcloud_storage_box" template.
 type RData struct {

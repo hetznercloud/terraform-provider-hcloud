@@ -208,6 +208,8 @@ func (p *PluginProvider) DataSources(_ context.Context) []func() datasource.Data
 		servertype.NewDataSourceList,
 		sshkey.NewDataSource,
 		sshkey.NewDataSourceList,
+		storagebox.NewDataSource,
+		storagebox.NewDataSourceList,
 		storageboxtype.NewDataSource,
 		storageboxtype.NewDataSourceList,
 		zone.NewDataSource,
