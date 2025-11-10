@@ -60,6 +60,15 @@ resource "hcloud_load_balancer_network" "attachment" {
 
 Import is supported using the following syntax:
 
+In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.com/terraform/language/import) can be used with the `id` attribute, for example:
+
+```terraform
+import {
+  id = "${hcloud_load_balancer.example.id}-${hcloud_network.example.id}"
+  to = hcloud_load_balancer_network.attachment
+}
+```
+
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
