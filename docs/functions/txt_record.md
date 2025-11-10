@@ -10,9 +10,6 @@ description: |-
 
 Format a TXT record by splitting it in quoted strings of 255 characters.
 
-**Experimental:** DNS API is in beta, breaking changes may occur within minor releases.
-See https://docs.hetzner.cloud/changelog#2025-10-07-dns-beta for more details.
-
 ## Example Usage
 
 ```terraform

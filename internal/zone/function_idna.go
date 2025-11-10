@@ -6,8 +6,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/function"
 	"golang.org/x/net/idna"
-
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/experimental"
 )
 
 func NewIDNAFunction() function.Function {
@@ -36,8 +34,6 @@ for more details.`,
 		},
 		Return: function.StringReturn{},
 	}
-
-	experimental.DNS.AppendNotice(&resp.Definition.MarkdownDescription)
 }
 
 func (f *IDNAFunction) Run(ctx context.Context, req function.RunRequest, resp *function.RunResponse) {

@@ -13,9 +13,6 @@ Converts a Internationalized Domain Name (IDN) to ASCII using Punycode.
 The conversion is defined by Golang's IDNA package. See https://pkg.go.dev/golang.org/x/net/idna
 for more details.
 
-**Experimental:** DNS API is in beta, breaking changes may occur within minor releases.
-See https://docs.hetzner.cloud/changelog#2025-10-07-dns-beta for more details.
-
 ## Example Usage
 
 ```terraform

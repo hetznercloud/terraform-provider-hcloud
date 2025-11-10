@@ -5,8 +5,6 @@ subcategory: ""
 description: |-
   Provides details about a Hetzner Cloud Zone Resource Record Set (RRSet).
   See the Zone RRSets API documentation https://docs.hetzner.cloud/reference/cloud#zone-rrsets for more details.
-  Experimental: DNS API is in beta, breaking changes may occur within minor releases.
-  See https://docs.hetzner.cloud/changelog#2025-10-07-dns-beta for more details.
 ---
 
 # hcloud_zone_rrset (Data Source)
@@ -14,9 +12,6 @@ description: |-
 Provides details about a Hetzner Cloud Zone Resource Record Set (RRSet).
 
 See the [Zone RRSets API documentation](https://docs.hetzner.cloud/reference/cloud#zone-rrsets) for more details.
-
-**Experimental:** DNS API is in beta, breaking changes may occur within minor releases.
-See https://docs.hetzner.cloud/changelog#2025-10-07-dns-beta for more details.
 
 ## Example Usage
 
