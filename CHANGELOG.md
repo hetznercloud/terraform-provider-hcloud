@@ -1,5 +1,27 @@
 # Changelog
 
+## [v1.56.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.56.0)
+
+### DNS API is now generally available
+
+The DNS API is now generally available, as well as support for features in this project that are related to the DNS API.
+
+To migrate existing zones to the new DNS API, see the [DNS migration guide](https://docs.hetzner.com/networking/dns/migration-to-hetzner-console/process/).
+
+See the [changelog](https://docs.hetzner.cloud/changelog#2025-11-10-dns-ga) for more details.
+
+### Server and load balancer network attachment
+
+With this release, the `hcloud_server_network` and `hcloud_load_balancer_network` resource now supports assigning a server or load balancer to a specific network subnet using the `subnet_id` attribute. The `subnet_id` attribute also validates that the `network_id` and `ip` attributes are consistent with the `subnet_id`. If they are not consistent, the resource will be replaced.
+
+In the `hcloud_server_network` resource, the `alias_ips` attributes now defaults to an empty set when undefined.
+
+### Features
+
+- attach server to a specific network subnet (#1217)
+- attach load balancer to a specific network subnet (#1242)
+- DNS support is now generally available (#1247)
+
 ## [v1.55.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.55.0)
 
 ### Features
