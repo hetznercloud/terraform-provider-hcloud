@@ -144,7 +144,7 @@ func (r *NetworkResource) ModifyPlan(ctx context.Context, req resource.ModifyPla
 	}
 
 	if !data.SubnetID.IsUnknown() && !data.SubnetID.IsNull() {
-		subnetNetwork, _, err := r.ParseSubnetID(data.SubnetID.ValueString())
+		subnetNetwork, subnetIPRange, err := r.ParseSubnetID(data.SubnetID.ValueString())
 		if err != nil {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("subnet_id"),
@@ -170,6 +170,28 @@ func (r *NetworkResource) ModifyPlan(ctx context.Context, req resource.ModifyPla
 				resp.RequiresReplace.Append(path.Root("network_id"))
 			}
 		}
+
+		if !data.IP.IsUnknown() && !data.IP.IsNull() {
+			// Check if the attachment IP (state) is within the subnet ip range.
+			attachmentIP := net.ParseIP(data.IP.ValueString())
+			if !subnetIPRange.Contains(attachmentIP) {
+				resp.Diagnostics.AddAttributeWarning(
+					path.Root("subnet_id"),
+					"Attachment IP is outside subnet IP range",
+					fmt.Sprintf(
+						"Attachment IP (%s) is outside subnet IP range (%s) (%s).",
+						attachmentIP.String(), subnetIPRange, data.SubnetID.ValueString(),
+					),
+				)
+
+				// Only marking the attribute as "RequiresReplace" does not work, as
+				// terraform core internally filters out any replacements to attributes that
+				// have not changed. Marking the attribute as unknown is correct, and makes
+				// it so the RequiresReplace is actually applied and shown to the user.
+				resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("ip"), iptypes.NewIPAddressUnknown())...)
+				resp.RequiresReplace.Append(path.Root("ip"))
+			}
+		}
 	}
 }
 
@@ -189,7 +211,7 @@ func (r *NetworkResource) Create(ctx context.Context, req resource.CreateRequest
 		opts.Network = &hcloud.Network{ID: data.NetworkID.ValueInt64()}
 	}
 	if !data.SubnetID.IsUnknown() && !data.SubnetID.IsNull() {
-		subnetNetwork, _, err := r.ParseSubnetID(data.SubnetID.ValueString())
+		subnetNetwork, subnetIPRange, err := r.ParseSubnetID(data.SubnetID.ValueString())
 		if err != nil {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("subnet_id"),
@@ -198,6 +220,7 @@ func (r *NetworkResource) Create(ctx context.Context, req resource.CreateRequest
 			)
 		}
 		opts.Network = subnetNetwork
+		opts.IPRange = subnetIPRange
 	}
 
 	if !data.IP.IsUnknown() && !data.IP.IsNull() {
