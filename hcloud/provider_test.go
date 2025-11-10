@@ -36,7 +36,6 @@ func TestProvider_Resources(t *testing.T) {
 		floatingip.AssignmentResourceType,
 		floatingip.ResourceType,
 		primaryip.ResourceType,
-		loadbalancer.NetworkResourceType,
 		loadbalancer.ResourceType,
 		loadbalancer.ServiceResourceType,
 		loadbalancer.TargetResourceType,

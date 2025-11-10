@@ -20,6 +20,7 @@ import (
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/datacenter"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancer"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancertype"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/location"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
@@ -206,6 +207,7 @@ func (p *PluginProvider) DataSources(_ context.Context) []func() datasource.Data
 // the Metadata method. All resources must have unique names.
 func (p *PluginProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
+		loadbalancer.NewNetworkResource,
 		server.NewNetworkResource,
 		sshkey.NewResource,
 		zone.NewResource,

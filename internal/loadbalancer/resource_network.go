@@ -2,358 +2,531 @@ package loadbalancer
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"log"
 	"net"
 	"strings"
+	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-framework-nettypes/iptypes"
+	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/network"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/control"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/validateutil"
 )
 
-// NetworkResourceType is the type name of the Hetzner Cloud Load Balancer
-// network resource.
 const NetworkResourceType = "hcloud_load_balancer_network"
 
-// NetworkResource creates a Terraform schema for the
-// hcloud_load_balancer_network resource.
-func NetworkResource() *schema.Resource {
-	return &schema.Resource{
-		CreateContext: resourceLoadBalancerNetworkCreate,
-		ReadContext:   resourceLoadBalancerNetworkRead,
-		UpdateContext: resourceLoadBalancerNetworkUpdate,
-		DeleteContext: resourceLoadBalancerNetworkDelete,
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+var _ resource.Resource = (*NetworkResource)(nil)
+var _ resource.ResourceWithConfigure = (*NetworkResource)(nil)
+var _ resource.ResourceWithConfigValidators = (*NetworkResource)(nil)
+var _ resource.ResourceWithImportState = (*NetworkResource)(nil)
+var _ resource.ResourceWithModifyPlan = (*NetworkResource)(nil)
+
+type NetworkResource struct {
+	client *hcloud.Client
+}
+
+func NewNetworkResource() resource.Resource {
+	return &NetworkResource{}
+}
+
+func (r *NetworkResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = NetworkResourceType
+}
+
+func (r *NetworkResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+	var newDiags diag.Diagnostics
+
+	r.client, newDiags = hcloudutil.ConfigureClient(req.ProviderData)
+	resp.Diagnostics.Append(newDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+}
+
+func (r *NetworkResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema.MarkdownDescription = util.MarkdownDescription(`
+Manage the attachment of a Load Balancer in a Network in the Hetzner Cloud.
+`)
+
+	resp.Schema.Attributes = map[string]schema.Attribute{
+		"id": schema.StringAttribute{
+			Computed: true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
-		Schema: map[string]*schema.Schema{
-			"network_id": {
-				Type:         schema.TypeInt,
-				ExactlyOneOf: []string{"network_id", "subnet_id"},
-				Optional:     true,
-				ForceNew:     true,
+		"load_balancer_id": schema.Int64Attribute{
+			MarkdownDescription: "ID of the Load Balancer.",
+			Required:            true,
+			PlanModifiers: []planmodifier.Int64{
+				int64planmodifier.RequiresReplace(),
 			},
-			"subnet_id": {
-				Type:         schema.TypeString,
-				ExactlyOneOf: []string{"network_id", "subnet_id"},
-				Optional:     true,
-				ForceNew:     true,
+		},
+		"network_id": schema.Int64Attribute{
+			MarkdownDescription: "ID of the Network to attach the Load Balancer to. Using `subnet_id` is preferred. Required if `subnet_id` is not set. If `subnet_id` or `ip` are not set, the Load Balancer will be attached to the last subnet (ordered by `ip_range`).",
+			Optional:            true,
+			Computed:            true,
+			PlanModifiers: []planmodifier.Int64{
+				int64planmodifier.RequiresReplace(),
+				int64planmodifier.UseStateForUnknown(),
 			},
-			"load_balancer_id": {
-				Type:     schema.TypeInt,
-				Required: true,
-				ForceNew: true,
+		},
+		"subnet_id": schema.StringAttribute{
+			MarkdownDescription: "ID of the Subnet to attach the Load Balancer to. Required if `network_id` is not set.",
+			Optional:            true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.RequiresReplace(),
 			},
-			"ip": {
-				Type:     schema.TypeString,
-				Computed: true,
-				Optional: true,
-				ForceNew: true,
+		},
+		"ip": schema.StringAttribute{
+			CustomType:          iptypes.IPAddressType{},
+			MarkdownDescription: "IP to assign to the Load Balancer.",
+			Optional:            true,
+			Computed:            true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.RequiresReplace(),
+				stringplanmodifier.UseStateForUnknown(),
 			},
-			"enable_public_interface": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  true,
+			Validators: []validator.String{
+				validateutil.IP(),
 			},
+		},
+		// XXX: Move to `load_balancer` since it is unrelated to the given private
+		// network attachment.
+		"enable_public_interface": schema.BoolAttribute{
+			MarkdownDescription: "Wether the Load Balancer public interface is enabled. Default is `true`.",
+			Optional:            true,
+			Computed:            true,
+			Default:             booldefault.StaticBool(true),
 		},
 	}
 }
 
-func resourceLoadBalancerNetworkCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	var action *hcloud.Action
+func (r *NetworkResource) ConfigValidators(context.Context) []resource.ConfigValidator {
+	return []resource.ConfigValidator{
+		resourcevalidator.ExactlyOneOf(
+			path.MatchRoot("network_id"),
+			path.MatchRoot("subnet_id"),
+		),
+	}
+}
 
-	c := m.(*hcloud.Client)
+func (r *NetworkResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	// Do not modify on resource creation.
+	if req.State.Raw.IsNull() {
+		return
+	}
 
-	ip := net.ParseIP(d.Get("ip").(string))
+	// Do not modify on resource destroy.
+	if req.Plan.Raw.IsNull() {
+		return
+	}
 
-	networkID, _ := d.GetOk("network_id")
-	subNetID, snIDSet := d.GetOk("subnet_id")
+	var data networkResourceData
 
-	if snIDSet {
-		nwID, _, err := network.ParseSubnetID(subNetID.(string))
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if !data.SubnetID.IsUnknown() && !data.SubnetID.IsNull() {
+		subnetNetwork, _, err := r.ParseSubnetID(data.SubnetID.ValueString())
 		if err != nil {
-			return hcloudutil.ErrorToDiag(err)
+			resp.Diagnostics.AddAttributeError(
+				path.Root("subnet_id"),
+				"Invalid Subnet ID",
+				util.TitleCase(err.Error()),
+			)
 		}
-		networkID = nwID
+
+		if !data.NetworkID.IsUnknown() && !data.NetworkID.IsNull() {
+			// Check if the attachment network ID (state) matches the subnet network ID.
+			attachmentNetworkID := data.NetworkID.ValueInt64()
+			if subnetNetwork.ID != data.NetworkID.ValueInt64() {
+				resp.Diagnostics.AddAttributeWarning(
+					path.Root("subnet_id"),
+					"Attachment network is different than the subnet network",
+					fmt.Sprintf(
+						"Attachment network (%d) is different that the subnet network (%d) (%s).",
+						attachmentNetworkID, subnetNetwork.ID, data.SubnetID.ValueString(),
+					),
+				)
+
+				resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("network_id"), types.Int64Value(subnetNetwork.ID))...)
+				resp.RequiresReplace.Append(path.Root("network_id"))
+			}
+		}
+	}
+}
+
+func (r *NetworkResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data networkResourceData
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	loadBalancerID := util.CastInt64(d.Get("load_balancer_id"))
-	lb := &hcloud.LoadBalancer{ID: loadBalancerID}
+	loadBalancer := &hcloud.LoadBalancer{ID: data.LoadBalancerID.ValueInt64()}
 
-	nw := &hcloud.Network{ID: util.CastInt64(networkID)}
-	opts := hcloud.LoadBalancerAttachToNetworkOpts{
-		Network: nw,
-		IP:      ip,
+	opts := hcloud.LoadBalancerAttachToNetworkOpts{}
+
+	if !data.NetworkID.IsUnknown() && !data.NetworkID.IsNull() {
+		opts.Network = &hcloud.Network{ID: data.NetworkID.ValueInt64()}
 	}
+	if !data.SubnetID.IsUnknown() && !data.SubnetID.IsNull() {
+		subnetNetwork, _, err := r.ParseSubnetID(data.SubnetID.ValueString())
+		if err != nil {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("subnet_id"),
+				"Invalid Subnet ID",
+				util.TitleCase(err.Error()),
+			)
+		}
+		opts.Network = subnetNetwork
+	}
+
+	if !data.IP.IsUnknown() && !data.IP.IsNull() {
+		opts.IP = net.ParseIP(data.IP.ValueString())
+	}
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Apply changes
+	var action *hcloud.Action
 
 	err := control.Retry(control.DefaultRetries, func() error {
-		var err error
+		var innerErr error
 
-		action, _, err = c.LoadBalancer.AttachToNetwork(ctx, lb, opts)
-		if hcloud.IsError(err, hcloud.ErrorCodeConflict) ||
-			hcloud.IsError(err, hcloud.ErrorCodeLocked) ||
-			hcloud.IsError(err, hcloud.ErrorCodeServiceError) ||
-			hcloud.IsError(err, hcloud.ErrorCodeNoSubnetAvailable) {
-			// Retry on any of the above listed errors
-			return err
+		action, _, innerErr = r.client.LoadBalancer.AttachToNetwork(ctx, loadBalancer, opts)
+		if hcloud.IsError(innerErr,
+			hcloud.ErrorCodeConflict,
+			hcloud.ErrorCodeLocked,
+			hcloud.ErrorCodeServiceError,
+			hcloud.ErrorCodeNoSubnetAvailable,
+		) {
+			return innerErr
 		}
-
-		return control.AbortRetry(err)
+		if innerErr != nil {
+			return control.AbortRetry(innerErr)
+		}
+		return nil
 	})
-	if hcloud.IsError(err, hcloud.ErrorCodeLoadBalancerAlreadyAttached) &&
-		isLoadBalancerAttachedToNetwork(ctx, c, lb, nw) {
-		return nil
-	}
 	if err != nil {
-		return hcloudutil.ErrorToDiag(err)
-	}
-	d.SetId(generateLoadBalancerNetworkID(lb, nw))
+		// Do not fail if the load balancer is already attached.
+		if !hcloud.IsError(err, hcloud.ErrorCodeLoadBalancerAlreadyAttached) {
+			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+			return
+		}
 
-	if err := hcloudutil.WaitForAction(ctx, &c.Action, action); err != nil {
-		return hcloudutil.ErrorToDiag(err)
-	}
-
-	enablePublicInterface := d.Get("enable_public_interface").(bool)
-	err = resourceLoadBalancerNetworkUpdatePublicInterface(ctx, enablePublicInterface, lb, c)
-	if err != nil {
-		return hcloudutil.ErrorToDiag(err)
-	}
-
-	return resourceLoadBalancerNetworkRead(ctx, d, m)
-}
-func resourceLoadBalancerNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*hcloud.Client)
-
-	loadBalancer, nw, privateNet, err := lookupLoadBalancerNetworkID(ctx, d.Id(), c)
-	if errors.Is(err, errInvalidLoadBalancerNetworkID) {
-		log.Printf("[WARN] Invalid id (%s), removing from state: %s", d.Id(), err)
-		d.SetId("")
-		return nil
-	}
-	if err != nil {
-		return hcloudutil.ErrorToDiag(err)
-	}
-	if loadBalancer == nil {
-		log.Printf("[WARN] LoadBalancer (%s) not found, removing from state", d.Id())
-		d.SetId("")
-		return nil
-	}
-	if nw == nil {
-		log.Printf("[WARN] Network (%s) not found, removing from state", d.Id())
-		d.SetId("")
-		return nil
-	}
-	if privateNet == nil {
-		log.Printf("[WARN] LoadBalancer Attachment (%s) not found, removing from state", d.Id())
-		d.SetId("")
-		return nil
-	}
-	if d.HasChange("enable_public_interface") {
-		enablePublicInterface := d.Get("enable_public_interface").(bool)
-		if err := setEnablePublicInterface(ctx, c, loadBalancer, enablePublicInterface); err != nil {
-			return hcloudutil.ErrorToDiag(err)
+		// A load balancer cannot be attached to more than one network, fail if the
+		// attached network is not the one we requested.
+		{
+			lb, _, innerErr := r.client.LoadBalancer.GetByID(ctx, loadBalancer.ID)
+			if innerErr != nil {
+				resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(innerErr)...)
+				return
+			}
+			if lb.PrivateNetFor(opts.Network) == nil {
+				resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+				return
+			}
 		}
 	}
-	return resourceLoadBalancerNetworkRead(ctx, d, m)
-}
-func resourceLoadBalancerNetworkRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*hcloud.Client)
-
-	loadBalancer, network, privateNet, err := lookupLoadBalancerNetworkID(ctx, d.Id(), client)
-	if errors.Is(err, errInvalidLoadBalancerNetworkID) {
-		log.Printf("[WARN] Invalid id (%s), removing from state: %s", d.Id(), err)
-		d.SetId("")
-		return nil
+	if err := hcloudutil.WaitForAction(ctx, &r.client.Action, action); err != nil {
+		resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+		return
 	}
+
+	// Refresh
+	loadBalancer, _, err = r.client.LoadBalancer.GetByID(ctx, loadBalancer.ID)
 	if err != nil {
-		return hcloudutil.ErrorToDiag(err)
+		resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+		return
 	}
+
 	if loadBalancer == nil {
-		log.Printf("[WARN] LoadBalancer (%s) not found, removing from state", d.Id())
-		d.SetId("")
-		return nil
+		resp.Diagnostics.AddError(
+			"Resource vanished",
+			fmt.Sprintf("Load Balancer (%s) vanished", data.LoadBalancerID),
+		)
+		return
 	}
-	if network == nil {
-		log.Printf("[WARN] Network (%s) not found, removing from state", d.Id())
-		d.SetId("")
-		return nil
+
+	// XXX: Toggle public interface
+	{
+		err := r.setLoadBalancerPublicInterfaceEnabled(ctx, loadBalancer, data.EnablePublicInterface.ValueBool())
+		if err != nil {
+			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+			return
+		}
 	}
-	if privateNet == nil {
-		log.Printf("[WARN] LoadBalancer Attachment (%s) not found, removing from state", d.Id())
-		d.SetId("")
-		return nil
+
+	attachment := loadBalancer.PrivateNetFor(opts.Network)
+	if attachment == nil {
+		resp.Diagnostics.AddError(
+			"Resource vanished",
+			fmt.Sprintf("Attachment of load balancer (%s) to network (%s) vanished", data.LoadBalancerID, data.NetworkID),
+		)
+		return
 	}
-	d.SetId(generateLoadBalancerNetworkID(loadBalancer, network))
-	setLoadBalancerNetworkSchema(d, loadBalancer, network, privateNet)
-	return nil
+
+	// Populate data
+	resp.Diagnostics.Append(populateNetworkResourceData(ctx, &data, loadBalancer, attachment)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func resourceLoadBalancerNetworkDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func (r *NetworkResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var data networkResourceData
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	loadBalancer, network, err := r.ParseID(data.ID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("id"),
+			"Invalid ID",
+			util.TitleCase(err.Error()),
+		)
+		return
+	}
+
+	loadBalancer, _, err = r.client.LoadBalancer.GetByID(ctx, loadBalancer.ID)
+	if err != nil {
+		resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+		return
+	}
+
+	if loadBalancer == nil {
+		resp.State.RemoveResource(ctx)
+		return
+	}
+
+	attachment := loadBalancer.PrivateNetFor(network)
+	if attachment == nil {
+		resp.State.RemoveResource(ctx)
+		return
+	}
+
+	resp.Diagnostics.Append(populateNetworkResourceData(ctx, &data, loadBalancer, attachment)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *NetworkResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var data, plan networkResourceData
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	loadBalancer, network, err := r.ParseID(data.ID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("id"),
+			"Invalid ID",
+			util.TitleCase(err.Error()),
+		)
+		return
+	}
+
+	loadBalancer, _, err = r.client.LoadBalancer.GetByID(ctx, loadBalancer.ID)
+	if err != nil {
+		resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+		return
+	}
+
+	if loadBalancer == nil {
+		// Should not happen
+		resp.Diagnostics.AddError(
+			"Resource vanished",
+			fmt.Sprintf("Load Balancer (%s) vanished", data.LoadBalancerID),
+		)
+		return
+	}
+
+	// XXX: Toggle public interface
+	{
+		if !plan.EnablePublicInterface.Equal(data.EnablePublicInterface) {
+			err := r.setLoadBalancerPublicInterfaceEnabled(ctx, loadBalancer, plan.EnablePublicInterface.ValueBool())
+			if err != nil {
+				resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+				return
+			}
+		}
+	}
+
+	attachment := loadBalancer.PrivateNetFor(network)
+	if attachment == nil {
+		// Should not happen
+		resp.Diagnostics.AddError(
+			"Resource vanished",
+			fmt.Sprintf("Attachment of load balancer (%s) to network (%s) vanished", data.LoadBalancerID, data.NetworkID),
+		)
+		return
+	}
+
+	resp.Diagnostics.Append(populateNetworkResourceData(ctx, &data, loadBalancer, attachment)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *NetworkResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var data networkResourceData
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	loadBalancer, network, err := r.ParseID(data.ID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("id"),
+			"Invalid ID",
+			util.TitleCase(err.Error()),
+		)
+		return
+	}
+
+	opts := hcloud.LoadBalancerDetachFromNetworkOpts{
+		Network: network,
+	}
+
 	var action *hcloud.Action
-
-	client := m.(*hcloud.Client)
-
-	server, network, _, err := lookupLoadBalancerNetworkID(ctx, d.Id(), client)
-
-	if err != nil {
-		log.Printf("[WARN] Invalid id (%s), removing from state: %s", d.Id(), err)
-		d.SetId("")
-		return nil
-	}
-
 	err = control.Retry(control.DefaultRetries, func() error {
-		var err error
+		var innerErr error
 
-		action, _, err = client.LoadBalancer.DetachFromNetwork(ctx, server, hcloud.LoadBalancerDetachFromNetworkOpts{
-			Network: network,
-		})
-		if hcloud.IsError(err, hcloud.ErrorCodeConflict) ||
-			hcloud.IsError(err, hcloud.ErrorCodeLocked) ||
-			hcloud.IsError(err, hcloud.ErrorCodeServiceError) {
-			return err
+		action, _, innerErr = r.client.LoadBalancer.DetachFromNetwork(ctx, loadBalancer, opts)
+		if hcloud.IsError(innerErr,
+			hcloud.ErrorCodeConflict,
+			hcloud.ErrorCodeLocked,
+			hcloud.ErrorCodeServiceError) {
+			return innerErr
 		}
-		return control.AbortRetry(err)
+		return control.AbortRetry(innerErr)
 	})
-
-	if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
-		// network has already been deleted
-		return nil
-	}
 	if err != nil {
-		return hcloudutil.ErrorToDiag(err)
-	}
-	if err := hcloudutil.WaitForAction(ctx, &client.Action, action); err != nil {
-		return hcloudutil.ErrorToDiag(err)
-	}
-
-	return nil
-}
-
-func setLoadBalancerNetworkSchema(d *schema.ResourceData, loadBalancer *hcloud.LoadBalancer, network *hcloud.Network, loadBalancerPrivateNet *hcloud.LoadBalancerPrivateNet) {
-	d.SetId(generateLoadBalancerNetworkID(loadBalancer, network))
-	d.Set("ip", loadBalancerPrivateNet.IP.String())
-	d.Set("enable_public_interface", loadBalancer.PublicNet.Enabled)
-	d.Set("load_balancer_id", loadBalancer.ID)
-	if subnetID, ok := d.GetOk("subnet_id"); ok {
-		d.Set("subnet_id", subnetID)
-	} else {
-		d.Set("network_id", network.ID)
-	}
-}
-
-func isLoadBalancerAttachedToNetwork(
-	ctx context.Context, c *hcloud.Client, lb *hcloud.LoadBalancer, n *hcloud.Network,
-) bool {
-	lbID := lb.ID
-	lb, _, err := c.LoadBalancer.GetByID(ctx, lbID)
-	if lb == nil || err != nil {
-		log.Printf("[WARN] Failed to retrieve load balancer with id %d", lbID)
-		return false
-	}
-	for _, privNet := range lb.PrivateNet {
-		if privNet.Network != nil && privNet.Network.ID == n.ID {
-			return true
+		if !hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
+			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+			return
 		}
 	}
-	return false
-}
 
-func setEnablePublicInterface(ctx context.Context, c *hcloud.Client, loadBalancer *hcloud.LoadBalancer, enablePublicInterface bool) error {
-	if loadBalancer.PublicNet.Enabled && !enablePublicInterface {
-		action, _, err := c.LoadBalancer.DisablePublicInterface(ctx, loadBalancer)
-		if err != nil {
-			return err
+	if err := hcloudutil.WaitForAction(ctx, &r.client.Action, action); err != nil {
+		resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+		return
+	}
+
+	{
+		// Workaround some flakiness from the API
+		for range 10 {
+			lb, _, err := r.client.LoadBalancer.GetByID(ctx, loadBalancer.ID)
+			if err == nil {
+				if lb == nil || lb.PrivateNetFor(opts.Network) == nil {
+					break
+				}
+			}
+
+			time.Sleep(2 * time.Second)
 		}
-
-		return hcloudutil.WaitForAction(ctx, &c.Action, action)
 	}
-	if !loadBalancer.PublicNet.Enabled && enablePublicInterface {
-		action, _, err := c.LoadBalancer.EnablePublicInterface(ctx, loadBalancer)
-		if err != nil {
-			return err
-		}
-
-		return hcloudutil.WaitForAction(ctx, &c.Action, action)
-	}
-	return nil
 }
 
-func generateLoadBalancerNetworkID(server *hcloud.LoadBalancer, network *hcloud.Network) string {
-	return fmt.Sprintf("%d-%d", server.ID, network.ID)
+func (r *NetworkResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-var errInvalidLoadBalancerNetworkID = errors.New("invalid load balancer network id")
-
-// lookupLoadBalancerNetworkID parses the terraform load balancer network record id and return the load balancer, network and the LoadBalancerPrivateNet
-//
-// id format: <load balancer id>-<network id>
-// Examples:
-// 123-456
-func lookupLoadBalancerNetworkID(
-	ctx context.Context, tfID string, c *hcloud.Client,
-) (*hcloud.LoadBalancer, *hcloud.Network, *hcloud.LoadBalancerPrivateNet, error) {
-	if tfID == "" {
-		return nil, nil, nil, errInvalidLoadBalancerNetworkID
-	}
-	parts := strings.SplitN(tfID, "-", 2)
+func (r *NetworkResource) ParseID(s string) (*hcloud.LoadBalancer, *hcloud.Network, error) {
+	parts := strings.SplitN(s, "-", 2)
 	if len(parts) != 2 {
-		return nil, nil, nil, errInvalidLoadBalancerNetworkID
+		return nil, nil, fmt.Errorf("unexpected id '%s', expected '$LOAD_BALANCER_ID-$NETWORK_ID'", s)
 	}
 
 	loadBalancerID, err := util.ParseID(parts[0])
 	if err != nil {
-		return nil, nil, nil, errInvalidLoadBalancerNetworkID
-	}
-
-	loadBalancer, _, err := c.LoadBalancer.GetByID(ctx, loadBalancerID)
-	if err != nil {
-		return nil, nil, nil, errInvalidLoadBalancerNetworkID
-	}
-	if loadBalancer == nil {
-		return nil, nil, nil, errInvalidLoadBalancerNetworkID
+		return nil, nil, fmt.Errorf("unexpected id '%s', expected '$LOAD_BALANCER_ID-$NETWORK_ID'", s)
 	}
 
 	networkID, err := util.ParseID(parts[1])
 	if err != nil {
-		return nil, nil, nil, errInvalidLoadBalancerNetworkID
+		return nil, nil, fmt.Errorf("unexpected id '%s', expected '$LOAD_BALANCER_ID-$NETWORK_ID'", s)
 	}
 
-	network, _, err := c.Network.GetByID(ctx, networkID)
-	if err != nil {
-		return nil, nil, nil, errInvalidLoadBalancerNetworkID
-	}
-	if network == nil {
-		return nil, nil, nil, errInvalidLoadBalancerNetworkID
-	}
-
-	for _, pn := range loadBalancer.PrivateNet {
-		if pn.Network.ID == network.ID {
-			return loadBalancer, network, &pn, nil
-		}
-	}
-	return nil, nil, nil, errInvalidLoadBalancerNetworkID
+	return &hcloud.LoadBalancer{ID: loadBalancerID}, &hcloud.Network{ID: networkID}, nil
 }
 
-func resourceLoadBalancerNetworkUpdatePublicInterface(ctx context.Context, enable bool, lb *hcloud.LoadBalancer, client *hcloud.Client) error {
-	var (
-		action *hcloud.Action
-		err    error
-	)
-
-	if enable {
-		action, _, err = client.LoadBalancer.EnablePublicInterface(ctx, lb)
-	} else {
-		action, _, err = client.LoadBalancer.DisablePublicInterface(ctx, lb)
+func (r *NetworkResource) ParseSubnetID(s string) (*hcloud.Network, *net.IPNet, error) {
+	parts := strings.SplitN(s, "-", 2)
+	if len(parts) != 2 {
+		return nil, nil, fmt.Errorf("unexpected subnet id '%s', expected '$NETWORK_ID-$SUBNET_IP_RANGE'", s)
 	}
+
+	networkID, err := util.ParseID(parts[0])
+	if err != nil {
+		return nil, nil, fmt.Errorf("unexpected subnet id '%s', expected '$NETWORK_ID-$SUBNET_IP_RANGE'", s)
+	}
+
+	_, ipRange, err := net.ParseCIDR(parts[1])
+	if ipRange == nil || err != nil {
+		return nil, nil, fmt.Errorf("unexpected subnet id '%s', expected '$NETWORK_ID-$SUBNET_IP_RANGE'", s)
+	}
+
+	return &hcloud.Network{ID: networkID}, ipRange, nil
+}
+
+func (r *NetworkResource) setLoadBalancerPublicInterfaceEnabled(ctx context.Context, loadBalancer *hcloud.LoadBalancer, enabled bool) error {
+	if loadBalancer.PublicNet.Enabled == enabled {
+		return nil
+	}
+
+	var action *hcloud.Action
+	var err error
+	if enabled {
+		action, _, err = r.client.LoadBalancer.EnablePublicInterface(ctx, loadBalancer)
+	} else {
+		action, _, err = r.client.LoadBalancer.DisablePublicInterface(ctx, loadBalancer)
+	}
+
 	if err != nil {
 		return err
 	}
-	return hcloudutil.WaitForAction(ctx, &client.Action, action)
+	if err := hcloudutil.WaitForAction(ctx, &r.client.Action, action); err != nil {
+		return err
+	}
+
+	loadBalancer.PublicNet.Enabled = enabled
+
+	return nil
 }
