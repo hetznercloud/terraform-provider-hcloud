@@ -114,7 +114,6 @@ See the [Storage Box API documentation](https://docs.hetzner.cloud/reference/het
 			Required:            true,
 			Sensitive:           true,
 			// TODO: Should we generate a password and make it available to the user? Feels painful to always generate a random password, and it can be reset if lost
-			// TODO: Evaluate if it makes sense to set `WriteOnly: true,`, as we can not import the password
 		},
 		"labels": resourceutil.LabelsSchema(),
 		"ssh_keys": schema.ListAttribute{
@@ -127,7 +126,6 @@ See the [Storage Box API documentation](https://docs.hetzner.cloud/reference/het
 				// No way to update them through the API, similar to servers
 				listplanmodifier.RequiresReplace(),
 			},
-			// TODO: Evaluate if it makes sense to set `WriteOnly: true,`, as we can not import the password
 		},
 		"access_settings": schema.SingleNestedAttribute{
 			MarkdownDescription: "Access settings of the Storage Box.",
@@ -184,7 +182,6 @@ See the [Storage Box API documentation](https://docs.hetzner.cloud/reference/het
 		"snapshot_plan": schema.SingleNestedAttribute{
 			MarkdownDescription: "",
 			Optional:            true,
-			// TODO: Default or Computed necessary?
 			Attributes: map[string]schema.Attribute{
 				"max_snapshots": schema.Int32Attribute{
 					MarkdownDescription: util.MarkdownDescription(`
@@ -204,7 +201,6 @@ See the [Storage Box API documentation](https://docs.hetzner.cloud/reference/het
 				},
 				"day_of_week": schema.Int32Attribute{
 					// TODO: Also accept string days similar to CLI?
-					// TODO: Exactly one of day_of_week, day_of_month
 					MarkdownDescription: util.MarkdownDescription(`
 						Day of the week when the Snapshot Plan is executed.
 
