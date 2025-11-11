@@ -46,8 +46,6 @@ data "hcloud_storage_box" "by_label_selector" {
 - `labels` (Map of String) User-defined [labels](https://docs.hetzner.cloud/reference/cloud#labels) (key-value pairs) for the resource.
 - `location` (String) Name of the Location.
 - `server` (String) FQDN of the Storage Box.
-- `ssh_keys` (List of String) SSH public keys in OpenSSH format to inject into the Storage Box. It is not possible to update the SSH Keys through the API after creating the Storage Box, so changing this attribute will delete and re-create the Storage Box, you can also add the SSH Keys to the Storage Box manually.
-- `status` (String) Status of the Storage Box.
 - `storage_box_type` (String) Name of the Storage Box Type.
 - `system` (String) Host system of the Storage Box.
 - `username` (String) Primary username of the Storage Box.
