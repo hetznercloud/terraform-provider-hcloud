@@ -647,7 +647,7 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 			}
 
 			if !found {
-				a, _, err := c.Firewall.RemoveResources(ctx,
+				actions, _, err := c.Firewall.RemoveResources(ctx,
 					&f.Firewall,
 					[]hcloud.FirewallResource{
 						{
@@ -659,7 +659,7 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 				if err != nil {
 					return hcloudutil.ErrorToDiag(err)
 				}
-				err = hcloudutil.WaitForActions(ctx, &c.Action, a)
+				err = c.Action.WaitFor(ctx, actions...)
 				if err != nil {
 					return hcloudutil.ErrorToDiag(err)
 				}
@@ -678,7 +678,7 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 			}
 
 			if !found {
-				a, _, err := c.Firewall.ApplyResources(ctx,
+				actions, _, err := c.Firewall.ApplyResources(ctx,
 					&hcloud.Firewall{ID: fID},
 					[]hcloud.FirewallResource{
 						{
@@ -690,7 +690,7 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 				if err != nil {
 					return hcloudutil.ErrorToDiag(err)
 				}
-				err = hcloudutil.WaitForActions(ctx, &c.Action, a)
+				err = c.Action.WaitFor(ctx, actions...)
 				if err != nil {
 					return hcloudutil.ErrorToDiag(err)
 				}

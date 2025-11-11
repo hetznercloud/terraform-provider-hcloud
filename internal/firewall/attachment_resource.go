@@ -94,14 +94,14 @@ func createAttachment(ctx context.Context, d *schema.ResourceData, m interface{}
 	}
 
 	client := m.(*hcloud.Client)
-	action, _, err := client.Firewall.ApplyResources(ctx, &hcloud.Firewall{ID: att.FirewallID}, att.AllResources())
+	actions, _, err := client.Firewall.ApplyResources(ctx, &hcloud.Firewall{ID: att.FirewallID}, att.AllResources())
 	if hcloud.IsError(err, hcloud.ErrorCodeFirewallAlreadyApplied) {
 		return readAttachment(ctx, d, m)
 	}
 	if err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
-	if err := hcloudutil.WaitForActions(ctx, &client.Action, action); err != nil {
+	if err = client.Action.WaitFor(ctx, actions...); err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
 
@@ -145,7 +145,7 @@ func updateAttachment(ctx context.Context, d *schema.ResourceData, m interface{}
 	}
 	actions = append(actions, as...)
 
-	if err := hcloudutil.WaitForActions(ctx, &client.Action, actions); err != nil {
+	if err = client.Action.WaitFor(ctx, actions...); err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
 
@@ -166,11 +166,11 @@ func deleteAttachment(ctx context.Context, d *schema.ResourceData, m interface{}
 		return diag.FromErr(err)
 	}
 	client := m.(*hcloud.Client)
-	action, _, err := client.Firewall.RemoveResources(ctx, &hcloud.Firewall{ID: att.FirewallID}, att.AllResources())
+	actions, _, err := client.Firewall.RemoveResources(ctx, &hcloud.Firewall{ID: att.FirewallID}, att.AllResources())
 	if err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
-	if err := hcloudutil.WaitForActions(ctx, &client.Action, action); err != nil {
+	if err = client.Action.WaitFor(ctx, actions...); err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
 	return nil

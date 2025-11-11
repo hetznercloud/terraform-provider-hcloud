@@ -512,7 +512,7 @@ func getFirewallAttributes(f *hcloud.Firewall) map[string]interface{} {
 
 func waitForFirewallActions(ctx context.Context, client *hcloud.Client, actions []*hcloud.Action, firewall *hcloud.Firewall) error {
 	log.Printf("[INFO] firewall (%d) waiting for %v actions to complete...", firewall.ID, len(actions))
-	if err := hcloudutil.WaitForActions(ctx, &client.Action, actions); err != nil {
+	if err := client.Action.WaitFor(ctx, actions...); err != nil {
 		return err
 	}
 	log.Printf("[INFO] firewall (%d) %v actions succeeded", firewall.ID, len(actions))
