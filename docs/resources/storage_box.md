@@ -66,7 +66,7 @@ resource "hcloud_storage_box" "backups" {
 - `delete_protection` (Boolean) Prevent the Storage Box from being accidentally deleted outside of Terraform.
 - `labels` (Map of String) User-defined [labels](https://docs.hetzner.cloud/reference/cloud#labels) (key-value pairs) for the resource.
 - `snapshot_plan` (Attributes) (see [below for nested schema](#nestedatt--snapshot_plan))
-- `ssh_keys` (List of String) SSH public keys in OpenSSH format to inject into the Storage Box. It is not possible to update the SSH Keys through the API after creating the Storage Box, so changing this attribute will delete and re-create the Storage Box, you can also add the SSH Keys to the Storage Box manually.
+- `ssh_keys` (Set of String) SSH public keys in OpenSSH format to inject into the Storage Box. It is not possible to update the SSH Keys through the API after creating the Storage Box, so changing this attribute will delete and re-create the Storage Box, you can also add the SSH Keys to the Storage Box manually.
 
 ### Read-Only
 
@@ -93,19 +93,13 @@ Optional:
 Required:
 
 - `hour` (Number) Hour when the Snapshot Plan is executed (UTC).
-- `max_snapshots` (Number) Maximum amount of Snapshots that will be created by this Snapshot Plan.
-
-Older Snapshots will be deleted.
+- `max_snapshots` (Number) Maximum amount of Snapshots that will be created by this Snapshot Plan. Older Snapshots will be deleted.
 - `minute` (Number) Minute when the Snapshot Plan is executed (UTC).
 
 Optional:
 
-- `day_of_month` (Number) Day of the month when the Snapshot Plan is executed.
-
-Null means every day.
-- `day_of_week` (Number) Day of the week when the Snapshot Plan is executed.
-
-Starts at 1 for Monday til 7 for Sunday. Null means every day.
+- `day_of_month` (Number) Day of the month when the Snapshot Plan is executed. Null means every day.
+- `day_of_week` (Number) Day of the week when the Snapshot Plan is executed. Starts at 0 for Sunday til 6 for Saturday. Note that this differs from the API, which uses 1 (Monday) through 7 (Sunday). Null means every day.
 
 ## Import
 
