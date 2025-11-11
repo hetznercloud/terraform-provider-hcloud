@@ -51,7 +51,7 @@ func RouteResource() *schema.Resource {
 }
 
 func resourceNetworkRouteCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	var a *hcloud.Action
+	var action *hcloud.Action
 
 	c := m.(*hcloud.Client)
 
@@ -78,7 +78,7 @@ func resourceNetworkRouteCreate(ctx context.Context, d *schema.ResourceData, m i
 	err = control.Retry(control.DefaultRetries, func() error {
 		var err error
 
-		a, _, err = c.Network.AddRoute(ctx, network, opts)
+		action, _, err = c.Network.AddRoute(ctx, network, opts)
 		if hcloud.IsError(err, hcloud.ErrorCodeConflict) {
 			return err
 		}
@@ -88,7 +88,7 @@ func resourceNetworkRouteCreate(ctx context.Context, d *schema.ResourceData, m i
 		return hcloudutil.ErrorToDiag(err)
 	}
 	d.SetId(generateNetworkRouteID(network, destination.String()))
-	if err := hcloudutil.WaitForAction(ctx, &c.Action, a); err != nil {
+	if err = c.Action.WaitFor(ctx, action); err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
 
@@ -147,7 +147,7 @@ func resourceNetworkRouteDelete(ctx context.Context, d *schema.ResourceData, m i
 		return hcloudutil.ErrorToDiag(err)
 	}
 
-	if err := hcloudutil.WaitForAction(ctx, &c.Action, action); err != nil {
+	if err = c.Action.WaitFor(ctx, action); err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
 	return nil

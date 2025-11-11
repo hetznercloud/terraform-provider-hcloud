@@ -152,7 +152,7 @@ func resourceReverseDNSCreate(ctx context.Context, d *schema.ResourceData, m int
 	if err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
-	if err := hcloudutil.WaitForAction(ctx, &c.Action, action); err != nil {
+	if err = c.Action.WaitFor(ctx, action); err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
 
@@ -185,7 +185,7 @@ func resourceReverseDNSUpdate(ctx context.Context, d *schema.ResourceData, m int
 			return hcloudutil.ErrorToDiag(err)
 		}
 
-		if err := hcloudutil.WaitForAction(ctx, &c.Action, action); err != nil {
+		if err = c.Action.WaitFor(ctx, action); err != nil {
 			return hcloudutil.ErrorToDiag(err)
 		}
 	}
@@ -216,7 +216,7 @@ func resourceReverseDNSDelete(ctx context.Context, d *schema.ResourceData, m int
 		return hcloudutil.ErrorToDiag(err)
 	}
 
-	if err := hcloudutil.WaitForAction(ctx, &c.Action, action); err != nil {
+	if err = c.Action.WaitFor(ctx, action); err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
 

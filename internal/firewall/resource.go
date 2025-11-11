@@ -174,11 +174,10 @@ func resourceFirewallCreate(ctx context.Context, d *schema.ResourceData, m inter
 		return hcloudutil.ErrorToDiag(err)
 	}
 
-	for _, nextAction := range res.Actions {
-		if err := hcloudutil.WaitForAction(ctx, &client.Action, nextAction); err != nil {
-			return hcloudutil.ErrorToDiag(err)
-		}
+	if err = client.Action.WaitFor(ctx, res.Actions...); err != nil {
+		return hcloudutil.ErrorToDiag(err)
 	}
+
 	d.SetId(util.FormatID(res.Firewall.ID))
 
 	return resourceFirewallRead(ctx, d, m)

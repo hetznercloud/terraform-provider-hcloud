@@ -10,11 +10,10 @@ import (
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/control"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
 func attachServerToNetwork(ctx context.Context, c *hcloud.Client, srv *hcloud.Server, nw *hcloud.Network, ip net.IP, aliasIPs []net.IP) error {
-	var a *hcloud.Action
+	var action *hcloud.Action
 
 	opts := hcloud.ServerAttachToNetworkOpts{
 		Network:  nw,
@@ -25,7 +24,7 @@ func attachServerToNetwork(ctx context.Context, c *hcloud.Client, srv *hcloud.Se
 	err := control.Retry(control.DefaultRetries, func() error {
 		var err error
 
-		a, _, err = c.Server.AttachToNetwork(ctx, srv, opts)
+		action, _, err = c.Server.AttachToNetwork(ctx, srv, opts)
 		if hcloud.IsError(err, hcloud.ErrorCodeConflict) ||
 			hcloud.IsError(err, hcloud.ErrorCodeLocked) ||
 			hcloud.IsError(err, hcloud.ErrorCodeServiceError) ||
@@ -44,7 +43,7 @@ func attachServerToNetwork(ctx context.Context, c *hcloud.Client, srv *hcloud.Se
 	if err != nil {
 		return fmt.Errorf("attach server to network: %w", err)
 	}
-	if err := hcloudutil.WaitForAction(ctx, &c.Action, a); err != nil {
+	if err = c.Action.WaitFor(ctx, action); err != nil {
 		return fmt.Errorf("attach server to network: %w", err)
 	}
 	return nil
@@ -60,11 +59,11 @@ func updateServerAliasIPs(ctx context.Context, c *hcloud.Client, s *hcloud.Serve
 	for i, v := range aliasIPs.List() {
 		opts.AliasIPs[i] = net.ParseIP(v.(string))
 	}
-	a, _, err := c.Server.ChangeAliasIPs(ctx, s, opts)
+	action, _, err := c.Server.ChangeAliasIPs(ctx, s, opts)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
-	if err := hcloudutil.WaitForAction(ctx, &c.Action, a); err != nil {
+	if err = c.Action.WaitFor(ctx, action); err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
 	return nil
@@ -72,12 +71,12 @@ func updateServerAliasIPs(ctx context.Context, c *hcloud.Client, s *hcloud.Serve
 
 func detachServerFromNetwork(ctx context.Context, c *hcloud.Client, s *hcloud.Server, n *hcloud.Network) error {
 	const op = "hcloud/detachServerFromNetwork"
-	var a *hcloud.Action
+	var action *hcloud.Action
 
 	err := control.Retry(control.DefaultRetries, func() error {
 		var err error
 
-		a, _, err = c.Server.DetachFromNetwork(ctx, s, hcloud.ServerDetachFromNetworkOpts{Network: n})
+		action, _, err = c.Server.DetachFromNetwork(ctx, s, hcloud.ServerDetachFromNetworkOpts{Network: n})
 		if hcloud.IsError(err, hcloud.ErrorCodeConflict) ||
 			hcloud.IsError(err, hcloud.ErrorCodeLocked) ||
 			hcloud.IsError(err, hcloud.ErrorCodeServiceError) {
@@ -93,7 +92,7 @@ func detachServerFromNetwork(ctx context.Context, c *hcloud.Client, s *hcloud.Se
 		return fmt.Errorf("%s: %w", op, err)
 	}
 
-	if err := hcloudutil.WaitForAction(ctx, &c.Action, a); err != nil {
+	if err = c.Action.WaitFor(ctx, action); err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
 	return nil

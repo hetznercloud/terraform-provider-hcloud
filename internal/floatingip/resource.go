@@ -110,7 +110,7 @@ func resourceFloatingIPCreate(ctx context.Context, d *schema.ResourceData, m int
 
 	d.SetId(util.FormatID(res.FloatingIP.ID))
 	if res.Action != nil {
-		if err := hcloudutil.WaitForAction(ctx, &client.Action, res.Action); err != nil {
+		if err = client.Action.WaitFor(ctx, res.Action); err != nil {
 			return hcloudutil.ErrorToDiag(err)
 		}
 	}
@@ -198,18 +198,18 @@ func resourceFloatingIPUpdate(ctx context.Context, d *schema.ResourceData, m int
 				}
 				return hcloudutil.ErrorToDiag(err)
 			}
-			if err := hcloudutil.WaitForAction(ctx, &client.Action, action); err != nil {
+			if err = client.Action.WaitFor(ctx, action); err != nil {
 				return hcloudutil.ErrorToDiag(err)
 			}
 		} else {
-			a, _, err := client.FloatingIP.Assign(ctx, floatingIP, &hcloud.Server{ID: serverID})
+			action, _, err := client.FloatingIP.Assign(ctx, floatingIP, &hcloud.Server{ID: serverID})
 			if err != nil {
 				if resourceFloatingIPIsNotFound(err, d) {
 					return nil
 				}
 				return hcloudutil.ErrorToDiag(err)
 			}
-			if err := hcloudutil.WaitForAction(ctx, &client.Action, a); err != nil {
+			if err = client.Action.WaitFor(ctx, action); err != nil {
 				return hcloudutil.ErrorToDiag(err)
 			}
 		}
@@ -308,5 +308,5 @@ func setProtection(ctx context.Context, c *hcloud.Client, f *hcloud.FloatingIP, 
 		return err
 	}
 
-	return hcloudutil.WaitForAction(ctx, &c.Action, action)
+	return c.Action.WaitFor(ctx, action)
 }

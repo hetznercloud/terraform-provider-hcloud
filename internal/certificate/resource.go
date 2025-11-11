@@ -231,7 +231,7 @@ func createManagedResource(ctx context.Context, d *schema.ResourceData, m interf
 		return hcloudutil.ErrorToDiag(err)
 	}
 	d.SetId(util.FormatID(res.Certificate.ID))
-	if err := hcloudutil.WaitForAction(ctx, &c.Action, res.Action); err != nil {
+	if err = c.Action.WaitFor(ctx, res.Action); err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
 

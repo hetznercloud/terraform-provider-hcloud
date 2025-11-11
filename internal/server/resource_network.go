@@ -274,7 +274,7 @@ func (r *NetworkResource) Create(ctx context.Context, req resource.CreateRequest
 			return
 		}
 	}
-	if err := hcloudutil.WaitForAction(ctx, &r.client.Action, action); err != nil {
+	if err = r.client.Action.WaitFor(ctx, action); err != nil {
 		resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
 		return
 	}
@@ -394,7 +394,7 @@ func (r *NetworkResource) Update(ctx context.Context, req resource.UpdateRequest
 			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
 			return
 		}
-		if err := hcloudutil.WaitForAction(ctx, &r.client.Action, action); err != nil {
+		if err = r.client.Action.WaitFor(ctx, action); err != nil {
 			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
 			return
 		}
@@ -475,7 +475,7 @@ func (r *NetworkResource) Delete(ctx context.Context, req resource.DeleteRequest
 		}
 	}
 
-	if err := hcloudutil.WaitForAction(ctx, &r.client.Action, action); err != nil {
+	if err = r.client.Action.WaitFor(ctx, action); err != nil {
 		resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
 		return
 	}

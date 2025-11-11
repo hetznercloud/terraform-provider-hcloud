@@ -86,7 +86,7 @@ func resourcePlacementGroupCreate(ctx context.Context, d *schema.ResourceData, m
 	d.SetId(util.FormatID(res.PlacementGroup.ID))
 
 	if res.Action != nil {
-		if err := hcloudutil.WaitForAction(ctx, &client.Action, res.Action); err != nil {
+		if err = client.Action.WaitFor(ctx, res.Action); err != nil {
 			return hcloudutil.ErrorToDiag(err)
 		}
 	}
