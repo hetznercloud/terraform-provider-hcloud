@@ -323,14 +323,53 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	// surprise "duplicate resource" errors happen.
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), types.Int64Value(result.StorageBox.ID))...)
 
-	if err = r.client.Action.WaitFor(ctx, result.Action); err != nil {
-		resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+	resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, result.Action)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// TODO: (for Actions PR)
-	//   Set Delete Protection
-	//   Enable Snapshot Plan
+	var actions []*hcloud.Action
+
+	if !data.DeleteProtection.IsUnknown() && !data.DeleteProtection.IsNull() {
+		action, _, err := r.client.StorageBox.ChangeProtection(ctx, result.StorageBox, hcloud.StorageBoxChangeProtectionOpts{
+			Delete: data.DeleteProtection.ValueBoolPointer(),
+		})
+		if err != nil {
+			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+			return
+		}
+
+		actions = append(actions, action)
+	}
+
+	if !data.SnapshotPlan.IsUnknown() && !data.SnapshotPlan.IsNull() {
+		values := modelSnapshotPlan{}
+		resp.Diagnostics.Append(values.FromTerraform(ctx, data.SnapshotPlan)...)
+
+		hc, diags := values.ToAPI(ctx)
+		resp.Diagnostics.Append(diags...)
+
+		opts := hcloud.StorageBoxEnableSnapshotPlanOpts{
+			MaxSnapshots: hc.MaxSnapshots,
+			Minute:       hc.Minute,
+			Hour:         hc.Hour,
+			DayOfWeek:    hc.DayOfWeek,
+			DayOfMonth:   hc.DayOfMonth,
+		}
+
+		action, _, err := r.client.StorageBox.EnableSnapshotPlan(ctx, result.StorageBox, opts)
+		if err != nil {
+			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+			return
+		}
+
+		actions = append(actions, action)
+	}
+
+	resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, actions...)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	// Fetch fresh data from the API
 	in, _, err := r.client.StorageBox.GetByID(ctx, result.StorageBox.ID)
@@ -386,13 +425,117 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 	storageBox := &hcloud.StorageBox{ID: data.ID.ValueInt64()}
 
 	// Run Actions
+	var actions []*hcloud.Action
 
-	// TODO: (for Actions PR)
-	//   Set Delete Protection
-	//   Enable Snapshot Plan
-	//   Change Type
-	//   Reset Password
-	//   Update Access Settings
+	// Action: Delete Protection
+	if !plan.DeleteProtection.IsUnknown() && !plan.DeleteProtection.Equal(data.DeleteProtection) {
+		action, _, err := r.client.StorageBox.ChangeProtection(ctx, storageBox, hcloud.StorageBoxChangeProtectionOpts{
+			Delete: plan.DeleteProtection.ValueBoolPointer(),
+		})
+		if err != nil {
+			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+			return
+		}
+
+		actions = append(actions, action)
+	}
+
+	// Action: Enable/Disable Snapshot Plan
+	if !plan.SnapshotPlan.IsUnknown() && !plan.SnapshotPlan.Equal(data.SnapshotPlan) {
+		if plan.SnapshotPlan.IsNull() {
+			action, _, err := r.client.StorageBox.DisableSnapshotPlan(ctx, storageBox)
+			if err != nil {
+				resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+				return
+			}
+
+			actions = append(actions, action)
+		} else {
+			values := modelSnapshotPlan{}
+			resp.Diagnostics.Append(values.FromTerraform(ctx, plan.SnapshotPlan)...)
+
+			hc, diags := values.ToAPI(ctx)
+			resp.Diagnostics.Append(diags...)
+
+			// Check for errors before sending data to API
+			if resp.Diagnostics.HasError() {
+				return
+			}
+
+			opts := hcloud.StorageBoxEnableSnapshotPlanOpts{
+				MaxSnapshots: hc.MaxSnapshots,
+				Minute:       hc.Minute,
+				Hour:         hc.Hour,
+				DayOfWeek:    hc.DayOfWeek,
+				DayOfMonth:   hc.DayOfMonth,
+			}
+
+			action, _, err := r.client.StorageBox.EnableSnapshotPlan(ctx, storageBox, opts)
+			if err != nil {
+				resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+				return
+			}
+
+			actions = append(actions, action)
+		}
+	}
+
+	// Action: Change Type
+	if !plan.StorageBoxType.IsUnknown() && !plan.StorageBoxType.Equal(data.StorageBoxType) {
+		opts := hcloud.StorageBoxChangeTypeOpts{
+			StorageBoxType: &hcloud.StorageBoxType{Name: plan.StorageBoxType.ValueString()},
+		}
+
+		action, _, err := r.client.StorageBox.ChangeType(ctx, storageBox, opts)
+		if err != nil {
+			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+			return
+		}
+
+		actions = append(actions, action)
+	}
+
+	// Action: Reset Password
+	if !plan.Password.IsUnknown() && !plan.Password.Equal(data.Password) {
+		opts := hcloud.StorageBoxResetPasswordOpts{
+			Password: plan.Password.ValueString(),
+		}
+
+		action, _, err := r.client.StorageBox.ResetPassword(ctx, storageBox, opts)
+		if err != nil {
+			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+			return
+		}
+
+		actions = append(actions, action)
+	}
+
+	// Action: Update Access Settings
+	if !plan.AccessSettings.IsUnknown() && !plan.AccessSettings.Equal(data.AccessSettings) {
+		values := modelAccessSettings{}
+		resp.Diagnostics.Append(values.FromTerraform(ctx, plan.AccessSettings)...)
+
+		opts := hcloud.StorageBoxUpdateAccessSettingsOpts{
+			ReachableExternally: values.ReachableExternally.ValueBoolPointer(),
+			SambaEnabled:        values.SambaEnabled.ValueBoolPointer(),
+			SSHEnabled:          values.SSHEnabled.ValueBoolPointer(),
+			WebDAVEnabled:       values.WebDAVEnabled.ValueBoolPointer(),
+			ZFSEnabled:          values.ZFSEnabled.ValueBoolPointer(),
+		}
+
+		action, _, err := r.client.StorageBox.UpdateAccessSettings(ctx, storageBox, opts)
+		if err != nil {
+			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+			return
+		}
+
+		actions = append(actions, action)
+	}
+
+	resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, actions...)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	// Update fields on resource
 	opts := hcloud.StorageBoxUpdateOpts{}
@@ -423,6 +566,12 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 		return
 	}
 
+	// At this point the change password action was successful.
+	// We have to update the value saved in the state, this does not happen in `data.FromAPI()`.
+	if !plan.Password.IsUnknown() && !plan.Password.Equal(data.Password) {
+		data.Password = plan.Password
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -434,7 +583,30 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 		return
 	}
 
-	result, _, err := r.client.StorageBox.Delete(ctx, &hcloud.StorageBox{ID: data.ID.ValueInt64()})
+	storageBox := &hcloud.StorageBox{ID: data.ID.ValueInt64()}
+
+	// Disable delete protection before deleting.
+	if !data.DeleteProtection.IsUnknown() && !data.DeleteProtection.IsNull() && data.DeleteProtection.ValueBool() {
+		action, _, err := r.client.StorageBox.ChangeProtection(ctx, storageBox, hcloud.StorageBoxChangeProtectionOpts{
+			Delete: hcloud.Ptr(false),
+		})
+		if err != nil {
+			if hcloudutil.APIErrorIsNotFound(err) {
+				// Resource does not exist anymore, all good.
+				return
+			}
+
+			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+			return
+		}
+
+		resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, action)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
+	result, _, err := r.client.StorageBox.Delete(ctx, storageBox)
 	if err != nil {
 		if hcloudutil.APIErrorIsNotFound(err) {
 			return
@@ -444,10 +616,7 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 		return
 	}
 
-	if err = r.client.Action.WaitFor(ctx, result.Action); err != nil {
-		resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
-		return
-	}
+	resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, result.Action)...)
 }
 
 func (r *Resource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
