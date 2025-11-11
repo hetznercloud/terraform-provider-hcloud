@@ -384,6 +384,11 @@ func (r *NetworkResource) Update(ctx context.Context, req resource.UpdateRequest
 
 		opts.AliasIPs = sliceutil.Transform(aliasIPsRaw, net.ParseIP)
 
+		// If data conversion failed we should abort before sending API requests.
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
 		action, _, err := r.client.Server.ChangeAliasIPs(ctx, server, opts)
 		if err != nil {
 			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)

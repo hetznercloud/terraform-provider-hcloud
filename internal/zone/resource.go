@@ -328,6 +328,11 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 			})
 		}
 
+		// If data conversion failed we should abort before sending API requests.
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
 		action, _, err := r.client.Zone.ChangePrimaryNameservers(ctx, zone, opts)
 		if err != nil {
 			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
