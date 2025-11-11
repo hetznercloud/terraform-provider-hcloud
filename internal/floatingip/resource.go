@@ -109,10 +109,8 @@ func resourceFloatingIPCreate(ctx context.Context, d *schema.ResourceData, m int
 	}
 
 	d.SetId(util.FormatID(res.FloatingIP.ID))
-	if res.Action != nil {
-		if err = client.Action.WaitFor(ctx, res.Action); err != nil {
-			return hcloudutil.ErrorToDiag(err)
-		}
+	if err = client.Action.WaitFor(ctx, res.Action); err != nil {
+		return hcloudutil.ErrorToDiag(err)
 	}
 
 	deleteProtection := d.Get("delete_protection").(bool)

@@ -115,10 +115,8 @@ func resourceLoadBalancerTargetCreate(ctx context.Context, d *schema.ResourceDat
 	if err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
-	if action != nil {
-		if err = c.Action.WaitFor(ctx, action); err != nil {
-			return diag.Errorf("add load balancer target: %v", err)
-		}
+	if err = c.Action.WaitFor(ctx, action); err != nil {
+		return diag.Errorf("add load balancer target: %v", err)
 	}
 	setLoadBalancerTarget(d, lbID, tgt)
 	return nil

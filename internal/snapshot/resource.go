@@ -70,10 +70,8 @@ func resourceSnapshotCreate(ctx context.Context, d *schema.ResourceData, m inter
 	}
 
 	d.SetId(util.FormatID(res.Image.ID))
-	if res.Action != nil {
-		if err = client.Action.WaitFor(ctx, res.Action); err != nil {
-			return hcloudutil.ErrorToDiag(err)
-		}
+	if err = client.Action.WaitFor(ctx, res.Action); err != nil {
+		return hcloudutil.ErrorToDiag(err)
 	}
 
 	return resourceSnapshotRead(ctx, d, m)
