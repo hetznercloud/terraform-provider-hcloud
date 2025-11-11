@@ -175,18 +175,18 @@ func (m *modelSnapshotPlan) tfAttributesTypes() map[string]attr.Type {
 func (m *modelSnapshotPlan) FromAPI(_ context.Context, hc *hcloud.StorageBoxSnapshotPlan) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	m.MaxSnapshots = types.Int32Value(int32(hc.MaxSnapshots))
-	m.Minute = types.Int32Value(int32(hc.Minute))
-	m.Hour = types.Int32Value(int32(hc.Hour))
+	m.MaxSnapshots = types.Int32Value(int32(hc.MaxSnapshots)) //nolint:gosec
+	m.Minute = types.Int32Value(int32(hc.Minute))             //nolint:gosec
+	m.Hour = types.Int32Value(int32(hc.Hour))                 //nolint:gosec
 
 	if hc.DayOfWeek != nil {
-		m.DayOfWeek = types.Int32Value(int32(*hc.DayOfWeek))
+		m.DayOfWeek = types.Int32Value(int32(*hc.DayOfWeek)) //nolint:gosec
 	} else {
 		m.DayOfWeek = types.Int32Null()
 	}
 
 	if hc.DayOfMonth != nil {
-		m.DayOfMonth = types.Int32Value(int32(*hc.DayOfMonth))
+		m.DayOfMonth = types.Int32Value(int32(*hc.DayOfMonth)) //nolint:gosec
 	} else {
 		m.DayOfMonth = types.Int32Null()
 	}
