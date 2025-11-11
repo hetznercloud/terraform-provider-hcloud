@@ -324,6 +324,11 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 		hcItems, diags := values.ToAPI(ctx)
 		resp.Diagnostics.Append(diags...)
 
+		// If data conversion failed we should abort before sending API requests.
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
 		action, _, err := r.client.Zone.SetRRSetRecords(ctx, rrset, hcloud.ZoneRRSetSetRecordsOpts{
 			Records: hcItems,
 		})
