@@ -94,36 +94,24 @@ func getCommonDataSourceSchema(readOnly bool) map[string]schema.Attribute {
 
 			Attributes: map[string]schema.Attribute{
 				"max_snapshots": schema.Int32Attribute{
-					MarkdownDescription: util.MarkdownDescription(`
-						Maximum amount of Snapshots that will be created by this Snapshot Plan.
-
-						Older Snapshots will be deleted.
-					`),
-					Computed: true,
+					MarkdownDescription: "Maximum amount of Snapshots that will be created by this Snapshot Plan. Older Snapshots will be deleted.",
+					Computed:            true,
 				},
 				"minute": schema.Int32Attribute{
 					MarkdownDescription: "Minute when the Snapshot Plan is executed (UTC).",
 					Computed:            true,
 				},
 				"hour": schema.Int32Attribute{
-					MarkdownDescription: "Hour when the Snapshot Plan is executed (UTC).\n",
+					MarkdownDescription: "Hour when the Snapshot Plan is executed (UTC).",
 					Computed:            true,
 				},
 				"day_of_week": schema.Int32Attribute{
-					MarkdownDescription: util.MarkdownDescription(`
-						Day of the week when the Snapshot Plan is executed.
-
-						Starts at 1 for Monday til 7 for Sunday. Null means every day.
-					`),
-					Computed: true,
+					MarkdownDescription: "Day of the week when the Snapshot Plan is executed. Starts at 0 for Sunday til 6 for Saturday. Note that this differs from the API, which uses 1 (Monday) through 7 (Sunday). Null means every day.",
+					Computed:            true,
 				},
 				"day_of_month": schema.Int32Attribute{
-					MarkdownDescription: util.MarkdownDescription(`
-						Day of the month when the Snapshot Plan is executed.
-
-						Null means every day.
-					`),
-					Computed: true,
+					MarkdownDescription: "Day of the month when the Snapshot Plan is executed. Null means every day.",
+					Computed:            true,
 				},
 			},
 		},

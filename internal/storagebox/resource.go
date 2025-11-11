@@ -4,7 +4,6 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -12,10 +11,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -33,7 +32,6 @@ const ResourceType = "hcloud_storage_box"
 var _ resource.Resource = (*Resource)(nil)
 var _ resource.ResourceWithConfigure = (*Resource)(nil)
 var _ resource.ResourceWithImportState = (*Resource)(nil)
-var _ resource.ResourceWithConfigValidators = (*Resource)(nil)
 
 type Resource struct {
 	client *hcloud.Client
@@ -116,15 +114,15 @@ See the [Storage Box API documentation](https://docs.hetzner.cloud/reference/het
 			// TODO: Should we generate a password and make it available to the user? Feels painful to always generate a random password, and it can be reset if lost
 		},
 		"labels": resourceutil.LabelsSchema(),
-		"ssh_keys": schema.ListAttribute{
+		"ssh_keys": schema.SetAttribute{
 			MarkdownDescription: "SSH public keys in OpenSSH format to inject into the Storage Box. It is not possible to update the SSH Keys through the API after creating the Storage Box, so changing this attribute will delete and re-create the Storage Box, you can also add the SSH Keys to the Storage Box manually.",
 			ElementType:         types.StringType,
 			Optional:            true,
 			Computed:            true,
-			Default:             listdefault.StaticValue(types.ListValueMust(types.StringType, []attr.Value{})), // TODO: is there some easier way to get an empty list?
-			PlanModifiers: []planmodifier.List{
+			Default:             setdefault.StaticValue(types.SetValueMust(types.StringType, []attr.Value{})), // TODO: is there some easier way to get an empty list?
+			PlanModifiers: []planmodifier.Set{
 				// No way to update them through the API, similar to servers
-				listplanmodifier.RequiresReplace(),
+				setplanmodifier.RequiresReplace(),
 			},
 		},
 		"access_settings": schema.SingleNestedAttribute{
@@ -184,37 +182,25 @@ See the [Storage Box API documentation](https://docs.hetzner.cloud/reference/het
 			Optional:            true,
 			Attributes: map[string]schema.Attribute{
 				"max_snapshots": schema.Int32Attribute{
-					MarkdownDescription: util.MarkdownDescription(`
-						Maximum amount of Snapshots that will be created by this Snapshot Plan.
-
-						Older Snapshots will be deleted.
-					`),
-					Required: true,
+					MarkdownDescription: "Maximum amount of Snapshots that will be created by this Snapshot Plan. Older Snapshots will be deleted.",
+					Required:            true,
 				},
 				"minute": schema.Int32Attribute{
 					MarkdownDescription: "Minute when the Snapshot Plan is executed (UTC).",
 					Required:            true,
 				},
 				"hour": schema.Int32Attribute{
-					MarkdownDescription: "Hour when the Snapshot Plan is executed (UTC).\n",
+					MarkdownDescription: "Hour when the Snapshot Plan is executed (UTC).",
 					Required:            true,
 				},
 				"day_of_week": schema.Int32Attribute{
 					// TODO: Also accept string days similar to CLI?
-					MarkdownDescription: util.MarkdownDescription(`
-						Day of the week when the Snapshot Plan is executed.
-
-						Starts at 1 for Monday til 7 for Sunday. Null means every day.
-					`),
-					Optional: true,
+					MarkdownDescription: "Day of the week when the Snapshot Plan is executed. Starts at 0 for Sunday til 6 for Saturday. Note that this differs from the API, which uses 1 (Monday) through 7 (Sunday). Null means every day.",
+					Optional:            true,
 				},
 				"day_of_month": schema.Int32Attribute{
-					MarkdownDescription: util.MarkdownDescription(`
-						Day of the month when the Snapshot Plan is executed.
-
-						Null means every day.
-					`),
-					Optional: true,
+					MarkdownDescription: "Day of the month when the Snapshot Plan is executed. Null means every day.",
+					Optional:            true,
 				},
 			},
 		},
@@ -225,7 +211,7 @@ type resourceModel struct {
 	commonModel
 
 	Password types.String `tfsdk:"password"`
-	SSHKeys  types.List   `tfsdk:"ssh_keys"`
+	SSHKeys  types.Set    `tfsdk:"ssh_keys"`
 }
 
 var _ util.ModelFromAPI[*hcloud.StorageBox] = &resourceModel{} // reuse commonModel, as the fields from resourceModel are not readable anyway
@@ -236,22 +222,13 @@ func (m *resourceModel) tfAttributesTypes() map[string]attr.Type {
 		(&commonModel{}).tfAttributesTypes(),
 		map[string]attr.Type{
 			"password": types.StringType,
-			"ssh_keys": types.ListType{ElemType: types.StringType},
+			"ssh_keys": types.SetType{ElemType: types.StringType},
 		},
 	)
 }
 
 func (m *resourceModel) ToTerraform(ctx context.Context) (types.Object, diag.Diagnostics) {
 	return types.ObjectValueFrom(ctx, m.tfAttributesTypes(), m)
-}
-
-func (r *Resource) ConfigValidators(_ context.Context) []resource.ConfigValidator {
-	return []resource.ConfigValidator{
-		resourcevalidator.Conflicting(
-			path.MatchRoot("snapshot_plan").AtName("day_of_week"),
-			path.MatchRoot("snapshot_plan").AtName("day_of_month"),
-		),
-	}
 }
 
 func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

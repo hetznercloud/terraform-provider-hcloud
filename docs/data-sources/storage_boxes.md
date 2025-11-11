@@ -60,16 +60,10 @@ Read-Only:
 
 Read-Only:
 
-- `day_of_month` (Number) Day of the month when the Snapshot Plan is executed.
-
-Null means every day.
-- `day_of_week` (Number) Day of the week when the Snapshot Plan is executed.
-
-Starts at 1 for Monday til 7 for Sunday. Null means every day.
+- `day_of_month` (Number) Day of the month when the Snapshot Plan is executed. Null means every day.
+- `day_of_week` (Number) Day of the week when the Snapshot Plan is executed. Starts at 0 for Sunday til 6 for Saturday. Note that this differs from the API, which uses 1 (Monday) through 7 (Sunday). Null means every day.
 - `hour` (Number) Hour when the Snapshot Plan is executed (UTC).
-- `max_snapshots` (Number) Maximum amount of Snapshots that will be created by this Snapshot Plan.
-
-Older Snapshots will be deleted.
+- `max_snapshots` (Number) Maximum amount of Snapshots that will be created by this Snapshot Plan. Older Snapshots will be deleted.
 - `minute` (Number) Minute when the Snapshot Plan is executed (UTC).
 
 
