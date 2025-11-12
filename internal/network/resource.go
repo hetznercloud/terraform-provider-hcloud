@@ -242,5 +242,5 @@ func setProtection(ctx context.Context, c *hcloud.Client, n *hcloud.Network, del
 		return err
 	}
 
-	return hcloudutil.WaitForAction(ctx, &c.Action, action)
+	return c.Action.WaitFor(ctx, action)
 }

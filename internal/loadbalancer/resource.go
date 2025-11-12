@@ -165,7 +165,7 @@ func resourceLoadBalancerCreate(ctx context.Context, d *schema.ResourceData, m i
 	}
 
 	d.SetId(util.FormatID(res.LoadBalancer.ID))
-	if err := hcloudutil.WaitForAction(ctx, &c.Action, res.Action); err != nil {
+	if err = c.Action.WaitFor(ctx, res.Action); err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
 
@@ -233,7 +233,7 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, m i
 			}
 			return hcloudutil.ErrorToDiag(err)
 		}
-		if err := hcloudutil.WaitForAction(ctx, &c.Action, action); err != nil {
+		if err = c.Action.WaitFor(ctx, action); err != nil {
 			return hcloudutil.ErrorToDiag(err)
 		}
 	}
@@ -252,7 +252,7 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, m i
 			}
 			return hcloudutil.ErrorToDiag(err)
 		}
-		if err := hcloudutil.WaitForAction(ctx, &c.Action, action); err != nil {
+		if err = c.Action.WaitFor(ctx, action); err != nil {
 			return hcloudutil.ErrorToDiag(err)
 		}
 	}
@@ -296,7 +296,7 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, m i
 					}
 					return hcloudutil.ErrorToDiag(err)
 				}
-				if err := hcloudutil.WaitForAction(ctx, &c.Action, action); err != nil {
+				if err = c.Action.WaitFor(ctx, action); err != nil {
 					return hcloudutil.ErrorToDiag(err)
 				}
 			}
@@ -333,7 +333,7 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, m i
 					}
 					return hcloudutil.ErrorToDiag(err)
 				}
-				if err := hcloudutil.WaitForAction(ctx, &c.Action, action); err != nil {
+				if err = c.Action.WaitFor(ctx, action); err != nil {
 					return hcloudutil.ErrorToDiag(err)
 				}
 			}
@@ -460,5 +460,5 @@ func setProtection(ctx context.Context, c *hcloud.Client, lb *hcloud.LoadBalance
 		return err
 	}
 
-	return hcloudutil.WaitForAction(ctx, &c.Action, action)
+	return c.Action.WaitFor(ctx, action)
 }

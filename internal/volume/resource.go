@@ -118,11 +118,11 @@ func resourceVolumeCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	}
 	d.SetId(util.FormatID(result.Volume.ID))
 
-	if err := hcloudutil.WaitForAction(ctx, &c.Action, result.Action); err != nil {
+	if err = c.Action.WaitFor(ctx, result.Action); err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
 	for _, nextAction := range result.NextActions {
-		if err := hcloudutil.WaitForAction(ctx, &c.Action, nextAction); err != nil {
+		if err = c.Action.WaitFor(ctx, nextAction); err != nil {
 			var aerr hcloud.ActionError
 
 			if nextAction.Command != "attach_volume" {
@@ -149,11 +149,11 @@ func resourceVolumeCreate(ctx context.Context, d *schema.ResourceData, m interfa
 						if automount, ok := d.GetOk("automount"); ok {
 							opts.Automount = hcloud.Ptr(automount.(bool))
 						}
-						a, _, err := c.Volume.AttachWithOpts(ctx, result.Volume, o)
+						action, _, err := c.Volume.AttachWithOpts(ctx, result.Volume, o)
 						if err != nil {
 							return err
 						}
-						return hcloudutil.WaitForAction(ctx, &c.Action, a)
+						return c.Action.WaitFor(ctx, action)
 					})
 					if err != nil {
 						return hcloudutil.ErrorToDiag(err)
@@ -233,7 +233,7 @@ func resourceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		serverID := util.CastInt64(d.Get("server_id"))
 		if serverID == 0 {
 			err := control.Retry(control.DefaultRetries, func() error {
-				a, _, err := c.Volume.Detach(ctx, volume)
+				action, _, err := c.Volume.Detach(ctx, volume)
 				if err != nil {
 					if resourceVolumeIsNotFound(err, d) {
 						return nil
@@ -241,7 +241,7 @@ func resourceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 					return err
 				}
 
-				return hcloudutil.WaitForAction(ctx, &c.Action, a)
+				return c.Action.WaitFor(ctx, action)
 			})
 			if err != nil {
 				return hcloudutil.ErrorToDiag(err)
@@ -257,7 +257,7 @@ func resourceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 						return err
 					}
 
-					return hcloudutil.WaitForAction(ctx, &c.Action, action)
+					return c.Action.WaitFor(ctx, action)
 				})
 				if err != nil {
 					return hcloudutil.ErrorToDiag(err)
@@ -277,7 +277,7 @@ func resourceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 					return err
 				}
 
-				return hcloudutil.WaitForAction(ctx, &c.Action, action)
+				return c.Action.WaitFor(ctx, action)
 			})
 			if err != nil {
 				return hcloudutil.ErrorToDiag(err)
@@ -295,7 +295,7 @@ func resourceVolumeUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 			return hcloudutil.ErrorToDiag(err)
 		}
 
-		if err := hcloudutil.WaitForAction(ctx, &c.Action, action); err != nil {
+		if err = c.Action.WaitFor(ctx, action); err != nil {
 			return hcloudutil.ErrorToDiag(err)
 		}
 	}
@@ -349,7 +349,7 @@ func resourceVolumeDelete(ctx context.Context, d *schema.ResourceData, m interfa
 
 	if volume.Server != nil {
 		err := control.Retry(control.DefaultRetries, func() error {
-			a, _, err := c.Volume.Detach(ctx, volume)
+			action, _, err := c.Volume.Detach(ctx, volume)
 			if err != nil {
 				if resourceVolumeIsNotFound(err, d) {
 					return nil
@@ -357,7 +357,7 @@ func resourceVolumeDelete(ctx context.Context, d *schema.ResourceData, m interfa
 				return err
 			}
 
-			return hcloudutil.WaitForAction(ctx, &c.Action, a)
+			return c.Action.WaitFor(ctx, action)
 		})
 		if err != nil {
 			return hcloudutil.ErrorToDiag(err)
@@ -420,5 +420,5 @@ func setProtection(ctx context.Context, c *hcloud.Client, v *hcloud.Volume, dele
 		return err
 	}
 
-	return hcloudutil.WaitForAction(ctx, &c.Action, action)
+	return c.Action.WaitFor(ctx, action)
 }

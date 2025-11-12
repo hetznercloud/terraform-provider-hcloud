@@ -24,7 +24,6 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
 func TestAccServerResource(t *testing.T) {
@@ -1093,7 +1092,7 @@ func TestAccServerResource_PlacementGroup(t *testing.T) {
 						t.Errorf("PreConfig: failed to power off server: %v", err)
 						return
 					}
-					err = hcloudutil.WaitForAction(ctx, &client.Action, action)
+					err = client.Action.WaitFor(ctx, action)
 					if err != nil {
 						t.Errorf("PreConfig: power off server action failed: %v", err)
 						return

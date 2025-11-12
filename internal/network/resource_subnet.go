@@ -71,7 +71,7 @@ func SubnetResource() *schema.Resource {
 }
 
 func resourceNetworkSubnetCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	var a *hcloud.Action
+	var action *hcloud.Action
 
 	c := m.(*hcloud.Client)
 
@@ -99,7 +99,7 @@ func resourceNetworkSubnetCreate(ctx context.Context, d *schema.ResourceData, m 
 	err = control.Retry(control.DefaultRetries, func() error {
 		var err error
 
-		a, _, err = c.Network.AddSubnet(ctx, network, opts)
+		action, _, err = c.Network.AddSubnet(ctx, network, opts)
 		if hcloud.IsError(err, hcloud.ErrorCodeConflict) {
 			return err
 		}
@@ -113,7 +113,7 @@ func resourceNetworkSubnetCreate(ctx context.Context, d *schema.ResourceData, m 
 	}
 	d.SetId(generateNetworkSubnetID(network, ipRange.String()))
 
-	if err := hcloudutil.WaitForAction(ctx, &c.Action, a); err != nil {
+	if err = c.Action.WaitFor(ctx, action); err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
 
@@ -144,7 +144,7 @@ func resourceNetworkSubnetRead(ctx context.Context, d *schema.ResourceData, m in
 
 func resourceNetworkSubnetDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var (
-		a       *hcloud.Action
+		action  *hcloud.Action
 		network *hcloud.Network
 	)
 
@@ -161,7 +161,7 @@ func resourceNetworkSubnetDelete(ctx context.Context, d *schema.ResourceData, m 
 			return control.AbortRetry(err)
 		}
 
-		a, _, err = c.Network.DeleteSubnet(ctx, network, hcloud.NetworkDeleteSubnetOpts{
+		action, _, err = c.Network.DeleteSubnet(ctx, network, hcloud.NetworkDeleteSubnetOpts{
 			Subnet: subnet,
 		})
 		if hcloud.IsError(err, hcloud.ErrorCodeConflict) || hcloud.IsError(err, hcloud.ErrorCodeLocked) {
@@ -186,7 +186,7 @@ func resourceNetworkSubnetDelete(ctx context.Context, d *schema.ResourceData, m 
 	if err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
-	if err := hcloudutil.WaitForAction(ctx, &c.Action, a); err != nil {
+	if err = c.Action.WaitFor(ctx, action); err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
 	return nil

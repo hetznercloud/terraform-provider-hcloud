@@ -84,10 +84,10 @@ func TargetResource() *schema.Resource {
 
 func resourceLoadBalancerTargetCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	var (
-		lb  *hcloud.LoadBalancer
-		tgt hcloud.LoadBalancerTarget
-		a   *hcloud.Action
-		err error
+		lb     *hcloud.LoadBalancer
+		tgt    hcloud.LoadBalancerTarget
+		action *hcloud.Action
+		err    error
 	)
 
 	c := m.(*hcloud.Client)
@@ -104,21 +104,19 @@ func resourceLoadBalancerTargetCreate(ctx context.Context, d *schema.ResourceDat
 	tgtType := hcloud.LoadBalancerTargetType(d.Get("type").(string))
 	switch tgtType {
 	case hcloud.LoadBalancerTargetTypeServer:
-		a, tgt, err = resourceLoadBalancerCreateServerTarget(ctx, c, lb, d)
+		action, tgt, err = resourceLoadBalancerCreateServerTarget(ctx, c, lb, d)
 	case hcloud.LoadBalancerTargetTypeLabelSelector:
-		a, tgt, err = resourceLoadBalancerCreateLabelSelectorTarget(ctx, c, lb, d)
+		action, tgt, err = resourceLoadBalancerCreateLabelSelectorTarget(ctx, c, lb, d)
 	case hcloud.LoadBalancerTargetTypeIP:
-		a, tgt, err = resourceLoadBalancerCreateIPTarget(ctx, c, lb, d)
+		action, tgt, err = resourceLoadBalancerCreateIPTarget(ctx, c, lb, d)
 	default:
 		return diag.Errorf("unsupported target type: %s", tgtType)
 	}
 	if err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
-	if a != nil {
-		if err := hcloudutil.WaitForAction(ctx, &c.Action, a); err != nil {
-			return diag.Errorf("add load balancer target: %v", err)
-		}
+	if err = c.Action.WaitFor(ctx, action); err != nil {
+		return diag.Errorf("add load balancer target: %v", err)
 	}
 	setLoadBalancerTarget(d, lbID, tgt)
 	return nil
@@ -372,19 +370,19 @@ func resourceLoadBalancerTargetDelete(ctx context.Context, d *schema.ResourceDat
 
 func removeLoadBalancerTarget(ctx context.Context, c *hcloud.Client, lb *hcloud.LoadBalancer, tgt hcloud.LoadBalancerTarget) error {
 	var (
-		a     *hcloud.Action
-		err   error
-		hcErr hcloud.Error
+		action *hcloud.Action
+		err    error
+		hcErr  hcloud.Error
 	)
 
 	err = control.Retry(control.DefaultRetries, func() error {
 		switch tgt.Type {
 		case hcloud.LoadBalancerTargetTypeServer:
-			a, _, err = c.LoadBalancer.RemoveServerTarget(ctx, lb, tgt.Server.Server)
+			action, _, err = c.LoadBalancer.RemoveServerTarget(ctx, lb, tgt.Server.Server)
 		case hcloud.LoadBalancerTargetTypeLabelSelector:
-			a, _, err = c.LoadBalancer.RemoveLabelSelectorTarget(ctx, lb, tgt.LabelSelector.Selector)
+			action, _, err = c.LoadBalancer.RemoveLabelSelectorTarget(ctx, lb, tgt.LabelSelector.Selector)
 		case hcloud.LoadBalancerTargetTypeIP:
-			a, _, err = c.LoadBalancer.RemoveIPTarget(ctx, lb, net.ParseIP(tgt.IP.IP))
+			action, _, err = c.LoadBalancer.RemoveIPTarget(ctx, lb, net.ParseIP(tgt.IP.IP))
 		default:
 			return control.AbortRetry(fmt.Errorf("unsupported target type: %s", tgt.Type))
 		}
@@ -402,7 +400,7 @@ func removeLoadBalancerTarget(ctx context.Context, c *hcloud.Client, lb *hcloud.
 		return fmt.Errorf("remove server target: %w", err)
 	}
 
-	if err := hcloudutil.WaitForAction(ctx, &c.Action, a); err != nil {
+	if err = c.Action.WaitFor(ctx, action); err != nil {
 		return fmt.Errorf("remove server target: wait for action: %w", err)
 	}
 	return nil

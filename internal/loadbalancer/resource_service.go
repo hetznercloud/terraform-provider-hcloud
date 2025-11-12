@@ -178,7 +178,7 @@ func ServiceResource() *schema.Resource {
 }
 
 func resourceLoadBalancerServiceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	var a *hcloud.Action
+	var action *hcloud.Action
 
 	c := m.(*hcloud.Client)
 
@@ -222,7 +222,7 @@ func resourceLoadBalancerServiceCreate(ctx context.Context, d *schema.ResourceDa
 	err = control.Retry(control.DefaultRetries, func() error {
 		var err error
 
-		a, _, err = c.LoadBalancer.AddService(ctx, &lb, opts)
+		action, _, err = c.LoadBalancer.AddService(ctx, &lb, opts)
 		if hcloud.IsError(err, hcloud.ErrorCodeServiceError) {
 			// Terraform performs CRUD operations for different resources of the
 			// same type in parallel. As such it can happen, that a service can't
@@ -244,7 +244,7 @@ func resourceLoadBalancerServiceCreate(ctx context.Context, d *schema.ResourceDa
 	svcID := fmt.Sprintf("%d__%d", lb.ID, listenPort)
 	d.SetId(svcID)
 
-	if err := hcloudutil.WaitForAction(ctx, &c.Action, a); err != nil {
+	if err = c.Action.WaitFor(ctx, action); err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
 
@@ -290,7 +290,7 @@ func resourceLoadBalancerServiceUpdate(ctx context.Context, d *schema.ResourceDa
 		}
 		return hcloudutil.ErrorToDiag(err)
 	}
-	if err := hcloudutil.WaitForAction(ctx, &c.Action, action); err != nil {
+	if err = c.Action.WaitFor(ctx, action); err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
 	return resourceLoadBalancerServiceRead(ctx, d, m)
@@ -328,14 +328,14 @@ func resourceLoadBalancerServiceDelete(ctx context.Context, d *schema.ResourceDa
 		return hcloudutil.ErrorToDiag(err)
 	}
 
-	a, _, err := c.LoadBalancer.DeleteService(ctx, lb, svc.ListenPort)
+	action, _, err := c.LoadBalancer.DeleteService(ctx, lb, svc.ListenPort)
 	if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
 		return nil
 	}
 	if err != nil {
 		return diag.Errorf("%s: %v", op, err)
 	}
-	if err := hcloudutil.WaitForAction(ctx, &c.Action, a); err != nil {
+	if err = c.Action.WaitFor(ctx, action); err != nil {
 		return diag.Errorf("%s: %v", op, err)
 	}
 

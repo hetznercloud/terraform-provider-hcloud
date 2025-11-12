@@ -447,12 +447,12 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		}
 	}
 
-	if err := hcloudutil.WaitForAction(ctx, &c.Action, res.Action); err != nil {
+	if err = c.Action.WaitFor(ctx, res.Action); err != nil {
 		diags = append(diags, hcloudutil.ErrorToDiag(err)...)
 		return
 	}
 	for _, nextAction := range res.NextActions {
-		if err := hcloudutil.WaitForAction(ctx, &c.Action, nextAction); err != nil {
+		if err = c.Action.WaitFor(ctx, nextAction); err != nil {
 			diags = append(diags, hcloudutil.ErrorToDiag(err)...)
 			return
 		}
@@ -584,7 +584,7 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 			if err != nil {
 				return hcloudutil.ErrorToDiag(err)
 			}
-			if err := hcloudutil.WaitForAction(ctx, &c.Action, action); err != nil {
+			if err = c.Action.WaitFor(ctx, action); err != nil {
 				return hcloudutil.ErrorToDiag(err)
 			}
 		}
@@ -596,7 +596,7 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		if err != nil {
 			return hcloudutil.ErrorToDiag(err)
 		}
-		if err := hcloudutil.WaitForAction(ctx, &c.Action, action); err != nil {
+		if err = c.Action.WaitFor(ctx, action); err != nil {
 			return hcloudutil.ErrorToDiag(err)
 		}
 	}
@@ -647,7 +647,7 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 			}
 
 			if !found {
-				a, _, err := c.Firewall.RemoveResources(ctx,
+				actions, _, err := c.Firewall.RemoveResources(ctx,
 					&f.Firewall,
 					[]hcloud.FirewallResource{
 						{
@@ -659,7 +659,7 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 				if err != nil {
 					return hcloudutil.ErrorToDiag(err)
 				}
-				err = hcloudutil.WaitForActions(ctx, &c.Action, a)
+				err = c.Action.WaitFor(ctx, actions...)
 				if err != nil {
 					return hcloudutil.ErrorToDiag(err)
 				}
@@ -678,7 +678,7 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 			}
 
 			if !found {
-				a, _, err := c.Firewall.ApplyResources(ctx,
+				actions, _, err := c.Firewall.ApplyResources(ctx,
 					&hcloud.Firewall{ID: fID},
 					[]hcloud.FirewallResource{
 						{
@@ -690,7 +690,7 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 				if err != nil {
 					return hcloudutil.ErrorToDiag(err)
 				}
-				err = hcloudutil.WaitForActions(ctx, &c.Action, a)
+				err = c.Action.WaitFor(ctx, actions...)
 				if err != nil {
 					return hcloudutil.ErrorToDiag(err)
 				}
@@ -744,12 +744,12 @@ func updatePublicNet(ctx context.Context, o interface{}, n interface{}, c *hclou
 		}
 	}
 
-	shutdown, _, err := c.Server.Poweroff(ctx, &hcloud.Server{ID: server.ID})
+	poweroffAction, _, err := c.Server.Poweroff(ctx, &hcloud.Server{ID: server.ID})
 	if err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
 
-	if err := hcloudutil.WaitForAction(ctx, &c.Action, shutdown); err != nil {
+	if err = c.Action.WaitFor(ctx, poweroffAction); err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
 
@@ -909,12 +909,12 @@ func resourceServerDelete(ctx context.Context, d *schema.ResourceData, m interfa
 
 	if d.Get("shutdown_before_deletion").(bool) {
 		// Try shutting down the server
-		shutdownResult, _, err := client.Server.Shutdown(ctx, &hcloud.Server{ID: serverID})
+		shutdownAction, _, err := client.Server.Shutdown(ctx, &hcloud.Server{ID: serverID})
 		if err != nil {
 			return hcloudutil.ErrorToDiag(err)
 		}
 
-		if err = hcloudutil.WaitForAction(ctx, &client.Action, shutdownResult); err != nil {
+		if err = client.Action.WaitFor(ctx, shutdownAction); err != nil {
 			return hcloudutil.ErrorToDiag(err)
 		}
 
@@ -948,7 +948,7 @@ func resourceServerDelete(ctx context.Context, d *schema.ResourceData, m interfa
 		return hcloudutil.ErrorToDiag(err)
 	}
 
-	err = hcloudutil.WaitForAction(ctx, &client.Action, result.Action)
+	err = client.Action.WaitFor(ctx, result.Action)
 	if err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
@@ -972,7 +972,7 @@ func setBackups(ctx context.Context, c *hcloud.Client, server *hcloud.Server, ba
 			return err
 		}
 
-		return hcloudutil.WaitForAction(ctx, &c.Action, action)
+		return c.Action.WaitFor(ctx, action)
 	}
 
 	if server.BackupWindow == "" && backups {
@@ -980,7 +980,7 @@ func setBackups(ctx context.Context, c *hcloud.Client, server *hcloud.Server, ba
 		if err != nil {
 			return err
 		}
-		return hcloudutil.WaitForAction(ctx, &c.Action, action)
+		return c.Action.WaitFor(ctx, action)
 	}
 
 	return nil
@@ -994,7 +994,7 @@ func setISO(ctx context.Context, c *hcloud.Client, server *hcloud.Server, isoIDO
 		if err != nil {
 			return err
 		}
-		if err := hcloudutil.WaitForAction(ctx, &c.Action, action); err != nil {
+		if err = c.Action.WaitFor(ctx, action); err != nil {
 			return err
 		}
 	}
@@ -1016,21 +1016,21 @@ func setISO(ctx context.Context, c *hcloud.Client, server *hcloud.Server, isoIDO
 			return errors.New("failed to attach iso: iso has a different architecture than the server")
 		}
 
-		a, _, err := c.Server.AttachISO(ctx, server, iso)
+		action, _, err := c.Server.AttachISO(ctx, server, iso)
 		if err != nil {
 			return err
 		}
-		if err := hcloudutil.WaitForAction(ctx, &c.Action, a); err != nil {
+		if err = c.Action.WaitFor(ctx, action); err != nil {
 			return err
 		}
 	}
 
 	if isoChange {
-		a, _, err := c.Server.Reset(ctx, server)
+		action, _, err := c.Server.Reset(ctx, server)
 		if err != nil {
 			return err
 		}
-		if err := hcloudutil.WaitForAction(ctx, &c.Action, a); err != nil {
+		if err = c.Action.WaitFor(ctx, action); err != nil {
 			return err
 		}
 	}
@@ -1043,11 +1043,11 @@ func setRescue(ctx context.Context, c *hcloud.Client, server *hcloud.Server, res
 	rescueChanged := false
 	if server.RescueEnabled {
 		rescueChanged = true
-		a, _, err := c.Server.DisableRescue(ctx, server)
+		action, _, err := c.Server.DisableRescue(ctx, server)
 		if err != nil {
 			return fmt.Errorf("%s: %w", op, err)
 		}
-		if err := hcloudutil.WaitForAction(ctx, &c.Action, a); err != nil {
+		if err = c.Action.WaitFor(ctx, action); err != nil {
 			return fmt.Errorf("%s: %w", op, err)
 		}
 	}
@@ -1061,7 +1061,7 @@ func setRescue(ctx context.Context, c *hcloud.Client, server *hcloud.Server, res
 			if err != nil {
 				return err
 			}
-			return hcloudutil.WaitForAction(ctx, &c.Action, res.Action)
+			return c.Action.WaitFor(ctx, res.Action)
 		})
 		if err != nil {
 			return fmt.Errorf("%s: %w", op, err)
@@ -1073,7 +1073,7 @@ func setRescue(ctx context.Context, c *hcloud.Client, server *hcloud.Server, res
 			if err != nil {
 				return fmt.Errorf("%s: %w", op, err)
 			}
-			return hcloudutil.WaitForAction(ctx, &c.Action, action)
+			return c.Action.WaitFor(ctx, action)
 		})
 		if err != nil {
 			return fmt.Errorf("%s: %w", op, err)
@@ -1300,7 +1300,7 @@ func setPlacementGroup(ctx context.Context, c *hcloud.Client, server *hcloud.Ser
 		if err != nil {
 			return err
 		}
-		if err := hcloudutil.WaitForAction(ctx, &c.Action, action); err != nil {
+		if err = c.Action.WaitFor(ctx, action); err != nil {
 			return err
 		}
 	}
@@ -1315,7 +1315,7 @@ func setPlacementGroup(ctx context.Context, c *hcloud.Client, server *hcloud.Ser
 		if err != nil {
 			return err
 		}
-		if err := hcloudutil.WaitForAction(ctx, &c.Action, action); err != nil {
+		if err = c.Action.WaitFor(ctx, action); err != nil {
 			return err
 		}
 	}
@@ -1334,7 +1334,7 @@ func setProtection(ctx context.Context, c *hcloud.Client, server *hcloud.Server,
 		return err
 	}
 
-	return hcloudutil.WaitForAction(ctx, &c.Action, action)
+	return c.Action.WaitFor(ctx, action)
 }
 
 func collectPrimaryIPIDs(primaryIPList map[string]interface{}) (int64, int64) {
@@ -1379,7 +1379,7 @@ func powerOnServer(ctx context.Context, c *hcloud.Client, server *hcloud.Server)
 			return err
 		}
 
-		return hcloudutil.WaitForAction(ctx, &c.Action, powerOn)
+		return c.Action.WaitFor(ctx, powerOn)
 	})
 	if err != nil {
 		return err

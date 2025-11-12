@@ -54,7 +54,7 @@ func resourceFloatingIPAssignmentCreate(ctx context.Context, d *schema.ResourceD
 	if err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
-	if err := hcloudutil.WaitForAction(ctx, &client.Action, action); err != nil {
+	if err = client.Action.WaitFor(ctx, action); err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
 
@@ -150,18 +150,18 @@ func resourceFloatingIPAssignmentUpdate(ctx context.Context, d *schema.ResourceD
 				}
 				return hcloudutil.ErrorToDiag(err)
 			}
-			if err := hcloudutil.WaitForAction(ctx, &client.Action, action); err != nil {
+			if err = client.Action.WaitFor(ctx, action); err != nil {
 				return hcloudutil.ErrorToDiag(err)
 			}
 		} else {
-			a, _, err := client.FloatingIP.Assign(ctx, floatingIP, &hcloud.Server{ID: serverID})
+			action, _, err := client.FloatingIP.Assign(ctx, floatingIP, &hcloud.Server{ID: serverID})
 			if err != nil {
 				if resourceFloatingIPIsNotFound(err, d) {
 					return nil
 				}
 				return hcloudutil.ErrorToDiag(err)
 			}
-			if err := hcloudutil.WaitForAction(ctx, &client.Action, a); err != nil {
+			if err = client.Action.WaitFor(ctx, action); err != nil {
 				return hcloudutil.ErrorToDiag(err)
 			}
 		}

@@ -48,7 +48,7 @@ func AttachmentResource() *schema.Resource {
 }
 
 func resourceVolumeAttachmentCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	var a *hcloud.Action
+	var action *hcloud.Action
 
 	c := m.(*hcloud.Client)
 
@@ -69,7 +69,7 @@ func resourceVolumeAttachmentCreate(ctx context.Context, d *schema.ResourceData,
 	err := control.Retry(control.DefaultRetries, func() error {
 		var err error
 
-		a, _, err = c.Volume.AttachWithOpts(ctx, volume, opts)
+		action, _, err = c.Volume.AttachWithOpts(ctx, volume, opts)
 		if hcloud.IsError(err, hcloud.ErrorCodeLocked) {
 			return err
 		}
@@ -82,7 +82,7 @@ func resourceVolumeAttachmentCreate(ctx context.Context, d *schema.ResourceData,
 	// we can use the volume id as volume attachment id.
 	d.SetId(util.FormatID(volume.ID))
 
-	if err := hcloudutil.WaitForAction(ctx, &c.Action, a); err != nil {
+	if err = c.Action.WaitFor(ctx, action); err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
 
@@ -163,12 +163,12 @@ func resourceVolumeAttachmentDelete(ctx context.Context, d *schema.ResourceData,
 		return nil
 	}
 	if volume.Server != nil {
-		var a *hcloud.Action
+		var action *hcloud.Action
 
 		err := control.Retry(control.DefaultRetries, func() error {
 			var err error
 
-			a, _, err = c.Volume.Detach(ctx, volume)
+			action, _, err = c.Volume.Detach(ctx, volume)
 			if hcloud.IsError(err, hcloud.ErrorCodeLocked) {
 				return err
 			}
@@ -178,7 +178,7 @@ func resourceVolumeAttachmentDelete(ctx context.Context, d *schema.ResourceData,
 			return hcloudutil.ErrorToDiag(err)
 		}
 
-		if err := hcloudutil.WaitForAction(ctx, &c.Action, a); err != nil {
+		if err = c.Action.WaitFor(ctx, action); err != nil {
 			return hcloudutil.ErrorToDiag(err)
 		}
 	}

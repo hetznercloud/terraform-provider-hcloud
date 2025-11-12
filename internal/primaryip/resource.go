@@ -125,10 +125,8 @@ func resourcePrimaryIPCreate(ctx context.Context, d *schema.ResourceData, m inte
 	}
 
 	d.SetId(util.FormatID(res.PrimaryIP.ID))
-	if res.Action != nil {
-		if err := hcloudutil.WaitForAction(ctx, &client.Action, res.Action); err != nil {
-			return hcloudutil.ErrorToDiag(err)
-		}
+	if err = client.Action.WaitFor(ctx, res.Action); err != nil {
+		return hcloudutil.ErrorToDiag(err)
 	}
 
 	deleteProtection := d.Get("delete_protection").(bool)
@@ -266,7 +264,7 @@ func resourcePrimaryIPDelete(ctx context.Context, d *schema.ResourceData, m inte
 				// if offErr != nil {
 				// 	return hcloudutil.ErrorToDiag(offErr)
 				// }
-				if offActionErr := hcloudutil.WaitForAction(ctx, &client.Action, offAction); offActionErr != nil {
+				if offActionErr := client.Action.WaitFor(ctx, offAction); offActionErr != nil {
 					return hcloudutil.ErrorToDiag(offActionErr)
 				}
 				// dont catch error, because its possible that the primary IP got already unassigned on server destroy
@@ -276,7 +274,7 @@ func resourcePrimaryIPDelete(ctx context.Context, d *schema.ResourceData, m inte
 				// if onErr != nil {
 				// 	return hcloudutil.ErrorToDiag(onErr)
 				// }
-				if onActionErr := hcloudutil.WaitForAction(ctx, &client.Action, onAction); onActionErr != nil {
+				if onActionErr := client.Action.WaitFor(ctx, onAction); onActionErr != nil {
 					return hcloudutil.ErrorToDiag(onActionErr)
 				}
 			}
@@ -347,7 +345,7 @@ func setProtection(ctx context.Context, c *hcloud.Client, primaryIP *hcloud.Prim
 		return err
 	}
 
-	return hcloudutil.WaitForAction(ctx, &c.Action, action)
+	return c.Action.WaitFor(ctx, action)
 }
 
 func AssignPrimaryIP(ctx context.Context, c *hcloud.Client, primaryIPID int64, serverID int64) diag.Diagnostics {
@@ -359,7 +357,7 @@ func AssignPrimaryIP(ctx context.Context, c *hcloud.Client, primaryIPID int64, s
 	if err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
-	if err := hcloudutil.WaitForAction(ctx, &c.Action, action); err != nil {
+	if err = c.Action.WaitFor(ctx, action); err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
 	return nil
@@ -370,7 +368,7 @@ func UnassignPrimaryIP(ctx context.Context, c *hcloud.Client, v int64) diag.Diag
 	if err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
-	if err := hcloudutil.WaitForAction(ctx, &c.Action, action); err != nil {
+	if err = c.Action.WaitFor(ctx, action); err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
 	return nil
@@ -396,7 +394,7 @@ func CreateRandomPrimaryIP(ctx context.Context, c *hcloud.Client, server *hcloud
 		return hcloudutil.ErrorToDiag(err)
 	}
 
-	if err := hcloudutil.WaitForAction(ctx, &c.Action, create.Action); err != nil {
+	if err = c.Action.WaitFor(ctx, create.Action); err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
 
