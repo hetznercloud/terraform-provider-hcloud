@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
@@ -201,6 +202,10 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
 			return
 		}
+		// Make sure to save the ID immediately so we can recover if the process stops after
+		// this call. Terraform marks the resource as "tainted", so it can be deleted and no
+		// surprise "duplicate resource" errors happen.
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), types.StringValue(result.RRSet.ID))...)
 	}
 
 	actions = append(actions, result.Action)
