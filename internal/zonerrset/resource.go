@@ -206,6 +206,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		// this call. Terraform marks the resource as "tainted", so it can be deleted and no
 		// surprise "duplicate resource" errors happen.
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), types.StringValue(result.RRSet.ID))...)
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("zone"), data.Zone)...)
 	}
 
 	actions = append(actions, result.Action)
