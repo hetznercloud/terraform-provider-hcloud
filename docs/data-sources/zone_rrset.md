@@ -55,7 +55,7 @@ data "hcloud_zone_rrset" "by_label" {
 
 - `change_protection` (Boolean) Whether change protection is enabled.
 - `labels` (Map of String) User-defined [labels](https://docs.hetzner.cloud/reference/cloud#labels) (key-value pairs) for the resource.
-- `records` (Attributes List) Records of the Zone RRSet. (see [below for nested schema](#nestedatt--records))
+- `records` (Attributes Set) Records of the Zone RRSet. (see [below for nested schema](#nestedatt--records))
 - `ttl` (Number) Time To Live (TTL) of the Zone RRSet.
 
 <a id="nestedatt--records"></a>

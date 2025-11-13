@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -119,7 +119,7 @@ the parent Zone, therefor this Terraform resource will:
 			Optional:            true,
 			Computed:            true,
 		},
-		"records": schema.ListNestedAttribute{
+		"records": schema.SetNestedAttribute{
 			MarkdownDescription: "Records of the Zone RRSet.",
 			Required:            true,
 			NestedObject: schema.NestedAttributeObject{
@@ -134,8 +134,8 @@ the parent Zone, therefor this Terraform resource will:
 					},
 				},
 			},
-			Validators: []validator.List{
-				listvalidator.SizeAtLeast(1),
+			Validators: []validator.Set{
+				setvalidator.SizeAtLeast(1),
 			},
 		},
 	}

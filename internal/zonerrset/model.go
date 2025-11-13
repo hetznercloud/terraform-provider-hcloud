@@ -21,7 +21,7 @@ type model struct {
 	TTL              types.Int32  `tfsdk:"ttl"`
 	Labels           types.Map    `tfsdk:"labels"`
 	ChangeProtection types.Bool   `tfsdk:"change_protection"`
-	Records          types.List   `tfsdk:"records"`
+	Records          types.Set    `tfsdk:"records"`
 }
 
 func (m *model) tfAttributesTypes() map[string]attr.Type {
@@ -33,7 +33,7 @@ func (m *model) tfAttributesTypes() map[string]attr.Type {
 		"ttl":               types.Int32Type,
 		"labels":            types.MapType{ElemType: types.StringType},
 		"change_protection": types.BoolType,
-		"records":           types.ListType{ElemType: (&modelRecord{}).tfType()},
+		"records":           types.SetType{ElemType: (&modelRecord{}).tfType()},
 	}
 }
 
@@ -131,9 +131,9 @@ func (m *modelRecord) FromTerraform(ctx context.Context, tf types.Object) diag.D
 type modelRecords []modelRecord
 
 var _ util.ModelFromAPI[[]hcloud.ZoneRRSetRecord] = &modelRecords{}
-var _ util.ModelFromTerraform[types.List] = &modelRecords{}
+var _ util.ModelFromTerraform[types.Set] = &modelRecords{}
 var _ util.ModelToAPI[[]hcloud.ZoneRRSetRecord] = &modelRecords{}
-var _ util.ModelToTerraform[types.List] = &modelRecords{}
+var _ util.ModelToTerraform[types.Set] = &modelRecords{}
 
 func (m *modelRecords) FromAPI(ctx context.Context, hcItems []hcloud.ZoneRRSetRecord) (diags diag.Diagnostics) {
 	*m = make([]modelRecord, 0, len(hcItems))
@@ -160,12 +160,12 @@ func (m *modelRecords) ToAPI(ctx context.Context) (hcItems []hcloud.ZoneRRSetRec
 
 }
 
-func (m *modelRecords) FromTerraform(ctx context.Context, tf types.List) diag.Diagnostics {
+func (m *modelRecords) FromTerraform(ctx context.Context, tf types.Set) diag.Diagnostics {
 	*m = make(modelRecords, 0, len(tf.Elements()))
 	return tf.ElementsAs(ctx, m, false)
 }
 
-func (m *modelRecords) ToTerraform(ctx context.Context) (tf types.List, diags diag.Diagnostics) {
+func (m *modelRecords) ToTerraform(ctx context.Context) (tf types.Set, diags diag.Diagnostics) {
 	tfItems := make([]attr.Value, 0, len(*m))
 	for _, value := range *m {
 		tfItem, newDiags := value.ToTerraform(ctx)
@@ -174,7 +174,7 @@ func (m *modelRecords) ToTerraform(ctx context.Context) (tf types.List, diags di
 		tfItems = append(tfItems, tfItem)
 	}
 
-	tf, newDiags := types.ListValue((&modelRecord{}).tfType(), tfItems)
+	tf, newDiags := types.SetValue((&modelRecord{}).tfType(), tfItems)
 	diags.Append(newDiags...)
 
 	return tf, diags

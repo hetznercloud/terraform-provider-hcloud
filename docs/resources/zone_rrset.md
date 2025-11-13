@@ -100,7 +100,7 @@ resource "hcloud_zone_rrset" "example_soa" {
 ### Required
 
 - `name` (String) Name of the Zone RRSet.
-- `records` (Attributes List) Records of the Zone RRSet. (see [below for nested schema](#nestedatt--records))
+- `records` (Attributes Set) Records of the Zone RRSet. (see [below for nested schema](#nestedatt--records))
 - `type` (String) Type of the Zone RRSet.
 - `zone` (String) ID or Name of the parent Zone.
 
