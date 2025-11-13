@@ -28,6 +28,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/tflogutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/zone"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/zonerecord"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/zonerrset"
 )
 
@@ -212,6 +213,7 @@ func (p *PluginProvider) Resources(_ context.Context) []func() resource.Resource
 		sshkey.NewResource,
 		zone.NewResource,
 		zonerrset.NewResource,
+		zonerecord.NewResource,
 	}
 }
 
