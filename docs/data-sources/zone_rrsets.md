@@ -59,7 +59,7 @@ Read-Only:
 - `id` (String) ID of the Zone RRSet.
 - `labels` (Map of String) User-defined [labels](https://docs.hetzner.cloud/reference/cloud#labels) (key-value pairs) for the resource.
 - `name` (String) Name of the Zone RRSet.
-- `records` (Attributes List) Records of the Zone RRSet. (see [below for nested schema](#nestedatt--rrsets--records))
+- `records` (Attributes Set) Records of the Zone RRSet. (see [below for nested schema](#nestedatt--rrsets--records))
 - `ttl` (Number) Time To Live (TTL) of the Zone RRSet.
 - `type` (String) Type of the Zone RRSet.
 

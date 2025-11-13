@@ -5,6 +5,9 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud/exp/kit/randutil"
 	"github.com/hetznercloud/hcloud-go/v2/hcloud/exp/labelutil"
@@ -93,11 +96,22 @@ func TestAccZoneRRSetDataSourceList(t *testing.T) {
 					resource.TestCheckResourceAttr(byLabel.TFID(), "rrsets.0.type", "A"),
 					resource.TestCheckResourceAttr(byLabel.TFID(), "rrsets.0.labels.key", resZoneRRSet1.Labels["key"]),
 					resource.TestCheckNoResourceAttr(byLabel.TFID(), "rrsets.0.ttl"),
-					resource.TestCheckResourceAttr(byLabel.TFID(), "rrsets.0.records.#", "2"),
-					resource.TestCheckResourceAttr(byLabel.TFID(), "rrsets.0.records.0.value", "201.42.91.35"),
-					resource.TestCheckResourceAttr(byLabel.TFID(), "rrsets.0.records.1.value", "201.42.91.36"),
 					resource.TestCheckResourceAttr(byLabel.TFID(), "rrsets.0.change_protection", "false"),
 				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(byLabel.TFID(),
+						tfjsonpath.New("rrsets").AtSliceIndex(0).AtMapKey("records"),
+						knownvalue.SetExact([]knownvalue.Check{
+							knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"value":   knownvalue.StringExact("201.42.91.35"),
+								"comment": knownvalue.Null(),
+							}),
+							knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"value":   knownvalue.StringExact("201.42.91.36"),
+								"comment": knownvalue.StringExact("some web server"),
+							}),
+						})),
+				},
 			},
 		},
 	})

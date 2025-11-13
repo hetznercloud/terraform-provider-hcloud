@@ -5,6 +5,9 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/hcloud-go/v2/hcloud/exp/kit/randutil"
@@ -86,9 +89,6 @@ func TestAccZoneRRSetDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr(byNameAndType.TFID(), "type", "A"),
 					resource.TestCheckResourceAttr(byNameAndType.TFID(), "labels.key", resZoneRRSet.Labels["key"]),
 					resource.TestCheckResourceAttr(byNameAndType.TFID(), "ttl", "10800"),
-					resource.TestCheckResourceAttr(byNameAndType.TFID(), "records.#", "2"),
-					resource.TestCheckResourceAttr(byNameAndType.TFID(), "records.0.value", "201.42.91.35"),
-					resource.TestCheckResourceAttr(byNameAndType.TFID(), "records.1.value", "201.42.91.36"),
 					resource.TestCheckResourceAttr(byNameAndType.TFID(), "change_protection", "false"),
 
 					resource.TestCheckResourceAttr(byID.TFID(), "zone", resZone.Name),
@@ -97,9 +97,6 @@ func TestAccZoneRRSetDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr(byID.TFID(), "type", "A"),
 					resource.TestCheckResourceAttr(byID.TFID(), "labels.key", resZoneRRSet.Labels["key"]),
 					resource.TestCheckResourceAttr(byID.TFID(), "ttl", "10800"),
-					resource.TestCheckResourceAttr(byID.TFID(), "records.#", "2"),
-					resource.TestCheckResourceAttr(byID.TFID(), "records.0.value", "201.42.91.35"),
-					resource.TestCheckResourceAttr(byID.TFID(), "records.1.value", "201.42.91.36"),
 					resource.TestCheckResourceAttr(byID.TFID(), "change_protection", "false"),
 
 					resource.TestCheckResourceAttr(byLabel.TFID(), "zone", resZone.Name),
@@ -108,11 +105,48 @@ func TestAccZoneRRSetDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr(byLabel.TFID(), "type", "A"),
 					resource.TestCheckResourceAttr(byLabel.TFID(), "labels.key", resZoneRRSet.Labels["key"]),
 					resource.TestCheckResourceAttr(byLabel.TFID(), "ttl", "10800"),
-					resource.TestCheckResourceAttr(byLabel.TFID(), "records.#", "2"),
-					resource.TestCheckResourceAttr(byLabel.TFID(), "records.0.value", "201.42.91.35"),
-					resource.TestCheckResourceAttr(byLabel.TFID(), "records.1.value", "201.42.91.36"),
 					resource.TestCheckResourceAttr(byLabel.TFID(), "change_protection", "false"),
 				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(byNameAndType.TFID(),
+						tfjsonpath.New("records"),
+						knownvalue.SetExact([]knownvalue.Check{
+							knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"value":   knownvalue.StringExact("201.42.91.35"),
+								"comment": knownvalue.Null(),
+							}),
+							knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"value":   knownvalue.StringExact("201.42.91.36"),
+								"comment": knownvalue.StringExact("some web server"),
+							}),
+						})),
+
+					statecheck.ExpectKnownValue(byID.TFID(),
+						tfjsonpath.New("records"),
+						knownvalue.SetExact([]knownvalue.Check{
+							knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"value":   knownvalue.StringExact("201.42.91.35"),
+								"comment": knownvalue.Null(),
+							}),
+							knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"value":   knownvalue.StringExact("201.42.91.36"),
+								"comment": knownvalue.StringExact("some web server"),
+							}),
+						})),
+
+					statecheck.ExpectKnownValue(byLabel.TFID(),
+						tfjsonpath.New("records"),
+						knownvalue.SetExact([]knownvalue.Check{
+							knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"value":   knownvalue.StringExact("201.42.91.35"),
+								"comment": knownvalue.Null(),
+							}),
+							knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"value":   knownvalue.StringExact("201.42.91.36"),
+								"comment": knownvalue.StringExact("some web server"),
+							}),
+						})),
+				},
 			},
 		},
 	})

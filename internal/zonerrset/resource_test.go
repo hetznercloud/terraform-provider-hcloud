@@ -5,6 +5,9 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/stretchr/testify/require"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
@@ -84,13 +87,22 @@ func TestAccZoneRRSetResource(t *testing.T) {
 					resource.TestCheckResourceAttr(res1.TFID(), "type", "A"),
 					resource.TestCheckResourceAttr(res1.TFID(), "labels.key", "value"),
 					resource.TestCheckResourceAttr(res1.TFID(), "ttl", "10800"),
-					resource.TestCheckResourceAttr(res1.TFID(), "records.#", "2"),
-					resource.TestCheckResourceAttr(res1.TFID(), "records.0.value", "201.42.91.35"),
-					resource.TestCheckResourceAttr(res1.TFID(), "records.1.value", "201.42.91.36"),
-					resource.TestCheckNoResourceAttr(res1.TFID(), "records.0.comment"),
-					resource.TestCheckResourceAttr(res1.TFID(), "records.1.comment", "some web server"),
 					resource.TestCheckResourceAttr(res1.TFID(), "change_protection", "true"),
 				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(res1.TFID(),
+						tfjsonpath.New("records"),
+						knownvalue.SetExact([]knownvalue.Check{
+							knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"value":   knownvalue.StringExact("201.42.91.35"),
+								"comment": knownvalue.Null(),
+							}),
+							knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"value":   knownvalue.StringExact("201.42.91.36"),
+								"comment": knownvalue.StringExact("some web server"),
+							}),
+						})),
+				},
 			},
 			{
 				ResourceName:      res1.TFID(),
@@ -110,13 +122,22 @@ func TestAccZoneRRSetResource(t *testing.T) {
 					resource.TestCheckResourceAttr(res1.TFID(), "type", "A"),
 					resource.TestCheckResourceAttr(res1.TFID(), "labels.key", "changed"),
 					resource.TestCheckResourceAttr(res1.TFID(), "ttl", "600"),
-					resource.TestCheckResourceAttr(res1.TFID(), "records.#", "2"),
-					resource.TestCheckResourceAttr(res1.TFID(), "records.0.value", "42.42.91.35"),
-					resource.TestCheckResourceAttr(res1.TFID(), "records.1.value", "42.42.91.36"),
-					resource.TestCheckNoResourceAttr(res1.TFID(), "records.0.comment"),
-					resource.TestCheckResourceAttr(res1.TFID(), "records.1.comment", "some web server"),
 					resource.TestCheckResourceAttr(res1.TFID(), "change_protection", "false"),
 				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(res1.TFID(),
+						tfjsonpath.New("records"),
+						knownvalue.SetExact([]knownvalue.Check{
+							knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"value":   knownvalue.StringExact("42.42.91.35"),
+								"comment": knownvalue.Null(),
+							}),
+							knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"value":   knownvalue.StringExact("42.42.91.36"),
+								"comment": knownvalue.StringExact("some web server"),
+							}),
+						})),
+				},
 			},
 			{
 				Config: tmplMan.Render(t,
@@ -130,13 +151,22 @@ func TestAccZoneRRSetResource(t *testing.T) {
 					resource.TestCheckResourceAttr(res1.TFID(), "type", "A"),
 					resource.TestCheckResourceAttr(res1.TFID(), "labels.#", "0"),
 					resource.TestCheckNoResourceAttr(res1.TFID(), "ttl"),
-					resource.TestCheckResourceAttr(res1.TFID(), "records.#", "2"),
-					resource.TestCheckResourceAttr(res1.TFID(), "records.0.value", "42.42.91.35"),
-					resource.TestCheckResourceAttr(res1.TFID(), "records.1.value", "42.42.91.36"),
-					resource.TestCheckNoResourceAttr(res1.TFID(), "records.0.comment"),
-					resource.TestCheckResourceAttr(res1.TFID(), "records.1.comment", "some web server"),
 					resource.TestCheckResourceAttr(res1.TFID(), "change_protection", "false"),
 				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(res1.TFID(),
+						tfjsonpath.New("records"),
+						knownvalue.SetExact([]knownvalue.Check{
+							knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"value":   knownvalue.StringExact("42.42.91.35"),
+								"comment": knownvalue.Null(),
+							}),
+							knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"value":   knownvalue.StringExact("42.42.91.36"),
+								"comment": knownvalue.StringExact("some web server"),
+							}),
+						})),
+				},
 			},
 		},
 	})

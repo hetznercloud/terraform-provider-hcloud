@@ -55,7 +55,7 @@ func getCommonDataSourceSchema(readOnly bool) map[string]schema.Attribute {
 			MarkdownDescription: "Whether change protection is enabled.",
 			Computed:            true,
 		},
-		"records": schema.ListNestedAttribute{
+		"records": schema.SetNestedAttribute{
 			MarkdownDescription: "Records of the Zone RRSet.",
 			Computed:            true,
 			NestedObject: schema.NestedAttributeObject{
