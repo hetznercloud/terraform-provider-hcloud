@@ -278,6 +278,10 @@ func (r *NetworkResource) Create(ctx context.Context, req resource.CreateRequest
 		resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
 		return
 	}
+	// Make sure to save the ID immediately so we can recover if the process stops after
+	// this call. Terraform marks the resource as "tainted", so it can be deleted and no
+	// surprise "duplicate resource" errors happen.
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), types.StringValue(fmt.Sprintf("%d-%d", server.ID, opts.Network.ID)))...)
 
 	// Refresh server
 	server, _, err = r.client.Server.GetByID(ctx, server.ID)
