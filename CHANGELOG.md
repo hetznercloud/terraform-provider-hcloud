@@ -1,5 +1,13 @@
 # Changelog
 
+## [v1.56.1](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.56.1)
+
+### Bug Fixes
+
+- abort when data transformation errors (#1253)
+- ensure partially created resources are tainted in the state (#1257)
+- dns records order is not guaranteed (#1259)
+
 ## [v1.56.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.56.0)
 
 ### DNS API is now generally available
