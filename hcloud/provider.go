@@ -57,6 +57,12 @@ func Provider() *schema.Provider {
 				DefaultFunc: schema.EnvDefaultFunc("HCLOUD_ENDPOINT", nil),
 				Description: "The Hetzner Cloud API endpoint, can be used to override the default API Endpoint https://api.hetzner.cloud/v1.",
 			},
+			"endpoint_hetzner": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("HETZNER_ENDPOINT", nil),
+				Description: "The Hetzner API endpoint, can be used to override the default API Endpoint https://api.hetzner.com/v1.",
+			},
 			"poll_interval": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -126,6 +132,9 @@ func providerConfigure(_ context.Context, d *schema.ResourceData) (interface{}, 
 	}
 	if endpoint, ok := d.GetOk("endpoint"); ok {
 		opts = append(opts, hcloud.WithEndpoint(endpoint.(string)))
+	}
+	if endpointHetzner, ok := d.GetOk("endpoint_hetzner"); ok {
+		opts = append(opts, hcloud.WithHetznerEndpoint(endpointHetzner.(string)))
 	}
 	if pollInterval, ok := d.GetOk("poll_interval"); ok {
 		pollInterval, err := time.ParseDuration(pollInterval.(string))

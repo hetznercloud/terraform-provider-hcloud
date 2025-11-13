@@ -62,3 +62,7 @@ func (e Experimental) AppendDiagnostic(diags *diag.Diagnostics) {
 func (e Experimental) AppendNotice(description *string) {
 	*description = strings.TrimSuffix(*description, "\n") + e.notice
 }
+
+var (
+	StorageBox = New("Storage Box support", "experimental", "TODO") // TODO: Create and link ticket before release
+)
