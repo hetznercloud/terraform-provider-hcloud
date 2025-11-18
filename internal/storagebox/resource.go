@@ -285,6 +285,11 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		return
 	}
 
+	// Make sure to save the ID immediately so we can recover if the process stops after
+	// this call. Terraform marks the resource as "tainted", so it can be deleted and no
+	// surprise "duplicate resource" errors happen.
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), types.Int64Value(result.StorageBox.ID))...)
+
 	if err = r.client.Action.WaitFor(ctx, result.Action); err != nil {
 		resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
 		return
