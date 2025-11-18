@@ -111,7 +111,6 @@ See the [Storage Box API documentation](https://docs.hetzner.cloud/reference/het
 			MarkdownDescription: "Password of the Storage Box. For more details, see the [Storage Boxes password policy](https://docs.hetzner.cloud/reference/hetzner#storage-boxes-password-policy).",
 			Required:            true,
 			Sensitive:           true,
-			// TODO: Should we generate a password and make it available to the user? Feels painful to always generate a random password, and it can be reset if lost
 		},
 		"labels": resourceutil.LabelsSchema(),
 		"ssh_keys": schema.SetAttribute{
