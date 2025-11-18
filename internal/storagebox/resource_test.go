@@ -179,15 +179,23 @@ func TestAccStorageBoxResource(t *testing.T) {
 				},
 			},
 			{
-				// Create with all optional attributes
-
+				// Validate changing SSH Key attribute is not applied
 				Config: tmplMan.Render(t, "testdata/r/hcloud_storage_box", resWithSSHKey),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						// Changing SSH Key requires a replacement
-						plancheck.ExpectResourceAction(resWithSSHKey.TFID(), plancheck.ResourceActionReplace),
+						// Make sure it's actually doing nothing
+						plancheck.ExpectResourceAction(resOptional.TFID(), plancheck.ResourceActionNoop),
 					},
 				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					// And check that the state still has an empty set for the ssh_keys
+					statecheck.ExpectKnownValue(resWithSSHKey.TFID(), tfjsonpath.New("ssh_keys"), knownvalue.SetSizeExact(0)),
+				},
+			},
+			{
+				// Create with all optional attributes
+				Taint:  []string{resWithSSHKey.TFID()}, // replace the resource
+				Config: tmplMan.Render(t, "testdata/r/hcloud_storage_box", resWithSSHKey),
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckAPIResourcePresent(resWithSSHKey.TFID(), testsupport.CopyAPIResource(storageBox, storagebox.GetAPIResource())),
 				),
