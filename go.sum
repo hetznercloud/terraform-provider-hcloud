@@ -116,6 +116,8 @@ github.com/hashicorp/yamux v0.1.2 h1:XtB8kyFOyHXYVFnwT5C3+Bdo8gArse7j2AQ0DA0Uey8
 github.com/hashicorp/yamux v0.1.2/go.mod h1:C+zze2n6e/7wshOZep2A70/aQU6QBRWJO/G6FT1wIns=
 github.com/hetznercloud/hcloud-go/v2 v2.30.0 h1:fgAUtCCw4PbJNSs9XPLHVu0//dTNMbPq8P/48ovmdG8=
 github.com/hetznercloud/hcloud-go/v2 v2.30.0/go.mod h1:zv7x2kM7xyJ5mW/+y4HbfxQYhk8TE57ypTa1hofsYdw=
+github.com/hetznercloud/hcloud-go/v2 v2.31.0 h1:JCVO8ZXn1y02YXmQb4xghXPvuINh6743spO2M2P1Jw4=
+github.com/hetznercloud/hcloud-go/v2 v2.31.0/go.mod h1:CeYYkuK5M5P/pWjhQRCcIz3d/61vmn4YHlsk3+ckk+o=
 github.com/huandu/xstrings v1.3.3 h1:/Gcsuc1x8JVbJ9/rlye4xZnVAbEkGauT8lbebqcQws4=
 github.com/huandu/xstrings v1.3.3/go.mod h1:y5/lhBue+AyNmUVz9RLU9xbLR0o4KIIExikq4ovT0aE=
 github.com/imdario/mergo v0.3.15 h1:M8XP7IuFNsqUx6VPK2P9OSmsYsI/YFaGil0uD21V3dM=
