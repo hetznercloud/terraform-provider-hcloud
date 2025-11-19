@@ -87,6 +87,14 @@ func TestSettleActions(t *testing.T) {
 			},
 			expected: diag.Diagnostics{ActionErrorDiagnostic(failedAction1), ActionErrorDiagnostic(failedAction2)},
 		},
+		{
+			name: "cancelled context",
+			mock: &mockActionWaiter{
+				actions: []*hcloud.Action{failedAction1, successAction1, failedAction2, successAction2},
+				err:     context.DeadlineExceeded,
+			},
+			expected: diag.Diagnostics{ActionWaitTimeoutDiagnostic(failedAction1, successAction1, failedAction2, successAction2)},
+		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.mock.t = t
@@ -159,6 +167,77 @@ Resources: server: 42, floating_ip: 7
 	} {
 		t.Run(testCase.name, func(t *testing.T) {
 			assert.Equal(t, testCase.expected, ActionErrorDiagnostic(testCase.action))
+		})
+	}
+}
+
+func TestActionWaitTimeoutDiagnostic(t *testing.T) {
+	for _, testCase := range []struct {
+		name     string
+		actions  []*hcloud.Action
+		expected diag.Diagnostic
+	}{
+		{
+			name: "single action",
+			actions: []*hcloud.Action{{
+				ID:       int64(1337),
+				Status:   hcloud.ActionStatusError,
+				Command:  "create_server",
+				Progress: 7,
+				Resources: []*hcloud.ActionResource{
+					{
+						ID:   int64(42),
+						Type: hcloud.ActionResourceTypeServer,
+					},
+				},
+			}},
+			expected: diag.NewErrorDiagnostic("Timeout while waiting on action(s)", `The request was cancelled while we were waiting on actions to complete.
+
+Actions that are still running:
+- Command: create_server | ID: 1337 | Progress: 7% | Resources: server: 42
+`),
+		},
+		{
+			name: "multiple actions with multiple resources",
+			actions: []*hcloud.Action{
+				{
+					ID:       int64(1337),
+					Status:   hcloud.ActionStatusError,
+					Command:  "create_server",
+					Progress: 5,
+					Resources: []*hcloud.ActionResource{
+						{
+							ID:   int64(42),
+							Type: hcloud.ActionResourceTypeServer,
+						},
+					},
+				},
+				{
+					ID:       int64(1338),
+					Status:   hcloud.ActionStatusError,
+					Command:  "attach_floating_ip",
+					Progress: 0,
+					Resources: []*hcloud.ActionResource{
+						{
+							ID:   int64(42),
+							Type: hcloud.ActionResourceTypeServer,
+						}, {
+							ID:   int64(7),
+							Type: hcloud.ActionResourceTypeFloatingIP,
+						},
+					},
+				},
+			},
+			expected: diag.NewErrorDiagnostic("Timeout while waiting on action(s)", `The request was cancelled while we were waiting on actions to complete.
+
+Actions that are still running:
+- Command: create_server | ID: 1337 | Progress: 5% | Resources: server: 42
+- Command: attach_floating_ip | ID: 1338 | Progress: 0% | Resources: server: 42, floating_ip: 7
+`),
+		},
+	} {
+		t.Run(testCase.name, func(t *testing.T) {
+			assert.Equal(t, testCase.expected, ActionWaitTimeoutDiagnostic(testCase.actions...))
 		})
 	}
 }
