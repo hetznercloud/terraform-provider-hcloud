@@ -298,9 +298,8 @@ func (r *NetworkResource) Create(ctx context.Context, req resource.CreateRequest
 
 	// XXX: Toggle public interface
 	{
-		err := r.setLoadBalancerPublicInterfaceEnabled(ctx, loadBalancer, data.EnablePublicInterface.ValueBool())
-		if err != nil {
-			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+		resp.Diagnostics.Append(r.setLoadBalancerPublicInterfaceEnabled(ctx, loadBalancer, data.EnablePublicInterface.ValueBool())...)
+		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
@@ -403,9 +402,8 @@ func (r *NetworkResource) Update(ctx context.Context, req resource.UpdateRequest
 	// XXX: Toggle public interface
 	{
 		if !plan.EnablePublicInterface.Equal(data.EnablePublicInterface) {
-			err := r.setLoadBalancerPublicInterfaceEnabled(ctx, loadBalancer, plan.EnablePublicInterface.ValueBool())
-			if err != nil {
-				resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+			resp.Diagnostics.Append(r.setLoadBalancerPublicInterfaceEnabled(ctx, loadBalancer, plan.EnablePublicInterface.ValueBool())...)
+			if resp.Diagnostics.HasError() {
 				return
 			}
 		}
@@ -533,9 +531,11 @@ func (r *NetworkResource) ParseSubnetID(s string) (*hcloud.Network, *net.IPNet, 
 	return &hcloud.Network{ID: networkID}, ipRange, nil
 }
 
-func (r *NetworkResource) setLoadBalancerPublicInterfaceEnabled(ctx context.Context, loadBalancer *hcloud.LoadBalancer, enabled bool) error {
+func (r *NetworkResource) setLoadBalancerPublicInterfaceEnabled(ctx context.Context, loadBalancer *hcloud.LoadBalancer, enabled bool) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	if loadBalancer.PublicNet.Enabled == enabled {
-		return nil
+		return diags
 	}
 
 	var action *hcloud.Action
@@ -547,13 +547,15 @@ func (r *NetworkResource) setLoadBalancerPublicInterfaceEnabled(ctx context.Cont
 	}
 
 	if err != nil {
-		return err
+		diags.Append(hcloudutil.APIErrorDiagnostics(err)...)
+		return diags
 	}
 	if err = r.client.Action.WaitFor(ctx, action); err != nil {
-		return err
+		diags.Append(hcloudutil.APIErrorDiagnostics(err)...)
+		return diags
 	}
 
 	loadBalancer.PublicNet.Enabled = enabled
 
-	return nil
+	return diags
 }
