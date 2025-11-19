@@ -60,48 +60,36 @@ func TestAccStorageBoxResource(t *testing.T) {
 	}
 	res.SetRName("default")
 
-	resOptional := &storagebox.RData{
-		StorageBox: schema.StorageBox{
-			Name:           res.Name + "-updated",
-			StorageBoxType: res.StorageBoxType,
-			// StorageBoxType: schema.StorageBoxType{Name: teste2e.TestStorageBoxTypeUpgrade},
-			Location: res.Location,
-			Labels: map[string]string{
-				"foo": "bar",
-			},
-		},
-		Password: res.Password,
-		// Password: generatePassword(t), // Also test password update
-		// Raw: `
-		//	access_settings = {
-		//		reachable_externally = true
-		//		samba_enabled        = true
-		//		ssh_enabled          = true
-		//		webdav_enabled       = true
-		//		zfs_enabled          = true
-		//	}
-		//
-		//	delete_protection = true
-		//
-		//	snapshot_plan = {
-		//		max_snapshots = 10
-		//		minute        = 16
-		//		hour          = 18
-		//		day_of_week   = 3
-		//	}`,
+	resOptional := testtemplate.DeepCopy(t, res)
+	resOptional.StorageBox.Name = res.Name + "-updated"
+	resOptional.StorageBox.StorageBoxType = schema.StorageBoxType{Name: teste2e.TestStorageBoxTypeUpgrade}
+	resOptional.StorageBox.Labels = map[string]string{
+		"foo": "bar",
 	}
-	resOptional.SetRName(res.RName())
+	resOptional.Password = generatePassword(t) // Also test password update
+	resOptional.Raw = `
+		access_settings = {
+			reachable_externally = true
+			samba_enabled        = true
+			ssh_enabled          = true
+			webdav_enabled       = true
+			zfs_enabled          = true
+		}
+	
+		delete_protection = true
+	
+		snapshot_plan = {
+			max_snapshots = 10
+			minute        = 16
+			hour          = 18
+			day_of_week   = 3
+		}
+	`
 
 	sshKey := sshkey.NewRData(t, "storage-box")
 
-	resWithSSHKey := &storagebox.RData{
-		StorageBox: resOptional.StorageBox,
-		Password:   resOptional.Password,
-		Raw:        resOptional.Raw,
-
-		SSHKeys: []string{sshKey.PublicKey},
-	}
-	resWithSSHKey.SetRName(resOptional.RName())
+	resWithSSHKey := testtemplate.DeepCopy(t, resOptional)
+	resWithSSHKey.SSHKeys = []string{sshKey.PublicKey}
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
@@ -158,24 +146,24 @@ func TestAccStorageBoxResource(t *testing.T) {
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("name"), knownvalue.StringExact(resOptional.Name)),
 					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("username"), testsupport.StringExactFromFunc(func() string { return storageBox.Username })),
-					// statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("storage_box_type"), knownvalue.StringExact(teste2e.TestStorageBoxTypeUpgrade)),
+					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("storage_box_type"), knownvalue.StringExact(teste2e.TestStorageBoxTypeUpgrade)),
 					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("location"), knownvalue.StringExact(teste2e.TestLocationName)),
 					statecheck.ExpectSensitiveValue(resOptional.TFID(), tfjsonpath.New("password")),
-					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("password"), knownvalue.StringExact(res.Password)),
+					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("password"), knownvalue.StringExact(resOptional.Password)),
 					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("labels"), knownvalue.MapExact(map[string]knownvalue.Check{"foo": knownvalue.StringExact("bar")})),
 					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("ssh_keys"), knownvalue.SetSizeExact(0)),
-					// statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("access_settings").AtMapKey("reachable_internally"), knownvalue.Bool(true)),
-					// statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("access_settings").AtMapKey("samba_enabled"), knownvalue.Bool(true)),
-					// statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("access_settings").AtMapKey("ssh_enabled"), knownvalue.Bool(true)),
-					// statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("access_settings").AtMapKey("webdav_enabled"), knownvalue.Bool(true)),
-					// statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("access_settings").AtMapKey("zfs_enabled"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("access_settings").AtMapKey("reachable_externally"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("access_settings").AtMapKey("samba_enabled"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("access_settings").AtMapKey("ssh_enabled"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("access_settings").AtMapKey("webdav_enabled"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("access_settings").AtMapKey("zfs_enabled"), knownvalue.Bool(true)),
 					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("server"), testsupport.StringExactFromFunc(func() string { return storageBox.Server })),
 					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("system"), testsupport.StringExactFromFunc(func() string { return storageBox.System })),
-					// statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("delete_protections"), knownvalue.Bool(true)),
-					// statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("snapshot_plan").AtMapKey("max_snapshots"), knownvalue.Int32Exact(10)),
-					// statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("snapshot_plan").AtMapKey("minute"), knownvalue.Int32Exact(16)),
-					// statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("snapshot_plan").AtMapKey("hour"), knownvalue.Int32Exact(18)),
-					// statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("snapshot_plan").AtMapKey("day_of_week"), knownvalue.Int32Exact(3)),
+					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("delete_protection"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("snapshot_plan").AtMapKey("max_snapshots"), knownvalue.Int32Exact(10)),
+					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("snapshot_plan").AtMapKey("minute"), knownvalue.Int32Exact(16)),
+					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("snapshot_plan").AtMapKey("hour"), knownvalue.Int32Exact(18)),
+					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("snapshot_plan").AtMapKey("day_of_week"), knownvalue.Int32Exact(3)),
 				},
 			},
 			{
@@ -202,25 +190,25 @@ func TestAccStorageBoxResource(t *testing.T) {
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resWithSSHKey.TFID(), tfjsonpath.New("name"), knownvalue.StringExact(resWithSSHKey.Name)),
 					statecheck.ExpectKnownValue(resWithSSHKey.TFID(), tfjsonpath.New("username"), testsupport.StringExactFromFunc(func() string { return storageBox.Username })),
-					// statecheck.ExpectKnownValue(resWithSSHKey.TFID(), tfjsonpath.New("storage_box_type"), knownvalue.StringExact(teste2e.TestStorageBoxTypeUpgrade)),
+					statecheck.ExpectKnownValue(resWithSSHKey.TFID(), tfjsonpath.New("storage_box_type"), knownvalue.StringExact(teste2e.TestStorageBoxTypeUpgrade)),
 					statecheck.ExpectKnownValue(resWithSSHKey.TFID(), tfjsonpath.New("location"), knownvalue.StringExact(teste2e.TestLocationName)),
 					statecheck.ExpectSensitiveValue(resWithSSHKey.TFID(), tfjsonpath.New("password")),
-					statecheck.ExpectKnownValue(resWithSSHKey.TFID(), tfjsonpath.New("password"), knownvalue.StringExact(res.Password)),
+					statecheck.ExpectKnownValue(resWithSSHKey.TFID(), tfjsonpath.New("password"), knownvalue.StringExact(resWithSSHKey.Password)),
 					statecheck.ExpectKnownValue(resWithSSHKey.TFID(), tfjsonpath.New("labels"), knownvalue.MapExact(map[string]knownvalue.Check{"foo": knownvalue.StringExact("bar")})),
 					statecheck.ExpectKnownValue(resWithSSHKey.TFID(), tfjsonpath.New("ssh_keys"), knownvalue.SetSizeExact(1)),
 					statecheck.ExpectKnownValue(resWithSSHKey.TFID(), tfjsonpath.New("ssh_keys").AtSliceIndex(0), knownvalue.StringExact(sshKey.PublicKey)),
-					// statecheck.ExpectKnownValue(resWithSSHKey.TFID(), tfjsonpath.New("access_settings").AtMapKey("reachable_internally"), knownvalue.Bool(true)),
-					// statecheck.ExpectKnownValue(resWithSSHKey.TFID(), tfjsonpath.New("access_settings").AtMapKey("samba_enabled"), knownvalue.Bool(true)),
-					// statecheck.ExpectKnownValue(resWithSSHKey.TFID(), tfjsonpath.New("access_settings").AtMapKey("ssh_enabled"), knownvalue.Bool(true)),
-					// statecheck.ExpectKnownValue(resWithSSHKey.TFID(), tfjsonpath.New("access_settings").AtMapKey("webdav_enabled"), knownvalue.Bool(true)),
-					// statecheck.ExpectKnownValue(resWithSSHKey.TFID(), tfjsonpath.New("access_settings").AtMapKey("zfs_enabled"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(resWithSSHKey.TFID(), tfjsonpath.New("access_settings").AtMapKey("reachable_externally"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(resWithSSHKey.TFID(), tfjsonpath.New("access_settings").AtMapKey("samba_enabled"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(resWithSSHKey.TFID(), tfjsonpath.New("access_settings").AtMapKey("ssh_enabled"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(resWithSSHKey.TFID(), tfjsonpath.New("access_settings").AtMapKey("webdav_enabled"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(resWithSSHKey.TFID(), tfjsonpath.New("access_settings").AtMapKey("zfs_enabled"), knownvalue.Bool(true)),
 					statecheck.ExpectKnownValue(resWithSSHKey.TFID(), tfjsonpath.New("server"), testsupport.StringExactFromFunc(func() string { return storageBox.Server })),
 					statecheck.ExpectKnownValue(resWithSSHKey.TFID(), tfjsonpath.New("system"), testsupport.StringExactFromFunc(func() string { return storageBox.System })),
-					// statecheck.ExpectKnownValue(resWithSSHKey.TFID(), tfjsonpath.New("delete_protections"), knownvalue.Bool(true)),
-					// statecheck.ExpectKnownValue(resWithSSHKey.TFID(), tfjsonpath.New("snapshot_plan").AtMapKey("max_snapshots"), knownvalue.Int32Exact(10)),
-					// statecheck.ExpectKnownValue(resWithSSHKey.TFID(), tfjsonpath.New("snapshot_plan").AtMapKey("minute"), knownvalue.Int32Exact(16)),
-					// statecheck.ExpectKnownValue(resWithSSHKey.TFID(), tfjsonpath.New("snapshot_plan").AtMapKey("hour"), knownvalue.Int32Exact(18)),
-					// statecheck.ExpectKnownValue(resWithSSHKey.TFID(), tfjsonpath.New("snapshot_plan").AtMapKey("day_of_week"), knownvalue.Int32Exact(3)),
+					statecheck.ExpectKnownValue(resWithSSHKey.TFID(), tfjsonpath.New("delete_protection"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(resWithSSHKey.TFID(), tfjsonpath.New("snapshot_plan").AtMapKey("max_snapshots"), knownvalue.Int32Exact(10)),
+					statecheck.ExpectKnownValue(resWithSSHKey.TFID(), tfjsonpath.New("snapshot_plan").AtMapKey("minute"), knownvalue.Int32Exact(16)),
+					statecheck.ExpectKnownValue(resWithSSHKey.TFID(), tfjsonpath.New("snapshot_plan").AtMapKey("hour"), knownvalue.Int32Exact(18)),
+					statecheck.ExpectKnownValue(resWithSSHKey.TFID(), tfjsonpath.New("snapshot_plan").AtMapKey("day_of_week"), knownvalue.Int32Exact(3)),
 				},
 			},
 		},
