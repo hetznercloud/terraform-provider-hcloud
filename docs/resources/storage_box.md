@@ -65,7 +65,7 @@ resource "hcloud_storage_box" "backups" {
 - `access_settings` (Attributes) Access settings of the Storage Box. (see [below for nested schema](#nestedatt--access_settings))
 - `delete_protection` (Boolean) Prevent the Storage Box from being accidentally deleted outside of Terraform.
 - `labels` (Map of String) User-defined [labels](https://docs.hetzner.cloud/reference/cloud#labels) (key-value pairs) for the resource.
-- `snapshot_plan` (Attributes) (see [below for nested schema](#nestedatt--snapshot_plan))
+- `snapshot_plan` (Attributes) Details of the active snapshot plan. (see [below for nested schema](#nestedatt--snapshot_plan))
 - `ssh_keys` (Set of String) SSH public keys in OpenSSH format to inject into the Storage Box. Any changes to this attribute are ignored, as it is not possible to update the SSH Keys through the API, please add the SSH Keys manually on the Storage Box if you need to change them.
 
 ### Read-Only

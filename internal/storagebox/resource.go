@@ -182,7 +182,7 @@ See the [Storage Box API documentation](https://docs.hetzner.cloud/reference/het
 			Default:             booldefault.StaticBool(false),
 		},
 		"snapshot_plan": schema.SingleNestedAttribute{
-			MarkdownDescription: "",
+			MarkdownDescription: "Details of the active snapshot plan.",
 			Optional:            true,
 			Attributes: map[string]schema.Attribute{
 				"max_snapshots": schema.Int32Attribute{

@@ -11,6 +11,7 @@ import (
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/experimental"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
@@ -37,6 +38,8 @@ func (d *DataSourceList) Metadata(_ context.Context, _ datasource.MetadataReques
 // provider-defined DataSource type. It is separately executed for each
 // ReadDataSource RPC.
 func (d *DataSourceList) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+	experimental.StorageBox.AppendDiagnostic(&resp.Diagnostics)
+
 	var newDiags diag.Diagnostics
 
 	d.client, newDiags = hcloudutil.ConfigureClient(req.ProviderData)
@@ -53,6 +56,8 @@ Provides a list of Hetzner Storage Boxes.
 
 See the [Storage Boxes API documentation](https://docs.hetzner.cloud/reference/hetzner#storage-boxes) for more details.
 `
+
+	experimental.StorageBox.AppendNotice(&resp.Schema.MarkdownDescription)
 
 	resp.Schema.Attributes = map[string]schema.Attribute{
 		"storage_boxes": schema.ListNestedAttribute{

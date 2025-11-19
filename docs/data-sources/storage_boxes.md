@@ -5,6 +5,8 @@ subcategory: ""
 description: |-
   Provides a list of Hetzner Storage Boxes.
   See the Storage Boxes API documentation https://docs.hetzner.cloud/reference/hetzner#storage-boxes for more details.
+  Experimental: Storage Box support is experimental, breaking changes may occur within minor releases.
+  See TODO for more details.
 ---
 
 # hcloud_storage_boxes (Data Source)
@@ -12,6 +14,9 @@ description: |-
 Provides a list of Hetzner Storage Boxes.
 
 See the [Storage Boxes API documentation](https://docs.hetzner.cloud/reference/hetzner#storage-boxes) for more details.
+
+**Experimental:** Storage Box support is experimental, breaking changes may occur within minor releases.
+See TODO for more details.
 
 ## Example Usage
 
@@ -38,10 +43,6 @@ data "hcloud_storage_boxes" "by_label_selector" {
 <a id="nestedatt--storage_boxes"></a>
 ### Nested Schema for `storage_boxes`
 
-Optional:
-
-- `snapshot_plan` (Attributes) Details of the active snapshot plan. (see [below for nested schema](#nestedatt--storage_boxes--snapshot_plan))
-
 Read-Only:
 
 - `access_settings` (Attributes) Access settings of the Storage Box. (see [below for nested schema](#nestedatt--storage_boxes--access_settings))
@@ -51,21 +52,10 @@ Read-Only:
 - `location` (String) Name of the Location.
 - `name` (String) Name of the Storage Box.
 - `server` (String) FQDN of the Storage Box.
+- `snapshot_plan` (Attributes) Details of the active snapshot plan. (see [below for nested schema](#nestedatt--storage_boxes--snapshot_plan))
 - `storage_box_type` (String) Name of the Storage Box Type.
 - `system` (String) Host system of the Storage Box.
 - `username` (String) Primary username of the Storage Box.
-
-<a id="nestedatt--storage_boxes--snapshot_plan"></a>
-### Nested Schema for `storage_boxes.snapshot_plan`
-
-Read-Only:
-
-- `day_of_month` (Number) Day of the month when the Snapshot Plan is executed. Null means every day.
-- `day_of_week` (Number) Day of the week when the Snapshot Plan is executed. Starts at 0 for Sunday til 6 for Saturday. Note that this differs from the API, which uses 1 (Monday) through 7 (Sunday). Null means every day.
-- `hour` (Number) Hour when the Snapshot Plan is executed (UTC).
-- `max_snapshots` (Number) Maximum amount of Snapshots that will be created by this Snapshot Plan. Older Snapshots will be deleted.
-- `minute` (Number) Minute when the Snapshot Plan is executed (UTC).
-
 
 <a id="nestedatt--storage_boxes--access_settings"></a>
 ### Nested Schema for `storage_boxes.access_settings`
@@ -77,3 +67,15 @@ Read-Only:
 - `ssh_enabled` (Boolean) Whether the SSH subsystem is enabled.
 - `webdav_enabled` (Boolean) Whether the WebDAV subsystem is enabled.
 - `zfs_enabled` (Boolean) Whether the ZFS snapshot folder is visible.
+
+
+<a id="nestedatt--storage_boxes--snapshot_plan"></a>
+### Nested Schema for `storage_boxes.snapshot_plan`
+
+Read-Only:
+
+- `day_of_month` (Number) Day of the month when the Snapshot Plan is executed. Null means every day.
+- `day_of_week` (Number) Day of the week when the Snapshot Plan is executed. Starts at 0 for Sunday til 6 for Saturday. Note that this differs from the API, which uses 1 (Monday) through 7 (Sunday). Null means every day.
+- `hour` (Number) Hour when the Snapshot Plan is executed (UTC).
+- `max_snapshots` (Number) Maximum amount of Snapshots that will be created by this Snapshot Plan. Older Snapshots will be deleted.
+- `minute` (Number) Minute when the Snapshot Plan is executed (UTC).
