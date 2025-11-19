@@ -223,8 +223,8 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		actions = append(actions, action)
 	}
 
-	if err := r.client.Action.WaitFor(ctx, actions...); err != nil {
-		resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+	resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, actions...)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -300,10 +300,11 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 			return
 		}
 
-		if err := r.client.Action.WaitFor(ctx, action); err != nil {
-			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+		resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, action)...)
+		if resp.Diagnostics.HasError() {
 			return
 		}
+
 	}
 
 	actions := make([]*hcloud.Action, 0)
@@ -346,8 +347,8 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 		actions = append(actions, action)
 	}
 
-	if err := r.client.Action.WaitFor(ctx, actions...); err != nil {
-		resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+	resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, actions...)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -426,10 +427,11 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 		return
 	}
 
-	if err := r.client.Action.WaitFor(ctx, result.Action); err != nil {
-		resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+	resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, result.Action)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
+
 }
 
 func (r *Resource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {

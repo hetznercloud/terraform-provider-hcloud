@@ -272,8 +272,8 @@ func (r *NetworkResource) Create(ctx context.Context, req resource.CreateRequest
 			}
 		}
 	}
-	if err := r.client.Action.WaitFor(ctx, action); err != nil {
-		resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+	resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, action)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 	// Make sure to save the ID immediately so we can recover if the process stops after
@@ -469,8 +469,8 @@ func (r *NetworkResource) Delete(ctx context.Context, req resource.DeleteRequest
 		}
 	}
 
-	if err := r.client.Action.WaitFor(ctx, action); err != nil {
-		resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+	resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, action)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -550,8 +550,8 @@ func (r *NetworkResource) setLoadBalancerPublicInterfaceEnabled(ctx context.Cont
 		diags.Append(hcloudutil.APIErrorDiagnostics(err)...)
 		return diags
 	}
-	if err = r.client.Action.WaitFor(ctx, action); err != nil {
-		diags.Append(hcloudutil.APIErrorDiagnostics(err)...)
+	diags.Append(hcloudutil.SettleActions(ctx, &r.client.Action, action)...)
+	if diags.HasError() {
 		return diags
 	}
 
