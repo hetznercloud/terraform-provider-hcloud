@@ -19,7 +19,7 @@ var (
 	// TestImage is the system image that is used in all tests
 	TestImage = getEnv("TEST_IMAGE", "ubuntu-24.04")
 
-	// TestImage is the system image ID that is used in all tests
+	// TestImageID is the system image ID that is used in all tests
 	TestImageID = getEnv("TEST_IMAGE_ID", "161547269")
 
 	// TestServerType is the default server type used in all tests
@@ -33,6 +33,12 @@ var (
 
 	// TestLoadBalancerType is the default Load Balancer type used in all tests
 	TestLoadBalancerType = "lb11"
+
+	// TestStorageBoxType is the default Storage Box type used in all tests
+	TestStorageBoxType = getEnv("TEST_STORAGE_BOX_TYPE", "bx11")
+
+	// TestStorageBoxTypeUpgrade is the upgrade Storage Box type used in all tests
+	TestStorageBoxTypeUpgrade = getEnv("TEST_STORAGE_BOX_TYPE_UPGRADE", "bx21")
 
 	// TestDataCenter is the default datacenter where we execute our tests.
 	TestDataCenter = getEnv("TEST_DATACENTER", "hel1-dc2")

@@ -1,0 +1,20 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+resource "hcloud_storage_box" "{{ .RName }}" {
+    name             = "{{ .Name }}"
+    storage_box_type = "{{ .StorageBoxType.Name }}"
+    location         = "{{ .Location.Name }}"
+    password         = "{{ .Password }}"
+
+    {{- if .Labels }}
+    labels = {{ .Labels | toPrettyJson }}
+    {{- end }}
+
+    {{- if .SSHKeys }}
+    ssh_keys = {{ .SSHKeys | toPrettyJson }}
+    {{- end }}
+
+    {{- if .Raw }}
+    {{ .Raw | indent 2 }}
+    {{- end }}
+}
