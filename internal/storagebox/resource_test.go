@@ -2,7 +2,6 @@ package storagebox_test
 
 import (
 	"fmt"
-	"math/rand/v2"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -21,27 +20,6 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func generatePassword(t *testing.T) string {
-	t.Helper()
-
-	characterSets := [4]string{
-		"abcdefghijklmnopqrstuvwxyz",
-		"ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-		"01234567890",
-		"!$%/()=?+#-.",
-	}
-
-	password := ""
-
-	for _, chars := range characterSets {
-		for i := 0; i < 32; i++ {
-			password += string(chars[rand.IntN(len(chars))])
-		}
-	}
-
-	return password
-}
-
 func TestAccStorageBoxResource(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
@@ -49,14 +27,14 @@ func TestAccStorageBoxResource(t *testing.T) {
 
 	res := &storagebox.RData{
 		StorageBox: schema.StorageBox{
-			Name:           fmt.Sprintf("storage-box-%s", randutil.GenerateID()),
+			Name:           fmt.Sprintf("snapshot-%s", randutil.GenerateID()),
 			StorageBoxType: schema.StorageBoxType{Name: teste2e.TestStorageBoxType},
 			Location:       schema.Location{Name: teste2e.TestLocationName},
 			Labels: map[string]string{
 				"key": "value",
 			},
 		},
-		Password: generatePassword(t),
+		Password: storagebox.GeneratePassword(t),
 	}
 	res.SetRName("default")
 
@@ -69,7 +47,7 @@ func TestAccStorageBoxResource(t *testing.T) {
 				"foo": "bar",
 			},
 		},
-		Password: generatePassword(t), // Also test password update
+		Password: storagebox.GeneratePassword(t), // Also test password update
 		Raw: `
 			access_settings = {
 				reachable_externally = true
@@ -135,10 +113,11 @@ func TestAccStorageBoxResource(t *testing.T) {
 			{
 				// Import
 
-				Config:        tmplMan.Render(t, "testdata/r/hcloud_storage_box", resOptional),
-				ImportState:   true,
-				ResourceName:  res.TFID(),
-				ImportStateId: res.Name,
+				Config:            tmplMan.Render(t, "testdata/r/hcloud_storage_box", resOptional),
+				ImportState:       true,
+				ResourceName:      res.TFID(),
+				ImportStateId:     res.Name,
+				ImportStateVerify: true,
 			},
 			{
 				// Update with all optional attributes

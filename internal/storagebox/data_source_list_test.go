@@ -27,7 +27,7 @@ func TestAccStorageBoxDataSourceList(t *testing.T) {
 			Location:       schema.Location{Name: teste2e.TestLocationName},
 			Labels:         map[string]string{"key": randutil.GenerateID()},
 		},
-		Password: generatePassword(t),
+		Password: storagebox.GeneratePassword(t),
 	}
 	res1.SetRName("main1")
 
@@ -38,7 +38,7 @@ func TestAccStorageBoxDataSourceList(t *testing.T) {
 			Location:       schema.Location{Name: teste2e.TestLocationName},
 			Labels:         map[string]string{"key": randutil.GenerateID()},
 		},
-		Password: generatePassword(t),
+		Password: storagebox.GeneratePassword(t),
 	}
 	res2.SetRName("main2")
 
