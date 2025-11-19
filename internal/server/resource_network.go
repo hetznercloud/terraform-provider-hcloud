@@ -274,8 +274,8 @@ func (r *NetworkResource) Create(ctx context.Context, req resource.CreateRequest
 			return
 		}
 	}
-	if err = r.client.Action.WaitFor(ctx, action); err != nil {
-		resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+	resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, action)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 	// Make sure to save the ID immediately so we can recover if the process stops after
@@ -398,8 +398,8 @@ func (r *NetworkResource) Update(ctx context.Context, req resource.UpdateRequest
 			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
 			return
 		}
-		if err = r.client.Action.WaitFor(ctx, action); err != nil {
-			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+		resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, action)...)
+		if resp.Diagnostics.HasError() {
 			return
 		}
 	}
@@ -479,8 +479,8 @@ func (r *NetworkResource) Delete(ctx context.Context, req resource.DeleteRequest
 		}
 	}
 
-	if err = r.client.Action.WaitFor(ctx, action); err != nil {
-		resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+	resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, action)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 }
