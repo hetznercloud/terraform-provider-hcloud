@@ -754,22 +754,38 @@ func updatePublicNet(ctx context.Context, o interface{}, n interface{}, c *hclou
 	}
 
 	// if public net block is removed, auto generate primary ips & remove existing
+	// This block handles the case where the full `public_net` block was removed.
+	// In this case, we want to unassign any primary IPs that were explicitly assigned to the server previously,
+	// and generate new random primary ips to replace them.
+	//
+	// TODO: Check if we handle the case where `ipvX_enabled = false -> removed public_net block`. Do we generate a new IPvX then?
 	if diffToAdd.Len() == 0 {
-		if err := publicNetRemovedDecision(ctx,
-			c,
-			server,
-			server.PublicNet.IPv4.ID,
-			ipv4IDToRemove,
-			hcloud.PrimaryIPTypeIPv4); err != nil {
-			return err
+		publicNetBlockHadExplicitIPv4IDConfigured := ipv4IDToRemove != 0
+		if server.PublicNet.IPv4.ID != 0 && publicNetBlockHadExplicitIPv4IDConfigured {
+			if server.PublicNet.IPv4.ID != ipv4IDToRemove {
+				return diag.Errorf("Assigned IPv4 changed between plan and apply, please check and generate a new plan")
+			}
+
+			if err := primaryip.UnassignPrimaryIP(ctx, c, server.PublicNet.IPv4.ID); err != nil {
+				return err
+			}
+			if err := primaryip.CreateRandomPrimaryIP(ctx, c, server, hcloud.PrimaryIPTypeIPv4); err != nil {
+				return err
+			}
 		}
-		if err := publicNetRemovedDecision(ctx,
-			c,
-			server,
-			server.PublicNet.IPv6.ID,
-			ipv6IDToRemove,
-			hcloud.PrimaryIPTypeIPv6); err != nil {
-			return err
+
+		publicNetBlockHadExplicitIPv6IDConfigured := ipv6IDToRemove != 0
+		if server.PublicNet.IPv6.ID != 0 && publicNetBlockHadExplicitIPv6IDConfigured {
+			if server.PublicNet.IPv6.ID != ipv6IDToRemove {
+				return diag.Errorf("Assigned IPv6 changed between plan and apply, please check and generate a new plan")
+			}
+
+			if err := primaryip.UnassignPrimaryIP(ctx, c, server.PublicNet.IPv6.ID); err != nil {
+				return err
+			}
+			if err := primaryip.CreateRandomPrimaryIP(ctx, c, server, hcloud.PrimaryIPTypeIPv6); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -1393,6 +1409,17 @@ func publicNetRemovedDecision(ctx context.Context,
 	serverIPID int64,
 	ipIDToRemove int64,
 	ipType hcloud.PrimaryIPType) diag.Diagnostics {
+
+	if serverIPID != 0 && serverIPID == ipIDToRemove {
+		if err := primaryip.UnassignPrimaryIP(ctx, c, serverIPID); err != nil {
+			return err
+		}
+		if err := primaryip.CreateRandomPrimaryIP(ctx, c, server, ipType); err != nil {
+			return err
+		}
+	}
+
+	// Current behaviour:
 	if server.PublicNet.IPv4.ID != 0 && ipIDToRemove != 0 {
 		if err := primaryip.UnassignPrimaryIP(ctx, c, serverIPID); err != nil {
 			return err
@@ -1400,6 +1427,7 @@ func publicNetRemovedDecision(ctx context.Context,
 		if err := primaryip.CreateRandomPrimaryIP(ctx, c, server, ipType); err != nil {
 			return err
 		}
+
 	}
 	return nil
 }
