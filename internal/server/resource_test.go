@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -309,12 +310,14 @@ func TestAccServerResource_ISO(t *testing.T) {
 		SSHKeys:  []string{sk.TFID() + ".id"},
 	}
 	res.SetRName("server-iso")
+
 	resUpdatedISO := &server.RData{
-		Name:    res.Name,
-		Type:    res.Type,
-		Image:   res.Image,
-		ISO:     "8638", // Windows Server 2022 German
-		SSHKeys: res.SSHKeys,
+		Name:     res.Name,
+		Type:     res.Type,
+		Image:    res.Image,
+		UserData: res.UserData,
+		ISO:      "8638", // Windows Server 2022 German
+		SSHKeys:  res.SSHKeys,
 	}
 	resUpdatedISO.SetRName(res.RName())
 
@@ -346,6 +349,11 @@ func TestAccServerResource_ISO(t *testing.T) {
 					"testdata/r/hcloud_ssh_key", sk,
 					"testdata/r/hcloud_server", resUpdatedISO,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(res.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s)),
 					resource.TestCheckResourceAttr(res.TFID(), "iso", resUpdatedISO.ISO),
