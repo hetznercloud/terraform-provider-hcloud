@@ -27,13 +27,13 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 )
 
-// Need new tests for:
-// - Primary IP Migrations (to and from explicit resources)
-
 func TestAccServerResource(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
 	var s hcloud.Server
 
 	sk := sshkey.NewRData(t, "server-basic")
+
 	res := &server.RData{
 		Name:                   "server-basic",
 		Type:                   teste2e.TestServerType,
@@ -42,17 +42,18 @@ func TestAccServerResource(t *testing.T) {
 		ShutdownBeforeDeletion: true,
 	}
 	res.SetRName("server-basic")
+
 	resRenamed := &server.RData{
 		Name:                   res.Name + "-renamed",
 		Type:                   res.Type,
-		Image:                  res.Image, // TODO: Other Image => new test?
+		Image:                  res.Image,
 		SSHKeys:                res.SSHKeys,
 		ShutdownBeforeDeletion: res.ShutdownBeforeDeletion,
 		Labels:                 map[string]string{"foo": "bar"},
 		Backups:                true,
 	}
 	resRenamed.SetRName(res.Name)
-	tmplMan := testtemplate.Manager{}
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
 		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
@@ -187,9 +188,12 @@ func TestAccServerResource_ImageID(t *testing.T) {
 }
 
 func TestAccServerResource_Resize(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
 	var s hcloud.Server
 
 	sk := sshkey.NewRData(t, "server-resize")
+
 	res := &server.RData{
 		Name:    "server-resize",
 		Type:    teste2e.TestServerType,
@@ -197,6 +201,7 @@ func TestAccServerResource_Resize(t *testing.T) {
 		SSHKeys: []string{sk.TFID() + ".id"},
 	}
 	res.SetRName("server-resize")
+
 	resResized := &server.RData{
 		Name:     res.Name,
 		Type:     teste2e.TestServerTypeUpgrade,
@@ -205,7 +210,7 @@ func TestAccServerResource_Resize(t *testing.T) {
 		SSHKeys:  res.SSHKeys,
 	}
 	resResized.SetRName(res.Name)
-	tmplMan := testtemplate.Manager{}
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
 		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
@@ -243,9 +248,12 @@ func TestAccServerResource_Resize(t *testing.T) {
 }
 
 func TestAccServerResource_ChangeUserData(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
 	var s, s2 hcloud.Server
 
 	sk := sshkey.NewRData(t, "server-userdata")
+
 	res := &server.RData{
 		Name:     "server-userdata",
 		Type:     teste2e.TestServerType,
@@ -254,9 +262,15 @@ func TestAccServerResource_ChangeUserData(t *testing.T) {
 		SSHKeys:  []string{sk.TFID() + ".id"},
 	}
 	res.SetRName("server-userdata")
-	resChangedUserdata := &server.RData{Name: res.Name, Type: res.Type, Image: res.Image, UserData: "updated stuff"}
+
+	resChangedUserdata := &server.RData{
+		Name:     res.Name,
+		Type:     res.Type,
+		Image:    res.Image,
+		UserData: "updated stuff",
+	}
 	resChangedUserdata.SetRName(res.Name)
-	tmplMan := testtemplate.Manager{}
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
 		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
@@ -298,9 +312,12 @@ func TestAccServerResource_ChangeUserData(t *testing.T) {
 }
 
 func TestAccServerResource_ISO(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
 	var s hcloud.Server
 
 	sk := sshkey.NewRData(t, "server-iso")
+
 	res := &server.RData{
 		Name:     "server-iso",
 		Type:     teste2e.TestServerType,
@@ -321,7 +338,6 @@ func TestAccServerResource_ISO(t *testing.T) {
 	}
 	resUpdatedISO.SetRName(res.RName())
 
-	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
 		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
@@ -364,9 +380,12 @@ func TestAccServerResource_ISO(t *testing.T) {
 }
 
 func TestAccServerResource_Rescue(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
 	var s hcloud.Server
 
 	sk := sshkey.NewRData(t, "server-rescue")
+
 	res := &server.RData{
 		Name:    "server-rescue",
 		Type:    teste2e.TestServerType,
@@ -374,6 +393,7 @@ func TestAccServerResource_Rescue(t *testing.T) {
 		SSHKeys: []string{sk.TFID() + ".id"},
 	}
 	res.SetRName("server-rescue")
+
 	resRescue := &server.RData{
 		Name:    res.Name,
 		Type:    res.Type,
@@ -383,7 +403,6 @@ func TestAccServerResource_Rescue(t *testing.T) {
 	}
 	resRescue.SetRName(res.RName())
 
-	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
 		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
@@ -427,6 +446,8 @@ func TestAccServerResource_Rescue(t *testing.T) {
 }
 
 func TestAccServerResource_DirectAttachToNetwork(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
 	var (
 		nw  hcloud.Network
 		nw2 hcloud.Network
@@ -534,7 +555,6 @@ func TestAccServerResource_DirectAttachToNetwork(t *testing.T) {
 	}
 	sResWithTwoNets.SetRName(sResWithTwoNets.Name)
 
-	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
 		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
@@ -1148,6 +1168,8 @@ func TestAccServerResource_Firewalls(t *testing.T) {
 }
 
 func TestAccServerResource_PlacementGroup(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
 	var (
 		pg  hcloud.PlacementGroup
 		srv hcloud.Server
@@ -1169,8 +1191,6 @@ func TestAccServerResource_PlacementGroup(t *testing.T) {
 		Image: srvRes.Image,
 	}
 	srvResNoPG.SetRName("server-placement-group")
-
-	tmplMan := testtemplate.Manager{}
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
@@ -1251,6 +1271,8 @@ func TestAccServerResource_PlacementGroup(t *testing.T) {
 }
 
 func TestAccServerResource_Protection(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
 	var (
 		srv hcloud.Server
 
@@ -1269,8 +1291,6 @@ func TestAccServerResource_Protection(t *testing.T) {
 		RebuildProtection: true,
 	}
 	srvRes.SetRName("server-protection")
-
-	tmplMan := testtemplate.Manager{}
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
@@ -1308,6 +1328,8 @@ func TestAccServerResource_Protection(t *testing.T) {
 }
 
 func TestAccServerResource_EmptySSHKey(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
 	// Regression Test for https://github.com/hetznercloud/terraform-provider-hcloud/issues/727
 	var srv hcloud.Server
 
@@ -1318,8 +1340,6 @@ func TestAccServerResource_EmptySSHKey(t *testing.T) {
 		SSHKeys: []string{"\"\""},
 	}
 	srvRes.SetRName("server-empty-ssh-key")
-
-	tmplMan := testtemplate.Manager{}
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
