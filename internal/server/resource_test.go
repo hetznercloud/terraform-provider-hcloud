@@ -97,6 +97,11 @@ func TestAccServerResource(t *testing.T) {
 					"testdata/r/hcloud_ssh_key", sk,
 					"testdata/r/hcloud_server", resRenamed,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resRenamed.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resRenamed.TFID(), "name", fmt.Sprintf("server-basic-renamed--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(resRenamed.TFID(), "server_type", resRenamed.Type),
@@ -111,6 +116,11 @@ func TestAccServerResource(t *testing.T) {
 					"testdata/r/hcloud_ssh_key", sk,
 					"testdata/r/hcloud_server", res,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(res.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resRenamed.TFID(), "name", fmt.Sprintf("server-basic--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(resRenamed.TFID(), "server_type", res.Type),
@@ -237,6 +247,11 @@ func TestAccServerResource_Resize(t *testing.T) {
 					"testdata/r/hcloud_ssh_key", sk,
 					"testdata/r/hcloud_server", resResized,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resResized.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resResized.TFID(), "name", fmt.Sprintf("server-resize--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(resResized.TFID(), "server_type", resResized.Type),
@@ -298,6 +313,11 @@ func TestAccServerResource_ChangeUserData(t *testing.T) {
 					"testdata/r/hcloud_ssh_key", sk,
 					"testdata/r/hcloud_server", resChangedUserdata,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resChangedUserdata.TFID(), plancheck.ResourceActionReplace),
+					},
+				},
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s2)),
 					resource.TestCheckResourceAttr(resChangedUserdata.TFID(), "name", fmt.Sprintf("server-userdata--%d", tmplMan.RandInt)),
@@ -425,6 +445,11 @@ func TestAccServerResource_Rescue(t *testing.T) {
 					"testdata/r/hcloud_ssh_key", sk,
 					"testdata/r/hcloud_server", res,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(res.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s)),
 					resource.TestCheckResourceAttr(res.TFID(), "rescue", ""),
@@ -436,6 +461,11 @@ func TestAccServerResource_Rescue(t *testing.T) {
 					"testdata/r/hcloud_ssh_key", sk,
 					"testdata/r/hcloud_server", resRescue,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resRescue.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s)),
 					resource.TestCheckResourceAttr(res.TFID(), "rescue", resRescue.Rescue),
@@ -1147,13 +1177,16 @@ func TestAccServerResource_Firewalls(t *testing.T) {
 				),
 			},
 			{
-				// Create a new Server using the required values
-				// only.
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_firewall", fw,
 					"testdata/r/hcloud_firewall", fw2,
 					"testdata/r/hcloud_server", res2,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(res2.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s)),
 					resource.TestCheckResourceAttr(res.TFID(), "name",
@@ -1248,6 +1281,11 @@ func TestAccServerResource_PlacementGroup(t *testing.T) {
 					"testdata/r/hcloud_placement_group", pgRes,
 					"testdata/r/hcloud_server", srvResNoPG,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(srvResNoPG.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(srvResNoPG.TFID(), "status", "off"),
 					resource.TestCheckResourceAttr(srvResNoPG.TFID(), "placement_group_id", "0"),
@@ -1259,6 +1297,11 @@ func TestAccServerResource_PlacementGroup(t *testing.T) {
 					"testdata/r/hcloud_placement_group", pgRes,
 					"testdata/r/hcloud_server", srvRes,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(srvRes.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(srvResNoPG.TFID(), "status", "running"),
 					testsupport.CheckResourceAttrFunc(srvRes.TFID(), "placement_group_id", func() string {
