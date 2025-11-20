@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -27,37 +28,57 @@ import (
 )
 
 func TestAccServerResource(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
 	var s hcloud.Server
 
 	sk := sshkey.NewRData(t, "server-basic")
+
 	res := &server.RData{
-		Name:    "server-basic",
-		Type:    teste2e.TestServerType,
-		Image:   teste2e.TestImage,
-		SSHKeys: []string{sk.TFID() + ".id"},
+		Name:                   "server-basic",
+		Type:                   teste2e.TestServerType,
+		Image:                  teste2e.TestImage,
+		SSHKeys:                []string{sk.TFID() + ".id"},
+		ShutdownBeforeDeletion: true,
 	}
 	res.SetRName("server-basic")
-	resRenamed := &server.RData{Name: res.Name + "-renamed", Type: res.Type, Image: res.Image}
+
+	resRenamed := &server.RData{
+		Name:                   res.Name + "-renamed",
+		Type:                   res.Type,
+		Image:                  res.Image,
+		SSHKeys:                res.SSHKeys,
+		ShutdownBeforeDeletion: res.ShutdownBeforeDeletion,
+		Labels:                 map[string]string{"foo": "bar"},
+		Backups:                true,
+	}
 	resRenamed.SetRName(res.Name)
-	tmplMan := testtemplate.Manager{}
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
 		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
 		Steps: []resource.TestStep{
 			{
-				// Create a new Server using the required values
-				// only.
+				// Create a new Server using the required values only.
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_ssh_key", sk,
 					"testdata/r/hcloud_server", res,
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s)),
-					resource.TestCheckResourceAttr(res.TFID(), "name",
-						fmt.Sprintf("server-basic--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(res.TFID(), "name", fmt.Sprintf("server-basic--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(res.TFID(), "server_type", res.Type),
 					resource.TestCheckResourceAttr(res.TFID(), "image", res.Image),
+					resource.TestCheckResourceAttrSet(res.TFID(), "location"),
+					resource.TestCheckResourceAttrSet(res.TFID(), "datacenter"),
+					resource.TestCheckResourceAttrPair(sk.TFID(), "id", res.TFID(), "ssh_keys.0"),
+					resource.TestCheckResourceAttrSet(res.TFID(), "ipv4_address"),
+					resource.TestCheckResourceAttrSet(res.TFID(), "ipv6_address"),
+					resource.TestCheckResourceAttrSet(res.TFID(), "ipv6_network"),
+					resource.TestCheckResourceAttr(res.TFID(), "status", string(hcloud.ServerStatusRunning)),
+					resource.TestCheckResourceAttrSet(res.TFID(), "primary_disk_size"),
+					resource.TestCheckResourceAttr(res.TFID(), "placement_group_id", "0"),
 				),
 			},
 			{
@@ -73,13 +94,39 @@ func TestAccServerResource(t *testing.T) {
 				// Update the Server created in the previous step by
 				// setting all optional fields and renaming the Server.
 				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
 					"testdata/r/hcloud_server", resRenamed,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resRenamed.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resRenamed.TFID(), "name",
-						fmt.Sprintf("server-basic-renamed--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(resRenamed.TFID(), "name", fmt.Sprintf("server-basic-renamed--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(resRenamed.TFID(), "server_type", resRenamed.Type),
+					resource.TestCheckResourceAttr(resRenamed.TFID(), "image", resRenamed.Image),
+					resource.TestCheckResourceAttr(resRenamed.TFID(), "labels.foo", "bar"),
+					resource.TestCheckResourceAttr(resRenamed.TFID(), "backups", "true"),
+				),
+			},
+			{
+				// Revert the server to the original state to test the other direction for various options
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_server", res,
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(res.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resRenamed.TFID(), "name", fmt.Sprintf("server-basic--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(resRenamed.TFID(), "server_type", res.Type),
 					resource.TestCheckResourceAttr(resRenamed.TFID(), "image", res.Image),
+					resource.TestCheckNoResourceAttr(resRenamed.TFID(), "labels.foo"),
+					resource.TestCheckResourceAttr(resRenamed.TFID(), "backups", "false"),
 				),
 			},
 		},
@@ -151,9 +198,12 @@ func TestAccServerResource_ImageID(t *testing.T) {
 }
 
 func TestAccServerResource_Resize(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
 	var s hcloud.Server
 
 	sk := sshkey.NewRData(t, "server-resize")
+
 	res := &server.RData{
 		Name:    "server-resize",
 		Type:    teste2e.TestServerType,
@@ -161,6 +211,7 @@ func TestAccServerResource_Resize(t *testing.T) {
 		SSHKeys: []string{sk.TFID() + ".id"},
 	}
 	res.SetRName("server-resize")
+
 	resResized := &server.RData{
 		Name:     res.Name,
 		Type:     teste2e.TestServerTypeUpgrade,
@@ -169,7 +220,7 @@ func TestAccServerResource_Resize(t *testing.T) {
 		SSHKeys:  res.SSHKeys,
 	}
 	resResized.SetRName(res.Name)
-	tmplMan := testtemplate.Manager{}
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
 		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
@@ -196,6 +247,11 @@ func TestAccServerResource_Resize(t *testing.T) {
 					"testdata/r/hcloud_ssh_key", sk,
 					"testdata/r/hcloud_server", resResized,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resResized.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resResized.TFID(), "name", fmt.Sprintf("server-resize--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(resResized.TFID(), "server_type", resResized.Type),
@@ -207,9 +263,12 @@ func TestAccServerResource_Resize(t *testing.T) {
 }
 
 func TestAccServerResource_ChangeUserData(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
 	var s, s2 hcloud.Server
 
 	sk := sshkey.NewRData(t, "server-userdata")
+
 	res := &server.RData{
 		Name:     "server-userdata",
 		Type:     teste2e.TestServerType,
@@ -218,9 +277,15 @@ func TestAccServerResource_ChangeUserData(t *testing.T) {
 		SSHKeys:  []string{sk.TFID() + ".id"},
 	}
 	res.SetRName("server-userdata")
-	resChangedUserdata := &server.RData{Name: res.Name, Type: res.Type, Image: res.Image, UserData: "updated stuff"}
+
+	resChangedUserdata := &server.RData{
+		Name:     res.Name,
+		Type:     res.Type,
+		Image:    res.Image,
+		UserData: "updated stuff",
+	}
 	resChangedUserdata.SetRName(res.Name)
-	tmplMan := testtemplate.Manager{}
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
 		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
@@ -248,6 +313,11 @@ func TestAccServerResource_ChangeUserData(t *testing.T) {
 					"testdata/r/hcloud_ssh_key", sk,
 					"testdata/r/hcloud_server", resChangedUserdata,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resChangedUserdata.TFID(), plancheck.ResourceActionReplace),
+					},
+				},
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s2)),
 					resource.TestCheckResourceAttr(resChangedUserdata.TFID(), "name", fmt.Sprintf("server-userdata--%d", tmplMan.RandInt)),
@@ -262,9 +332,12 @@ func TestAccServerResource_ChangeUserData(t *testing.T) {
 }
 
 func TestAccServerResource_ISO(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
 	var s hcloud.Server
 
 	sk := sshkey.NewRData(t, "server-iso")
+
 	res := &server.RData{
 		Name:     "server-iso",
 		Type:     teste2e.TestServerType,
@@ -274,7 +347,17 @@ func TestAccServerResource_ISO(t *testing.T) {
 		SSHKeys:  []string{sk.TFID() + ".id"},
 	}
 	res.SetRName("server-iso")
-	tmplMan := testtemplate.Manager{}
+
+	resUpdatedISO := &server.RData{
+		Name:     res.Name,
+		Type:     res.Type,
+		Image:    res.Image,
+		UserData: res.UserData,
+		ISO:      "8638", // Windows Server 2022 German
+		SSHKeys:  res.SSHKeys,
+	}
+	resUpdatedISO.SetRName(res.RName())
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
 		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
@@ -296,11 +379,105 @@ func TestAccServerResource_ISO(t *testing.T) {
 					resource.TestCheckResourceAttr(res.TFID(), "iso", res.ISO),
 				),
 			},
+			{
+				// Update ISO
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_server", resUpdatedISO,
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(res.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s)),
+					resource.TestCheckResourceAttr(res.TFID(), "iso", resUpdatedISO.ISO),
+				),
+			},
+		},
+	})
+}
+
+func TestAccServerResource_Rescue(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
+	var s hcloud.Server
+
+	sk := sshkey.NewRData(t, "server-rescue")
+
+	res := &server.RData{
+		Name:    "server-rescue",
+		Type:    teste2e.TestServerType,
+		Image:   teste2e.TestImage,
+		SSHKeys: []string{sk.TFID() + ".id"},
+	}
+	res.SetRName("server-rescue")
+
+	resRescue := &server.RData{
+		Name:    res.Name,
+		Type:    res.Type,
+		Image:   res.Image,
+		SSHKeys: res.SSHKeys,
+		Rescue:  string(hcloud.ServerRescueTypeLinux64),
+	}
+	resRescue.SetRName(res.RName())
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
+		Steps: []resource.TestStep{
+			{
+				// Create a new Server with rescue.
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_server", resRescue,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(resRescue.TFID(), server.ByID(t, &s)),
+					resource.TestCheckResourceAttr(resRescue.TFID(), "rescue", resRescue.Rescue),
+				),
+			},
+			{
+				// Disable server rescue.
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_server", res,
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(res.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s)),
+					resource.TestCheckResourceAttr(res.TFID(), "rescue", ""),
+				),
+			},
+			{
+				// Enable rescue on existing server.
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_server", resRescue,
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resRescue.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s)),
+					resource.TestCheckResourceAttr(res.TFID(), "rescue", resRescue.Rescue),
+				),
+			},
 		},
 	})
 }
 
 func TestAccServerResource_DirectAttachToNetwork(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
 	var (
 		nw  hcloud.Network
 		nw2 hcloud.Network
@@ -408,7 +585,6 @@ func TestAccServerResource_DirectAttachToNetwork(t *testing.T) {
 	}
 	sResWithTwoNets.SetRName(sResWithTwoNets.Name)
 
-	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
 		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
@@ -1001,13 +1177,16 @@ func TestAccServerResource_Firewalls(t *testing.T) {
 				),
 			},
 			{
-				// Create a new Server using the required values
-				// only.
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_firewall", fw,
 					"testdata/r/hcloud_firewall", fw2,
 					"testdata/r/hcloud_server", res2,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(res2.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s)),
 					resource.TestCheckResourceAttr(res.TFID(), "name",
@@ -1022,6 +1201,8 @@ func TestAccServerResource_Firewalls(t *testing.T) {
 }
 
 func TestAccServerResource_PlacementGroup(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
 	var (
 		pg  hcloud.PlacementGroup
 		srv hcloud.Server
@@ -1043,8 +1224,6 @@ func TestAccServerResource_PlacementGroup(t *testing.T) {
 		Image: srvRes.Image,
 	}
 	srvResNoPG.SetRName("server-placement-group")
-
-	tmplMan := testtemplate.Manager{}
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
@@ -1102,6 +1281,11 @@ func TestAccServerResource_PlacementGroup(t *testing.T) {
 					"testdata/r/hcloud_placement_group", pgRes,
 					"testdata/r/hcloud_server", srvResNoPG,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(srvResNoPG.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(srvResNoPG.TFID(), "status", "off"),
 					resource.TestCheckResourceAttr(srvResNoPG.TFID(), "placement_group_id", "0"),
@@ -1113,6 +1297,11 @@ func TestAccServerResource_PlacementGroup(t *testing.T) {
 					"testdata/r/hcloud_placement_group", pgRes,
 					"testdata/r/hcloud_server", srvRes,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(srvRes.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(srvResNoPG.TFID(), "status", "running"),
 					testsupport.CheckResourceAttrFunc(srvRes.TFID(), "placement_group_id", func() string {
@@ -1125,6 +1314,8 @@ func TestAccServerResource_PlacementGroup(t *testing.T) {
 }
 
 func TestAccServerResource_Protection(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
 	var (
 		srv hcloud.Server
 
@@ -1143,8 +1334,6 @@ func TestAccServerResource_Protection(t *testing.T) {
 		RebuildProtection: true,
 	}
 	srvRes.SetRName("server-protection")
-
-	tmplMan := testtemplate.Manager{}
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
@@ -1182,6 +1371,8 @@ func TestAccServerResource_Protection(t *testing.T) {
 }
 
 func TestAccServerResource_EmptySSHKey(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
 	// Regression Test for https://github.com/hetznercloud/terraform-provider-hcloud/issues/727
 	var srv hcloud.Server
 
@@ -1192,8 +1383,6 @@ func TestAccServerResource_EmptySSHKey(t *testing.T) {
 		SSHKeys: []string{"\"\""},
 	}
 	srvRes.SetRName("server-empty-ssh-key")
-
-	tmplMan := testtemplate.Manager{}
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),

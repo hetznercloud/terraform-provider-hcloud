@@ -26,7 +26,7 @@ resource "hcloud_server" "{{ .RName }}" {
   iso         = {{ .ISO }}
   {{ end }}
   {{- if .Rescue }}
-  rescue      = {{ .Rescue }}
+  rescue      = "{{ .Rescue }}"
   {{ end }}
   {{- if .Backups }}
   backups     = {{ .Backups }}
@@ -89,5 +89,9 @@ EOF
 
   {{- if .RebuildProtection }}
   rebuild_protection = {{ .RebuildProtection }}
+  {{ end }}
+
+  {{- if .ShutdownBeforeDeletion }}
+  shutdown_before_deletion = {{ .ShutdownBeforeDeletion }}
   {{ end }}
 }
