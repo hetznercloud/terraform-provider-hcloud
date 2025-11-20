@@ -21,11 +21,6 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-// Need new tests for:
-// - Any updates
-// - Alias IPs
-// - ErrorCodeServerAlreadyAttached
-
 type ServerNetworkBlueprint struct {
 	network *network.RData
 	subnet1 *network.RDataSubnet
