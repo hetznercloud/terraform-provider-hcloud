@@ -4,12 +4,15 @@ import (
 	"context"
 	"crypto/sha1" // nolint: gosec
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -26,6 +29,10 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 )
+
+// Need new tests for:
+// - Primary IP Migrations (to and from explicit resources)
+// - User provided IP IDs (ipv4, and ipv6)
 
 func TestAccServerResource(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
@@ -705,14 +712,74 @@ func TestAccServerResource_DirectAttachToNetwork(t *testing.T) {
 	})
 }
 
-func TestAccServerResource_PrimaryIPNetworkTests(t *testing.T) {
+type PrimaryIPBlueprint struct {
+	primaryIP1 *primaryip.RData
+	primaryIP2 *primaryip.RData
+
+	v4PrimaryIP1 *primaryip.RData
+	v4PrimaryIP2 *primaryip.RData
+
+	v6PrimaryIP1 *primaryip.RData
+	v6PrimaryIP2 *primaryip.RData
+}
+
+func makePrimaryIPBlueprint(t *testing.T, ipType string) *PrimaryIPBlueprint {
+	t.Helper()
+
+	b := &PrimaryIPBlueprint{}
+
+	// v4
+	b.v4PrimaryIP1 = &primaryip.RData{
+		Name:         "primary-ipv4-1",
+		Type:         "ipv4",
+		Datacenter:   teste2e.TestDataCenter,
+		AssigneeType: "server",
+		AutoDelete:   false,
+	}
+	b.v4PrimaryIP1.SetRName(b.v4PrimaryIP1.Name)
+
+	b.v4PrimaryIP2 = &primaryip.RData{
+		Name:         "primary-ipv4-2",
+		Type:         "ipv4",
+		Datacenter:   teste2e.TestDataCenter,
+		AssigneeType: "server",
+		AutoDelete:   false,
+	}
+	b.v4PrimaryIP2.SetRName(b.v4PrimaryIP2.Name)
+
+	// v6
+	b.v6PrimaryIP1 = &primaryip.RData{
+		Name:         "primary-ipv6-1",
+		Type:         "ipv6",
+		Datacenter:   teste2e.TestDataCenter,
+		AssigneeType: "server",
+		AutoDelete:   false,
+	}
+	b.v6PrimaryIP1.SetRName(b.v6PrimaryIP1.Name)
+
+	b.v6PrimaryIP2 = &primaryip.RData{
+		Name:         "primary-ipv6-2",
+		Type:         "ipv6",
+		Datacenter:   teste2e.TestDataCenter,
+		AssigneeType: "server",
+		AutoDelete:   false,
+	}
+	b.v6PrimaryIP2.SetRName(b.v6PrimaryIP2.Name)
+
+	return b
+}
+
+func TestAccServerResource_PrimaryIPTests(t *testing.T) {
 	var (
-		nw hcloud.Network
-		s  hcloud.Server
-		p  hcloud.PrimaryIP
+		s hcloud.Server
+		p hcloud.PrimaryIP
 	)
 
-	sk := sshkey.NewRData(t, "server-iso")
+	ips := makePrimaryIPBlueprint(t, "ipv4")
+
+	sk := sshkey.NewRData(t, "server")
+
+	// We do not really test anything with networks here, but they are required if you want a server with no public IPs at all.
 	nwRes := &network.RData{
 		Name:    "test-network",
 		IPRange: "10.0.0.0/16",
@@ -726,27 +793,7 @@ func TestAccServerResource_PrimaryIPNetworkTests(t *testing.T) {
 	}
 	snwRes.SetRName("test-network-subnet")
 
-	primaryIPv4Res := &primaryip.RData{
-		Name:         "primaryip-v4-test",
-		Type:         "ipv4",
-		Labels:       nil,
-		Datacenter:   teste2e.TestDataCenter,
-		AssigneeType: "server",
-		AutoDelete:   false,
-	}
-	primaryIPv4Res.SetRName("primary-ip-v4")
-
-	primaryIPv6Res := &primaryip.RData{
-		Name:         "primaryip-v6-test",
-		Type:         "ipv6",
-		Labels:       nil,
-		Datacenter:   teste2e.TestDataCenter,
-		AssigneeType: "server",
-		AutoDelete:   false,
-	}
-	primaryIPv6Res.SetRName("primary-ip-v6")
-
-	sResWithNetAndPublicNet := &server.RData{
+	sResWithPublicNet := &server.RData{
 		Name:       "server-primaryIP-network-test",
 		Type:       teste2e.TestServerType,
 		Datacenter: teste2e.TestDataCenter,
@@ -755,7 +802,6 @@ func TestAccServerResource_PrimaryIPNetworkTests(t *testing.T) {
 		Networks: []server.RDataInlineNetwork{{
 			NetworkID: nwRes.TFID() + ".id",
 			IP:        "10.0.1.5",
-			AliasIPs:  []string{"10.0.1.6", "10.0.1.7"},
 		}},
 		PublicNet: map[string]interface{}{
 			"ipv4_enabled": true,
@@ -763,20 +809,20 @@ func TestAccServerResource_PrimaryIPNetworkTests(t *testing.T) {
 		},
 		DependsOn: []string{snwRes.TFID()},
 	}
-	sResWithNetAndPublicNet.SetRName(sResWithNetAndPublicNet.Name)
+	sResWithPublicNet.SetRName(sResWithPublicNet.Name)
 
 	sResWithoutPublicNet := &server.RData{
-		Name:       sResWithNetAndPublicNet.Name,
-		Type:       sResWithNetAndPublicNet.Type,
-		Datacenter: sResWithNetAndPublicNet.Datacenter,
-		Image:      sResWithNetAndPublicNet.Image,
-		SSHKeys:    sResWithNetAndPublicNet.SSHKeys,
-		Networks:   sResWithNetAndPublicNet.Networks,
+		Name:       sResWithPublicNet.Name,
+		Type:       sResWithPublicNet.Type,
+		Datacenter: sResWithPublicNet.Datacenter,
+		Image:      sResWithPublicNet.Image,
+		SSHKeys:    sResWithPublicNet.SSHKeys,
+		Networks:   sResWithPublicNet.Networks,
 		PublicNet: map[string]interface{}{
 			"ipv4_enabled": false,
 			"ipv6_enabled": false,
 		},
-		DependsOn: sResWithNetAndPublicNet.DependsOn,
+		DependsOn: sResWithPublicNet.DependsOn,
 	}
 	sResWithoutPublicNet.SetRName(sResWithoutPublicNet.Name)
 
@@ -789,7 +835,7 @@ func TestAccServerResource_PrimaryIPNetworkTests(t *testing.T) {
 		Networks:   sResWithoutPublicNet.Networks,
 		PublicNet: map[string]interface{}{
 			"ipv4_enabled": true,
-			"ipv4":         primaryIPv4Res.TFID() + ".id",
+			"ipv4":         ips.v4PrimaryIP1.TFID() + ".id",
 			"ipv6_enabled": false,
 		},
 		DependsOn: sResWithoutPublicNet.DependsOn,
@@ -806,7 +852,7 @@ func TestAccServerResource_PrimaryIPNetworkTests(t *testing.T) {
 		Networks:   sResWithPrimaryIP.Networks,
 		PublicNet: map[string]interface{}{
 			"ipv4_enabled": true,
-			"ipv4":         primaryIPv4Res.TFID() + ".id",
+			"ipv4":         ips.v4PrimaryIP1.TFID() + ".id",
 			"ipv6_enabled": true,
 		},
 		DependsOn: sResWithoutPublicNet.DependsOn,
@@ -836,7 +882,7 @@ func TestAccServerResource_PrimaryIPNetworkTests(t *testing.T) {
 		PublicNet: map[string]interface{}{
 			"ipv4_enabled": false,
 			"ipv6_enabled": true,
-			"ipv6":         primaryIPv6Res.TFID() + ".id",
+			"ipv6":         ips.v6PrimaryIP1.TFID() + ".id",
 		},
 		DependsOn: sResWithNoPublicNet.DependsOn,
 	}
@@ -871,15 +917,14 @@ func TestAccServerResource_PrimaryIPNetworkTests(t *testing.T) {
 					"testdata/r/hcloud_ssh_key", sk,
 					"testdata/r/hcloud_network", nwRes,
 					"testdata/r/hcloud_network_subnet", snwRes,
-					"testdata/r/hcloud_server", sResWithNetAndPublicNet,
+
+					"testdata/r/hcloud_server", sResWithPublicNet,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(nwRes.TFID(), network.ByID(t, &nw)),
-					testsupport.CheckResourceExists(sResWithNetAndPublicNet.TFID(), server.ByID(t, &s)),
-					testsupport.LiftTCF(hasServerNetwork(t, &s, &nw, "10.0.1.5", "10.0.1.6", "10.0.1.7")),
-					resource.TestCheckResourceAttr(sResWithNetAndPublicNet.TFID(), "network.#", "1"),
-					resource.TestCheckResourceAttr(sResWithNetAndPublicNet.TFID(), "network.0.ip", "10.0.1.5"),
-					resource.TestCheckResourceAttr(sResWithNetAndPublicNet.TFID(), "network.0.alias_ips.#", "2"),
+					testsupport.CheckResourceExists(sResWithPublicNet.TFID(), server.ByID(t, &s)),
+
+					resource.TestCheckResourceAttr(sResWithoutPublicNet.TFID(), "network.#", "1"),
+
 					testsupport.LiftTCF(func() error {
 						assert.NotEqual(t, int64(0), s.PublicNet.IPv4.ID)
 						assert.NotEqual(t, int64(0), s.PublicNet.IPv6.ID)
@@ -893,15 +938,16 @@ func TestAccServerResource_PrimaryIPNetworkTests(t *testing.T) {
 					"testdata/r/hcloud_ssh_key", sk,
 					"testdata/r/hcloud_network", nwRes,
 					"testdata/r/hcloud_network_subnet", snwRes,
+
 					"testdata/r/hcloud_server", sResWithoutPublicNet,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(sResWithoutPublicNet.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(nwRes.TFID(), network.ByID(t, &nw)),
 					testsupport.CheckResourceExists(sResWithoutPublicNet.TFID(), server.ByID(t, &s)),
-					testsupport.LiftTCF(hasServerNetwork(t, &s, &nw, "10.0.1.5", "10.0.1.6", "10.0.1.7")),
-					resource.TestCheckResourceAttr(sResWithoutPublicNet.TFID(), "network.#", "1"),
-					resource.TestCheckResourceAttr(sResWithoutPublicNet.TFID(), "network.0.ip", "10.0.1.5"),
-					resource.TestCheckResourceAttr(sResWithoutPublicNet.TFID(), "network.0.alias_ips.#", "2"),
 					testsupport.LiftTCF(func() error {
 						assert.Nil(t, s.PublicNet.IPv4.IP)
 						assert.Nil(t, s.PublicNet.IPv6.IP)
@@ -915,11 +961,17 @@ func TestAccServerResource_PrimaryIPNetworkTests(t *testing.T) {
 					"testdata/r/hcloud_ssh_key", sk,
 					"testdata/r/hcloud_network", nwRes,
 					"testdata/r/hcloud_network_subnet", snwRes,
-					"testdata/r/hcloud_primary_ip", primaryIPv4Res,
+
+					"testdata/r/hcloud_primary_ip", ips.v4PrimaryIP1,
 					"testdata/r/hcloud_server", sResWithPrimaryIP,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(sResWithPrimaryIP.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(primaryIPv4Res.TFID(), primaryip.ByID(t, &p)),
+					testsupport.CheckResourceExists(ips.v4PrimaryIP1.TFID(), primaryip.ByID(t, &p)),
 					testsupport.CheckResourceExists(sResWithPrimaryIP.TFID(), server.ByID(t, &s)),
 					testsupport.LiftTCF(func() error {
 						assert.Equal(t, p.AssigneeID, s.ID)
@@ -936,11 +988,17 @@ func TestAccServerResource_PrimaryIPNetworkTests(t *testing.T) {
 					"testdata/r/hcloud_ssh_key", sk,
 					"testdata/r/hcloud_network", nwRes,
 					"testdata/r/hcloud_network_subnet", snwRes,
-					"testdata/r/hcloud_primary_ip", primaryIPv4Res,
+
+					"testdata/r/hcloud_primary_ip", ips.v4PrimaryIP1,
 					"testdata/r/hcloud_server", sResWithTwoPrimaryIPs,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(sResWithPrimaryIP.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(primaryIPv4Res.TFID(), primaryip.ByID(t, &p)),
+					testsupport.CheckResourceExists(ips.v4PrimaryIP1.TFID(), primaryip.ByID(t, &p)),
 					testsupport.CheckResourceExists(sResWithPrimaryIP.TFID(), server.ByID(t, &s)),
 					testsupport.LiftTCF(func() error {
 						assert.Equal(t, p.AssigneeID, s.ID)
@@ -956,11 +1014,17 @@ func TestAccServerResource_PrimaryIPNetworkTests(t *testing.T) {
 					"testdata/r/hcloud_ssh_key", sk,
 					"testdata/r/hcloud_network", nwRes,
 					"testdata/r/hcloud_network_subnet", snwRes,
-					"testdata/r/hcloud_primary_ip", primaryIPv4Res,
+
+					"testdata/r/hcloud_primary_ip", ips.v4PrimaryIP1,
 					"testdata/r/hcloud_server", sResWithNoPublicNet,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(sResWithNoPublicNet.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(primaryIPv4Res.TFID(), primaryip.ByID(t, &p)),
+					testsupport.CheckResourceExists(ips.v4PrimaryIP1.TFID(), primaryip.ByID(t, &p)),
 					testsupport.CheckResourceExists(sResWithPrimaryIP.TFID(), server.ByID(t, &s)),
 					testsupport.LiftTCF(func() error {
 						assert.NotEqual(t, p.ID, s.PublicNet.IPv4.ID)
@@ -976,11 +1040,17 @@ func TestAccServerResource_PrimaryIPNetworkTests(t *testing.T) {
 					"testdata/r/hcloud_ssh_key", sk,
 					"testdata/r/hcloud_network", nwRes,
 					"testdata/r/hcloud_network_subnet", snwRes,
-					"testdata/r/hcloud_primary_ip", primaryIPv6Res,
+
+					"testdata/r/hcloud_primary_ip", ips.v6PrimaryIP1,
 					"testdata/r/hcloud_server", sResWithOnlyIPv6,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(sResWithNoPublicNet.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(primaryIPv6Res.TFID(), primaryip.ByID(t, &p)),
+					testsupport.CheckResourceExists(ips.v6PrimaryIP1.TFID(), primaryip.ByID(t, &p)),
 					testsupport.CheckResourceExists(sResWithOnlyIPv6.TFID(), server.ByID(t, &s)),
 					testsupport.LiftTCF(func() error {
 						assert.Equal(t, p.ID, s.PublicNet.IPv6.ID)
@@ -995,16 +1065,38 @@ func TestAccServerResource_PrimaryIPNetworkTests(t *testing.T) {
 					"testdata/r/hcloud_ssh_key", sk,
 					"testdata/r/hcloud_network", nwRes,
 					"testdata/r/hcloud_network_subnet", snwRes,
-					"testdata/r/hcloud_primary_ip", primaryIPv6Res,
+
+					"testdata/r/hcloud_primary_ip", ips.v6PrimaryIP1,
 					"testdata/r/hcloud_server", sResWithOnlyIPv6AutoGenerated,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(sResWithNoPublicNet.TFID(), plancheck.ResourceActionUpdate),
+						plancheck.ExpectKnownValue(
+							sResWithNoPublicNet.TFID(),
+							tfjsonpath.New("public_net").AtMapKey("ipv4"),
+							knownvalue.Int64Func(func(ipv4ID int64) error {
+								if ipv4ID != s.PublicNet.IPv4.ID {
+									return errors.New("unexpected IPv4")
+								}
+								return nil
+							}),
+						),
+						plancheck.ExpectUnknownValue(
+							sResWithNoPublicNet.TFID(),
+							tfjsonpath.New("public_net").AtMapKey("ipv6"),
+						),
+					},
+				},
+
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(primaryIPv6Res.TFID(), primaryip.ByID(t, &p)),
+					testsupport.CheckResourceExists(ips.v6PrimaryIP1.TFID(), primaryip.ByID(t, &p)),
 					testsupport.CheckResourceExists(sResWithOnlyIPv6AutoGenerated.TFID(), server.ByID(t, &s)),
 					testsupport.LiftTCF(func() error {
 						assert.NotEqual(t, p.ID, s.PublicNet.IPv4.ID)
 						assert.Equal(t, int64(0), s.PublicNet.IPv4.ID)
 						assert.NotEqual(t, int64(0), s.PublicNet.IPv6.ID)
+						assert.NotEqual(t, p.ID, s.PublicNet.IPv6.ID)
 						return nil
 					}),
 				),
