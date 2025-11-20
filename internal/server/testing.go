@@ -98,7 +98,7 @@ type RData struct {
 	PublicNet             map[string]interface{}
 	SSHKeys               []string
 	KeepDisk              bool
-	Rescue                bool
+	Rescue                string
 	Backups               bool
 	ISO                   string
 	Labels                map[string]string
