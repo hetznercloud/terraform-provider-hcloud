@@ -265,66 +265,57 @@ func TestAccServerResource_Resize(t *testing.T) {
 func TestAccServerResource_ChangeUserData(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
-	var s, s2 hcloud.Server
+	var hcServer1, hcServer2 hcloud.Server
 
-	sk := sshkey.NewRData(t, "server-userdata")
+	sshKeyRes := sshkey.NewRData(t, "server-userdata")
 
-	res := &server.RData{
+	res1 := &server.RData{
 		Name:     "server-userdata",
 		Type:     teste2e.TestServerType,
 		Image:    teste2e.TestImage,
+		SSHKeys:  []string{sshKeyRes.TFID() + ".id"},
 		UserData: "stuff",
-		SSHKeys:  []string{sk.TFID() + ".id"},
 	}
-	res.SetRName("server-userdata")
+	res1.SetRName("server-userdata")
 
-	resChangedUserdata := &server.RData{
-		Name:     res.Name,
-		Type:     res.Type,
-		Image:    res.Image,
-		UserData: "updated stuff",
-	}
-	resChangedUserdata.SetRName(res.Name)
+	// Update user data to force a replacement
+	res2 := testtemplate.DeepCopy(t, res1)
+	res2.UserData = "updated stuff"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
 		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
-		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &hcServer1)),
 		Steps: []resource.TestStep{
 			{
-				// Create a new Server using the required values
-				// only.
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_server", res,
+					"testdata/r/hcloud_ssh_key", sshKeyRes,
+					"testdata/r/hcloud_server", res1,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s)),
-					resource.TestCheckResourceAttr(res.TFID(), "name", fmt.Sprintf("server-userdata--%d", tmplMan.RandInt)),
-					resource.TestCheckResourceAttr(res.TFID(), "server_type", res.Type),
-					resource.TestCheckResourceAttr(res.TFID(), "image", res.Image),
-					resource.TestCheckResourceAttr(res.TFID(), "user_data", userDataHashSum(res.UserData+"\n")),
+					testsupport.CheckResourceExists(res1.TFID(), server.ByID(t, &hcServer1)),
+					resource.TestCheckResourceAttr(res1.TFID(), "name", fmt.Sprintf("server-userdata--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(res1.TFID(), "server_type", res1.Type),
+					resource.TestCheckResourceAttr(res1.TFID(), "image", res1.Image),
+					resource.TestCheckResourceAttr(res1.TFID(), "user_data", userDataHashSum(res1.UserData+"\n")),
 				),
 			},
 			{
-				// Update the Server created in the previous step by
-				// setting all optional fields and renaming the Server.
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_server", resChangedUserdata,
+					"testdata/r/hcloud_ssh_key", sshKeyRes,
+					"testdata/r/hcloud_server", res2,
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(resChangedUserdata.TFID(), plancheck.ResourceActionReplace),
+						plancheck.ExpectResourceAction(res2.TFID(), plancheck.ResourceActionReplace),
 					},
 				},
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s2)),
-					resource.TestCheckResourceAttr(resChangedUserdata.TFID(), "name", fmt.Sprintf("server-userdata--%d", tmplMan.RandInt)),
-					resource.TestCheckResourceAttr(resChangedUserdata.TFID(), "server_type", res.Type),
-					resource.TestCheckResourceAttr(resChangedUserdata.TFID(), "image", res.Image),
-					resource.TestCheckResourceAttr(resChangedUserdata.TFID(), "user_data", userDataHashSum(resChangedUserdata.UserData+"\n")),
-					testsupport.LiftTCF(isRecreated(&s2, &s)),
+					testsupport.CheckResourceExists(res2.TFID(), server.ByID(t, &hcServer2)),
+					resource.TestCheckResourceAttr(res2.TFID(), "name", fmt.Sprintf("server-userdata--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(res2.TFID(), "server_type", res2.Type),
+					resource.TestCheckResourceAttr(res2.TFID(), "image", res2.Image),
+					resource.TestCheckResourceAttr(res2.TFID(), "user_data", userDataHashSum(res2.UserData+"\n")),
 				),
 			},
 		},
@@ -1399,15 +1390,6 @@ func TestAccServerResource_EmptySSHKey(t *testing.T) {
 			},
 		},
 	})
-}
-
-func isRecreated(newServer, oldServer *hcloud.Server) func() error {
-	return func() error {
-		if newServer.ID == oldServer.ID {
-			return fmt.Errorf("new server is the same as server cert %d", oldServer.ID)
-		}
-		return nil
-	}
 }
 
 func userDataHashSum(userData string) string {
