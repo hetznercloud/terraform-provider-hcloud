@@ -1,5 +1,21 @@
 # Changelog
 
+## [v1.57.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.57.0)
+
+### Features
+
+- drop builds for windows arm (32 bit) (#1260)
+- drop support for terraform v1.11
+- drop support for terraform v1.12
+- add support for terraform v1.13
+- add support for terraform v1.14
+
+### Bug Fixes
+
+- abort when data transformation errors (#1253)
+- ensure partially created resources are tainted in the state (#1257)
+- dns records order is not guaranteed (#1259)
+
 ## [v1.56.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.56.0)
 
 ### DNS API is now generally available
