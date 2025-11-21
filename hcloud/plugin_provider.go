@@ -28,6 +28,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/storagebox"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/storageboxsnapshot"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/storageboxsubaccount"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/storageboxtype"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/tflogutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/zone"
@@ -213,6 +214,8 @@ func (p *PluginProvider) DataSources(_ context.Context) []func() datasource.Data
 		storagebox.NewDataSourceList,
 		storageboxsnapshot.NewDataSource,
 		storageboxsnapshot.NewDataSourceList,
+		storageboxsubaccount.NewDataSource,
+		storageboxsubaccount.NewDataSourceList,
 		storageboxtype.NewDataSource,
 		storageboxtype.NewDataSourceList,
 		zone.NewDataSource,
@@ -234,6 +237,7 @@ func (p *PluginProvider) Resources(_ context.Context) []func() resource.Resource
 		sshkey.NewResource,
 		storagebox.NewResource,
 		storageboxsnapshot.NewResource,
+		storageboxsubaccount.NewResource,
 		zone.NewResource,
 		zonerrset.NewResource,
 	}
