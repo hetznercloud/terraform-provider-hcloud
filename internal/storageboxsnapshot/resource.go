@@ -61,7 +61,7 @@ func (r *Resource) Configure(_ context.Context, req resource.ConfigureRequest, r
 // Schema should return the schema for this resource.
 func (r *Resource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema.MarkdownDescription = `
-Provides a Hetzner Storage Box resource.
+Provides a Hetzner Storage Box Snapshot resource.
 
 See the [Storage Box Snapshots API documentation](https://docs.hetzner.cloud/reference/hetzner#storage-box-snapshots) for more details.
 `

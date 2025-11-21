@@ -3,7 +3,7 @@
 page_title: "hcloud_storage_box_snapshot Resource - hcloud"
 subcategory: ""
 description: |-
-  Provides a Hetzner Storage Box resource.
+  Provides a Hetzner Storage Box Snapshot resource.
   See the Storage Box Snapshots API documentation https://docs.hetzner.cloud/reference/hetzner#storage-box-snapshots for more details.
   Experimental: Storage Box support is experimental, breaking changes may occur within minor releases.
   See TODO for more details.
@@ -11,7 +11,7 @@ description: |-
 
 # hcloud_storage_box_snapshot (Resource)
 
-Provides a Hetzner Storage Box resource.
+Provides a Hetzner Storage Box Snapshot resource.
 
 See the [Storage Box Snapshots API documentation](https://docs.hetzner.cloud/reference/hetzner#storage-box-snapshots) for more details.
 
