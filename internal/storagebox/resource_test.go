@@ -113,11 +113,12 @@ func TestAccStorageBoxResource(t *testing.T) {
 			{
 				// Import
 
-				Config:            tmplMan.Render(t, "testdata/r/hcloud_storage_box", resOptional),
-				ImportState:       true,
-				ResourceName:      res.TFID(),
-				ImportStateId:     res.Name,
-				ImportStateVerify: true,
+				Config:                  tmplMan.Render(t, "testdata/r/hcloud_storage_box", resOptional),
+				ImportState:             true,
+				ResourceName:            res.TFID(),
+				ImportStateId:           res.Name,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"password"}, // Not returned in the API
 			},
 			{
 				// Update with all optional attributes
