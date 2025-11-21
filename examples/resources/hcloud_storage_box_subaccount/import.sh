@@ -1,0 +1,1 @@
+terraform import hcloud_storage_box_subaccount.example "$STORAGE_BOX_ID/$STORAGE_BOX_SUBACCOUNT_ID"
