@@ -58,15 +58,15 @@ func SettleActions(ctx context.Context, client ActionWaiter, actions ...*hcloud.
 }
 
 func ActionErrorDiagnostic(action *hcloud.Action) diag.Diagnostic {
-	return diag.NewErrorDiagnostic("Action failed", fmt.Sprintf(
-		"An API action for the resource failed.\n\n"+
-			"%s\n\n"+
-			"Error code: %s\n"+
-			"Command: %s\n"+
-			"ID: %d\n"+
-			"Resources: %s\n",
-		action.ErrorMessage, action.ErrorCode, action.Command, action.ID, actionResourceDescription(action),
-	))
+	detail := strings.Builder{}
+
+	detail.WriteString("An API action for the resource failed.\n\n")
+	if action.ErrorMessage != "" {
+		detail.WriteString(action.ErrorMessage + "\n\n")
+	}
+	detail.WriteString(actionDetail(action))
+
+	return diag.NewErrorDiagnostic("Action failed", detail.String())
 }
 
 func ActionWaitTimeoutDiagnostic(actions ...*hcloud.Action) diag.Diagnostic {
@@ -79,6 +79,18 @@ func ActionWaitTimeoutDiagnostic(actions ...*hcloud.Action) diag.Diagnostic {
 		"Timeout while waiting on action(s)",
 		fmt.Sprintf("The request was cancelled while we were waiting on actions to complete.\n\n"+
 			"Actions that are still running:\n%s\n", strings.Join(descriptions, "\n")))
+}
+
+func actionDetail(action *hcloud.Action) string {
+	return fmt.Sprintf(`Error code: %s
+Command: %s
+ID: %d
+Resources: %s`,
+		action.ErrorCode,
+		action.Command,
+		action.ID,
+		actionResourceDescription(action),
+	)
 }
 
 func actionResourceDescription(action *hcloud.Action) string {
