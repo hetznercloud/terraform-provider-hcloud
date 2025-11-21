@@ -3,6 +3,8 @@ package storagebox
 import (
 	"context"
 	"fmt"
+	"math/rand/v2"
+	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
@@ -95,4 +97,25 @@ type RData struct {
 // TFID returns the resource identifier.
 func (d *RData) TFID() string {
 	return fmt.Sprintf("%s.%s", ResourceType, d.RName())
+}
+
+func GeneratePassword(t *testing.T) string {
+	t.Helper()
+
+	characterSets := [4]string{
+		"abcdefghijklmnopqrstuvwxyz",
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+		"01234567890",
+		"!$%/()=?+#-.",
+	}
+
+	password := ""
+
+	for _, chars := range characterSets {
+		for i := 0; i < 32; i++ {
+			password += string(chars[rand.IntN(len(chars))]) // nolint:gosec // Only used for tests
+		}
+	}
+
+	return password
 }

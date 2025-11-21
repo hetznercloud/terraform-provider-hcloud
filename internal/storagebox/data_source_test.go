@@ -28,7 +28,7 @@ func TestAccStorageBoxDataSource(t *testing.T) {
 			Location:       schema.Location{Name: teste2e.TestLocationName},
 			Labels:         map[string]string{"key": randutil.GenerateID()},
 		},
-		Password: generatePassword(t),
+		Password: storagebox.GeneratePassword(t),
 	}
 	res.SetRName("main")
 

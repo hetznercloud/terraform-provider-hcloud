@@ -77,6 +77,18 @@ func CheckAPIResourceAllAbsent[T any](resType string, getter GetAPIResourceFunc[
 	}
 }
 
+func Int64ExactFromFunc(fn func() int64) knownvalue.Check {
+	return knownvalue.Int64Func(func(other int64) error {
+		value := fn()
+
+		if other != value {
+			return fmt.Errorf("expected value %d for Int64Exact check, got: %d", value, other)
+		}
+
+		return nil
+	})
+}
+
 func StringExactFromFunc(fn func() string) knownvalue.Check {
 	return knownvalue.StringFunc(func(other string) error {
 		value := fn()
