@@ -94,6 +94,27 @@ resource "hcloud_server" "server" {
 }
 ```
 
+You can optionally specify a `subnet_id` to attach the server to a specific subnet within the network:
+
+```hcl
+resource "hcloud_server" "server_with_subnet" {
+  name        = "server-with-subnet"
+  server_type = "cx23"
+  image       = "ubuntu-24.04"
+  location    = "nbg1"
+
+  network {
+    network_id = hcloud_network.network.id
+    subnet_id  = hcloud_network_subnet.network-subnet.id
+    alias_ips  = []
+  }
+
+  depends_on = [
+    hcloud_network_subnet.network-subnet
+  ]
+}
+```
+
 ### Server creation from snapshot
 
 ```hcl
@@ -187,7 +208,8 @@ The following arguments are supported:
 
 `network` support the following fields:
 
-- `network_id` - (Required, int) ID of the network
+- `network_id` - (Required, int) ID of the Network to attach the Server to. If `subnet_id` or `ip` are not set, the Server will be attached to the last subnet (ordered by `ip_range`).
+- `subnet_id` - (Optional, string) ID of the Subnet to attach the Server to. When specified, the server will be attached to this specific subnet within the network. The subnet must belong to the network specified in `network_id`.
 - `ip` - (Optional, string) Specify the IP the server should get in the network
 - `alias_ips` - (Optional, list) Alias IPs the server should have in the Network.
 
@@ -228,7 +250,8 @@ The following attributes are exported:
 
 a single entry in `network` support the following fields:
 
-- `network_id` - (Required, int) ID of the network
+- `network_id` - (Required, int) ID of the Network to attach the Server to. If `subnet_id` or `ip` are not set, the Server will be attached to the last subnet (ordered by `ip_range`).
+- `subnet_id` - (Optional, string) ID of the Subnet to attach the Server to. When specified, the server will be attached to this specific subnet within the network. The subnet must belong to the network specified in `network_id`.
 - `ip` - (Optional, string) Specify the IP the server should get in the network
 - `alias_ips` - (Optional, list) Alias IPs the server should have in the Network.
 - `mac_address` - (Optional, string) The MAC address the private interface of the server has

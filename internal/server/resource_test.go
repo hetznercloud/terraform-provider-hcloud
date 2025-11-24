@@ -696,6 +696,237 @@ func TestAccServerResource_DirectAttachToNetwork(t *testing.T) {
 	})
 }
 
+func TestAccServerResource_DirectAttachToNetworkSubnetID(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
+	var (
+		nw hcloud.Network
+		s  hcloud.Server
+	)
+
+	sk := sshkey.NewRData(t, "server-direct-attach-subnet")
+
+	// Network with two subnets
+	nwRes := &network.RData{
+		Name:    "test-network-subnet",
+		IPRange: "10.0.0.0/16",
+	}
+	nwRes.SetRName("test-network-subnet")
+
+	// Subnet #1
+	snw1Res := &network.RDataSubnet{
+		Type:        "cloud",
+		NetworkID:   nwRes.TFID() + ".id",
+		NetworkZone: "eu-central",
+		IPRange:     "10.0.1.0/24",
+	}
+	snw1Res.SetRName("test-subnet-1")
+
+	// Subnet #2
+	snw2Res := &network.RDataSubnet{
+		Type:        "cloud",
+		NetworkID:   nwRes.TFID() + ".id",
+		NetworkZone: "eu-central",
+		IPRange:     "10.0.2.0/24",
+	}
+	snw2Res.SetRName("test-subnet-2")
+
+	// Second network for conflict test
+	nw2Res := &network.RData{
+		Name:    "test-network-conflict",
+		IPRange: "10.1.0.0/16",
+	}
+	nw2Res.SetRName("test-network-conflict")
+
+	// Server with subnet_id (will get first IP in subnet: 10.0.2.1)
+	sRes := &server.RData{
+		Name:         "server-subnet",
+		Type:         teste2e.TestServerType,
+		LocationName: teste2e.TestLocationName,
+		Image:        teste2e.TestImage,
+		SSHKeys:      []string{sk.TFID() + ".id"},
+		Networks: []server.RDataInlineNetwork{{
+			NetworkID: nwRes.TFID() + ".id",
+			SubnetID:  snw2Res.TFID() + ".id",
+		}},
+		DependsOn: []string{snw1Res.TFID(), snw2Res.TFID()},
+	}
+	sRes.SetRName(sRes.Name)
+
+	// Server with subnet_id and explicit IP
+	sResWithIP := &server.RData{
+		Name:         sRes.Name,
+		Type:         sRes.Type,
+		LocationName: sRes.LocationName,
+		Image:        sRes.Image,
+		SSHKeys:      sRes.SSHKeys,
+		Networks: []server.RDataInlineNetwork{{
+			NetworkID: nwRes.TFID() + ".id",
+			SubnetID:  snw2Res.TFID() + ".id",
+			IP:        "10.0.2.10",
+		}},
+		DependsOn: []string{snw1Res.TFID(), snw2Res.TFID()},
+	}
+	sResWithIP.SetRName(sRes.Name)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, nil)),
+		Steps: []resource.TestStep{
+			{
+				// Create a new server and directly attach it to a network using subnet_id.
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_network", nwRes,
+					"testdata/r/hcloud_network_subnet", snw1Res,
+					"testdata/r/hcloud_network_subnet", snw2Res,
+					"testdata/r/hcloud_server", sRes,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(nwRes.TFID(), network.ByID(t, &nw)),
+					testsupport.CheckResourceExists(sRes.TFID(), server.ByID(t, &s)),
+					testsupport.LiftTCF(hasServerNetwork(t, &s, &nw, "10.0.2.1")),
+					resource.TestCheckResourceAttr(sRes.TFID(), "network.#", "1"),
+					resource.TestCheckResourceAttr(sRes.TFID(), "network.0.ip", "10.0.2.1"),
+				),
+			},
+			{
+				// Fail when both network_id and subnet_id conflict (different networks)
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_network", nwRes,
+					"testdata/r/hcloud_network_subnet", snw1Res,
+					"testdata/r/hcloud_network_subnet", snw2Res,
+					"testdata/r/hcloud_network", nw2Res,
+					"testdata/r/hcloud_server", &server.RData{
+						Name:         sRes.Name,
+						Type:         sRes.Type,
+						LocationName: sRes.LocationName,
+						Image:        sRes.Image,
+						SSHKeys:      sRes.SSHKeys,
+						Networks: []server.RDataInlineNetwork{
+							{
+								NetworkID: nw2Res.TFID() + ".id",
+								SubnetID:  snw2Res.TFID() + ".id",
+							},
+						},
+						DependsOn: []string{snw1Res.TFID(), snw2Res.TFID(), nw2Res.TFID()},
+					},
+				),
+				ExpectError: regexp.MustCompile(`network_id \(\d+\) conflicts with subnet_id network \(\d+\)`),
+			},
+			{
+				// Fail when trying to attach to the same network twice using subnet_id
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_network", nwRes,
+					"testdata/r/hcloud_network_subnet", snw1Res,
+					"testdata/r/hcloud_network_subnet", snw2Res,
+					"testdata/r/hcloud_server", &server.RData{
+						Name:         sRes.Name,
+						Type:         sRes.Type,
+						LocationName: sRes.LocationName,
+						Image:        sRes.Image,
+						SSHKeys:      sRes.SSHKeys,
+						Networks: []server.RDataInlineNetwork{
+							{
+								NetworkID: nwRes.TFID() + ".id",
+								SubnetID:  snw2Res.TFID() + ".id",
+							},
+							{
+								NetworkID: nwRes.TFID() + ".id",
+								SubnetID:  snw1Res.TFID() + ".id",
+								IP:        "10.0.1.5",
+							},
+						},
+						DependsOn: []string{snw1Res.TFID(), snw2Res.TFID()},
+					},
+				),
+				ExpectError: regexp.MustCompile(`server is only allowed to be attached to each network once: \d+`),
+			},
+			{
+				// Fail when IP is outside subnet range
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_network", nwRes,
+					"testdata/r/hcloud_network_subnet", snw1Res,
+					"testdata/r/hcloud_network_subnet", snw2Res,
+					"testdata/r/hcloud_server", &server.RData{
+						Name:         sRes.Name,
+						Type:         sRes.Type,
+						LocationName: sRes.LocationName,
+						Image:        sRes.Image,
+						SSHKeys:      sRes.SSHKeys,
+						Networks: []server.RDataInlineNetwork{
+							{
+								NetworkID: nwRes.TFID() + ".id",
+								SubnetID:  snw2Res.TFID() + ".id",
+								IP:        "10.0.1.5", // Outside 10.0.2.0/24 range
+							},
+						},
+						DependsOn: []string{snw1Res.TFID(), snw2Res.TFID()},
+					},
+				),
+				ExpectError: regexp.MustCompile(`server IP \(10\.0\.1\.5\) is outside subnet IP range \(10\.0\.2\.0/24\)`),
+			},
+			{
+				// Update server to attach with specific IP in the same subnet
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_network", nwRes,
+					"testdata/r/hcloud_network_subnet", snw1Res,
+					"testdata/r/hcloud_network_subnet", snw2Res,
+					"testdata/r/hcloud_server", sResWithIP,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(nwRes.TFID(), network.ByID(t, &nw)),
+					testsupport.CheckResourceExists(sRes.TFID(), server.ByID(t, &s)),
+					testsupport.LiftTCF(hasServerNetwork(t, &s, &nw, "10.0.2.10")),
+					resource.TestCheckResourceAttr(sRes.TFID(), "network.#", "1"),
+					resource.TestCheckResourceAttr(sRes.TFID(), "network.0.ip", "10.0.2.10"),
+				),
+			},
+			{
+				// Fail when required network_id is not specified
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_network", nwRes,
+					"testdata/r/hcloud_network_subnet", snw1Res,
+					"testdata/r/hcloud_network_subnet", snw2Res,
+					"testdata/r/hcloud_server", &server.RData{
+						Name:         sRes.Name,
+						Type:         sRes.Type,
+						LocationName: sRes.LocationName,
+						Image:        sRes.Image,
+						SSHKeys:      sRes.SSHKeys,
+						Networks: []server.RDataInlineNetwork{
+							{
+								IP: "10.0.2.5",
+							},
+						},
+						DependsOn: []string{snw1Res.TFID(), snw2Res.TFID()},
+					},
+				),
+				ExpectError: regexp.MustCompile(`The argument "network_id" is required, but no definition was found`),
+			},
+			{
+				// Apply a valid config after the error test to allow proper cleanup
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_network", nwRes,
+					"testdata/r/hcloud_network_subnet", snw1Res,
+					"testdata/r/hcloud_network_subnet", snw2Res,
+					"testdata/r/hcloud_server", sRes,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(sRes.TFID(), server.ByID(t, &s)),
+				),
+			},
+		},
+	})
+}
+
 func TestAccServerResource_PrimaryIPNetworkTests(t *testing.T) {
 	var (
 		nw hcloud.Network

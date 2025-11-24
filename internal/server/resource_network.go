@@ -154,7 +154,7 @@ func (r *NetworkResource) ModifyPlan(ctx context.Context, req resource.ModifyPla
 	}
 
 	if !data.SubnetID.IsUnknown() && !data.SubnetID.IsNull() {
-		subnetNetwork, subnetIPRange, err := r.ParseSubnetID(data.SubnetID.ValueString())
+		subnetNetwork, subnetIPRange, err := ParseSubnetID(data.SubnetID.ValueString())
 		if err != nil {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("subnet_id"),
@@ -221,7 +221,7 @@ func (r *NetworkResource) Create(ctx context.Context, req resource.CreateRequest
 		opts.Network = &hcloud.Network{ID: data.NetworkID.ValueInt64()}
 	}
 	if !data.SubnetID.IsUnknown() && !data.SubnetID.IsNull() {
-		subnetNetwork, subnetIPRange, err := r.ParseSubnetID(data.SubnetID.ValueString())
+		subnetNetwork, subnetIPRange, err := ParseSubnetID(data.SubnetID.ValueString())
 		if err != nil {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("subnet_id"),
@@ -506,23 +506,4 @@ func (r *NetworkResource) ParseID(s string) (*hcloud.Server, *hcloud.Network, er
 	}
 
 	return &hcloud.Server{ID: serverID}, &hcloud.Network{ID: networkID}, nil
-}
-
-func (r *NetworkResource) ParseSubnetID(s string) (*hcloud.Network, *net.IPNet, error) {
-	parts := strings.SplitN(s, "-", 2)
-	if len(parts) != 2 {
-		return nil, nil, fmt.Errorf("unexpected subnet id '%s', expected '$NETWORK_ID-$SUBNET_IP_RANGE'", s)
-	}
-
-	networkID, err := util.ParseID(parts[0])
-	if err != nil {
-		return nil, nil, fmt.Errorf("unexpected subnet id '%s', expected '$NETWORK_ID-$SUBNET_IP_RANGE'", s)
-	}
-
-	_, ipRange, err := net.ParseCIDR(parts[1])
-	if ipRange == nil || err != nil {
-		return nil, nil, fmt.Errorf("unexpected subnet id '%s', expected '$NETWORK_ID-$SUBNET_IP_RANGE'", s)
-	}
-
-	return &hcloud.Network{ID: networkID}, ipRange, nil
 }
