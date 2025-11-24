@@ -133,8 +133,28 @@ Something spooky happened
 Error code: spooky_error
 Command: create_server
 ID: 1337
-Resources: server: 42
-`),
+Resources: server: 42`),
+		},
+		{
+			name: "action without error message",
+			action: &hcloud.Action{
+				ID:        int64(1337),
+				Status:    hcloud.ActionStatusError,
+				Command:   "create_server",
+				ErrorCode: "spooky_error",
+				Resources: []*hcloud.ActionResource{
+					{
+						ID:   int64(42),
+						Type: hcloud.ActionResourceTypeServer,
+					},
+				},
+			},
+			expected: diag.NewErrorDiagnostic("Action failed", `An API action for the resource failed.
+
+Error code: spooky_error
+Command: create_server
+ID: 1337
+Resources: server: 42`),
 		},
 		{
 			name: "action with multiple resources",
@@ -161,8 +181,7 @@ Unexpected server error
 Error code: server_error
 Command: attach_floating_ip
 ID: 1338
-Resources: server: 42, floating_ip: 7
-`),
+Resources: server: 42, floating_ip: 7`),
 		},
 	} {
 		t.Run(testCase.name, func(t *testing.T) {
