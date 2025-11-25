@@ -60,37 +60,33 @@ func SettleActions(ctx context.Context, client ActionWaiter, actions ...*hcloud.
 func ActionErrorDiagnostic(action *hcloud.Action) diag.Diagnostic {
 	detail := strings.Builder{}
 
-	detail.WriteString("An API action for the resource failed.\n\n")
+	detail.WriteString("An API action for the resource failed.")
 	if action.ErrorMessage != "" {
-		detail.WriteString(action.ErrorMessage + "\n\n")
+		fmt.Fprint(&detail, "\n\n")
+		fmt.Fprint(&detail, action.ErrorMessage)
 	}
-	detail.WriteString(actionDetail(action))
+	fmt.Fprint(&detail, "\n\n")
+	fmt.Fprintf(&detail, "Error code: %s\n", action.ErrorCode)
+	fmt.Fprintf(&detail, "Command: %s\n", action.Command)
+	fmt.Fprintf(&detail, "ID: %d\n", action.ID)
+	fmt.Fprintf(&detail, "Resources: %s", actionResourceDescription(action))
 
 	return diag.NewErrorDiagnostic("Action failed", detail.String())
 }
 
 func ActionWaitTimeoutDiagnostic(actions ...*hcloud.Action) diag.Diagnostic {
-	descriptions := make([]string, 0, len(actions))
+	detail := strings.Builder{}
+
+	detail.WriteString("The request was cancelled while we were waiting on action(s) to complete.")
 	for _, action := range actions {
-		descriptions = append(descriptions, fmt.Sprintf("- Command: %s | ID: %d | Progress: %d%% | Resources: %s", action.Command, action.ID, action.Progress, actionResourceDescription(action)))
+		fmt.Fprint(&detail, "\n\n")
+		fmt.Fprintf(&detail, "- Command: %s\n", action.Command)
+		fmt.Fprintf(&detail, "  ID: %d\n", action.ID)
+		fmt.Fprintf(&detail, "  Progress: %d%%\n", action.Progress)
+		fmt.Fprintf(&detail, "  Resources: %s", actionResourceDescription(action))
 	}
 
-	return diag.NewErrorDiagnostic(
-		"Timeout while waiting on action(s)",
-		fmt.Sprintf("The request was cancelled while we were waiting on actions to complete.\n\n"+
-			"Actions that are still running:\n%s\n", strings.Join(descriptions, "\n")))
-}
-
-func actionDetail(action *hcloud.Action) string {
-	return fmt.Sprintf(`Error code: %s
-Command: %s
-ID: %d
-Resources: %s`,
-		action.ErrorCode,
-		action.Command,
-		action.ID,
-		actionResourceDescription(action),
-	)
+	return diag.NewErrorDiagnostic("Timeout while waiting on action(s)", detail.String())
 }
 
 func actionResourceDescription(action *hcloud.Action) string {
