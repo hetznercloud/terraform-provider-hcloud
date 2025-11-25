@@ -1,0 +1,7 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+data "hcloud_storage_box_snapshots" "{{ .RName }}" {
+  storage_box_id = {{ .StorageBox }}
+
+  {{ if .LabelSelector -}}with_selector = "{{ .LabelSelector }}"{{ end }}
+}
