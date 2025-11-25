@@ -78,7 +78,7 @@ See the [Storage Box Snapshots API documentation](https://docs.hetzner.cloud/ref
 }
 
 type dataSourceListModel struct {
-	StorageBoxID types.Int64 `tfsdk:"storage_box_id_id"`
+	StorageBoxID types.Int64 `tfsdk:"storage_box_id"`
 	Snapshots    types.List  `tfsdk:"snapshots"`
 
 	WithSelector types.String `tfsdk:"with_selector"`

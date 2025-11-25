@@ -69,7 +69,7 @@ See the [Storage Box Snapshots API documentation](https://docs.hetzner.cloud/ref
 	experimental.StorageBox.AppendNotice(&resp.Schema.MarkdownDescription)
 
 	resp.Schema.Attributes = map[string]schema.Attribute{
-		"storage_box": schema.Int64Attribute{
+		"storage_box_id": schema.Int64Attribute{
 			MarkdownDescription: "ID of the Storage Box.",
 			Required:            true,
 			PlanModifiers: []planmodifier.Int64{
@@ -281,6 +281,6 @@ func (r *Resource) ImportState(ctx context.Context, req resource.ImportStateRequ
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("storage_box"), storageBoxID)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("storage_box_id"), storageBoxID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), snapshotID)...)
 }

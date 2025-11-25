@@ -13,7 +13,7 @@ import (
 // GetAPIResource returns a [testsupport.GetAPIResourceFunc] for [hcloud.StorageBoxSnapshot].
 func GetAPIResource() testsupport.GetAPIResourceFunc[hcloud.StorageBoxSnapshot] {
 	return func(c *hcloud.Client, attrs map[string]string) (*hcloud.StorageBoxSnapshot, error) {
-		storageBoxID, err := util.ParseID(attrs["storage_box"])
+		storageBoxID, err := util.ParseID(attrs["storage_box_id"])
 		if err != nil {
 			return nil, err
 		}

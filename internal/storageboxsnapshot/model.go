@@ -19,7 +19,7 @@ type model struct {
 	Description  types.String `tfsdk:"description"`
 	IsAutomatic  types.Bool   `tfsdk:"is_automatic"`
 	Labels       types.Map    `tfsdk:"labels"`
-	StorageBoxID types.Int64  `tfsdk:"storage_box_id_id"`
+	StorageBoxID types.Int64  `tfsdk:"storage_box_id"`
 
 	// Omitted for Resource: stats, created
 }
@@ -29,12 +29,12 @@ var _ util.ModelToTerraform[types.Object] = &model{}
 
 func (m *model) tfAttributesTypes() map[string]attr.Type {
 	return map[string]attr.Type{
-		"id":           types.Int64Type,
-		"name":         types.StringType,
-		"description":  types.StringType,
-		"is_automatic": types.BoolType,
-		"labels":       types.MapType{ElemType: types.StringType},
-		"storage_box":  types.Int64Type,
+		"id":             types.Int64Type,
+		"name":           types.StringType,
+		"description":    types.StringType,
+		"is_automatic":   types.BoolType,
+		"labels":         types.MapType{ElemType: types.StringType},
+		"storage_box_id": types.Int64Type,
 	}
 }
 
