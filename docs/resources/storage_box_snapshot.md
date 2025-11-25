@@ -40,7 +40,7 @@ resource "hcloud_storage_box_snapshot" "backup" {
 
 ### Required
 
-- `storage_box` (Number) ID of the Storage Box.
+- `storage_box_id` (Number) ID of the Storage Box.
 
 ### Optional
 
