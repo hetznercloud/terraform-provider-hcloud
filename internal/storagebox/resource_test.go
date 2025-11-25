@@ -2,7 +2,6 @@ package storagebox_test
 
 import (
 	"fmt"
-	"math/rand/v2"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -21,27 +20,6 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func generatePassword(t *testing.T) string {
-	t.Helper()
-
-	characterSets := [4]string{
-		"abcdefghijklmnopqrstuvwxyz",
-		"ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-		"01234567890",
-		"!$%/()=?+#-.",
-	}
-
-	password := ""
-
-	for _, chars := range characterSets {
-		for i := 0; i < 32; i++ {
-			password += string(chars[rand.IntN(len(chars))])
-		}
-	}
-
-	return password
-}
-
 func TestAccStorageBoxResource(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
@@ -56,7 +34,7 @@ func TestAccStorageBoxResource(t *testing.T) {
 				"key": "value",
 			},
 		},
-		Password: generatePassword(t),
+		Password: storagebox.GeneratePassword(t),
 	}
 	res.SetRName("default")
 
@@ -66,7 +44,7 @@ func TestAccStorageBoxResource(t *testing.T) {
 	resOptional.StorageBox.Labels = map[string]string{
 		"foo": "bar",
 	}
-	resOptional.Password = generatePassword(t) // Also test password update
+	resOptional.Password = storagebox.GeneratePassword(t) // Also test password update
 	resOptional.Raw = `
 		access_settings = {
 			reachable_externally = true
@@ -75,9 +53,9 @@ func TestAccStorageBoxResource(t *testing.T) {
 			webdav_enabled       = true
 			zfs_enabled          = true
 		}
-	
+
 		delete_protection = true
-	
+
 		snapshot_plan = {
 			max_snapshots = 10
 			minute        = 16
@@ -125,10 +103,12 @@ func TestAccStorageBoxResource(t *testing.T) {
 			{
 				// Import
 
-				Config:        tmplMan.Render(t, "testdata/r/hcloud_storage_box", resOptional),
-				ImportState:   true,
-				ResourceName:  res.TFID(),
-				ImportStateId: res.Name,
+				Config:                  tmplMan.Render(t, "testdata/r/hcloud_storage_box", resOptional),
+				ImportState:             true,
+				ResourceName:            res.TFID(),
+				ImportStateId:           res.Name,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"password"}, // Not returned in the API
 			},
 			{
 				// Update with all optional attributes
