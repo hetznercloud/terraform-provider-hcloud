@@ -117,7 +117,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	}
 
 	storageBox := &hcloud.StorageBox{
-		ID: data.StorageBox.ValueInt64(),
+		ID: data.StorageBoxID.ValueInt64(),
 	}
 
 	opts := hcloud.StorageBoxSnapshotCreateOpts{
@@ -170,7 +170,7 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 		return
 	}
 
-	storageBox := &hcloud.StorageBox{ID: data.StorageBox.ValueInt64()}
+	storageBox := &hcloud.StorageBox{ID: data.StorageBoxID.ValueInt64()}
 
 	in, _, err := r.client.StorageBox.GetSnapshotByID(ctx, storageBox, data.ID.ValueInt64())
 	if err != nil {
@@ -201,7 +201,7 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 	}
 
 	snapshot := &hcloud.StorageBoxSnapshot{
-		StorageBox: &hcloud.StorageBox{ID: data.StorageBox.ValueInt64()},
+		StorageBox: &hcloud.StorageBox{ID: data.StorageBoxID.ValueInt64()},
 		ID:         data.ID.ValueInt64(),
 	}
 
@@ -243,7 +243,7 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 	}
 
 	snapshot := &hcloud.StorageBoxSnapshot{
-		StorageBox: &hcloud.StorageBox{ID: data.StorageBox.ValueInt64()},
+		StorageBox: &hcloud.StorageBox{ID: data.StorageBoxID.ValueInt64()},
 		ID:         data.ID.ValueInt64(),
 	}
 

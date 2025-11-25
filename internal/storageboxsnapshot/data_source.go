@@ -26,7 +26,7 @@ const DataSourceType = "hcloud_storage_box_snapshot"
 
 func getCommonDataSourceSchema(readOnly bool) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
-		"storage_box": schema.Int64Attribute{
+		"storage_box_id": schema.Int64Attribute{
 			MarkdownDescription: "ID of the Storage Box.",
 			Required:            !readOnly,
 			Computed:            readOnly,
@@ -195,7 +195,7 @@ func (d *DataSource) Read(ctx context.Context, req datasource.ReadRequest, resp 
 	}
 
 	storageBox := &hcloud.StorageBox{
-		ID: data.StorageBox.ValueInt64(),
+		ID: data.StorageBoxID.ValueInt64(),
 	}
 
 	var result *hcloud.StorageBoxSnapshot

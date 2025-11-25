@@ -60,7 +60,7 @@ See the [Storage Box Snapshots API documentation](https://docs.hetzner.cloud/ref
 	experimental.StorageBox.AppendNotice(&resp.Schema.MarkdownDescription)
 
 	resp.Schema.Attributes = map[string]schema.Attribute{
-		"storage_box": schema.Int64Attribute{
+		"storage_box_id": schema.Int64Attribute{
 			MarkdownDescription: "ID of the Storage Box.",
 			Required:            true,
 		},
@@ -78,8 +78,8 @@ See the [Storage Box Snapshots API documentation](https://docs.hetzner.cloud/ref
 }
 
 type dataSourceListModel struct {
-	StorageBox types.Int64 `tfsdk:"storage_box"`
-	Snapshots  types.List  `tfsdk:"snapshots"`
+	StorageBoxID types.Int64 `tfsdk:"storage_box_id_id"`
+	Snapshots    types.List  `tfsdk:"snapshots"`
 
 	WithSelector types.String `tfsdk:"with_selector"`
 }
@@ -119,7 +119,7 @@ func (d *DataSourceList) Read(ctx context.Context, req datasource.ReadRequest, r
 		return
 	}
 
-	storageBox := &hcloud.StorageBox{ID: data.StorageBox.ValueInt64()}
+	storageBox := &hcloud.StorageBox{ID: data.StorageBoxID.ValueInt64()}
 
 	var result []*hcloud.StorageBoxSnapshot
 	var err error

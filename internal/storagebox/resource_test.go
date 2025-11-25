@@ -27,7 +27,7 @@ func TestAccStorageBoxResource(t *testing.T) {
 
 	res := &storagebox.RData{
 		StorageBox: schema.StorageBox{
-			Name:           fmt.Sprintf("snapshot-%s", randutil.GenerateID()),
+			Name:           fmt.Sprintf("storage-box-%s", randutil.GenerateID()),
 			StorageBoxType: schema.StorageBoxType{Name: teste2e.TestStorageBoxType},
 			Location:       schema.Location{Name: teste2e.TestLocationName},
 			Labels: map[string]string{

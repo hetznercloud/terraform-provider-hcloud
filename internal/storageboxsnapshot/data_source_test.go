@@ -92,8 +92,8 @@ func TestAccStorageBoxDataSource(t *testing.T) {
 func dataSourceAttributeStateCheck(res *storageboxsnapshot.RData, tfid string, path tfjsonpath.Path) []statecheck.StateCheck {
 	return []statecheck.StateCheck{
 		statecheck.CompareValuePairs(
-			res.TFID(), tfjsonpath.New("storage_box"),
-			tfid, path.AtMapKey("storage_box"),
+			res.TFID(), tfjsonpath.New("storage_box_id"),
+			tfid, path.AtMapKey("storage_box_id"),
 			compare.ValuesSame(),
 		),
 		statecheck.CompareValuePairs(

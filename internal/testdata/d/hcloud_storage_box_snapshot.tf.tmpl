@@ -1,7 +1,7 @@
 {{- /* vim: set ft=terraform: */ -}}
 
 data "hcloud_storage_box_snapshot" "{{ .RName }}" {
-  storage_box = {{ .StorageBox }}
+  storage_box_id = {{ .StorageBox }}
 
   {{ if .ID -}} id = {{ .ID }}{{ end -}}
   {{ if .Name -}} name = {{ .Name }}{{ end -}}

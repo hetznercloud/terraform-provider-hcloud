@@ -68,7 +68,7 @@ func TestAccStorageBoxSnapshotResource(t *testing.T) {
 					testsupport.CheckAPIResourcePresent(resMinimal.TFID(), testsupport.CopyAPIResource(snapshot, storageboxsnapshot.GetAPIResource())),
 				),
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(resMinimal.TFID(), tfjsonpath.New("storage_box"), testsupport.Int64ExactFromFunc(func() int64 { return storageBox.ID })),
+					statecheck.ExpectKnownValue(resMinimal.TFID(), tfjsonpath.New("storage_box_id"), testsupport.Int64ExactFromFunc(func() int64 { return storageBox.ID })),
 					statecheck.ExpectKnownValue(resMinimal.TFID(), tfjsonpath.New("id"), testsupport.Int64ExactFromFunc(func() int64 { return snapshot.ID })),
 					statecheck.ExpectKnownValue(resMinimal.TFID(), tfjsonpath.New("name"), testsupport.StringExactFromFunc(func() string { return snapshot.Name })),
 					statecheck.ExpectKnownValue(resMinimal.TFID(), tfjsonpath.New("description"), knownvalue.StringExact("")),
@@ -108,7 +108,7 @@ func TestAccStorageBoxSnapshotResource(t *testing.T) {
 				),
 				ConfigStateChecks: []statecheck.StateCheck{
 					// Same as before
-					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("storage_box"), testsupport.Int64ExactFromFunc(func() int64 { return storageBox.ID })),
+					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("storage_box_id"), testsupport.Int64ExactFromFunc(func() int64 { return storageBox.ID })),
 					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("id"), testsupport.Int64ExactFromFunc(func() int64 { return snapshot.ID })),
 					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("name"), testsupport.StringExactFromFunc(func() string { return snapshot.Name })),
 					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("is_automatic"), knownvalue.Bool(false)),
@@ -130,7 +130,7 @@ func TestAccStorageBoxSnapshotResource(t *testing.T) {
 					testsupport.CheckAPIResourcePresent(resOptional.TFID(), testsupport.CopyAPIResource(snapshot, storageboxsnapshot.GetAPIResource())),
 				),
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("storage_box"), testsupport.Int64ExactFromFunc(func() int64 { return storageBox.ID })),
+					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("storage_box_id"), testsupport.Int64ExactFromFunc(func() int64 { return storageBox.ID })),
 					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("id"), testsupport.Int64ExactFromFunc(func() int64 { return snapshot.ID })),
 					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("name"), testsupport.StringExactFromFunc(func() string { return snapshot.Name })),
 					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("is_automatic"), knownvalue.Bool(false)),

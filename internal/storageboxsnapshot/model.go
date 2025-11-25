@@ -14,12 +14,12 @@ import (
 )
 
 type model struct {
-	ID          types.Int64  `tfsdk:"id"`
-	Name        types.String `tfsdk:"name"`
-	Description types.String `tfsdk:"description"`
-	IsAutomatic types.Bool   `tfsdk:"is_automatic"`
-	Labels      types.Map    `tfsdk:"labels"`
-	StorageBox  types.Int64  `tfsdk:"storage_box"`
+	ID           types.Int64  `tfsdk:"id"`
+	Name         types.String `tfsdk:"name"`
+	Description  types.String `tfsdk:"description"`
+	IsAutomatic  types.Bool   `tfsdk:"is_automatic"`
+	Labels       types.Map    `tfsdk:"labels"`
+	StorageBoxID types.Int64  `tfsdk:"storage_box_id_id"`
 
 	// Omitted for Resource: stats, created
 }
@@ -46,7 +46,7 @@ func (m *model) FromAPI(ctx context.Context, hc *hcloud.StorageBoxSnapshot) diag
 	m.Name = types.StringValue(hc.Name)
 	m.Description = types.StringValue(hc.Description)
 	m.IsAutomatic = types.BoolValue(hc.IsAutomatic)
-	m.StorageBox = types.Int64Value(hc.StorageBox.ID)
+	m.StorageBoxID = types.Int64Value(hc.StorageBox.ID)
 
 	m.Labels, newDiags = resourceutil.LabelsMapValueFrom(ctx, hc.Labels)
 	diags.Append(newDiags...)

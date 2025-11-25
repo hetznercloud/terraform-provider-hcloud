@@ -24,12 +24,12 @@ See TODO for more details.
 variable "storage_box_id" {}
 
 data "hcloud_storage_box_snapshots" "all" {
-  storage_box = var.storage_box_id
+  storage_box_id = var.storage_box_id
 }
 
 data "hcloud_storage_box_snapshots" "by_label_selector" {
-  storage_box   = var.storage_box_id
-  with_selector = "env=production"
+  storage_box_id = var.storage_box_id
+  with_selector  = "env=production"
 }
 ```
 
@@ -38,7 +38,7 @@ data "hcloud_storage_box_snapshots" "by_label_selector" {
 
 ### Required
 
-- `storage_box` (Number) ID of the Storage Box.
+- `storage_box_id` (Number) ID of the Storage Box.
 
 ### Optional
 
@@ -59,7 +59,7 @@ Read-Only:
 - `labels` (Map of String) User-defined [labels](https://docs.hetzner.cloud/reference/cloud#labels) (key-value pairs) for the resource.
 - `name` (String) Name of the Storage Box Snapshot.
 - `stats` (Attributes) Statistics of the Storage Box Snapshot. (see [below for nested schema](#nestedatt--snapshots--stats))
-- `storage_box` (Number) ID of the Storage Box.
+- `storage_box_id` (Number) ID of the Storage Box.
 
 <a id="nestedatt--snapshots--stats"></a>
 ### Nested Schema for `snapshots.stats`

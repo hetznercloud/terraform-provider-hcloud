@@ -26,7 +26,7 @@ func TestModel(t *testing.T) {
 
 	o := &dataSourceCommonModel{} // Embeds model
 	assert.Nil(t, o.FromAPI(ctx, in))
-	assert.Equal(t, int64(1337), o.StorageBox.ValueInt64())
+	assert.Equal(t, int64(1337), o.StorageBoxID.ValueInt64())
 	assert.Equal(t, int64(1234), o.ID.ValueInt64())
 	assert.Equal(t, "backups", o.Name.ValueString())
 	assert.Equal(t, "my perfect little backups", o.Description.ValueString())
