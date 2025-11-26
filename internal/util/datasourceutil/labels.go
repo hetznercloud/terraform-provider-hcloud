@@ -3,7 +3,9 @@ package datasourceutil
 import (
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // GetOneResultForLabelSelector verifies that only one item is returned for a label selector. If none or >1 are returned
@@ -30,4 +32,13 @@ func GetOneResultForLabelSelector[T any](resourceName string, items []*T, labelS
 	}
 
 	return items[0], nil
+}
+
+// LabelsSchema returns a map attribute schema for the labels field shared by multiple data sources.
+func LabelsSchema() schema.MapAttribute {
+	return schema.MapAttribute{
+		MarkdownDescription: "User-defined [labels](https://docs.hetzner.cloud/reference/cloud#labels) (key-value pairs) for the resource.",
+		Computed:            true,
+		ElementType:         types.StringType,
+	}
 }

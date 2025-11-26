@@ -66,11 +66,7 @@ func getCommonDataSourceSchema(readOnly bool) map[string]schema.Attribute {
 			MarkdownDescription: "Public key of the SSH Key pair.",
 			Computed:            true,
 		},
-		"labels": schema.MapAttribute{
-			MarkdownDescription: "User-defined [labels](https://docs.hetzner.cloud/reference/cloud#labels) (key-value pairs) for the resource.",
-			ElementType:         types.StringType,
-			Computed:            true,
-		},
+		"labels": datasourceutil.LabelsSchema(),
 	}
 }
 
