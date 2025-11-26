@@ -120,6 +120,8 @@ github.com/hetznercloud/hcloud-go/v2 v2.30.0 h1:fgAUtCCw4PbJNSs9XPLHVu0//dTNMbPq
 github.com/hetznercloud/hcloud-go/v2 v2.30.0/go.mod h1:zv7x2kM7xyJ5mW/+y4HbfxQYhk8TE57ypTa1hofsYdw=
 github.com/hetznercloud/hcloud-go/v2 v2.31.0 h1:JCVO8ZXn1y02YXmQb4xghXPvuINh6743spO2M2P1Jw4=
 github.com/hetznercloud/hcloud-go/v2 v2.31.0/go.mod h1:CeYYkuK5M5P/pWjhQRCcIz3d/61vmn4YHlsk3+ckk+o=
+github.com/hetznercloud/hcloud-go/v2 v2.32.0 h1:BRe+k7ESdYv3xQLBGdKUfk+XBFRJNGKzq70nJI24ciM=
+github.com/hetznercloud/hcloud-go/v2 v2.32.0/go.mod h1:hAanyyfn9M0cMmZ68CXzPCF54KRb9EXd8eiE2FHKGIE=
 github.com/huandu/xstrings v1.3.3 h1:/Gcsuc1x8JVbJ9/rlye4xZnVAbEkGauT8lbebqcQws4=
 github.com/huandu/xstrings v1.3.3/go.mod h1:y5/lhBue+AyNmUVz9RLU9xbLR0o4KIIExikq4ovT0aE=
 github.com/imdario/mergo v0.3.15 h1:M8XP7IuFNsqUx6VPK2P9OSmsYsI/YFaGil0uD21V3dM=
@@ -223,6 +225,8 @@ golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACk
 golang.org/x/crypto v0.0.0-20210921155107-089bfa567519/go.mod h1:GvvjBRRGRdwPK5ydBHafDWAxML/pGHZbMvKqRZ5+Abc=
 golang.org/x/crypto v0.44.0 h1:A97SsFvM3AIwEEmTBiaxPPTYpDC47w720rdiiUvgoAU=
 golang.org/x/crypto v0.44.0/go.mod h1:013i+Nw79BMiQiMsOPcVCB5ZIJbYkerPrGnOa00tvmc=
+golang.org/x/crypto v0.45.0 h1:jMBrvKuj23MTlT0bQEOBcAE0mjg8mK9RXFhRH6nyF3Q=
+golang.org/x/crypto v0.45.0/go.mod h1:XTGrrkGJve7CYK7J8PEww4aY7gM3qMCElcJQ8n8JdX4=
 golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4/go.mod h1:jJ57K6gSWd91VN4djpZkiMVwK6gcyfeH4XE8wZrZaV4=
 golang.org/x/mod v0.29.0 h1:HV8lRxZC4l2cr3Zq1LvtOsi/ThTgWnUk/y64QSs8GwA=
 golang.org/x/mod v0.29.0/go.mod h1:NyhrlYXJ2H4eJiRy/WDBO6HMqZQ6q9nk4JzS3NuCK+w=

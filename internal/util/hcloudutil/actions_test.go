@@ -210,11 +210,14 @@ func TestActionWaitTimeoutDiagnostic(t *testing.T) {
 					},
 				},
 			}},
-			expected: diag.NewErrorDiagnostic("Timeout while waiting on action(s)", `The request was cancelled while we were waiting on actions to complete.
+			expected: diag.NewErrorDiagnostic(
+				"Timeout while waiting on action(s)",
+				`The request was cancelled while we were waiting on action(s) to complete.
 
-Actions that are still running:
-- Command: create_server | ID: 1337 | Progress: 7% | Resources: server: 42
-`),
+- Command: create_server
+  ID: 1337
+  Progress: 7%
+  Resources: server: 42`),
 		},
 		{
 			name: "multiple actions with multiple resources",
@@ -247,12 +250,19 @@ Actions that are still running:
 					},
 				},
 			},
-			expected: diag.NewErrorDiagnostic("Timeout while waiting on action(s)", `The request was cancelled while we were waiting on actions to complete.
+			expected: diag.NewErrorDiagnostic(
+				"Timeout while waiting on action(s)",
+				`The request was cancelled while we were waiting on action(s) to complete.
 
-Actions that are still running:
-- Command: create_server | ID: 1337 | Progress: 5% | Resources: server: 42
-- Command: attach_floating_ip | ID: 1338 | Progress: 0% | Resources: server: 42, floating_ip: 7
-`),
+- Command: create_server
+  ID: 1337
+  Progress: 5%
+  Resources: server: 42
+
+- Command: attach_floating_ip
+  ID: 1338
+  Progress: 0%
+  Resources: server: 42, floating_ip: 7`),
 		},
 	} {
 		t.Run(testCase.name, func(t *testing.T) {
