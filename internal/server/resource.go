@@ -203,8 +203,10 @@ func Resource() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"network_id": {
-							Type:     schema.TypeInt,
-							Required: true,
+							Type:       schema.TypeInt,
+							Optional:   true,
+							Computed:   true,
+							Deprecated: "Use subnet_id instead. network_id relies on implicit subnet selection which can lead to unpredictable behavior.",
 						},
 						"subnet_id": {
 							Type:     schema.TypeString,
@@ -1107,16 +1109,18 @@ func getSSHkeys(ctx context.Context, client *hcloud.Client, d *schema.ResourceDa
 func inlineAttachServerToNetwork(ctx context.Context, c *hcloud.Client, s *hcloud.Server, nwData map[string]interface{}) error {
 	const op = "hcloud/inlineAttachServerToNetwork"
 
-	nw := &hcloud.Network{ID: util.CastInt64(nwData["network_id"])}
-
-	// If subnet_id is specified, extract the IP range for subnet attachment
+	// Extract network from network_id or subnet_id
+	var nw *hcloud.Network
 	var ipRange *net.IPNet
+
 	if subnetID, ok := nwData["subnet_id"].(string); ok && subnetID != "" {
 		var err error
-		_, ipRange, err = ParseSubnetID(subnetID)
+		nw, ipRange, err = ParseSubnetID(subnetID)
 		if err != nil {
 			return fmt.Errorf("%s: %w", op, err)
 		}
+	} else {
+		nw = &hcloud.Network{ID: util.CastInt64(nwData["network_id"])}
 	}
 
 	ip := net.ParseIP(nwData["ip"].(string))
@@ -1276,21 +1280,31 @@ func networkToTerraformNetworks(d *schema.ResourceData, privateNetworks []hcloud
 	tfPrivateNetworks := make([]map[string]interface{}, len(privateNetworks))
 	for i, privateNetwork := range privateNetworks {
 		tfPrivateNetwork := make(map[string]interface{})
-		tfPrivateNetwork["network_id"] = privateNetwork.Network.ID
 		tfPrivateNetwork["ip"] = privateNetwork.IP.String()
 		tfPrivateNetwork["mac_address"] = privateNetwork.MACAddress
 
-		// Look up subnet_id from config if it was specified.
-		// The API doesn't return subnet_id, so we need to preserve it from the original config.
+		// Check the user input to preserve the same structure in state
 		if nwSet, ok := d.GetOk("network"); ok {
 			for _, item := range nwSet.(*schema.Set).List() {
 				nwData := item.(map[string]interface{})
 				configNetworkID := util.CastInt64(nwData["network_id"])
+				configSubnetID, hasSubnetID := nwData["subnet_id"].(string)
 
-				if configNetworkID == privateNetwork.Network.ID {
-					// Preserve subnet_id if it was set
-					if subnetID, ok := nwData["subnet_id"].(string); ok && subnetID != "" {
-						tfPrivateNetwork["subnet_id"] = subnetID
+				// Match API response to config entry by network_id or subnet_id
+				matchesNetwork := configNetworkID == privateNetwork.Network.ID
+				if !matchesNetwork && hasSubnetID && configSubnetID != "" {
+					if subnetNetwork, _, err := ParseSubnetID(configSubnetID); err == nil {
+						matchesNetwork = subnetNetwork.ID == privateNetwork.Network.ID
+					}
+				}
+
+				if matchesNetwork {
+					// Write fields to state based on the user input
+					if configNetworkID != 0 {
+						tfPrivateNetwork["network_id"] = privateNetwork.Network.ID
+					}
+					if hasSubnetID && configSubnetID != "" {
+						tfPrivateNetwork["subnet_id"] = configSubnetID
 					}
 					break
 				}
@@ -1443,6 +1457,28 @@ func resourceServerCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ in
 }
 
 func validateUniqueNetworkIDs(d *schema.ResourceDiff) error {
+	rawConfig := d.GetRawConfig()
+	rawNetworks := rawConfig.GetAttr("network")
+
+	if !rawNetworks.IsNull() {
+		for it := rawNetworks.ElementIterator(); it.Next(); {
+			_, networkVal := it.Element()
+
+			rawNetworkID := networkVal.GetAttr("network_id")
+			rawSubnetID := networkVal.GetAttr("subnet_id")
+
+			hasNetworkID := !rawNetworkID.IsNull()
+			hasSubnetID := !rawSubnetID.IsNull()
+
+			if hasNetworkID && hasSubnetID {
+				return fmt.Errorf("cannot specify both network_id and subnet_id, specify only one of them (subnet_id is recommended)")
+			}
+			if !hasNetworkID && !hasSubnetID {
+				return fmt.Errorf("must specify either network_id or subnet_id")
+			}
+		}
+	}
+
 	// Validate that every network set element uses unique network id
 	if n, ok := d.GetOkExists("network"); ok {
 		networks, ok := n.(*schema.Set)
@@ -1461,17 +1497,15 @@ func validateUniqueNetworkIDs(d *schema.ResourceDiff) error {
 			networkID := util.CastInt64(network["network_id"])
 			subnetIDStr, _ := network["subnet_id"].(string)
 
-			// If subnet_id is specified, validate it belongs to the network and IP is in range
+			// When subnet_id is specified, extract network_id and validate IP range
 			if subnetIDStr != "" {
 				subnetNetwork, subnetIPRange, err := ParseSubnetID(subnetIDStr)
 				if err != nil {
 					continue
 				}
 
-				// Validate subnet belongs to the specified network
-				if networkID != 0 && subnetNetwork.ID != networkID {
-					return fmt.Errorf("network_id (%d) conflicts with subnet_id network (%d)", networkID, subnetNetwork.ID)
-				}
+				// Extract network_id from parsed subnet
+				networkID = subnetNetwork.ID
 
 				// Check if the server IP is within the subnet IP range
 				if ipStr, ok := network["ip"].(string); ok && ipStr != "" {
