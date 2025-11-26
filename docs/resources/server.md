@@ -86,7 +86,7 @@ resource "hcloud_server" "server" {
 }
 ```
 
-Alternatively, for backward compatibility, you can attach using only `network_id`, though this is **deprecated** and will show a warning. When `subnet_id` is omitted, the server will be attached to the last subnet (ordered by `ip_range`), which can lead to unpredictable subnet selection unless an `ip` address is specified:
+Alternatively, for backwards compatibility, you can attach using only `network_id`, though this is **deprecated** and will show a warning. When `subnet_id` is omitted, the server will be attached to the last subnet (ordered by `ip_range`), which can lead to unpredictable subnet selection unless an `ip` address is specified:
 
 ```hcl
 resource "hcloud_server" "server" {
@@ -206,8 +206,8 @@ The following arguments are supported:
 
 **Note:** Exactly one of `network_id` or `subnet_id` must be specified.
 
-- `subnet_id` - (Optional, string) ID of the subnet within the network. **Recommended.** Explicitly controls which subnet the server will be attached to.
-- `network_id` - (Optional, int) **Deprecated.** ID of the Network to attach the server to. Use `subnet_id` instead. When used alone without `subnet_id`, the server will be attached to the last subnet (ordered by `ip_range`), which may be unpredictable. A deprecation warning will be shown when this field is used.
+- `subnet_id` - (Optional, string) ID of the subnet within the network. Explicitly controls which subnet the server will be attached to.
+- `network_id` - (Optional, int) **Deprecated.** ID of the network to attach the server to. Use `subnet_id` instead. When used alone without `subnet_id`, the server will be attached to the last subnet (ordered by `ip_range`), which may be unpredictable. A deprecation warning will be shown when this field is used.
 - `ip` - (Optional, string) Specify the IP the server should get in the network
 - `alias_ips` - (Optional, list) Alias IPs the server should have in the Network.
 
@@ -250,8 +250,8 @@ a single entry in `network` support the following fields:
 
 **Note:** Exactly one of `network_id` or `subnet_id` must be specified.
 
-- `subnet_id` - (Optional, string) ID of the subnet within the network. **Recommended.** Explicitly controls which subnet the server will be attached to.
-- `network_id` - (Optional, int) **Deprecated.** ID of the Network to attach the server to. Use `subnet_id` instead. When used alone without `subnet_id`, the server will be attached to the last subnet (ordered by `ip_range`), which may be unpredictable. A deprecation warning will be shown when this field is used.
+- `subnet_id` - (Optional, string) ID of the subnet within the network. Explicitly controls which subnet the server will be attached to.
+- `network_id` - (Optional, int) **Deprecated.** ID of the network to attach the server to. Use `subnet_id` instead. When used alone without `subnet_id`, the server will be attached to the last subnet (ordered by `ip_range`), which may be unpredictable. A deprecation warning will be shown when this field is used.
 - `ip` - (Optional, string) Specify the IP the server should get in the network
 - `alias_ips` - (Optional, list) Alias IPs the server should have in the Network.
 - `mac_address` - (Optional, string) The MAC address the private interface of the server has
