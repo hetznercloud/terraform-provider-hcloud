@@ -302,6 +302,65 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 		ID:         data.ID.ValueInt64(),
 	}
 
+	// Run Actions
+	var actions []*hcloud.Action
+
+	// Action: Change Home Directory
+	if !plan.HomeDirectory.IsUnknown() && !plan.HomeDirectory.Equal(data.HomeDirectory) {
+		action, _, err := r.client.StorageBox.ChangeSubaccountHomeDirectory(ctx, subaccount, hcloud.StorageBoxSubaccountChangeHomeDirectoryOpts{
+			HomeDirectory: plan.HomeDirectory.ValueString(),
+		})
+
+		if err != nil {
+			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+			return
+		}
+
+		actions = append(actions, action)
+	}
+
+	// Action: Reset Password
+	if !plan.Password.IsUnknown() && !plan.Password.Equal(data.Password) {
+		action, _, err := r.client.StorageBox.ResetSubaccountPassword(ctx, subaccount, hcloud.StorageBoxSubaccountResetPasswordOpts{
+			Password: plan.Password.ValueString(),
+		})
+
+		if err != nil {
+			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+			return
+		}
+
+		actions = append(actions, action)
+	}
+
+	// Action: Update Access Settings
+	if !plan.AccessSettings.IsUnknown() && !plan.AccessSettings.Equal(data.AccessSettings) {
+		m := modelAccessSettings{}
+		resp.Diagnostics.Append(m.FromTerraform(ctx, plan.AccessSettings)...)
+
+		opts := hcloud.StorageBoxSubaccountUpdateAccessSettingsOpts{
+			ReachableExternally: m.ReachableExternally.ValueBoolPointer(),
+			SambaEnabled:        m.SambaEnabled.ValueBoolPointer(),
+			SSHEnabled:          m.SSHEnabled.ValueBoolPointer(),
+			WebDAVEnabled:       m.WebDAVEnabled.ValueBoolPointer(),
+			Readonly:            m.Readonly.ValueBoolPointer(),
+		}
+
+		action, _, err := r.client.StorageBox.UpdateSubaccountAccessSettings(ctx, subaccount, opts)
+		if err != nil {
+			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+			return
+		}
+
+		actions = append(actions, action)
+	}
+
+	resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, actions...)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Update fields on resource
 	opts := hcloud.StorageBoxSubaccountUpdateOpts{}
 
 	if !data.Description.Equal(plan.Description) {
@@ -316,21 +375,24 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 		return
 	}
 
+	// Always perform the update call last, even when empty, to populate the state with fresh data returned by
+	// the update.
 	in, _, err := r.client.StorageBox.UpdateSubaccount(ctx, subaccount, opts)
 	if err != nil {
 		resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
 		return
 	}
 
-	// For the Actions PR:
-	// - Change Home Directory
-	// - Reset Password
-	// - Update Access Settings
-
 	// Write data to state
 	resp.Diagnostics.Append(data.FromAPI(ctx, in)...)
 	if resp.Diagnostics.HasError() {
 		return
+	}
+
+	// At this point the change password action was successful.
+	// We have to update the value saved in the state, this does not happen in `data.FromAPI()`.
+	if !plan.Password.IsUnknown() && !plan.Password.Equal(data.Password) {
+		data.Password = plan.Password
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
