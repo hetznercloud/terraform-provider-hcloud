@@ -6,7 +6,7 @@ description: |-
   Provides a list of Hetzner Storage Box Subaccounts.
   See the Storage Box Subaccounts API documentation https://docs.hetzner.cloud/reference/hetzner#storage-box-subaccounts for more details.
   Experimental: Storage Box support is experimental, breaking changes may occur within minor releases.
-  See TODO for more details.
+  See https://github.com/hetznercloud/terraform-provider-hcloud/issues/1285 for more details.
 ---
 
 # hcloud_storage_box_subaccounts (Data Source)
@@ -16,7 +16,7 @@ Provides a list of Hetzner Storage Box Subaccounts.
 See the [Storage Box Subaccounts API documentation](https://docs.hetzner.cloud/reference/hetzner#storage-box-subaccounts) for more details.
 
 **Experimental:** Storage Box support is experimental, breaking changes may occur within minor releases.
-See TODO for more details.
+See https://github.com/hetznercloud/terraform-provider-hcloud/issues/1285 for more details.
 
 ## Example Usage
 

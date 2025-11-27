@@ -6,7 +6,7 @@ description: |-
   Provides a list of Hetzner Storage Boxes.
   See the Storage Boxes API documentation https://docs.hetzner.cloud/reference/hetzner#storage-boxes for more details.
   Experimental: Storage Box support is experimental, breaking changes may occur within minor releases.
-  See TODO for more details.
+  See https://github.com/hetznercloud/terraform-provider-hcloud/issues/1285 for more details.
 ---
 
 # hcloud_storage_boxes (Data Source)
@@ -16,7 +16,7 @@ Provides a list of Hetzner Storage Boxes.
 See the [Storage Boxes API documentation](https://docs.hetzner.cloud/reference/hetzner#storage-boxes) for more details.
 
 **Experimental:** Storage Box support is experimental, breaking changes may occur within minor releases.
-See TODO for more details.
+See https://github.com/hetznercloud/terraform-provider-hcloud/issues/1285 for more details.
 
 ## Example Usage
 
