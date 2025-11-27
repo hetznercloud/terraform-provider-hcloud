@@ -64,5 +64,5 @@ func (e Experimental) AppendNotice(description *string) {
 }
 
 var (
-	StorageBox = New("Storage Box support", "experimental", "TODO") // TODO: Create and link ticket before release
+	StorageBox = New("Storage Box support", "experimental", "https://github.com/hetznercloud/terraform-provider-hcloud/issues/1285")
 )

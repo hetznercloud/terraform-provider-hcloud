@@ -6,7 +6,7 @@ description: |-
   Provides details about a Hetzner Storage Box Snapshot.
   See the Storage Box Snapshots API documentation https://docs.hetzner.cloud/reference/hetzner#storage-box-snapshots for more details.
   Experimental: Storage Box support is experimental, breaking changes may occur within minor releases.
-  See TODO for more details.
+  See https://github.com/hetznercloud/terraform-provider-hcloud/issues/1285 for more details.
 ---
 
 # hcloud_storage_box_snapshot (Data Source)
@@ -16,7 +16,7 @@ Provides details about a Hetzner Storage Box Snapshot.
 See the [Storage Box Snapshots API documentation](https://docs.hetzner.cloud/reference/hetzner#storage-box-snapshots) for more details.
 
 **Experimental:** Storage Box support is experimental, breaking changes may occur within minor releases.
-See TODO for more details.
+See https://github.com/hetznercloud/terraform-provider-hcloud/issues/1285 for more details.
 
 ## Example Usage
 
