@@ -45,13 +45,21 @@ func TestAccStorageBoxSubaccountResource(t *testing.T) {
 	res.SetRName("subaccount")
 
 	resOptional := testtemplate.DeepCopy(t, res)
-	resOptional.HomeDirectory = res.HomeDirectory // TODO: Modify in Actions PR
-	resOptional.Password = res.Password           // TODO: Modify in Actions PR
+	resOptional.HomeDirectory = "updated"
+	resOptional.Password = storagebox.GeneratePassword(t)
 	resOptional.Description = "tf-e2e-subaccount"
 	resOptional.Labels = map[string]string{
 		"key": "value",
 	}
-	resOptional.Raw = `` // TODO: Modify Access Settings in Actions PR
+	resOptional.Raw = `
+		access_settings = {
+			reachable_externally = true
+			samba_enabled = false
+			ssh_enabled = true
+			webdav_enabled = false
+			readonly = true
+		}
+	`
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
@@ -127,14 +135,14 @@ func TestAccStorageBoxSubaccountResource(t *testing.T) {
 
 					// Changed (or will be changed in Actions PR)
 					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("description"), knownvalue.StringExact("tf-e2e-subaccount")),
-					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("home_directory"), knownvalue.StringExact("test")),
+					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("home_directory"), knownvalue.StringExact("updated")),
 					statecheck.ExpectSensitiveValue(resOptional.TFID(), tfjsonpath.New("password")),
-					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("password"), knownvalue.StringExact(res.Password)),
-					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("access_settings").AtMapKey("reachable_externally"), knownvalue.Bool(false)),
+					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("password"), knownvalue.StringExact(resOptional.Password)),
+					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("access_settings").AtMapKey("reachable_externally"), knownvalue.Bool(true)),
 					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("access_settings").AtMapKey("samba_enabled"), knownvalue.Bool(false)),
-					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("access_settings").AtMapKey("ssh_enabled"), knownvalue.Bool(false)),
+					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("access_settings").AtMapKey("ssh_enabled"), knownvalue.Bool(true)),
 					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("access_settings").AtMapKey("webdav_enabled"), knownvalue.Bool(false)),
-					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("access_settings").AtMapKey("readonly"), knownvalue.Bool(false)),
+					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("access_settings").AtMapKey("readonly"), knownvalue.Bool(true)),
 					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("labels"), knownvalue.MapExact(map[string]knownvalue.Check{"key": knownvalue.StringExact("value")})),
 				},
 			},
@@ -156,14 +164,14 @@ func TestAccStorageBoxSubaccountResource(t *testing.T) {
 					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("username"), testsupport.StringExactFromFunc(func() string { return subaccount.Username })),
 					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("server"), testsupport.StringExactFromFunc(func() string { return subaccount.Server })),
 					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("description"), knownvalue.StringExact("tf-e2e-subaccount")),
-					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("home_directory"), knownvalue.StringExact("test")),
+					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("home_directory"), knownvalue.StringExact("updated")),
 					statecheck.ExpectSensitiveValue(resOptional.TFID(), tfjsonpath.New("password")),
 					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("password"), knownvalue.StringExact(resOptional.Password)),
-					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("access_settings").AtMapKey("reachable_externally"), knownvalue.Bool(false)),
+					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("access_settings").AtMapKey("reachable_externally"), knownvalue.Bool(true)),
 					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("access_settings").AtMapKey("samba_enabled"), knownvalue.Bool(false)),
-					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("access_settings").AtMapKey("ssh_enabled"), knownvalue.Bool(false)),
+					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("access_settings").AtMapKey("ssh_enabled"), knownvalue.Bool(true)),
 					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("access_settings").AtMapKey("webdav_enabled"), knownvalue.Bool(false)),
-					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("access_settings").AtMapKey("readonly"), knownvalue.Bool(false)),
+					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("access_settings").AtMapKey("readonly"), knownvalue.Bool(true)),
 					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("labels"), knownvalue.MapExact(map[string]knownvalue.Check{"key": knownvalue.StringExact("value")})),
 				},
 			},
