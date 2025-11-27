@@ -134,7 +134,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	// Create in API
 	// For a single storage box, only a single snapshot can be created simultaneously, all others fail with `locked` error.
 	var result hcloud.StorageBoxSnapshotCreateResult
-	err := control.Retry(control.DefaultRetries, func() error {
+	err := control.Retry(2*control.DefaultRetries, func() error {
 		var err error
 
 		result, _, err = r.client.StorageBox.CreateSnapshot(ctx, storageBox, opts)
