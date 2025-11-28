@@ -198,7 +198,6 @@ See the [Storage Box API documentation](https://docs.hetzner.cloud/reference/het
 					Required:            true,
 				},
 				"day_of_week": schema.Int32Attribute{
-					// TODO: Also accept string days similar to CLI?
 					MarkdownDescription: "Day of the week when the Snapshot Plan is executed. Starts at 0 for Sunday til 6 for Saturday. Note that this differs from the API, which uses 1 (Monday) through 7 (Sunday). Null means every day.",
 					Optional:            true,
 				},
@@ -234,7 +233,11 @@ func (r *Resource) ModifyPlan(ctx context.Context, req resource.ModifyPlanReques
 	// Ignore changes to ssh_keys attribute and show warning diagnostic.
 	if !state.SSHKeys.Equal(plan.SSHKeys) {
 		plan.SSHKeys = state.SSHKeys
-		resp.Diagnostics.AddAttributeWarning(path.Root("ssh_keys"), "Updating SSH Keys is not possible", "It is not possible to update the SSH Keys through the API. To avoid accidental data deletion changing the SSH Key in Terraform does not forcibly re-create the Storage Box, but only shows this warning. Please use SSH to update the SSH Keys, or manually taint the Storage Box resource so Terraform deletes it and then creates a new one.")
+		resp.Diagnostics.AddAttributeWarning(
+			path.Root("ssh_keys"),
+			"Updating SSH Keys is not possible", `It is not possible to update the SSH Keys through the API. To avoid accidental data deletion changing the SSH Key in Terraform does not forcibly re-create the Storage Box, but only shows this warning.
+
+Please use SSH to update the SSH Keys, or manually taint the Storage Box resource so Terraform deletes it and then creates a new one.`)
 	}
 
 	resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
