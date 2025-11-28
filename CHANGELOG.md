@@ -1,5 +1,57 @@
 # Changelog
 
+## [v1.57.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.57.0)
+
+### Storage Box API Experimental
+
+This release adds support for the [Storage Box API](https://docs.hetzner.cloud/reference/hetzner#storage-boxes).
+
+The Storage Box integration will be introduced as an **experimental** feature. This experimental phase is expected to last until **2 January 2026**. During this period, upcoming minor releases of the project may include breaking changes to features related to the Storage Box API. You can find out the current state of this in [#1285](https://github.com/hetznercloud/terraform-provider-hcloud/issues/1285).
+
+This release includes all changes from the recent [Storage Box API changelog](https://docs.hetzner.cloud/changelog#2025-10-21-storage-box-api-update) entry.
+
+#### Examples
+
+```terraform
+resource "hcloud_storage_box" "backups" {
+  name             = "backups"
+  storage_box_type = "bx21"
+  location         = "hel1"
+  password         = var.storage_box_password
+}
+
+resource "hcloud_storage_box_snapshot" "tool_xyz_migration" {
+  storage_box_id = hcloud_storage_box.backups.id
+
+  description = "Before Tool XYZ Migration"
+  labels = {
+    env = "production"
+  }
+}
+
+resource "hcloud_storage_box_subaccount" "team_badger" {
+  storage_box_id = hcloud_storage_box.backups.id
+
+  home_directory = "teams/badger/"
+  password       = var.team_badger_password
+}
+```
+
+### Features
+
+- drop builds for windows arm (32 bit) (#1260)
+- drop support for terraform v1.11
+- drop support for terraform v1.12
+- add support for terraform v1.13
+- add support for terraform v1.14
+- add support for Storage Boxes (#1166)
+
+### Bug Fixes
+
+- abort when data transformation errors (#1253)
+- ensure partially created resources are tainted in the state (#1257)
+- dns records order is not guaranteed (#1259)
+
 ## [v1.56.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.56.0)
 
 ### DNS API is now generally available
