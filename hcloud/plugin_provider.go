@@ -26,6 +26,10 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/servertype"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/storagebox"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/storageboxsnapshot"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/storageboxsubaccount"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/storageboxtype"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/tflogutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/zone"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/zonerrset"
@@ -63,6 +67,10 @@ func (p *PluginProvider) Schema(_ context.Context, _ provider.SchemaRequest, res
 				Description: "The Hetzner Cloud API endpoint, can be used to override the default API Endpoint https://api.hetzner.cloud/v1.",
 				Optional:    true,
 			},
+			"endpoint_hetzner": schema.StringAttribute{
+				Description: "The Hetzner API endpoint, can be used to override the default API Endpoint https://api.hetzner.com/v1.",
+				Optional:    true,
+			},
 			"poll_interval": schema.StringAttribute{
 				Description: "The interval at which actions are polled by the client. Default `500ms`. Increase this interval if you run into rate limiting errors.",
 				Optional:    true,
@@ -84,10 +92,11 @@ func (p *PluginProvider) Schema(_ context.Context, _ provider.SchemaRequest, res
 
 // PluginProviderModel describes the provider data model.
 type PluginProviderModel struct {
-	Token        types.String `tfsdk:"token"`
-	Endpoint     types.String `tfsdk:"endpoint"`
-	PollInterval types.String `tfsdk:"poll_interval"`
-	PollFunction types.String `tfsdk:"poll_function"`
+	Token           types.String `tfsdk:"token"`
+	Endpoint        types.String `tfsdk:"endpoint"`
+	EndpointHetzner types.String `tfsdk:"endpoint_hetzner"`
+	PollInterval    types.String `tfsdk:"poll_interval"`
+	PollFunction    types.String `tfsdk:"poll_function"`
 }
 
 // Configure is called at the beginning of the provider lifecycle, when
@@ -115,6 +124,14 @@ func (p *PluginProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	}
 	if endpoint != "" {
 		opts = append(opts, hcloud.WithEndpoint(endpoint))
+	}
+
+	endpointHetzner := os.Getenv("HETZNER_ENDPOINT")
+	if data.EndpointHetzner.ValueString() != "" {
+		endpointHetzner = data.Endpoint.ValueString()
+	}
+	if endpointHetzner != "" {
+		opts = append(opts, hcloud.WithHetznerEndpoint(endpointHetzner))
 	}
 
 	token := os.Getenv("HCLOUD_TOKEN")
@@ -193,6 +210,14 @@ func (p *PluginProvider) DataSources(_ context.Context) []func() datasource.Data
 		servertype.NewDataSourceList,
 		sshkey.NewDataSource,
 		sshkey.NewDataSourceList,
+		storagebox.NewDataSource,
+		storagebox.NewDataSourceList,
+		storageboxsnapshot.NewDataSource,
+		storageboxsnapshot.NewDataSourceList,
+		storageboxsubaccount.NewDataSource,
+		storageboxsubaccount.NewDataSourceList,
+		storageboxtype.NewDataSource,
+		storageboxtype.NewDataSourceList,
 		zone.NewDataSource,
 		zone.NewDataSourceList,
 		zonerrset.NewDataSource,
@@ -210,6 +235,9 @@ func (p *PluginProvider) Resources(_ context.Context) []func() resource.Resource
 		loadbalancer.NewNetworkResource,
 		server.NewNetworkResource,
 		sshkey.NewResource,
+		storagebox.NewResource,
+		storageboxsnapshot.NewResource,
+		storageboxsubaccount.NewResource,
 		zone.NewResource,
 		zonerrset.NewResource,
 	}
