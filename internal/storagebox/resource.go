@@ -331,8 +331,6 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		return
 	}
 
-	var actions []*hcloud.Action
-
 	if !data.DeleteProtection.IsUnknown() && !data.DeleteProtection.IsNull() {
 		action, _, err := r.client.StorageBox.ChangeProtection(ctx, result.StorageBox, hcloud.StorageBoxChangeProtectionOpts{
 			Delete: data.DeleteProtection.ValueBoolPointer(),
@@ -342,7 +340,10 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 			return
 		}
 
-		actions = append(actions, action)
+		resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, action)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 	}
 
 	if !data.SnapshotPlan.IsUnknown() && !data.SnapshotPlan.IsNull() {
@@ -366,12 +367,10 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 			return
 		}
 
-		actions = append(actions, action)
-	}
-
-	resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, actions...)...)
-	if resp.Diagnostics.HasError() {
-		return
+		resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, action)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 	}
 
 	// Fetch fresh data from the API
@@ -428,7 +427,6 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 	storageBox := &hcloud.StorageBox{ID: data.ID.ValueInt64()}
 
 	// Run Actions
-	var actions []*hcloud.Action
 
 	// Action: Delete Protection
 	if !plan.DeleteProtection.IsUnknown() && !plan.DeleteProtection.Equal(data.DeleteProtection) {
@@ -440,7 +438,10 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 			return
 		}
 
-		actions = append(actions, action)
+		resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, action)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 	}
 
 	// Action: Enable/Disable Snapshot Plan
@@ -452,7 +453,10 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 				return
 			}
 
-			actions = append(actions, action)
+			resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, action)...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
 		} else {
 			values := modelSnapshotPlan{}
 			resp.Diagnostics.Append(values.FromTerraform(ctx, plan.SnapshotPlan)...)
@@ -479,7 +483,10 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 				return
 			}
 
-			actions = append(actions, action)
+			resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, action)...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
 		}
 	}
 
@@ -495,7 +502,10 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 			return
 		}
 
-		actions = append(actions, action)
+		resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, action)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 	}
 
 	// Action: Reset Password
@@ -510,7 +520,10 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 			return
 		}
 
-		actions = append(actions, action)
+		resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, action)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 	}
 
 	// Action: Update Access Settings
@@ -532,12 +545,10 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 			return
 		}
 
-		actions = append(actions, action)
-	}
-
-	resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, actions...)...)
-	if resp.Diagnostics.HasError() {
-		return
+		resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, action)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 	}
 
 	// Update fields on resource

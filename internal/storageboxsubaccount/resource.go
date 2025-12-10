@@ -303,7 +303,6 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 	}
 
 	// Run Actions
-	var actions []*hcloud.Action
 
 	// Action: Change Home Directory
 	if !plan.HomeDirectory.IsUnknown() && !plan.HomeDirectory.Equal(data.HomeDirectory) {
@@ -316,7 +315,10 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 			return
 		}
 
-		actions = append(actions, action)
+		resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, action)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 	}
 
 	// Action: Reset Password
@@ -330,7 +332,10 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 			return
 		}
 
-		actions = append(actions, action)
+		resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, action)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 	}
 
 	// Action: Update Access Settings
@@ -352,12 +357,10 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 			return
 		}
 
-		actions = append(actions, action)
-	}
-
-	resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, actions...)...)
-	if resp.Diagnostics.HasError() {
-		return
+		resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, action)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 	}
 
 	// Update fields on resource
