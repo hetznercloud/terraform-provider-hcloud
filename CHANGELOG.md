@@ -1,5 +1,16 @@
 # Changelog
 
+## [v1.58.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.58.0)
+
+### Features
+
+- drop support for OpenTofu v1.8
+- add support for OpenTofu v1.11
+
+### Bug Fixes
+
+- **storage-box**: run actions serially (#1294)
+
 ## [v1.57.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.57.0)
 
 ### Storage Box API Experimental
