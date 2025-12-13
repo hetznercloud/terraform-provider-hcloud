@@ -22,7 +22,7 @@ resource "hcloud_zone" "example_secondary" {
     key = "value"
   }
 
-  primary_nameserver = [
+  primary_nameservers = [
     {
       address = "203.5.113.54"
     },
