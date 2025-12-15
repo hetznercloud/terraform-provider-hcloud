@@ -10,6 +10,7 @@ resource "hcloud_storage_box" "main" {
 resource "hcloud_storage_box_subaccount" "team_badger" {
   storage_box_id = hcloud_storage_box.main.id
 
+  name           = "badger"
   home_directory = "teams/badger/"
   password       = var.team_badger_password
 

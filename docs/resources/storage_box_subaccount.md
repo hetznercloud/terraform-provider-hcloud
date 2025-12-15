@@ -33,6 +33,7 @@ resource "hcloud_storage_box" "main" {
 resource "hcloud_storage_box_subaccount" "team_badger" {
   storage_box_id = hcloud_storage_box.main.id
 
+  name           = "badger"
   home_directory = "teams/badger/"
   password       = var.team_badger_password
 
@@ -65,6 +66,7 @@ resource "hcloud_storage_box_subaccount" "team_badger" {
 - `access_settings` (Attributes) Access settings for the Subaccount. (see [below for nested schema](#nestedatt--access_settings))
 - `description` (String) A description of the Storage Box Subaccount.
 - `labels` (Map of String) User-defined [labels](https://docs.hetzner.cloud/reference/cloud#labels) (key-value pairs) for the resource.
+- `name` (String) Name of the Storage Box Subaccount.
 
 ### Read-Only
 
