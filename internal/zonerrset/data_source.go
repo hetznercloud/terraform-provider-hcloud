@@ -46,11 +46,7 @@ func getCommonDataSourceSchema(readOnly bool) map[string]schema.Attribute {
 			MarkdownDescription: "Time To Live (TTL) of the Zone RRSet.",
 			Computed:            true,
 		},
-		"labels": schema.MapAttribute{
-			MarkdownDescription: "User-defined [labels](https://docs.hetzner.cloud/reference/cloud#labels) (key-value pairs) for the resource.",
-			ElementType:         types.StringType,
-			Computed:            true,
-		},
+		"labels": datasourceutil.LabelsSchema(),
 		"change_protection": schema.BoolAttribute{
 			MarkdownDescription: "Whether change protection is enabled.",
 			Computed:            true,

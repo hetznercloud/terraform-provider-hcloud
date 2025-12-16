@@ -1,0 +1,9 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+data "hcloud_storage_box_subaccount" "{{ .RName }}" {
+  storage_box_id = {{ .StorageBox }}
+
+  {{ if .ID -}} id = {{ .ID }}{{ end -}}
+  {{ if .Username -}} username = {{ .Username }}{{ end -}}
+  {{ if .LabelSelector -}} with_selector = "{{ .LabelSelector }}"{{ end }}
+}

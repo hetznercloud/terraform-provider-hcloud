@@ -29,7 +29,7 @@ repos:
         language: node
         types: [text]
         require_serial: false
-        additional_dependencies: [prettier@3.6.2]
+        additional_dependencies: [prettier@3.7.4]
         files: \.(md|ya?ml)$
         exclude: ^(CHANGELOG.md|docs/.*)$
 
