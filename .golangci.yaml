@@ -14,6 +14,7 @@ linters:
     - errchkjson
     - errorlint
     - exhaustive
+    - forbidigo
     - gocheckcompilerdirectives
     - gochecksumtype
     - gocritic
@@ -43,6 +44,14 @@ linters:
       default-signifies-exhaustive: true
     staticcheck:
       checks: ["all", "-QF1008", "-S1016"]
+    forbidigo:
+      forbid:
+        # These are not set up and used in our repository,
+        # so we do not have to spend time implementing them and keeping them up to date.
+        - pattern: resource\.AddTestSweepers
+          pkg: github.com/hashicorp/terraform-plugin-testing/helper/resource
+          msg: "Do not implement unused test sweepers"
+      analyze-types: true
 
   exclusions:
     generated: lax
