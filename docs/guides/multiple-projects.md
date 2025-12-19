@@ -1,9 +1,9 @@
 ---
 subcategory: ""
-page_title: "Manage resources across multiple projects"
+page_title: "Manage resources across multiple Hetzner projects"
 ---
 
-# Manage resources across multiple projects
+# Manage resources across multiple Hetzner projects
 
 In some scenarios, it is useful to manage you Hetzner Cloud resources across multiple projects.
 
