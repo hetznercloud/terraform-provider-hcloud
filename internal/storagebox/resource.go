@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -31,7 +32,6 @@ const ResourceType = "hcloud_storage_box"
 var _ resource.Resource = (*Resource)(nil)
 var _ resource.ResourceWithConfigure = (*Resource)(nil)
 var _ resource.ResourceWithImportState = (*Resource)(nil)
-var _ resource.ResourceWithModifyPlan = (*Resource)(nil)
 
 type Resource struct {
 	client *hcloud.Client
@@ -117,11 +117,14 @@ See the [Storage Box API documentation](https://docs.hetzner.cloud/reference/het
 		},
 		"labels": resourceutil.LabelsSchema(),
 		"ssh_keys": schema.SetAttribute{
-			MarkdownDescription: "SSH public keys in OpenSSH format to inject into the Storage Box. Any changes to this attribute are ignored, as it is not possible to update the SSH Keys through the API, please add the SSH Keys manually on the Storage Box if you need to change them.",
+			MarkdownDescription: "SSH public keys in OpenSSH format to inject into the Storage Box. It is not possible to update the SSH Keys through the API, so changing this attribute forces a replace of the Storage Box.",
 			ElementType:         types.StringType,
 			Optional:            true,
 			Computed:            true,
 			Default:             setdefault.StaticValue(types.SetValueMust(types.StringType, []attr.Value{})),
+			PlanModifiers: []planmodifier.Set{
+				setplanmodifier.RequiresReplace(),
+			},
 		},
 		"access_settings": schema.SingleNestedAttribute{
 			MarkdownDescription: "Access settings of the Storage Box.",
@@ -208,39 +211,6 @@ See the [Storage Box API documentation](https://docs.hetzner.cloud/reference/het
 			},
 		},
 	}
-}
-
-func (r *Resource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	// Do not modify on resource creation.
-	if req.State.Raw.IsNull() {
-		return
-	}
-
-	// Do not modify on resource destroy.
-	if req.Plan.Raw.IsNull() {
-		return
-	}
-
-	var state, plan resourceModel
-
-	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	// Ignore changes to ssh_keys attribute and show warning diagnostic.
-	if !state.SSHKeys.Equal(plan.SSHKeys) {
-		plan.SSHKeys = state.SSHKeys
-		resp.Diagnostics.AddAttributeWarning(
-			path.Root("ssh_keys"),
-			"Updating SSH Keys is not possible", `It is not possible to update the SSH Keys through the API. To avoid accidental data deletion changing the SSH Key in Terraform does not forcibly re-create the Storage Box, but only shows this warning.
-
-Please use SSH to update the SSH Keys, or manually taint the Storage Box resource so Terraform deletes it and then creates a new one.`)
-	}
-
-	resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 }
 
 type resourceModel struct {

@@ -103,7 +103,7 @@ func TestAccStorageBoxResource(t *testing.T) {
 			{
 				// Import
 
-				Config:                  tmplMan.Render(t, "testdata/r/hcloud_storage_box", resOptional),
+				Config:                  tmplMan.Render(t, "testdata/r/hcloud_storage_box", res),
 				ImportState:             true,
 				ResourceName:            res.TFID(),
 				ImportStateId:           res.Name,
@@ -147,23 +147,15 @@ func TestAccStorageBoxResource(t *testing.T) {
 				},
 			},
 			{
-				// Validate changing SSH Key attribute is not applied
-				Config: tmplMan.Render(t, "testdata/r/hcloud_storage_box", resWithSSHKey),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						// Make sure it's actually doing nothing
-						plancheck.ExpectResourceAction(resOptional.TFID(), plancheck.ResourceActionNoop),
-					},
-				},
-				ConfigStateChecks: []statecheck.StateCheck{
-					// And check that the state still has an empty set for the ssh_keys
-					statecheck.ExpectKnownValue(resWithSSHKey.TFID(), tfjsonpath.New("ssh_keys"), knownvalue.SetSizeExact(0)),
-				},
-			},
-			{
 				// Create with all optional attributes
 				Taint:  []string{resWithSSHKey.TFID()}, // replace the resource
 				Config: tmplMan.Render(t, "testdata/r/hcloud_storage_box", resWithSSHKey),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						// Make sure changing the SSH Key forces a replace
+						plancheck.ExpectResourceAction(resOptional.TFID(), plancheck.ResourceActionReplace),
+					},
+				},
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckAPIResourcePresent(resWithSSHKey.TFID(), testsupport.CopyAPIResource(storageBox, storagebox.GetAPIResource())),
 				),
@@ -190,6 +182,17 @@ func TestAccStorageBoxResource(t *testing.T) {
 					statecheck.ExpectKnownValue(resWithSSHKey.TFID(), tfjsonpath.New("snapshot_plan").AtMapKey("hour"), knownvalue.Int32Exact(18)),
 					statecheck.ExpectKnownValue(resWithSSHKey.TFID(), tfjsonpath.New("snapshot_plan").AtMapKey("day_of_week"), knownvalue.Int32Exact(3)),
 				},
+			},
+			{
+				// Import resource with all fields set
+				// Regression test for https://github.com/hetznercloud/terraform-provider-hcloud/issues/1287
+
+				Config:                  tmplMan.Render(t, "testdata/r/hcloud_storage_box", resOptional),
+				ImportState:             true,
+				ResourceName:            resOptional.TFID(),
+				ImportStateId:           resOptional.Name,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"password", "ssh_keys"}, // Not returned in the API
 			},
 		},
 	})
