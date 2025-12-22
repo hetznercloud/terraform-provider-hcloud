@@ -166,7 +166,7 @@ func (r *Resource) ValidateConfig(ctx context.Context, req resource.ValidateConf
 			)
 		}
 	case string(hcloud.ZoneModeSecondary):
-		if data.PrimaryNameservers.IsUnknown() || data.PrimaryNameservers.IsNull() {
+		if data.PrimaryNameservers.IsNull() {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("primary_nameservers"),
 				"Required attribute",
