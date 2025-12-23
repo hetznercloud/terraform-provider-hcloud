@@ -37,9 +37,14 @@ func getCommonDataSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
-		"datacenter": {
+		"location": {
 			Type:     schema.TypeString,
 			Computed: true,
+		},
+		"datacenter": {
+			Type:       schema.TypeString,
+			Computed:   true,
+			Deprecated: "The datacenter attribute is deprecated and will be removed after 1 July 2026. Please use the location attribute instead. See https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters.",
 		},
 		"assignee_id": {
 			Type:     schema.TypeInt,

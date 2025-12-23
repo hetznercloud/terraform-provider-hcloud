@@ -9,7 +9,10 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -721,7 +724,7 @@ func TestAccServerResource_PrimaryIPNetworkTests(t *testing.T) {
 		Name:         "primaryip-v4-test",
 		Type:         "ipv4",
 		Labels:       nil,
-		Datacenter:   teste2e.TestDataCenter,
+		Location:     teste2e.TestLocationName,
 		AssigneeType: "server",
 		AutoDelete:   false,
 	}
@@ -731,18 +734,18 @@ func TestAccServerResource_PrimaryIPNetworkTests(t *testing.T) {
 		Name:         "primaryip-v6-test",
 		Type:         "ipv6",
 		Labels:       nil,
-		Datacenter:   teste2e.TestDataCenter,
+		Location:     teste2e.TestLocationName,
 		AssigneeType: "server",
 		AutoDelete:   false,
 	}
 	primaryIPv6Res.SetRName("primary-ip-v6")
 
 	sResWithNetAndPublicNet := &server.RData{
-		Name:       "server-primaryIP-network-test",
-		Type:       teste2e.TestServerType,
-		Datacenter: teste2e.TestDataCenter,
-		Image:      teste2e.TestImage,
-		SSHKeys:    []string{sk.TFID() + ".id"},
+		Name:         "server-primaryIP-network-test",
+		Type:         teste2e.TestServerType,
+		LocationName: teste2e.TestLocationName,
+		Image:        teste2e.TestImage,
+		SSHKeys:      []string{sk.TFID() + ".id"},
 		Networks: []server.RDataInlineNetwork{{
 			NetworkID: nwRes.TFID() + ".id",
 			IP:        "10.0.1.5",
@@ -757,12 +760,12 @@ func TestAccServerResource_PrimaryIPNetworkTests(t *testing.T) {
 	sResWithNetAndPublicNet.SetRName(sResWithNetAndPublicNet.Name)
 
 	sResWithoutPublicNet := &server.RData{
-		Name:       sResWithNetAndPublicNet.Name,
-		Type:       sResWithNetAndPublicNet.Type,
-		Datacenter: sResWithNetAndPublicNet.Datacenter,
-		Image:      sResWithNetAndPublicNet.Image,
-		SSHKeys:    sResWithNetAndPublicNet.SSHKeys,
-		Networks:   sResWithNetAndPublicNet.Networks,
+		Name:         sResWithNetAndPublicNet.Name,
+		Type:         sResWithNetAndPublicNet.Type,
+		LocationName: sResWithNetAndPublicNet.LocationName,
+		Image:        sResWithNetAndPublicNet.Image,
+		SSHKeys:      sResWithNetAndPublicNet.SSHKeys,
+		Networks:     sResWithNetAndPublicNet.Networks,
 		PublicNet: map[string]interface{}{
 			"ipv4_enabled": false,
 			"ipv6_enabled": false,
@@ -772,12 +775,12 @@ func TestAccServerResource_PrimaryIPNetworkTests(t *testing.T) {
 	sResWithoutPublicNet.SetRName(sResWithoutPublicNet.Name)
 
 	sResWithPrimaryIP := &server.RData{
-		Name:       sResWithoutPublicNet.Name,
-		Type:       sResWithoutPublicNet.Type,
-		Datacenter: sResWithoutPublicNet.Datacenter,
-		Image:      sResWithoutPublicNet.Image,
-		SSHKeys:    sResWithoutPublicNet.SSHKeys,
-		Networks:   sResWithoutPublicNet.Networks,
+		Name:         sResWithoutPublicNet.Name,
+		Type:         sResWithoutPublicNet.Type,
+		LocationName: sResWithoutPublicNet.LocationName,
+		Image:        sResWithoutPublicNet.Image,
+		SSHKeys:      sResWithoutPublicNet.SSHKeys,
+		Networks:     sResWithoutPublicNet.Networks,
 		PublicNet: map[string]interface{}{
 			"ipv4_enabled": true,
 			"ipv4":         primaryIPv4Res.TFID() + ".id",
@@ -789,12 +792,12 @@ func TestAccServerResource_PrimaryIPNetworkTests(t *testing.T) {
 	sResWithPrimaryIP.SetRName(sResWithPrimaryIP.Name)
 
 	sResWithTwoPrimaryIPs := &server.RData{
-		Name:       sResWithPrimaryIP.Name,
-		Type:       sResWithPrimaryIP.Type,
-		Datacenter: sResWithPrimaryIP.Datacenter,
-		Image:      sResWithPrimaryIP.Image,
-		SSHKeys:    sResWithPrimaryIP.SSHKeys,
-		Networks:   sResWithPrimaryIP.Networks,
+		Name:         sResWithPrimaryIP.Name,
+		Type:         sResWithPrimaryIP.Type,
+		LocationName: sResWithPrimaryIP.LocationName,
+		Image:        sResWithPrimaryIP.Image,
+		SSHKeys:      sResWithPrimaryIP.SSHKeys,
+		Networks:     sResWithPrimaryIP.Networks,
 		PublicNet: map[string]interface{}{
 			"ipv4_enabled": true,
 			"ipv4":         primaryIPv4Res.TFID() + ".id",
@@ -806,24 +809,24 @@ func TestAccServerResource_PrimaryIPNetworkTests(t *testing.T) {
 	sResWithTwoPrimaryIPs.SetRName(sResWithTwoPrimaryIPs.Name)
 
 	sResWithNoPublicNet := &server.RData{
-		Name:       sResWithTwoPrimaryIPs.Name,
-		Type:       sResWithTwoPrimaryIPs.Type,
-		Datacenter: sResWithTwoPrimaryIPs.Datacenter,
-		Image:      sResWithTwoPrimaryIPs.Image,
-		SSHKeys:    sResWithTwoPrimaryIPs.SSHKeys,
-		Networks:   sResWithTwoPrimaryIPs.Networks,
-		DependsOn:  sResWithTwoPrimaryIPs.DependsOn,
+		Name:         sResWithTwoPrimaryIPs.Name,
+		Type:         sResWithTwoPrimaryIPs.Type,
+		LocationName: sResWithTwoPrimaryIPs.LocationName,
+		Image:        sResWithTwoPrimaryIPs.Image,
+		SSHKeys:      sResWithTwoPrimaryIPs.SSHKeys,
+		Networks:     sResWithTwoPrimaryIPs.Networks,
+		DependsOn:    sResWithTwoPrimaryIPs.DependsOn,
 	}
 
 	sResWithNoPublicNet.SetRName(sResWithNoPublicNet.Name)
 
 	sResWithOnlyIPv6 := &server.RData{
-		Name:       sResWithNoPublicNet.Name,
-		Type:       sResWithNoPublicNet.Type,
-		Datacenter: sResWithNoPublicNet.Datacenter,
-		Image:      sResWithNoPublicNet.Image,
-		SSHKeys:    sResWithNoPublicNet.SSHKeys,
-		Networks:   sResWithNoPublicNet.Networks,
+		Name:         sResWithNoPublicNet.Name,
+		Type:         sResWithNoPublicNet.Type,
+		LocationName: sResWithNoPublicNet.LocationName,
+		Image:        sResWithNoPublicNet.Image,
+		SSHKeys:      sResWithNoPublicNet.SSHKeys,
+		Networks:     sResWithNoPublicNet.Networks,
 		PublicNet: map[string]interface{}{
 			"ipv4_enabled": false,
 			"ipv6_enabled": true,
@@ -835,12 +838,12 @@ func TestAccServerResource_PrimaryIPNetworkTests(t *testing.T) {
 	sResWithOnlyIPv6.SetRName(sResWithOnlyIPv6.Name)
 
 	sResWithOnlyIPv6AutoGenerated := &server.RData{
-		Name:       sResWithOnlyIPv6.Name,
-		Type:       sResWithOnlyIPv6.Type,
-		Datacenter: sResWithOnlyIPv6.Datacenter,
-		Image:      sResWithOnlyIPv6.Image,
-		SSHKeys:    sResWithOnlyIPv6.SSHKeys,
-		Networks:   sResWithOnlyIPv6.Networks,
+		Name:         sResWithOnlyIPv6.Name,
+		Type:         sResWithOnlyIPv6.Type,
+		LocationName: sResWithOnlyIPv6.LocationName,
+		Image:        sResWithOnlyIPv6.Image,
+		SSHKeys:      sResWithOnlyIPv6.SSHKeys,
+		Networks:     sResWithOnlyIPv6.Networks,
 		PublicNet: map[string]interface{}{
 			"ipv4_enabled": false,
 			"ipv6_enabled": true,
@@ -1387,6 +1390,51 @@ func TestAccServerResource_EmptySSHKey(t *testing.T) {
 					"testdata/r/hcloud_server", srvRes,
 				),
 				ExpectError: regexp.MustCompile("Invalid ssh key passed"),
+			},
+		},
+	})
+}
+
+func TestAccServerResource_DatacenterToLocation(t *testing.T) {
+	// Test for the "datacenter" deprecation, to make sure that its possible to move to "location" attribute
+	// See https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters
+
+	resDC := &server.RData{
+		Name:       "server-dc-to-location",
+		Type:       teste2e.TestServerType,
+		Image:      teste2e.TestImage,
+		Datacenter: teste2e.TestDataCenter,
+	}
+	resDC.SetRName("dc_to_location")
+
+	resLocation := testtemplate.DeepCopy(t, resDC)
+	resLocation.Datacenter = ""
+	resLocation.LocationName = teste2e.TestLocationName
+
+	tmplMan := testtemplate.Manager{}
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				// Create server in Datacenter.
+				Config: tmplMan.Render(t, "testdata/r/hcloud_server", resDC),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resDC.TFID(), tfjsonpath.New("datacenter"), knownvalue.StringExact(teste2e.TestDataCenter)),
+					statecheck.ExpectKnownValue(resDC.TFID(), tfjsonpath.New("location"), knownvalue.StringExact(teste2e.TestLocationName)),
+				},
+			},
+			{
+				// Change config to Location.
+				Config: tmplMan.Render(t, "testdata/r/hcloud_server", resLocation),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resLocation.TFID(), tfjsonpath.New("datacenter"), knownvalue.StringExact(teste2e.TestDataCenter)),
+					statecheck.ExpectKnownValue(resLocation.TFID(), tfjsonpath.New("location"), knownvalue.StringExact(teste2e.TestLocationName)),
+				},
 			},
 		},
 	})

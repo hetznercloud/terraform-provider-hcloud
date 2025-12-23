@@ -57,18 +57,18 @@ func makeServerNetworkBlueprint(t *testing.T) *ServerNetworkBlueprint {
 	b.subnet2.SetRName("subnet2")
 
 	b.server1 = &server.RData{
-		Name:       "server1",
-		Type:       teste2e.TestServerType,
-		Datacenter: teste2e.TestDataCenter,
-		Image:      teste2e.TestImage,
+		Name:         "server1",
+		Type:         teste2e.TestServerType,
+		LocationName: teste2e.TestLocationName,
+		Image:        teste2e.TestImage,
 	}
 	b.server1.SetRName("server1")
 
 	b.server2 = &server.RData{
-		Name:       "server2",
-		Type:       teste2e.TestServerType,
-		Datacenter: teste2e.TestDataCenter,
-		Image:      teste2e.TestImage,
+		Name:         "server2",
+		Type:         teste2e.TestServerType,
+		LocationName: teste2e.TestLocationName,
+		Image:        teste2e.TestImage,
 	}
 	b.server2.SetRName("server2")
 
