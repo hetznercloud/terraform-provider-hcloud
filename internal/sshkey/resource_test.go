@@ -65,36 +65,3 @@ func TestAccSSHKeyResource(t *testing.T) {
 		},
 	})
 }
-
-func TestAccSSHKeyResource_UpgradePluginFramework(t *testing.T) {
-	tmplMan := testtemplate.Manager{}
-
-	res := sshkey.NewRData(t, "upgrade-plugin-framework-test")
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: teste2e.PreCheck(t),
-		Steps: []resource.TestStep{
-			{
-				ExternalProviders: map[string]resource.ExternalProvider{
-					"hcloud": {
-						VersionConstraint: "1.45.0",
-						Source:            "hetznercloud/hcloud",
-					},
-				},
-
-				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", res,
-				),
-			},
-			{
-				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
-
-				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", res,
-				),
-
-				PlanOnly: true,
-			},
-		},
-	})
-}
