@@ -1,5 +1,38 @@
 # Changelog
 
+## [v1.58.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.58.0)
+
+### Breaking Change for the *Storage Box* resource
+
+Previously the `hcloud_storage_box` resource "hid" any changes to the `ssh_keys` attribute to avoid accidentally deleting the Storage Box (SSH Keys can not be changed through the API after the Storage Box is created).
+
+This is changed in this release, we now mark the resource as "requires replacement" if the SSH Keys are changed. If you want to ignore changes and keep the previous behaviour, please add the attribute to [`lifecycle.ignore_changes`](https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle#ignore_changes):
+
+```terraform
+resource "hcloud_storage_box" "example" {
+  // Other attributes
+
+  ssh_keys = [ "..." ]
+  lifecycle {
+    ignore_changes = [ ssh_keys ]
+  }
+}
+```
+
+We are releasing this breaking change in a minor version as the *Storage Box support* is [marked as experimental](https://github.com/hetznercloud/terraform-provider-hcloud/issues/1285).
+
+### Features
+
+- drop support for OpenTofu v1.8
+- add support for OpenTofu v1.11
+- **storage-box**: stop ignoring changes to ssh keys and replace resource instead (#1296)
+
+### Bug Fixes
+
+- **storage-box**: run actions serially (#1294)
+- **zone**: using variable for primary nameservers causes error (#1306)
+- **storage-box**: retry snapshot+subaccount create when locked (#1307)
+
 ## [v1.57.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.57.0)
 
 ### Storage Box API Experimental
