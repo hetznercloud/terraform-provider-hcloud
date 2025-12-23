@@ -122,7 +122,7 @@ func TestAccRDNSResource_PrimaryIP(t *testing.T) {
 				Name:         tt.name,
 				Type:         tt.primaryIPType,
 				AssigneeType: "server",
-				Datacenter:   teste2e.TestDataCenter,
+				Location:     teste2e.TestLocationName,
 			}
 			restPrimaryIP.SetRName(tt.name)
 			resRDNS := rdns.NewRDataPrimaryIP(t, tt.name, restPrimaryIP.TFID()+".id", restPrimaryIP.TFID()+".ip_address", tt.dns)
