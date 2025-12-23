@@ -60,6 +60,7 @@ type RData struct {
 
 	Name             string
 	Type             string
+	Location         string
 	Datacenter       string
 	AssigneeType     string
 	AssigneeID       string
