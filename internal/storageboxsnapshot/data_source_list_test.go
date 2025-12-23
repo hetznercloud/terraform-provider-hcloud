@@ -48,8 +48,6 @@ func TestAccStorageBoxSnapshotDataSourceList(t *testing.T) {
 		Labels: map[string]string{
 			"key": randutil.GenerateID(),
 		},
-		// Only one snapshot may be created at the same time
-		Raw: fmt.Sprintf(`depends_on = [%s]`, res1.TFID()),
 	}
 	res2.SetRName("default2")
 
