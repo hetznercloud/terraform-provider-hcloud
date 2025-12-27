@@ -33,9 +33,13 @@ resource "hcloud_server" "{{ .RName }}" {
   {{ end }}
 
   {{- range $network := .Networks }}{{ with $network }}
-  {{- if .NetworkID }}
   network {
+      {{- if .NetworkID }}
       network_id = {{ .NetworkID }}
+      {{ end }}
+      {{- if .SubnetID }}
+      subnet_id  = {{ .SubnetID }}
+      {{ end }}
       {{- if .IP }}
       ip         = "{{ .IP }}"
       {{ end }}
@@ -46,7 +50,7 @@ resource "hcloud_server" "{{ .RName }}" {
       alias_ips = []
       {{- end }}
   }
-  {{ end }}{{ end }}
+  {{ end }}
   {{ end }}
 
   {{- if .PublicNet }}

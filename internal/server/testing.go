@@ -84,6 +84,7 @@ type RData struct {
 // to a network directly in the server resource.
 type RDataInlineNetwork struct {
 	NetworkID string
+	SubnetID  string
 	IP        string
 	AliasIPs  []string
 }
