@@ -6,50 +6,11 @@ import (
 	"math/rand/v2"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/hcloud-go/v2/hcloud/schema"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
-
-func init() {
-	resource.AddTestSweepers(ResourceType, &resource.Sweeper{
-		Name:         ResourceType,
-		Dependencies: []string{},
-		F:            Sweep,
-	})
-}
-
-// Sweep removes all Storage Boxes from the Hetzner API.
-func Sweep(r string) error {
-	client, err := testsupport.CreateClient()
-	if err != nil {
-		return err
-	}
-
-	ctx := context.Background()
-	storageBoxes, err := client.StorageBox.All(ctx)
-	if err != nil {
-		return err
-	}
-
-	actions := make([]*hcloud.Action, 0, len(storageBoxes))
-	for _, o := range storageBoxes {
-		result, _, err := client.StorageBox.Delete(ctx, o)
-		if err != nil {
-			return err
-		}
-		actions = append(actions, result.Action)
-	}
-
-	if err := client.Action.WaitFor(ctx, actions...); err != nil {
-		return err
-	}
-
-	return nil
-}
 
 // GetAPIResource returns a [testsupport.GetAPIResourceFunc] for [hcloud.StorageBox].
 func GetAPIResource() testsupport.GetAPIResourceFunc[hcloud.StorageBox] {

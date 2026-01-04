@@ -7,42 +7,10 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
-
-func init() {
-	resource.AddTestSweepers(ResourceType, &resource.Sweeper{
-		Name:         ResourceType,
-		Dependencies: []string{},
-		F:            Sweep,
-	})
-}
-
-// Sweep removes all firewalls from the Hetzner Cloud backend.
-func Sweep(r string) error {
-	client, err := testsupport.CreateClient()
-	if err != nil {
-		return err
-	}
-
-	ctx := context.Background()
-	firewalls, err := client.Firewall.All(ctx)
-	if err != nil {
-		return err
-	}
-
-	for _, firewall := range firewalls {
-		if _, err := client.Firewall.Delete(ctx, firewall); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
 
 // ByID returns a function that obtains a firewall by its ID.
 func ByID(t *testing.T, firewall *hcloud.Firewall) func(*hcloud.Client, int64) bool {

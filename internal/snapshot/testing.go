@@ -5,42 +5,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
-
-func init() {
-	resource.AddTestSweepers(ResourceType, &resource.Sweeper{
-		Name:         ResourceType,
-		Dependencies: []string{},
-		F:            Sweep,
-	})
-}
-
-// Sweep removes all Snapshots from the Hetzner Cloud backend.
-func Sweep(r string) error {
-	client, err := testsupport.CreateClient()
-	if err != nil {
-		return err
-	}
-
-	ctx := context.Background()
-	images, err := client.Image.AllWithOpts(ctx, hcloud.ImageListOpts{Type: []hcloud.ImageType{hcloud.ImageTypeSnapshot}})
-	if err != nil {
-		return err
-	}
-
-	for _, img := range images {
-		if _, err := client.Image.Delete(ctx, img); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
 
 // ByID returns a function that obtains a image by its ID.
 func ByID(t *testing.T, img *hcloud.Image) func(*hcloud.Client, int64) bool {

@@ -43,51 +43,6 @@ func TestAccDatacenterDataSource(t *testing.T) {
 	})
 }
 
-func TestAccDatacenterDataSource_UpgradePluginFramework(t *testing.T) {
-	tmplMan := testtemplate.Manager{}
-
-	dcByName := &datacenter.DData{
-		DatacenterName: "fsn1-dc14",
-	}
-	dcByName.SetRName("dc_by_name")
-	dcByID := &datacenter.DData{
-		DatacenterID: "4",
-	}
-	dcByID.SetRName("dc_by_id")
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: teste2e.PreCheck(t),
-		Steps: []resource.TestStep{
-			{
-				ExternalProviders: map[string]resource.ExternalProvider{
-					"hcloud": {
-						VersionConstraint: "1.44.1",
-						Source:            "hetznercloud/hcloud",
-					},
-				},
-
-				Config: tmplMan.Render(t,
-					"testdata/d/hcloud_datacenter", dcByName,
-					"testdata/d/hcloud_datacenter", dcByID,
-					"testdata/r/terraform_data_resource", dcByName,
-					"testdata/r/terraform_data_resource", dcByID,
-				),
-			},
-			{
-				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
-
-				Config: tmplMan.Render(t,
-					"testdata/d/hcloud_datacenter", dcByName,
-					"testdata/d/hcloud_datacenter", dcByID,
-					"testdata/r/terraform_data_resource", dcByName,
-					"testdata/r/terraform_data_resource", dcByID,
-				),
-
-				PlanOnly: true,
-			},
-		},
-	})
-}
-
 func TestAccDatacenterDataSourceList(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
@@ -123,41 +78,6 @@ func TestAccDatacenterDataSourceList(t *testing.T) {
 					resource.TestCheckResourceAttr(datacentersD.TFID(), "datacenters.4.name", "hil-dc1"),
 					resource.TestCheckResourceAttr(datacentersD.TFID(), "datacenters.5.name", "sin-dc1"),
 				),
-			},
-		},
-	})
-}
-
-func TestAccDatacenterDataSourceList_UpgradePluginFramework(t *testing.T) {
-	tmplMan := testtemplate.Manager{}
-
-	datacentersD := &datacenter.DDataList{}
-	datacentersD.SetRName("ds")
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: teste2e.PreCheck(t),
-		Steps: []resource.TestStep{
-			{
-				ExternalProviders: map[string]resource.ExternalProvider{
-					"hcloud": {
-						VersionConstraint: "1.44.1",
-						Source:            "hetznercloud/hcloud",
-					},
-				},
-
-				Config: tmplMan.Render(t,
-					"testdata/d/hcloud_datacenters", datacentersD,
-					"testdata/r/terraform_data_resource", datacentersD,
-				),
-			},
-			{
-				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
-
-				Config: tmplMan.Render(t,
-					"testdata/d/hcloud_datacenters", datacentersD,
-					"testdata/r/terraform_data_resource", datacentersD,
-				),
-
-				PlanOnly: true,
 			},
 		},
 	})

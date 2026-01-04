@@ -5,49 +5,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/certificate"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/network"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
-
-func init() {
-	resource.AddTestSweepers(ResourceType, &resource.Sweeper{
-		Name: ResourceType,
-		Dependencies: []string{
-			certificate.ResourceType,
-			server.ResourceType,
-			network.ResourceType,
-		},
-		F: Sweep,
-	})
-}
-
-// Sweep removes all Load Balancers from the Hetzner Cloud backend.
-func Sweep(r string) error {
-	client, err := testsupport.CreateClient()
-	if err != nil {
-		return err
-	}
-
-	ctx := context.Background()
-	loadBalancers, err := client.LoadBalancer.All(ctx)
-	if err != nil {
-		return err
-	}
-
-	for _, loadBalancer := range loadBalancers {
-		if _, err := client.LoadBalancer.Delete(ctx, loadBalancer); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
 
 // ByID returns a function that obtains a loadbalancer by its ID.
 func ByID(t *testing.T, lb *hcloud.LoadBalancer) func(*hcloud.Client, int64) bool {
@@ -80,7 +40,7 @@ func (d *DData) TFID() string {
 	return fmt.Sprintf("data.%s.%s", DataSourceType, d.RName())
 }
 
-// DData defines the fields for the "testdata/d/hcloud_load_balancers" template.
+// DDataList defines the fields for the "testdata/d/hcloud_load_balancers" template.
 type DDataList struct {
 	testtemplate.DataCommon
 

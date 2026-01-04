@@ -60,7 +60,7 @@ func TestAccStorageBoxSubaccountDataSourceList(t *testing.T) {
 		Labels: map[string]string{
 			"key": randutil.GenerateID(),
 		},
-		Raw: fmt.Sprintf(`
+		Raw: `
 			access_settings = {
 				reachable_externally = false
 				samba_enabled = true
@@ -68,8 +68,7 @@ func TestAccStorageBoxSubaccountDataSourceList(t *testing.T) {
 				webdav_enabled = true
 				readonly = false
 			}
-
-			depends_on = [%s]`, res1.TFID()), // Only one subaccount may be created at the same time
+		`,
 	}
 	res2.SetRName("default2")
 
