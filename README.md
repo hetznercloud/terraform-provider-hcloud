@@ -164,7 +164,7 @@ To publish experimental features as part of regular releases:
 
 ### Deprecating attributes
 
-When deprecating an attribute, because it is removed from the API:
+When deprecating an attributes:
 
 1. Mark the attribute in the schema as deprecated (for SDKv2, the docs template may also need updating), in the message explain the deprecation and link to changelog, for example:
 
@@ -185,15 +185,16 @@ When deprecating an attribute, because it is removed from the API:
 
 2. - For inputs: Implement backwards-compatible behaviour if possible
    - For output: Keep writing the attribute for as long as it is returned from the API. Once it is no longer
-     returned the code should return the user config/previous state if available, or `""` (SDKv2)/`null` (Plugin Framework).
-3. In the resource and datasource docs, add a `## Deprecations` section with a subsection for this field, explaining the behaviour and urging users to upgrade to a compatible version:
+     returned the code should return the user config/previous state if available, or `""` (SDKv2) / `null` (Plugin Framework).
+
+3. In the resource and datasource docs, add a `## Deprecations` section with a subsection for this field, explaining the behaviour and urging users to upgrade to a compatible version, for example:
 
    ```md
-   ### `XYZ` attribute
+   ### `datacenter` attribute
 
-   The `XYZ` attribute is deprecated, use the `ABC` attribute instead.
+   The `datacenter` attribute is deprecated, use the `ABC` attribute instead.
 
-   See our the [API changelog](https://docs.hetzner.cloud/changelog#SLUG) for more details.
+   See our the [API changelog](https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters) for more details.
 
    -> Please upgrade to `v1.W.0+` of the provider to avoid issues once the Hetzner Cloud API no longer returns the `XYZ` attribute.
    ```
