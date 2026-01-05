@@ -10,26 +10,28 @@
 - [Terraform](https://developer.hashicorp.com/terraform/install) or [OpenTofu](https://opentofu.org/docs/intro/install/)
   - Our provider tests run with Terraform or OpenTofu releases that are supported upstream.
   - Our provider should work with any tool that supports the [terraform plugin protocol version 6](https://developer.hashicorp.com/terraform/plugin/terraform-plugin-protocol#protocol-version-6).
-- [Go](https://go.dev/doc/install) 1.21.x (to build the provider plugin)
+- [Go](https://go.dev/doc/install) (to build the provider plugin)
 
-## API Stability
+## Development
+
+### API Stability
 
 This Go module implements a Terraform Provider for Hetzner Cloud
 Services. We thus guarantee backwards compatibility only for use through
 Terraform HCL. The actual _Go code_ in this repository _may change
 without a major version increase_.
 
-Currently the code is mostly located in the `hcloud` package. In the
+Currently, the code is mostly located in the `hcloud` package. In the
 long term we want to move most of the `hcloud` package into individual
 sub-packages located in the `internal` directory. The goal is a
 structure similar to HashiCorp's [Terraform Provider
 Scaffolding](https://github.com/hashicorp/terraform-provider-scaffolding)
 
-## Using the provider
+### Using the provider
 
 If you are building the provider, follow the instructions to [install it as a plugin](https://www.terraform.io/docs/plugins/basics.html#installing-a-plugin). After placing it into your plugins directory, run `terraform init` to initialize it.
 
-## Building the provider
+### Building the provider
 
 Clone repository to: `$GOPATH/src/github.com/hetznercloud/terraform-provider-hcloud`
 
@@ -45,7 +47,7 @@ $ cd $GOPATH/src/github.com/hetznercloud/terraform-provider-hcloud
 $ make build
 ```
 
-## Developing the provider
+### Developing the provider
 
 If you wish to work on the provider, you'll first need [Go](http://www.golang.org) installed on your machine (version 1.14+ is _required_). You'll also need to correctly setup a [GOPATH](http://golang.org/doc/code.html#GOPATH), as well as adding `$GOPATH/bin` to your `$PATH`.
 
@@ -86,7 +88,7 @@ $ go test -v -timeout=30m -parallel=8 ./internal/server
 # ...
 ```
 
-## Running a local build
+### Running a local build
 
 Choose a terraform cli config file path:
 
@@ -133,7 +135,7 @@ You should see the following warning:
 ╵
 ```
 
-## Releasing experimental features
+### Releasing experimental features
 
 To publish experimental features as part of regular releases:
 
@@ -159,3 +161,42 @@ To publish experimental features as part of regular releases:
     experimental.Product.AppendDiagnostic(&resp.Diagnostics)
   }
   ```
+
+### Deprecating attributes
+
+When deprecating an attributes:
+
+1. Mark the attribute in the schema as deprecated (for SDKv2, the docs template may also need updating), in the message explain the deprecation and link to changelog, for example:
+
+   ```go
+   func Resource() *schema.Resource {
+       return &schema.Resource{
+           // ...
+           Schema: map[string]*schema.Schema{
+               "datacenter": {
+                   // ...
+                   Deprecated: "The datacenter attribute is deprecated and will be removed after 1 July 2026. Please use the location attribute instead. See https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters.",
+                   // ...
+               },
+           },
+       }
+   }
+   ```
+
+2. - For inputs: Implement backwards-compatible behaviour if possible
+   - For output: Keep writing the attribute for as long as it is returned from the API. Once it is no longer
+     returned the code should return the user config/previous state if available, or `""` (SDKv2) / `null` (Plugin Framework).
+
+3. In the resource and datasource docs, add a `## Deprecations` section with a subsection for this field, explaining the behaviour and urging users to upgrade to a compatible version, for example:
+
+   ```md
+   ### `datacenter` attribute
+
+   The `datacenter` attribute is deprecated, use the `ABC` attribute instead.
+
+   See our the [API changelog](https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters) for more details.
+
+   -> Please upgrade to `v1.W.0+` of the provider to avoid issues once the Hetzner Cloud API no longer returns the `XYZ` attribute.
+   ```
+
+4. Highlight the deprecation in the Release Notes.
