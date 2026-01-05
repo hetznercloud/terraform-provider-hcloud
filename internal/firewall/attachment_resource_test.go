@@ -21,10 +21,10 @@ func TestAccFirewallAttachmentResource_Servers(t *testing.T) {
 
 	fwRes := firewall.NewRData(t, "basic_firewall", nil, nil)
 	srvRes := &server.RData{
-		Name:       "test-server",
-		Type:       teste2e.TestServerType,
-		Image:      teste2e.TestImage,
-		Datacenter: teste2e.TestDataCenter,
+		Name:         "test-server",
+		Type:         teste2e.TestServerType,
+		Image:        teste2e.TestImage,
+		LocationName: teste2e.TestLocationName,
 	}
 	srvRes.SetRName("test_server")
 
@@ -73,10 +73,10 @@ func TestAccFirewallAttachmentResource_LabelSelectors(t *testing.T) {
 
 	fwRes := firewall.NewRData(t, "basic_firewall", nil, nil)
 	srvRes := &server.RData{
-		Name:       "test-server",
-		Type:       teste2e.TestServerType,
-		Image:      teste2e.TestImage,
-		Datacenter: teste2e.TestDataCenter,
+		Name:         "test-server",
+		Type:         teste2e.TestServerType,
+		Image:        teste2e.TestImage,
+		LocationName: teste2e.TestLocationName,
 		Labels: map[string]string{
 			"firewall-attachment": "test-server",
 		},

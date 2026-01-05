@@ -6,7 +6,11 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/primaryip"
@@ -24,7 +28,7 @@ func TestAccPrimaryIPResource(t *testing.T) {
 		Name:         "primaryip-test",
 		Type:         "ipv4",
 		Labels:       nil,
-		Datacenter:   teste2e.TestDataCenter,
+		Location:     teste2e.TestLocationName,
 		AssigneeType: "server",
 		AutoDelete:   false,
 	}
@@ -32,7 +36,7 @@ func TestAccPrimaryIPResource(t *testing.T) {
 		Name:         res.Name + "-renamed",
 		Type:         res.Type,
 		AssigneeType: res.AssigneeType,
-		Datacenter:   res.Datacenter,
+		Location:     res.Location,
 		AutoDelete:   res.AutoDelete,
 	}
 	resRenamed.SetRName(res.Name)
@@ -84,7 +88,7 @@ func TestAccPrimaryIPResource_WithServer(t *testing.T) {
 		Name:         "primaryip-test-v4-one",
 		Type:         "ipv4",
 		Labels:       nil,
-		Datacenter:   teste2e.TestDataCenter,
+		Location:     teste2e.TestLocationName,
 		AssigneeType: "server",
 		AutoDelete:   false,
 	}
@@ -94,7 +98,7 @@ func TestAccPrimaryIPResource_WithServer(t *testing.T) {
 		Name:         "primaryip-test-v6-one",
 		Type:         "ipv6",
 		Labels:       nil,
-		Datacenter:   teste2e.TestDataCenter,
+		Location:     teste2e.TestLocationName,
 		AssigneeType: "server",
 		AutoDelete:   false,
 	}
@@ -104,18 +108,18 @@ func TestAccPrimaryIPResource_WithServer(t *testing.T) {
 		Name:         "primaryip-test-v4-two",
 		Type:         "ipv4",
 		Labels:       nil,
-		Datacenter:   teste2e.TestDataCenter,
+		Location:     teste2e.TestLocationName,
 		AssigneeType: "server",
 		AutoDelete:   true,
 	}
 	primaryIPv4TwoRes.SetRName("primary_ip_v4_two_test")
 
 	testServerRes := &server.RData{
-		Name:       "server-test",
-		Type:       teste2e.TestServerType,
-		Image:      teste2e.TestImage,
-		Datacenter: teste2e.TestDataCenter,
-		Labels:     nil,
+		Name:         "server-test",
+		Type:         teste2e.TestServerType,
+		Image:        teste2e.TestImage,
+		LocationName: teste2e.TestLocationName,
+		Labels:       nil,
 		PublicNet: map[string]interface{}{
 			"ipv4_enabled": true,
 			"ipv6_enabled": true,
@@ -125,11 +129,11 @@ func TestAccPrimaryIPResource_WithServer(t *testing.T) {
 	}
 
 	testServerUpdatedRes := &server.RData{
-		Name:       testServerRes.Name,
-		Type:       testServerRes.Type,
-		Image:      testServerRes.Image,
-		Datacenter: testServerRes.Datacenter,
-		Labels:     testServerRes.Labels,
+		Name:         testServerRes.Name,
+		Type:         testServerRes.Type,
+		Image:        testServerRes.Image,
+		LocationName: testServerRes.LocationName,
+		Labels:       testServerRes.Labels,
 		PublicNet: map[string]interface{}{
 			"ipv4":         primaryIPv4TwoRes.TFID() + ".id",
 			"ipv6_enabled": false,
@@ -215,7 +219,7 @@ func TestAccPrimaryIPResource_FieldUpdates(t *testing.T) {
 			Name:             "primaryip-protection",
 			Type:             "ipv4",
 			Labels:           nil,
-			Datacenter:       teste2e.TestDataCenter,
+			Location:         teste2e.TestLocationName,
 			AssigneeType:     "server",
 			DeleteProtection: true,
 			AutoDelete:       true,
@@ -267,7 +271,7 @@ func TestAccPrimaryIPResource_DeleteProtection(t *testing.T) {
 	unprotected := &primaryip.RData{
 		Name:             "primaryip-test",
 		Type:             "ipv6",
-		Datacenter:       teste2e.TestDataCenter,
+		Location:         teste2e.TestLocationName,
 		AssigneeType:     "server",
 		DeleteProtection: false,
 	}
@@ -275,7 +279,7 @@ func TestAccPrimaryIPResource_DeleteProtection(t *testing.T) {
 	protected := &primaryip.RData{
 		Name:             unprotected.Name,
 		Type:             unprotected.Type,
-		Datacenter:       unprotected.Datacenter,
+		Location:         unprotected.Location,
 		AssigneeType:     unprotected.AssigneeType,
 		DeleteProtection: true,
 	}
@@ -317,6 +321,101 @@ func TestAccPrimaryIPResource_DeleteProtection(t *testing.T) {
 				// Delete unprotected primary IP.
 				Config:  tmplMan.Render(t, "testdata/r/hcloud_primary_ip", unprotected),
 				Destroy: true,
+			},
+		},
+	})
+}
+
+func TestAccPrimaryIPResource_DatacenterToLocation(t *testing.T) {
+	// Test for the "datacenter" deprecation, to make sure that its possible to move to "location" attribute
+	// See https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters
+
+	resDC := &primaryip.RData{
+		Name:         "primaryip-dc-to-location",
+		Type:         "ipv6",
+		Datacenter:   teste2e.TestDataCenter,
+		AssigneeType: "server",
+	}
+	resDC.SetRName("dc_to_location")
+
+	resLocation := testtemplate.DeepCopy(t, resDC)
+	resLocation.Datacenter = ""
+	resLocation.Location = teste2e.TestLocationName
+
+	tmplMan := testtemplate.Manager{}
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				// Create primary IP in Datacenter.
+				Config: tmplMan.Render(t, "testdata/r/hcloud_primary_ip", resDC),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resDC.TFID(), tfjsonpath.New("datacenter"), knownvalue.StringExact(teste2e.TestDataCenter)),
+					statecheck.ExpectKnownValue(resDC.TFID(), tfjsonpath.New("location"), knownvalue.StringExact(teste2e.TestLocationName)),
+				},
+			},
+			{
+				// Change config to Location.
+				Config: tmplMan.Render(t, "testdata/r/hcloud_primary_ip", resLocation),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resDC.TFID(), tfjsonpath.New("datacenter"), knownvalue.StringExact(teste2e.TestDataCenter)),
+					statecheck.ExpectKnownValue(resDC.TFID(), tfjsonpath.New("location"), knownvalue.StringExact(teste2e.TestLocationName)),
+				},
+			},
+		},
+	})
+}
+
+func TestAccPrimaryIPResource_DatacenterToLocationForceNew(t *testing.T) {
+	// Test for the "datacenter" deprecation, to make sure that its possible to move to "location" attribute
+	// See https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters
+
+	resDC := &primaryip.RData{
+		Name:         "primaryip-dc-to-location",
+		Type:         "ipv6",
+		Datacenter:   teste2e.TestDataCenter,
+		AssigneeType: "server",
+	}
+	resDC.SetRName("dc_to_location")
+
+	resLocation := testtemplate.DeepCopy(t, resDC)
+	resLocation.Datacenter = ""
+	resLocation.Location = teste2e.TestLocationName
+
+	tmplMan := testtemplate.Manager{}
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: teste2e.PreCheck(t),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"hcloud": {
+						VersionConstraint: "1.57.0",
+						Source:            "hetznercloud/hcloud",
+					},
+				},
+				// Create primary IP in Datacenter.
+				Config: tmplMan.Render(t, "testdata/r/hcloud_primary_ip", resDC),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resDC.TFID(), tfjsonpath.New("datacenter"), knownvalue.StringExact(teste2e.TestDataCenter)),
+				},
+			},
+			{
+				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+				// Change config to Location.
+				Config: tmplMan.Render(t, "testdata/r/hcloud_primary_ip", resLocation),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resLocation.TFID(), tfjsonpath.New("datacenter"), knownvalue.StringExact(teste2e.TestDataCenter)),
+					statecheck.ExpectKnownValue(resLocation.TFID(), tfjsonpath.New("location"), knownvalue.StringExact(teste2e.TestLocationName)),
+				},
 			},
 		},
 	})
