@@ -23,7 +23,7 @@ func TestAccPrimaryIPDataSource(t *testing.T) {
 		Labels: map[string]string{
 			"key": strconv.Itoa(acctest.RandInt()),
 		},
-		Datacenter:   "fsn1-dc14",
+		Location:     teste2e.TestLocationName,
 		AssigneeType: "server",
 	}
 	res.SetRName("primaryip-ds-test")
@@ -68,15 +68,18 @@ func TestAccPrimaryIPDataSource(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(primaryIPByName.TFID(),
 						"name", fmt.Sprintf("%s--%d", res.Name, tmplMan.RandInt)),
-					resource.TestCheckResourceAttr(primaryIPByName.TFID(), "datacenter", res.Datacenter),
+					resource.TestCheckResourceAttr(primaryIPByName.TFID(), "location", teste2e.TestLocationName),
+					resource.TestCheckResourceAttr(primaryIPByName.TFID(), "datacenter", teste2e.TestDataCenter),
 
 					resource.TestCheckResourceAttr(primaryIPByID.TFID(),
 						"name", fmt.Sprintf("%s--%d", res.Name, tmplMan.RandInt)),
-					resource.TestCheckResourceAttr(primaryIPByID.TFID(), "datacenter", res.Datacenter),
+					resource.TestCheckResourceAttr(primaryIPByID.TFID(), "location", teste2e.TestLocationName),
+					resource.TestCheckResourceAttr(primaryIPByID.TFID(), "datacenter", teste2e.TestDataCenter),
 
 					resource.TestCheckResourceAttr(primaryIPBySel.TFID(),
 						"name", fmt.Sprintf("%s--%d", res.Name, tmplMan.RandInt)),
-					resource.TestCheckResourceAttr(primaryIPBySel.TFID(), "datacenter", res.Datacenter),
+					resource.TestCheckResourceAttr(primaryIPBySel.TFID(), "location", teste2e.TestLocationName),
+					resource.TestCheckResourceAttr(primaryIPBySel.TFID(), "datacenter", teste2e.TestDataCenter),
 				),
 			},
 		},
@@ -90,7 +93,7 @@ func TestAccPrimaryIPDataSourceList(t *testing.T) {
 		Labels: map[string]string{
 			"key": strconv.Itoa(acctest.RandInt()),
 		},
-		Datacenter:   "fsn1-dc14",
+		Location:     teste2e.TestLocationName,
 		AssigneeType: "server",
 	}
 	res.SetRName("primary-ds-test")
@@ -125,14 +128,16 @@ func TestAccPrimaryIPDataSourceList(t *testing.T) {
 					resource.TestCheckTypeSetElemNestedAttrs(primaryipBySel.TFID(), "primary_ips.*",
 						map[string]string{
 							"name":       fmt.Sprintf("%s--%d", res.Name, tmplMan.RandInt),
-							"datacenter": res.Datacenter,
+							"location":   teste2e.TestLocationName,
+							"datacenter": teste2e.TestDataCenter,
 						},
 					),
 
 					resource.TestCheckTypeSetElemNestedAttrs(allPrimaryIPsSel.TFID(), "primary_ips.*",
 						map[string]string{
 							"name":       fmt.Sprintf("%s--%d", res.Name, tmplMan.RandInt),
-							"datacenter": res.Datacenter,
+							"location":   teste2e.TestLocationName,
+							"datacenter": teste2e.TestDataCenter,
 						},
 					),
 				),

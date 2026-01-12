@@ -4,6 +4,9 @@ resource "hcloud_primary_ip" "{{ .RName }}" {
   {{/* Required properties */ -}}
   name        = "{{ .Name }}--{{ .RInt }}"
   type = "{{ .Type }}"
+  {{- if .Location }}
+  location       = "{{ .Location }}"
+  {{ end }}
   {{- if .Datacenter }}
   datacenter       = "{{ .Datacenter }}"
   {{ end }}

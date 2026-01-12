@@ -2,10 +2,10 @@ package primaryip
 
 import (
 	"context"
-	"errors"
 	"log"
 	"math/rand"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -22,6 +22,8 @@ const ResourceType = "hcloud_primary_ip"
 
 // Resource creates a new Terraform schema for the hcloud_primary_ip resource.
 func Resource() *schema.Resource {
+	locationAttributes := []string{"location", "datacenter", "assignee_id"}
+
 	return &schema.Resource{
 		CreateContext: resourcePrimaryIPCreate,
 		ReadContext:   resourcePrimaryIPRead,
@@ -41,16 +43,26 @@ func Resource() *schema.Resource {
 				Optional: true,
 				Computed: true,
 			},
+			"location": {
+				Type:         schema.TypeString,
+				ForceNew:     true,
+				Optional:     true,
+				Computed:     true,
+				ExactlyOneOf: locationAttributes,
+			},
 			"datacenter": {
-				Type:     schema.TypeString,
-				ForceNew: true,
-				Optional: true,
-				Computed: true,
+				Type:         schema.TypeString,
+				ForceNew:     true,
+				Optional:     true,
+				Computed:     true,
+				Deprecated:   "The datacenter attribute is deprecated and will be removed after 1 July 2026. Please use the location attribute instead. See https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters.",
+				ExactlyOneOf: locationAttributes,
 			},
 			"assignee_id": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Computed: true,
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Computed:     true,
+				ExactlyOneOf: locationAttributes,
 			},
 			"assignee_type": {
 				Type:     schema.TypeString,
@@ -98,19 +110,24 @@ func resourcePrimaryIPCreate(ctx context.Context, d *schema.ResourceData, m inte
 	if name, ok := d.GetOk("name"); ok {
 		opts.Name = name.(string)
 	}
-	assigneeID, ok1 := d.GetOk("assignee_id")
-	dataCenter, ok2 := d.GetOk("datacenter")
 
-	switch {
-	case ok1 && ok2:
-		return hcloudutil.ErrorToDiag(errors.New("assignee_id & datacenter cannot be set in the same time. " +
-			"If assignee_id is set, datacenter must be left out"))
-	case ok1:
+	if assigneeID, ok := d.GetOk("assignee_id"); ok {
 		opts.AssigneeID = hcloud.Ptr(util.CastInt64(assigneeID))
-	case ok2:
-		opts.Datacenter = dataCenter.(string)
-	default:
+	} else if location, ok := d.GetOk("location"); ok {
+		opts.Location = location.(string)
+	} else if datacenter, ok := d.GetOk("datacenter"); ok {
+		// Backward compatible datacenter argument.
+		// datacenter hel1-dc2 => location hel1
+		parts := strings.Split(datacenter.(string), "-")
+
+		if len(parts) != 2 {
+			return diag.Errorf("Datacenter name is not valid, expected format $LOCATION-$DATACENTER, but got: %s", datacenter.(string))
+		}
+
+		locationName := parts[0]
+		opts.Location = locationName
 	}
+
 	if labels, ok := d.GetOk("labels"); ok {
 		tmpLabels := make(map[string]string)
 		for k, v := range labels.(map[string]interface{}) {
@@ -321,7 +338,7 @@ func getPrimaryIPAttributes(f *hcloud.PrimaryIP) map[string]interface{} {
 		"assignee_type":     f.AssigneeType,
 		"name":              f.Name,
 		"type":              f.Type,
-		"datacenter":        f.Datacenter.Name,
+		"location":          f.Location.Name,
 		"labels":            f.Labels,
 		"delete_protection": f.Protection.Delete,
 		"auto_delete":       f.AutoDelete,
@@ -329,6 +346,18 @@ func getPrimaryIPAttributes(f *hcloud.PrimaryIP) map[string]interface{} {
 
 	if f.Type == hcloud.PrimaryIPTypeIPv6 {
 		res["ip_network"] = f.Network.String()
+	}
+
+	// Pass through datacenter name as long as it is returned from the API.
+	//
+	// If the attribute is not returned from the API, we never set the attribute,
+	// so whatever is in the state or user config is kept.
+	//
+	// See https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters
+	//nolint:staticcheck // Backwards-compatibility
+	if f.Datacenter != nil {
+		//nolint:staticcheck // Backwards-compatibility
+		res["datacenter"] = f.Datacenter.Name
 	}
 
 	return res

@@ -11,6 +11,19 @@ Provides a Hetzner Cloud Primary IP to represent a publicly-accessible static IP
 If a server is getting created, it has to have a primary ip. If a server is getting created without defining primary ips, two of them (one ipv4 and one ipv6) getting created & attached.
 Currently, Primary IPs can be only attached to servers.
 
+## Deprecations
+
+### `datacenter` attribute
+
+The `datacenter` attribute is deprecated, use the `location` attribute instead.
+
+See our the [API changelog](https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters) for more details.
+
+-> Please upgrade to `v1.58.0+` of the provider to avoid issues once the Hetzner Cloud API no longer accepts
+and returns the `datacenter` attribute. This version of the provider remains backward compatible by preserving
+the `datacenter` value in the state and by extracting the `location` name from the `datacenter` attribute when
+communicating with the API.
+
 ## Example Usage
 
 ```terraform
@@ -44,7 +57,8 @@ resource "hcloud_server" "server_test" {
 
 - `type` - (string) Type of the Primary IP. `ipv4` or `ipv6`
 - `name` - (string) Name of the Primary IP.
-- `datacenter` - (string, optional) The datacenter name to create the resource in. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-datacenters-are-there) for more details about datacenters.
+- `location` - (string, optional) The location name to create the resource in. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-locations-are-there) for more details about locations.
+- `datacenter` - (string, optional, deprecated) The datacenter name to create the resource in. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-datacenters-are-there) for more details about datacenters.
 - `auto_delete` - (bool) Whether auto delete is enabled.
   `Important note:`It is recommended to set `auto_delete` to `false`, because if a server assigned to the managed ip is getting deleted, it will also delete the primary IP which will break the TF state.
 - `labels` - (map, optional) User-defined labels (key-value pairs).
@@ -52,13 +66,14 @@ resource "hcloud_server" "server_test" {
 - `assignee_type` - (string) The type of the assigned resource. Currently supported: `server`
 - `delete_protection` - (bool, optional) Whether delete protection is enabled. See ["Delete Protection"](../index.html.markdown#delete-protection) in the Provider Docs for details.
 
-Note: At least one of `datacenter` or `assignee_id` is required.
+Note: At least one of `location`, `datacenter` or `assignee_id` is required.
 
 ## Attributes Reference
 
 - `id` - (int) Unique ID of the Primary IP.
 - `type` - (string) Type of the Primary IP.
-- `datacenter` - (string) The datacenter of the Primary IP. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-datacenters-are-there) for more details about datacenters.
+- `location` - (string) The location of the Primary IP. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-locations-are-there) for more details about locations.
+- `datacenter` - (string, deprecated) The datacenter of the Primary IP. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-datacenters-are-there) for more details about datacenters.
 - `name` - (string) Name of the Primary IP.
 - `auto_delete` - (bool) Whether auto delete is enabled.
 - `labels` - (map) User-defined labels (key-value pairs).

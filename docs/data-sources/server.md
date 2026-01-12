@@ -9,6 +9,16 @@ description: |-
 Provides details about a Hetzner Cloud Server.
 This resource is useful if you want to use a non-terraform managed server.
 
+## Deprecations
+
+### `datacenter` attribute
+
+The `datacenter` attribute is deprecated, use the `location` attribute instead.
+
+See our the [API changelog](https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters) for more details.
+
+-> Please upgrade to `v1.58.0+` of the provider to avoid issues once the Hetzner Cloud API no longer returns the `datacenter` attribute.
+
 ## Example Usage
 
 ```terraform
@@ -37,7 +47,7 @@ data "hcloud_server" "s_3" {
 - `server_type` - (string) Name of the server type.
 - `image` - (string) Name or ID of the image the server was created from.
 - `location` - (string) The location name. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-locations-are-there) for more details about locations.
-- `datacenter` - (string) The datacenter name. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-datacenters-are-there) for more details about datacenters.
+- `datacenter` - (string, deprecated) The datacenter name. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-datacenters-are-there) for more details about datacenters.
 - `backup_window` - (string) The backup window of the server, if enabled.
 - `backups` - (bool) Whether backups are enabled.
 - `iso` - (string) ID or Name of the mounted ISO image. Architecture of ISO must equal the server (type) architecture.

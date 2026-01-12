@@ -8,6 +8,19 @@ description: |-
 
 Provides an Hetzner Cloud server resource. This can be used to create, modify, and delete servers. Servers also support [provisioning](https://www.terraform.io/docs/provisioners/index.html).
 
+## Deprecations
+
+### `datacenter` attribute
+
+The `datacenter` attribute is deprecated, use the `location` attribute instead.
+
+See our the [API changelog](https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters) for more details.
+
+-> Please upgrade to `v1.58.0+` of the provider to avoid issues once the Hetzner Cloud API no longer accepts
+and returns the `datacenter` attribute. This version of the provider remains backward compatible by preserving
+the `datacenter` value in the state and by extracting the `location` name from the `datacenter` attribute when
+communicating with the API.
+
 ## Example Usage
 
 ### Basic server creation
@@ -29,7 +42,7 @@ resource "hcloud_server" "node1" {
 ### Server creation with one linked primary ip (ipv4)
 resource "hcloud_primary_ip" "primary_ip_1" {
 name          = "primary_ip_test"
-datacenter    = "fsn1-dc14"
+location      = "hel1"
 type          = "ipv4"
 assignee_type = "server"
 auto_delete   = true
@@ -42,7 +55,7 @@ resource "hcloud_server" "server_test" {
   name        = "test-server"
   image       = "ubuntu-24.04"
   server_type = "cx23"
-  datacenter  = "fsn1-dc14"
+  location    = "hel1"
   labels = {
     "test" : "tessst1"
   }
@@ -162,7 +175,7 @@ The following arguments are supported:
 - `server_type` - (Required, string) Name of the server type this server should be created with.
 - `image` - (Required, string) Name or ID of the image the server is created from. **Note** the `image` property is only required when using the resource to create servers. As the Hetzner Cloud API may return servers without an image ID set it is not marked as required in the Terraform Provider itself. Thus, users will get an error from the underlying client library if they forget to set the property and try to create a server.
 - `location` - (Optional, string) The location name to create the server in. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-locations-are-there) for more details about locations.
-- `datacenter` - (Optional, string) The datacenter name to create the server in. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-datacenters-are-there) for more details about datacenters.
+- `datacenter` - (Optional, string, deprecated) The datacenter name to create the server in. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-datacenters-are-there) for more details about datacenters.
 - `user_data` - (Optional, string) Cloud-Init user data to use during server creation
 - `ssh_keys` - (Optional, list) SSH key IDs or names which should be injected into the server at creation time. Once the server is created, you can not update the list of SSH Keys. If you do change this, you will be prompted to destroy and recreate the server. You can avoid this by setting [lifecycle.ignore_changes](https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle#ignore_changes) to `[ ssh_keys ]`.
 - `public_net` - (Optional, block) In this block you can either enable / disable ipv4 and ipv6 or link existing primary IPs (checkout the examples).
@@ -202,7 +215,7 @@ The following attributes are exported:
 - `server_type` - (string) Name of the server type.
 - `image` - (string) Name or ID of the image the server was created from.
 - `location` - (string) The location name. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-locations-are-there) for more details about locations.
-- `datacenter` - (string) The datacenter name. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-datacenters-are-there) for more details about datacenters.
+- `datacenter` - (string, deprecated) The datacenter name. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-datacenters-are-there) for more details about datacenters.
 - `backup_window` - (string) The backup window of the server, if enabled.
 - `backups` - (bool) Whether backups are enabled.
 - `iso` - (string) ID or Name of the mounted ISO image.

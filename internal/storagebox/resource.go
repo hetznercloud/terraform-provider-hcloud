@@ -604,8 +604,12 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 }
 
 func (r *Resource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	// Not setting the `ssh_keys` value during import will trigger a replacement of the resource, even if the
+	// user configured `lifecycle { ignore_changes = [ssh_keys]}`.
+
 	if id, err := strconv.ParseInt(req.ID, 10, 64); err == nil {
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ssh_keys"), []string{})...)
 		return
 	}
 
@@ -621,4 +625,5 @@ func (r *Resource) ImportState(ctx context.Context, req resource.ImportStateRequ
 	}
 
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), in.ID)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ssh_keys"), []string{})...)
 }

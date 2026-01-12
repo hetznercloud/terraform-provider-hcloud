@@ -70,10 +70,11 @@ func Resource() *schema.Resource {
 				Computed: true,
 			},
 			"datacenter": {
-				Type:     schema.TypeString,
-				Optional: true,
-				ForceNew: true,
-				Computed: true,
+				Type:       schema.TypeString,
+				Optional:   true,
+				ForceNew:   true,
+				Computed:   true,
+				Deprecated: "The datacenter attribute is deprecated and will be removed after 1 July 2026. Please use the location attribute instead. See https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters.",
 			},
 			"user_data": {
 				Type:             schema.TypeString,
@@ -291,10 +292,10 @@ func userDataDiffSuppress(k, oldValue, newValue string, d *schema.ResourceData) 
 	return strings.TrimSpace(oldValue) == strings.TrimSpace(newValue)
 }
 
-const ChangeDeprecatedServerTypeMessage = (`Existing servers of that plan will ` +
+const ChangeDeprecatedServerTypeMessage = `Existing servers of that plan will ` +
 	`continue to work as before and no action is required on your part. ` +
 	`It is possible to migrate this Server to another Server Type by using ` +
-	`the "hcloud server change-type" command.`)
+	`the "hcloud server change-type" command.`
 
 func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interface{}) (diags diag.Diagnostics) {
 	c := m.(*hcloud.Client)
@@ -346,21 +347,28 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		UserData: d.Get("user_data").(string),
 	}
 
-	var serverTypeLocationName string
-	if datacenter, ok := d.GetOk("datacenter"); ok {
-		opts.Datacenter = &hcloud.Datacenter{Name: datacenter.(string)}
-		if parts := strings.SplitN(opts.Datacenter.Name, "-", 2); len(parts) == 2 {
-			serverTypeLocationName = parts[0]
-		}
-	}
-
 	if location, ok := d.GetOk("location"); ok {
 		opts.Location = &hcloud.Location{Name: location.(string)}
-		serverTypeLocationName = opts.Location.Name
+	} else if datacenter, ok := d.GetOk("datacenter"); ok {
+		// Backward compatible datacenter argument.
+		// datacenter hel1-dc2 => location hel1
+		parts := strings.SplitN(datacenter.(string), "-", 2)
+
+		if len(parts) != 2 {
+			diags = append(diags, diag.Errorf("Datacenter name is not valid, expected format $LOCATION-$DATACENTER, but got: %s", datacenter.(string))...)
+			return
+		}
+
+		locationName := parts[0]
+		opts.Location = &hcloud.Location{Name: locationName}
+	}
+	locationName := ""
+	if opts.Location != nil {
+		locationName = opts.Location.Name
 	}
 
 	serverTypeDeprecationPrinted := false
-	if message, isUnavailable := deprecationutil.ServerTypeMessage(serverType, serverTypeLocationName); message != "" {
+	if message, isUnavailable := deprecationutil.ServerTypeMessage(serverType, locationName); message != "" {
 		serverTypeDeprecationPrinted = true
 		deprecationDiag := diag.Diagnostic{
 			Severity: diag.Warning,
@@ -444,7 +452,7 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 
 	if !serverTypeDeprecationPrinted {
 		// We now know the server location and can check the server type deprecation again.
-		if message, _ := deprecationutil.ServerTypeMessage(res.Server.ServerType, res.Server.Datacenter.Location.Name); message != "" {
+		if message, _ := deprecationutil.ServerTypeMessage(res.Server.ServerType, res.Server.Location.Name); message != "" {
 			deprecationDiag := diag.Diagnostic{
 				Severity: diag.Warning,
 				Summary:  message,
@@ -1217,8 +1225,7 @@ func getServerAttributes(d *schema.ResourceData, s *hcloud.Server, forceSetNetwo
 	res := map[string]interface{}{
 		"id":                 s.ID,
 		"name":               s.Name,
-		"datacenter":         s.Datacenter.Name,
-		"location":           s.Datacenter.Location.Name,
+		"location":           s.Location.Name,
 		"status":             s.Status,
 		"server_type":        s.ServerType.Name,
 		"ipv6_network":       s.PublicNet.IPv6.Network.String(),
@@ -1271,6 +1278,18 @@ func getServerAttributes(d *schema.ResourceData, s *hcloud.Server, forceSetNetwo
 		res["placement_group_id"] = util.CastInt(s.PlacementGroup.ID)
 	} else {
 		res["placement_group_id"] = nil
+	}
+
+	// Pass through datacenter name as long as it is returned from the API.
+	//
+	// If the attribute is not returned from the API, we never set the attribute,
+	// so whatever is in the state or user config is kept.
+	//
+	// See https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters
+	//nolint:staticcheck // Backwards-compatibility
+	if s.Datacenter != nil {
+		//nolint:staticcheck // Backwards-compatibility
+		res["datacenter"] = s.Datacenter.Name
 	}
 
 	return res

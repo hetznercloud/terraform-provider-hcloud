@@ -1,7 +1,7 @@
 ### Server creation with one linked primary ip (ipv4)
 resource "hcloud_primary_ip" "primary_ip_1" {
   name          = "primary_ip_test"
-  datacenter    = "fsn1-dc14"
+  location      = "hel1"
   type          = "ipv4"
   assignee_type = "server"
   auto_delete   = true
@@ -14,7 +14,7 @@ resource "hcloud_server" "server_test" {
   name        = "test-server"
   image       = "ubuntu-24.04"
   server_type = "cx23"
-  datacenter  = "fsn1-dc14"
+  location    = "hel1"
   labels = {
     "test" : "tessst1"
   }
