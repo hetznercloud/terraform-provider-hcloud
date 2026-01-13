@@ -238,6 +238,15 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 			if hcloud.IsError(err,
 				hcloud.ErrorCodeLocked,
 			) {
+				// Wait for running actions to complete before trying again
+				actions, actionsErr := r.client.StorageBox.Action.AllFor(ctx,
+					storageBox,
+					hcloud.ActionListOpts{Status: []hcloud.ActionStatus{hcloud.ActionStatusRunning}},
+				)
+				if actionsErr == nil {
+					resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, actions...)...)
+				}
+
 				return err
 			}
 
