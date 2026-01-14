@@ -17,14 +17,16 @@ type ActionWaiter interface {
 }
 
 func SettleActions(ctx context.Context, client ActionWaiter, actions ...*hcloud.Action) (diags diag.Diagnostics) {
-	runningActions := make([]*hcloud.Action, len(actions))
-	copy(runningActions, actions)
-	failedActions := make([]*hcloud.Action, 0)
+	// Filter out nil actions
+	actions = slices.DeleteFunc(actions, func(a *hcloud.Action) bool { return a == nil })
+
+	running := slices.Clone(actions)
+	failed := make([]*hcloud.Action, 0)
 
 	// Make sure we always report failed actions, even if an API calls fails for other reasons and we return early
 	defer func() {
-		if len(failedActions) > 0 {
-			for _, action := range failedActions {
+		if len(failed) > 0 {
+			for _, action := range failed {
 				diags.Append(ActionErrorDiagnostic(action))
 			}
 		}
@@ -32,21 +34,21 @@ func SettleActions(ctx context.Context, client ActionWaiter, actions ...*hcloud.
 
 	err := client.WaitForFunc(ctx, func(update *hcloud.Action) error {
 		if update.Status == hcloud.ActionStatusSuccess || update.Status == hcloud.ActionStatusError {
-			// Remove from runningActions
-			runningActions = slices.DeleteFunc(runningActions, func(action *hcloud.Action) bool {
+			// Remove from running
+			running = slices.DeleteFunc(running, func(action *hcloud.Action) bool {
 				return action.ID == update.ID
 			})
 
 			if update.Status == hcloud.ActionStatusError {
-				failedActions = append(failedActions, update)
+				failed = append(failed, update)
 			}
 		}
 
 		return nil
 	}, actions...)
 	if err != nil {
-		if (errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded)) && len(runningActions) > 0 {
-			diags.Append(ActionWaitTimeoutDiagnostic(runningActions...))
+		if (errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded)) && len(running) > 0 {
+			diags.Append(ActionWaitTimeoutDiagnostic(running...))
 			return
 		}
 
