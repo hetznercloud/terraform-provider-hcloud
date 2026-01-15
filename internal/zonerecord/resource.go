@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
@@ -17,24 +18,24 @@ import (
 
 const ResourceType = "hcloud_zone_record"
 
-var _ resource.Resource = (*ZoneRecordResource)(nil)
-var _ resource.ResourceWithConfigure = (*ZoneRecordResource)(nil)
-var _ resource.ResourceWithImportState = (*ZoneRecordResource)(nil)
-var _ resource.ResourceWithIdentity = (*ZoneRecordResource)(nil)
+var _ resource.Resource = (*Resource)(nil)
+var _ resource.ResourceWithConfigure = (*Resource)(nil)
+var _ resource.ResourceWithImportState = (*Resource)(nil)
+var _ resource.ResourceWithIdentity = (*Resource)(nil)
 
-type ZoneRecordResource struct {
+type Resource struct {
 	client *hcloud.Client
 }
 
 func NewResource() resource.Resource {
-	return &ZoneRecordResource{}
+	return &Resource{}
 }
 
-func (r *ZoneRecordResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *Resource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = ResourceType
 }
 
-func (r *ZoneRecordResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *Resource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	var newDiags diag.Diagnostics
 
 	r.client, newDiags = hcloudutil.ConfigureClient(req.ProviderData)
@@ -44,7 +45,7 @@ func (r *ZoneRecordResource) Configure(_ context.Context, req resource.Configure
 	}
 }
 
-func (r *ZoneRecordResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *Resource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema.MarkdownDescription = util.MarkdownDescription(`
 Provides a Hetzner Cloud Zone Record resource.
 
@@ -96,7 +97,7 @@ See the [Zone RRSets API documentation](https://docs.hetzner.cloud/reference/clo
 	}
 }
 
-func (r *ZoneRecordResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
+func (r *Resource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
 	resp.IdentitySchema = identityschema.Schema{
 		Attributes: map[string]identityschema.Attribute{
 			"zone": identityschema.StringAttribute{
@@ -119,7 +120,7 @@ func (r *ZoneRecordResource) IdentitySchema(_ context.Context, _ resource.Identi
 	}
 }
 
-func (r *ZoneRecordResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	// Read request
 	var data model
 
@@ -175,7 +176,7 @@ func (r *ZoneRecordResource) Create(ctx context.Context, req resource.CreateRequ
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, identity)...)
 }
 
-func (r *ZoneRecordResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	// Read request
 	var identity identityModel
 	var data model
@@ -225,7 +226,7 @@ func (r *ZoneRecordResource) Read(ctx context.Context, req resource.ReadRequest,
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, identity)...)
 }
 
-func (r *ZoneRecordResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Read request
 	var identity identityModel
 	var state, plan model
@@ -277,7 +278,7 @@ func (r *ZoneRecordResource) Update(ctx context.Context, req resource.UpdateRequ
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func (r *ZoneRecordResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Read state
 	var data model
 
@@ -313,7 +314,7 @@ func (r *ZoneRecordResource) Delete(ctx context.Context, req resource.DeleteRequ
 	resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, action)...)
 }
 
-func (r *ZoneRecordResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *Resource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Fail if import was tried with ID
 	if req.ID != "" {
 		resp.Diagnostics.AddError(
