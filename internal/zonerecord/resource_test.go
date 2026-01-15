@@ -71,7 +71,6 @@ func TestAccZoneRecordResource(t *testing.T) {
 					"testdata/r/hcloud_zone_record", resA1,
 					"testdata/r/hcloud_zone_record", resB1,
 				),
-
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resA1.TFID(), tfjsonpath.New("name"), knownvalue.StringExact("www")),
 					statecheck.ExpectKnownValue(resA1.TFID(), tfjsonpath.New("type"), knownvalue.StringExact("A")),
