@@ -1,5 +1,16 @@
 # Changelog
 
+## [v1.59.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.59.0)
+
+### Features
+
+- add name to Storage Box Subaccount (#1323)
+
+### Bug Fixes
+
+- support importing storage box without forced replacement (#1314)
+- panic on nil action in settle actions helper (#1321)
+
 ## [v1.58.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.58.0)
 
 ### Breaking Change for the *Storage Box* resource
