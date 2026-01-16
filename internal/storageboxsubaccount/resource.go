@@ -97,6 +97,11 @@ See the [Storage Box Subaccounts API documentation](https://docs.hetzner.cloud/r
 				int64planmodifier.UseStateForUnknown(),
 			},
 		},
+		"name": schema.StringAttribute{
+			MarkdownDescription: "Name of the Storage Box Subaccount.",
+			Optional:            true,
+			Computed:            true,
+		},
 		"description": schema.StringAttribute{
 			MarkdownDescription: "A description of the Storage Box Subaccount.",
 			Optional:            true,

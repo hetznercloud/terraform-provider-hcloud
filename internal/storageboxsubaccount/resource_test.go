@@ -68,7 +68,6 @@ func TestAccStorageBoxSubaccountResource(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				// Create with only required attributes
-
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_storage_box", resStorageBox,
 					"testdata/r/hcloud_storage_box_subaccount", res,
