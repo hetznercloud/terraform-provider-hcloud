@@ -1,0 +1,14 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+resource "hcloud_zone_record" "{{ .RName }}" {
+  zone  = {{ .Zone }}
+  name  = "{{ .Name }}"
+  type  = "{{ .Type }}"
+  {{- $v := index .Records 0 }}
+  value = "{{ $v.Value }}"
+  {{ if $v.Comment }}comment = "{{ $v.Comment }}"{{- end }}
+
+  {{- if .Raw }}
+  {{ .Raw | indent 2 }}
+  {{- end }}
+}
