@@ -240,8 +240,8 @@ func (p *PluginProvider) Resources(_ context.Context) []func() resource.Resource
 		storageboxsnapshot.NewResource,
 		storageboxsubaccount.NewResource,
 		zone.NewResource,
-		zonerrset.NewResource,
 		zonerecord.NewResource,
+		zonerrset.NewResource,
 	}
 }
 
