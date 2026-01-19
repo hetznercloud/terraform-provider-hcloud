@@ -32,6 +32,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/storageboxtype"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/tflogutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/zone"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/zonerecord"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/zonerrset"
 )
 
@@ -239,6 +240,7 @@ func (p *PluginProvider) Resources(_ context.Context) []func() resource.Resource
 		storageboxsnapshot.NewResource,
 		storageboxsubaccount.NewResource,
 		zone.NewResource,
+		zonerecord.NewResource,
 		zonerrset.NewResource,
 	}
 }
