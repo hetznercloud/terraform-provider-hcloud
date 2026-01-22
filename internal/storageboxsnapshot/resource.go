@@ -19,7 +19,6 @@ import (
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/control"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/experimental"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/resourceutil"
 )
@@ -48,8 +47,6 @@ func (r *Resource) Metadata(_ context.Context, _ resource.MetadataRequest, resp 
 // provider-defined Resource type. It is separately executed for each
 // ReadResource RPC.
 func (r *Resource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
-	experimental.StorageBox.AppendDiagnostic(&resp.Diagnostics)
-
 	var newDiags diag.Diagnostics
 
 	r.client, newDiags = hcloudutil.ConfigureClient(req.ProviderData)
@@ -66,8 +63,6 @@ Provides a Hetzner Storage Box Snapshot resource.
 
 See the [Storage Box Snapshots API documentation](https://docs.hetzner.cloud/reference/hetzner#storage-box-snapshots) for more details.
 `
-
-	experimental.StorageBox.AppendNotice(&resp.Schema.MarkdownDescription)
 
 	resp.Schema.Attributes = map[string]schema.Attribute{
 		"storage_box_id": schema.Int64Attribute{

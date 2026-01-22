@@ -21,7 +21,6 @@ import (
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/control"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/experimental"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/merge"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/resourceutil"
@@ -51,8 +50,6 @@ func (r *Resource) Metadata(_ context.Context, _ resource.MetadataRequest, resp 
 // provider-defined Resource type. It is separately executed for each
 // ReadResource RPC.
 func (r *Resource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
-	experimental.StorageBox.AppendDiagnostic(&resp.Diagnostics)
-
 	var newDiags diag.Diagnostics
 
 	r.client, newDiags = hcloudutil.ConfigureClient(req.ProviderData)
@@ -69,8 +66,6 @@ Provides a Hetzner Storage Box Subaccount resource.
 
 See the [Storage Box Subaccounts API documentation](https://docs.hetzner.cloud/reference/hetzner#storage-box-subaccounts) for more details.
 `
-
-	experimental.StorageBox.AppendNotice(&resp.Schema.MarkdownDescription)
 
 	defaultAccessSettings, newDiags := (&modelAccessSettings{
 		ReachableExternally: types.BoolValue(false),
