@@ -5,8 +5,6 @@ subcategory: ""
 description: |-
   Provides a Hetzner Storage Box resource.
   See the Storage Box API documentation https://docs.hetzner.cloud/reference/hetzner#storage-boxes for more details.
-  Experimental: Storage Box support is experimental, breaking changes may occur within minor releases.
-  See https://github.com/hetznercloud/terraform-provider-hcloud/issues/1285 for more details.
 ---
 
 # hcloud_storage_box (Resource)
@@ -14,9 +12,6 @@ description: |-
 Provides a Hetzner Storage Box resource.
 
 See the [Storage Box API documentation](https://docs.hetzner.cloud/reference/hetzner#storage-boxes) for more details.
-
-**Experimental:** Storage Box support is experimental, breaking changes may occur within minor releases.
-See https://github.com/hetznercloud/terraform-provider-hcloud/issues/1285 for more details.
 
 ## Example Usage
 
