@@ -11,7 +11,6 @@ import (
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/deprecation"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/experimental"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/merge"
 )
@@ -78,8 +77,6 @@ func (d *DataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, r
 // provider-defined DataSource type. It is separately executed for each
 // ReadDataSource RPC.
 func (d *DataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
-	experimental.StorageBox.AppendDiagnostic(&resp.Diagnostics)
-
 	var newDiags diag.Diagnostics
 
 	d.client, newDiags = hcloudutil.ConfigureClient(req.ProviderData)
@@ -96,8 +93,6 @@ Provides details about a Hetzner Storage Box Type.
 
 See the [Storage Box Type API documentation](https://docs.hetzner.cloud/reference/hetzner#storage-box-types) for more details.
 `
-
-	experimental.StorageBox.AppendNotice(&resp.Schema.MarkdownDescription)
 
 	resp.Schema.Attributes = getCommonDataSourceSchema(false)
 }
