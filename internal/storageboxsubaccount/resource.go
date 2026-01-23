@@ -116,7 +116,7 @@ See the [Storage Box Subaccounts API documentation](https://docs.hetzner.cloud/r
 			},
 		},
 		"home_directory": schema.StringAttribute{
-			MarkdownDescription: "Home directory of the Storage Box Subaccount. The directory will be created if it doesn't exist yet.",
+			MarkdownDescription: "Home directory of the Storage Box Subaccount. The directory will be created if it doesn't exist yet. Must not include a leading slash (`/`).",
 			Required:            true,
 		},
 		"password": schema.StringAttribute{
