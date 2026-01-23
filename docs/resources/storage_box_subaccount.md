@@ -57,7 +57,7 @@ resource "hcloud_storage_box_subaccount" "team_badger" {
 
 ### Required
 
-- `home_directory` (String) Home directory of the Storage Box Subaccount. The directory will be created if it doesn't exist yet.
+- `home_directory` (String) Home directory of the Storage Box Subaccount. The directory will be created if it doesn't exist yet. Must not include a leading slash (`/`).
 - `password` (String, Sensitive) Password of the Storage Box. For more details, see the [Storage Boxes password policy](https://docs.hetzner.cloud/reference/hetzner#storage-boxes-password-policy).
 - `storage_box_id` (Number) ID of the Storage Box.
 
