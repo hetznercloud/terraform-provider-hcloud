@@ -1,5 +1,13 @@
 # Changelog
 
+## [v1.60.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.60.0)
+
+### Features
+
+- add `zone_record` resource (#1228)
+- Storage Box support no longer experimental (#1329)
+- **floating-ip**: unassign from server before deleting it (#1335)
+
 ## [v1.59.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.59.0)
 
 ### Features
