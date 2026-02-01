@@ -1,5 +1,24 @@
 # Changelog
 
+## [v1.60.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.60.0)
+
+### Features
+
+- add `zone_record` resource (#1228)
+- Storage Box support no longer experimental (#1329)
+- **floating-ip**: unassign from server before deleting it (#1335)
+
+## [v1.59.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.59.0)
+
+### Features
+
+- add name to Storage Box Subaccount (#1323)
+
+### Bug Fixes
+
+- support importing storage box without forced replacement (#1314)
+- panic on nil action in settle actions helper (#1321)
+
 ## [v1.58.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.58.0)
 
 ### Breaking Change for the *Storage Box* resource

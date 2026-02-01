@@ -5,8 +5,6 @@ subcategory: ""
 description: |-
   Provides a Hetzner Storage Box Subaccount resource.
   See the Storage Box Subaccounts API documentation https://docs.hetzner.cloud/reference/hetzner#storage-box-subaccounts for more details.
-  Experimental: Storage Box support is experimental, breaking changes may occur within minor releases.
-  See https://github.com/hetznercloud/terraform-provider-hcloud/issues/1285 for more details.
 ---
 
 # hcloud_storage_box_subaccount (Resource)
@@ -14,9 +12,6 @@ description: |-
 Provides a Hetzner Storage Box Subaccount resource.
 
 See the [Storage Box Subaccounts API documentation](https://docs.hetzner.cloud/reference/hetzner#storage-box-subaccounts) for more details.
-
-**Experimental:** Storage Box support is experimental, breaking changes may occur within minor releases.
-See https://github.com/hetznercloud/terraform-provider-hcloud/issues/1285 for more details.
 
 ## Example Usage
 
@@ -33,6 +28,7 @@ resource "hcloud_storage_box" "main" {
 resource "hcloud_storage_box_subaccount" "team_badger" {
   storage_box_id = hcloud_storage_box.main.id
 
+  name           = "badger"
   home_directory = "teams/badger/"
   password       = var.team_badger_password
 
@@ -56,7 +52,7 @@ resource "hcloud_storage_box_subaccount" "team_badger" {
 
 ### Required
 
-- `home_directory` (String) Home directory of the Storage Box Subaccount. The directory will be created if it doesn't exist yet.
+- `home_directory` (String) Home directory of the Storage Box Subaccount. The directory will be created if it doesn't exist yet. Must not include a leading slash (`/`).
 - `password` (String, Sensitive) Password of the Storage Box. For more details, see the [Storage Boxes password policy](https://docs.hetzner.cloud/reference/hetzner#storage-boxes-password-policy).
 - `storage_box_id` (Number) ID of the Storage Box.
 
@@ -65,6 +61,7 @@ resource "hcloud_storage_box_subaccount" "team_badger" {
 - `access_settings` (Attributes) Access settings for the Subaccount. (see [below for nested schema](#nestedatt--access_settings))
 - `description` (String) A description of the Storage Box Subaccount.
 - `labels` (Map of String) User-defined [labels](https://docs.hetzner.cloud/reference/cloud#labels) (key-value pairs) for the resource.
+- `name` (String) Name of the Storage Box Subaccount.
 
 ### Read-Only
 

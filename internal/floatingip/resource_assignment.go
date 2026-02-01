@@ -194,8 +194,12 @@ func resourceFloatingIPAssignmentDelete(ctx context.Context, d *schema.ResourceD
 		return nil
 	}
 	if floatingIP.Server != nil {
-		_, _, err = client.FloatingIP.Unassign(ctx, floatingIP)
+		action, _, err := client.FloatingIP.Unassign(ctx, floatingIP)
 		if err != nil {
+			return hcloudutil.ErrorToDiag(err)
+		}
+
+		if err = client.Action.WaitFor(ctx, action); err != nil {
 			return hcloudutil.ErrorToDiag(err)
 		}
 	}

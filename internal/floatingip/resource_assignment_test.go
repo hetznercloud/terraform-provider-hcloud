@@ -67,8 +67,7 @@ func TestAccFloatingIPAssignmentResource(t *testing.T) {
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
 		Steps: []resource.TestStep{
 			{
-				// Create a new RDNS using the required values
-				// only.
+				// Create a new Floating IP Assignment
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_ssh_key", resSSHKey,
 					"testdata/r/hcloud_server", resServer,

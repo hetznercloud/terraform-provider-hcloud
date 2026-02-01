@@ -16,7 +16,6 @@ import (
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/datasourceutil"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/experimental"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/merge"
 )
@@ -90,8 +89,6 @@ func (d *DataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, r
 // provider-defined DataSource type. It is separately executed for each
 // ReadDataSource RPC.
 func (d *DataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
-	experimental.StorageBox.AppendDiagnostic(&resp.Diagnostics)
-
 	var newDiags diag.Diagnostics
 
 	d.client, newDiags = hcloudutil.ConfigureClient(req.ProviderData)
@@ -108,8 +105,6 @@ Provides details about a Hetzner Storage Box Snapshot.
 
 See the [Storage Box Snapshots API documentation](https://docs.hetzner.cloud/reference/hetzner#storage-box-snapshots) for more details.
 `
-
-	experimental.StorageBox.AppendNotice(&resp.Schema.MarkdownDescription)
 
 	resp.Schema.Attributes = getCommonDataSourceSchema(false)
 	maps.Copy(resp.Schema.Attributes, map[string]schema.Attribute{

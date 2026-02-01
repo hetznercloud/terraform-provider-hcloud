@@ -13,7 +13,6 @@ import (
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/datasourceutil"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/experimental"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
@@ -32,17 +31,22 @@ func getCommonDataSourceSchema(readOnly bool) map[string]schema.Attribute {
 			Optional:            !readOnly,
 			Computed:            true,
 		},
+		"name": schema.StringAttribute{
+			MarkdownDescription: "Name of the Storage Box Subaccount.",
+			Optional:            !readOnly,
+			Computed:            true,
+		},
 		"description": schema.StringAttribute{
 			MarkdownDescription: "Description of the Storage Box Subaccount.",
+			Computed:            true,
+		},
+		"home_directory": schema.StringAttribute{
+			MarkdownDescription: "Home directory of the Storage Box Subaccount.",
 			Computed:            true,
 		},
 		"username": schema.StringAttribute{
 			MarkdownDescription: "Username of the Storage Box Subaccount.",
 			Optional:            !readOnly,
-			Computed:            true,
-		},
-		"home_directory": schema.StringAttribute{
-			MarkdownDescription: "Home directory of the Storage Box Subaccount.",
 			Computed:            true,
 		},
 		"server": schema.StringAttribute{
@@ -101,8 +105,6 @@ func (d *DataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, r
 // provider-defined DataSource type. It is separately executed for each
 // ReadDataSource RPC.
 func (d *DataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
-	experimental.StorageBox.AppendDiagnostic(&resp.Diagnostics)
-
 	var newDiags diag.Diagnostics
 
 	d.client, newDiags = hcloudutil.ConfigureClient(req.ProviderData)
@@ -119,8 +121,6 @@ Provides details about a Hetzner Storage Box Subaccount.
 
 See the [Storage Box Subaccounts API documentation](https://docs.hetzner.cloud/reference/hetzner#storage-box-subaccounts) for more details.
 `
-
-	experimental.StorageBox.AppendNotice(&resp.Schema.MarkdownDescription)
 
 	resp.Schema.Attributes = getCommonDataSourceSchema(false)
 	maps.Copy(resp.Schema.Attributes, map[string]schema.Attribute{
@@ -141,6 +141,7 @@ func (d *DataSource) ConfigValidators(_ context.Context) []datasource.ConfigVali
 	return []datasource.ConfigValidator{
 		datasourcevalidator.ExactlyOneOf(
 			path.MatchRoot("id"),
+			path.MatchRoot("name"),
 			path.MatchRoot("username"),
 			path.MatchRoot("with_selector"),
 		),
@@ -176,6 +177,16 @@ func (d *DataSource) Read(ctx context.Context, req datasource.ReadRequest, resp 
 			resp.Diagnostics.Append(hcloudutil.NotFoundDiagnostic("storage box subaccount", "id", data.ID.String()))
 			return
 		}
+	case !data.Name.IsNull():
+		result, _, err = d.client.StorageBox.GetSubaccountByName(ctx, storageBox, data.Name.ValueString())
+		if err != nil {
+			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+			return
+		}
+		if result == nil {
+			resp.Diagnostics.Append(hcloudutil.NotFoundDiagnostic("storage box subaccount", "name", data.Name.String()))
+			return
+		}
 	case !data.Username.IsNull():
 		result, _, err = d.client.StorageBox.GetSubaccountByUsername(ctx, storageBox, data.Username.ValueString())
 		if err != nil {
@@ -183,7 +194,7 @@ func (d *DataSource) Read(ctx context.Context, req datasource.ReadRequest, resp 
 			return
 		}
 		if result == nil {
-			resp.Diagnostics.Append(hcloudutil.NotFoundDiagnostic("storage box subaccount", "name", data.Username.String()))
+			resp.Diagnostics.Append(hcloudutil.NotFoundDiagnostic("storage box subaccount", "username", data.Username.String()))
 			return
 		}
 	case !data.WithSelector.IsNull():

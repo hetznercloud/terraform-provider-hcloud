@@ -5,8 +5,6 @@ subcategory: ""
 description: |-
   Provides details about a Hetzner Storage Box Subaccount.
   See the Storage Box Subaccounts API documentation https://docs.hetzner.cloud/reference/hetzner#storage-box-subaccounts for more details.
-  Experimental: Storage Box support is experimental, breaking changes may occur within minor releases.
-  See https://github.com/hetznercloud/terraform-provider-hcloud/issues/1285 for more details.
 ---
 
 # hcloud_storage_box_subaccount (Data Source)
@@ -14,9 +12,6 @@ description: |-
 Provides details about a Hetzner Storage Box Subaccount.
 
 See the [Storage Box Subaccounts API documentation](https://docs.hetzner.cloud/reference/hetzner#storage-box-subaccounts) for more details.
-
-**Experimental:** Storage Box support is experimental, breaking changes may occur within minor releases.
-See https://github.com/hetznercloud/terraform-provider-hcloud/issues/1285 for more details.
 
 ## Example Usage
 
@@ -26,6 +21,11 @@ variable "storage_box_id" {}
 data "hcloud_storage_box_subaccount" "by_id" {
   storage_box_id = var.storage_box_id
   id             = 2
+}
+
+data "hcloud_storage_box_subaccount" "by_name" {
+  storage_box_id = var.storage_box_id
+  name           = "badger"
 }
 
 data "hcloud_storage_box_subaccount" "by_username" {
@@ -49,6 +49,7 @@ data "hcloud_storage_box_subaccount" "by_label_selector" {
 ### Optional
 
 - `id` (Number) ID of the Storage Box Subaccount.
+- `name` (String) Name of the Storage Box Subaccount.
 - `username` (String) Username of the Storage Box Subaccount.
 - `with_selector` (String) Filter results using a [Label Selector](https://docs.hetzner.cloud/reference/hetzner#label-selector).
 

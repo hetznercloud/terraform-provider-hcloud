@@ -15,9 +15,10 @@ import (
 
 type model struct {
 	ID             types.Int64  `tfsdk:"id"`
-	Username       types.String `tfsdk:"username"`
+	Name           types.String `tfsdk:"name"`
 	Description    types.String `tfsdk:"description"`
 	HomeDirectory  types.String `tfsdk:"home_directory"`
+	Username       types.String `tfsdk:"username"`
 	Server         types.String `tfsdk:"server"`
 	AccessSettings types.Object `tfsdk:"access_settings"`
 	Labels         types.Map    `tfsdk:"labels"`
@@ -32,9 +33,10 @@ var _ util.ModelToTerraform[types.Object] = &model{}
 func (m *model) tfAttributesTypes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"id":              types.Int64Type,
-		"username":        types.StringType,
+		"name":            types.StringType,
 		"description":     types.StringType,
 		"home_directory":  types.StringType,
+		"username":        types.StringType,
 		"server":          types.StringType,
 		"access_settings": types.ObjectType{AttrTypes: (&modelAccessSettings{}).tfAttributesTypes()},
 		"labels":          types.MapType{ElemType: types.StringType},
@@ -51,9 +53,10 @@ func (m *model) FromAPI(ctx context.Context, hc *hcloud.StorageBoxSubaccount) di
 	var newDiags diag.Diagnostics
 
 	m.ID = types.Int64Value(hc.ID)
-	m.Username = types.StringValue(hc.Username)
+	m.Name = types.StringValue(hc.Name)
 	m.Description = types.StringValue(hc.Description)
 	m.HomeDirectory = types.StringValue(hc.HomeDirectory)
+	m.Username = types.StringValue(hc.Username)
 	m.Server = types.StringValue(hc.Server)
 	m.StorageBoxID = types.Int64Value(hc.StorageBox.ID)
 

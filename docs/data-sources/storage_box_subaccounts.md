@@ -5,8 +5,6 @@ subcategory: ""
 description: |-
   Provides a list of Hetzner Storage Box Subaccounts.
   See the Storage Box Subaccounts API documentation https://docs.hetzner.cloud/reference/hetzner#storage-box-subaccounts for more details.
-  Experimental: Storage Box support is experimental, breaking changes may occur within minor releases.
-  See https://github.com/hetznercloud/terraform-provider-hcloud/issues/1285 for more details.
 ---
 
 # hcloud_storage_box_subaccounts (Data Source)
@@ -14,9 +12,6 @@ description: |-
 Provides a list of Hetzner Storage Box Subaccounts.
 
 See the [Storage Box Subaccounts API documentation](https://docs.hetzner.cloud/reference/hetzner#storage-box-subaccounts) for more details.
-
-**Experimental:** Storage Box support is experimental, breaking changes may occur within minor releases.
-See https://github.com/hetznercloud/terraform-provider-hcloud/issues/1285 for more details.
 
 ## Example Usage
 
@@ -58,6 +53,7 @@ Read-Only:
 - `home_directory` (String) Home directory of the Storage Box Subaccount.
 - `id` (Number) ID of the Storage Box Subaccount.
 - `labels` (Map of String) User-defined [labels](https://docs.hetzner.cloud/reference/cloud#labels) (key-value pairs) for the resource.
+- `name` (String) Name of the Storage Box Subaccount.
 - `server` (String) FQDN of the Storage Box Subaccount.
 - `storage_box_id` (Number) ID of the Storage Box.
 - `username` (String) Username of the Storage Box Subaccount.
