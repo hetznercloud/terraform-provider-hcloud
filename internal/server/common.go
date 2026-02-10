@@ -5,20 +5,23 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/control"
 )
 
-func attachServerToNetwork(ctx context.Context, c *hcloud.Client, srv *hcloud.Server, nw *hcloud.Network, ip net.IP, aliasIPs []net.IP) error {
+func attachServerToNetwork(ctx context.Context, c *hcloud.Client, srv *hcloud.Server, nw *hcloud.Network, ip net.IP, aliasIPs []net.IP, ipRange *net.IPNet) error {
 	var action *hcloud.Action
 
 	opts := hcloud.ServerAttachToNetworkOpts{
 		Network:  nw,
 		IP:       ip,
 		AliasIPs: aliasIPs,
+		IPRange:  ipRange,
 	}
 
 	err := control.Retry(control.DefaultRetries, func() error {
@@ -96,4 +99,23 @@ func detachServerFromNetwork(ctx context.Context, c *hcloud.Client, s *hcloud.Se
 		return fmt.Errorf("%s: %w", op, err)
 	}
 	return nil
+}
+
+func ParseSubnetID(s string) (*hcloud.Network, *net.IPNet, error) {
+	parts := strings.SplitN(s, "-", 2)
+	if len(parts) != 2 {
+		return nil, nil, fmt.Errorf("unexpected subnet id '%s', expected '$NETWORK_ID-$SUBNET_IP_RANGE'", s)
+	}
+
+	networkID, err := util.ParseID(parts[0])
+	if err != nil {
+		return nil, nil, fmt.Errorf("unexpected subnet id '%s', expected '$NETWORK_ID-$SUBNET_IP_RANGE'", s)
+	}
+
+	_, ipRange, err := net.ParseCIDR(parts[1])
+	if ipRange == nil || err != nil {
+		return nil, nil, fmt.Errorf("unexpected subnet id '%s', expected '$NETWORK_ID-$SUBNET_IP_RANGE'", s)
+	}
+
+	return &hcloud.Network{ID: networkID}, ipRange, nil
 }
