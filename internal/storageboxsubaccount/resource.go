@@ -203,6 +203,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	}
 
 	opts := hcloud.StorageBoxSubaccountCreateOpts{
+		Name:          data.Name.ValueString(),
 		HomeDirectory: data.HomeDirectory.ValueString(),
 		Password:      data.Password.ValueString(),
 		Description:   data.Description.ValueString(),
@@ -382,6 +383,10 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 
 	// Update fields on resource
 	opts := hcloud.StorageBoxSubaccountUpdateOpts{}
+
+	if !data.Name.Equal(plan.Name) {
+		opts.Name = plan.Name.ValueString()
+	}
 
 	if !data.Description.Equal(plan.Description) {
 		opts.Description = plan.Description.ValueStringPointer()
