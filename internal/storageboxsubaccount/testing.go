@@ -61,6 +61,7 @@ type RData struct {
 
 	StorageBox    string
 	HomeDirectory string
+	Name          string
 	Password      string
 	Description   string
 	Labels        map[string]string
