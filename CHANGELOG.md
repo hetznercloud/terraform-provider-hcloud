@@ -1,5 +1,11 @@
 # Changelog
 
+## [v1.60.1](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.60.1)
+
+### Bug Fixes
+
+- **storage-box**: subaccount name was ignored (#1344)
+
 ## [v1.60.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.60.0)
 
 ### Features
