@@ -55,7 +55,7 @@ type RData struct {
 
 	Name       string
 	PublicKey  string
-	PrivateKey string
+	PrivateKey string // nolint: gosec
 	Labels     map[string]string
 }
 
