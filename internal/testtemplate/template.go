@@ -192,7 +192,7 @@ func addLineNumbers(s string) string {
 
 	lines := strings.Split(s, "\n")
 	for i, l := range lines {
-		sb.WriteString(fmt.Sprintf("%5d: %s\n", i+1, l))
+		fmt.Fprintf(&sb, "%5d: %s\n", i+1, l)
 	}
 
 	return sb.String()
