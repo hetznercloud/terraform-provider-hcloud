@@ -45,6 +45,7 @@ func TestAccStorageBoxSubaccountResource(t *testing.T) {
 	res.SetRName("subaccount")
 
 	resOptional := testtemplate.DeepCopy(t, res)
+	resOptional.Name = "tf-e2e-subaccount"
 	resOptional.HomeDirectory = "updated"
 	resOptional.Password = storagebox.GeneratePassword(t)
 	resOptional.Description = "tf-e2e-subaccount"
@@ -80,6 +81,7 @@ func TestAccStorageBoxSubaccountResource(t *testing.T) {
 					statecheck.ExpectKnownValue(res.TFID(), tfjsonpath.New("storage_box_id"), testsupport.Int64ExactFromFunc(func() int64 { return storageBox.ID })),
 					statecheck.ExpectKnownValue(res.TFID(), tfjsonpath.New("id"), testsupport.Int64ExactFromFunc(func() int64 { return subaccount.ID })),
 					statecheck.ExpectKnownValue(res.TFID(), tfjsonpath.New("username"), testsupport.StringExactFromFunc(func() string { return subaccount.Username })),
+					statecheck.ExpectKnownValue(res.TFID(), tfjsonpath.New("name"), testsupport.StringExactFromFunc(func() string { return subaccount.Username })),
 					statecheck.ExpectKnownValue(res.TFID(), tfjsonpath.New("server"), testsupport.StringExactFromFunc(func() string { return subaccount.Server })),
 					statecheck.ExpectKnownValue(res.TFID(), tfjsonpath.New("description"), knownvalue.StringExact("")),
 					statecheck.ExpectKnownValue(res.TFID(), tfjsonpath.New("home_directory"), knownvalue.StringExact("test")),
@@ -132,7 +134,8 @@ func TestAccStorageBoxSubaccountResource(t *testing.T) {
 					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("username"), testsupport.StringExactFromFunc(func() string { return subaccount.Username })),
 					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("server"), testsupport.StringExactFromFunc(func() string { return subaccount.Server })),
 
-					// Changed (or will be changed in Actions PR)
+					// Changed
+					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("name"), knownvalue.StringExact("tf-e2e-subaccount")),
 					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("description"), knownvalue.StringExact("tf-e2e-subaccount")),
 					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("home_directory"), knownvalue.StringExact("updated")),
 					statecheck.ExpectSensitiveValue(resOptional.TFID(), tfjsonpath.New("password")),
@@ -162,6 +165,7 @@ func TestAccStorageBoxSubaccountResource(t *testing.T) {
 					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("id"), testsupport.Int64ExactFromFunc(func() int64 { return subaccount.ID })),
 					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("username"), testsupport.StringExactFromFunc(func() string { return subaccount.Username })),
 					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("server"), testsupport.StringExactFromFunc(func() string { return subaccount.Server })),
+					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("name"), knownvalue.StringExact("tf-e2e-subaccount")),
 					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("description"), knownvalue.StringExact("tf-e2e-subaccount")),
 					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("home_directory"), knownvalue.StringExact("updated")),
 					statecheck.ExpectSensitiveValue(resOptional.TFID(), tfjsonpath.New("password")),

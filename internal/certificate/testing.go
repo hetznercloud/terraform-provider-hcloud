@@ -63,7 +63,7 @@ type RDataUploaded struct {
 	testtemplate.DataCommon
 
 	Name        string
-	PrivateKey  string
+	PrivateKey  string // nolint: gosec
 	Certificate string
 	Labels      map[string]string
 }

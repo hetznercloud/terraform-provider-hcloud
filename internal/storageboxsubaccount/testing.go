@@ -61,7 +61,8 @@ type RData struct {
 
 	StorageBox    string
 	HomeDirectory string
-	Password      string
+	Name          string
+	Password      string // nolint: gosec
 	Description   string
 	Labels        map[string]string
 

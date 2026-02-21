@@ -78,6 +78,10 @@ linters:
         path: internal/util/.+\.go
         text: var-naming
 
+      - linters:
+          - revive
+        text: avoid package names that conflict with Go standard library package names
+
       # Can be removed once we migrated to the plugin framework.
       - linters:
           - errcheck
