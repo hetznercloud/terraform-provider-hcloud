@@ -89,18 +89,35 @@ resource "hcloud_server" "server" {
   location    = "nbg1"
 
   network {
-    network_id = hcloud_network.network.id
-    ip         = "10.0.1.5"
-    alias_ips  = [
+    subnet_id = hcloud_network_subnet.network-subnet.id
+    ip        = "10.0.1.5"
+    alias_ips = [
       "10.0.1.6",
       "10.0.1.7"
     ]
   }
+}
+```
 
-  # **Note**: the depends_on is important when directly attaching the
-  # server to a network. Otherwise Terraform will attempt to create
-  # server and sub-network in parallel. This may result in the server
-  # creation failing randomly.
+Alternatively, for backwards compatibility, you can attach using only `network_id`, though this is **deprecated** and will show a warning. When `subnet_id` is omitted, the server will be attached to the last subnet (ordered by `ip_range`), which can lead to unpredictable subnet selection unless an `ip` address is specified:
+
+```hcl
+resource "hcloud_server" "server" {
+  name        = "server"
+  server_type = "cx23"
+  image       = "ubuntu-24.04"
+  location    = "nbg1"
+
+  network {
+    network_id = hcloud_network.network.id
+    ip         = "10.0.1.5"
+    alias_ips  = []
+  }
+
+  # **Note**: depends_on is required when attaching to a network without
+  # specifying subnet_id. Otherwise Terraform will attempt to create the
+  # server and subnet in parallel, which may result in the server creation
+  # failing randomly.
   depends_on = [
     hcloud_network_subnet.network-subnet
   ]
@@ -200,7 +217,10 @@ The following arguments are supported:
 
 `network` support the following fields:
 
-- `network_id` - (Required, int) ID of the network
+**Note:** Exactly one of `network_id` or `subnet_id` must be specified.
+
+- `subnet_id` - (Optional, string) ID of the subnet within the network. Explicitly controls which subnet the server will be attached to.
+- `network_id` - (Optional, int) **Deprecated.** ID of the network to attach the server to. Use `subnet_id` instead. When used alone without `subnet_id`, the server will be attached to the last subnet (ordered by `ip_range`), which may be unpredictable. A deprecation warning will be shown when this field is used.
 - `ip` - (Optional, string) Specify the IP the server should get in the network
 - `alias_ips` - (Optional, list) Alias IPs the server should have in the Network.
 
@@ -241,7 +261,10 @@ The following attributes are exported:
 
 a single entry in `network` support the following fields:
 
-- `network_id` - (Required, int) ID of the network
+**Note:** Exactly one of `network_id` or `subnet_id` must be specified.
+
+- `subnet_id` - (Optional, string) ID of the subnet within the network. Explicitly controls which subnet the server will be attached to.
+- `network_id` - (Optional, int) **Deprecated.** ID of the network to attach the server to. Use `subnet_id` instead. When used alone without `subnet_id`, the server will be attached to the last subnet (ordered by `ip_range`), which may be unpredictable. A deprecation warning will be shown when this field is used.
 - `ip` - (Optional, string) Specify the IP the server should get in the network
 - `alias_ips` - (Optional, list) Alias IPs the server should have in the Network.
 - `mac_address` - (Optional, string) The MAC address the private interface of the server has
