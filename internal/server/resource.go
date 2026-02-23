@@ -266,6 +266,23 @@ func Resource() *schema.Resource {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
+			"rebuild": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+				Description: "If set to true, the server will be rebuilt. WARNING: Rebuilding will destroy all data on the server's disk. Make sure you have backups before proceeding.",
+				ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics {
+					if b, ok := i.(bool); ok && b {
+						return diag.Diagnostics{
+							{
+								Severity: diag.Warning,
+								Summary:  "Rebuilding will destroy all data on its disk. Ensure you have backups before proceeding.",
+							},
+						}
+					}
+					return nil
+				},
+			},
 		},
 	}
 }
@@ -573,6 +590,11 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		}
 	}
 	if d.HasChange("image") {
+		if err := rebuildServer(ctx, c, d, server); err != nil {
+			return err
+		}
+	}
+	if d.Get("rebuild").(bool) {
 		if err := rebuildServer(ctx, c, d, server); err != nil {
 			return err
 		}
@@ -1471,7 +1493,25 @@ func publicNetRemovedDecision(ctx context.Context,
 	return nil
 }
 
-func resourceServerCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
+func resourceServerCustomizeDiff(ctx context.Context, d *schema.ResourceDiff, m interface{}) error {
+	rebuild, ok := d.GetOk("rebuild")
+	if ok && rebuild.(bool) {
+		// If rebuild is true, allow update in-place (no ForceNew)
+		return validateUniqueNetworkIDs(d)
+	}
+
+	// If rebuild is not true, force recreation on user_data or image changes
+	if d.HasChange("user_data") {
+		if err := d.ForceNew("user_data"); err != nil {
+			return err
+		}
+	}
+	if d.HasChange("image") {
+		if err := d.ForceNew("image"); err != nil {
+			return err
+		}
+	}
+
 	return validateUniqueNetworkIDs(d)
 }
 
