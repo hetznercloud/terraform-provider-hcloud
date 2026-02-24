@@ -18,6 +18,10 @@ jobs:
         with:
           python-version: 3.x
 
+      - uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_wrapper: false
+
       - uses: pre-commit/action@v3.0.1
 
   lint:
