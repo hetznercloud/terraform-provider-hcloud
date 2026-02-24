@@ -84,7 +84,7 @@ func TestAccServerActions(t *testing.T) {
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckAPIResourcePresent(res.TFID(), testsupport.CopyAPIResource(s, server.GetAPIResource())),
-					func(state *terraform.State) error {
+					func(_ *terraform.State) error {
 						client, err := testsupport.CreateClient()
 						if err != nil {
 							return err
