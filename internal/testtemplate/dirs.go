@@ -34,3 +34,17 @@ func ResourceTemplateDir(t *testing.T) string {
 func DataSourceTemplateDir(t *testing.T) string {
 	return filepath.Join(testsupport.ProjectRoot(t), "internal", "testdata", "d")
 }
+
+// ActionTemplateDir returns the path to the directory where the templates
+// for individual actions are kept.
+//
+// Inside the action template directory exists a template file with a name
+// of the format <action_name>.tf.tmpl for each action provided by
+// the Hetzner Cloud Terraform provider.
+//
+// The individual templates must define a valid HCL snippet for the action.
+// They must not reference other resources or data sources, and they
+// must not import other templates.
+func ActionTemplateDir(t *testing.T) string {
+	return filepath.Join(testsupport.ProjectRoot(t), "internal", "testdata", "a")
+}
