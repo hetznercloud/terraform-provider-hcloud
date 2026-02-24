@@ -54,8 +54,8 @@ repos:
       - id: opentofu_fmt
         name: opentofu_fmt
         description: Format all .tf files to a canonical format.
-        language: docker_image
-        entry: ghcr.io/opentofu/opentofu fmt
+        language: system
+        entry: tofu fmt
         files: \.tf$
 
   - repo: local
