@@ -6,8 +6,17 @@ import (
 	"testing"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
+
+// GetAPIResource returns a [testsupport.GetAPIResourceFunc] for [hcloud.Server].
+func GetAPIResource() testsupport.GetAPIResourceFunc[hcloud.Server] {
+	return func(c *hcloud.Client, attrs map[string]string) (*hcloud.Server, error) {
+		result, _, err := c.Server.Get(context.Background(), attrs["id"])
+		return result, err
+	}
+}
 
 // ByID returns a function that obtains a server by its ID.
 func ByID(t *testing.T, srv *hcloud.Server) func(*hcloud.Client, int64) bool {
@@ -78,6 +87,8 @@ type RData struct {
 	RebuildProtection      bool
 	AllowDeprecatedImages  bool
 	ShutdownBeforeDeletion bool
+
+	Raw string
 }
 
 // RDataInlineNetwork defines the information required to attach a server
@@ -110,4 +121,18 @@ type RDataNetwork struct {
 // TFID returns the resource identifier.
 func (d *RDataNetwork) TFID() string {
 	return fmt.Sprintf("%s.%s", NetworkResourceType, d.RName())
+}
+
+// AData defines the fields for the "testdata/a/hcloud_server"
+// template.
+type AData struct {
+	testtemplate.DataCommon
+
+	Type     string
+	ServerID string
+}
+
+// TFID returns the resource identifier.
+func (d *AData) TFID() string {
+	return fmt.Sprintf("action.hcloud_server_%s.%s", d.Type, d.RName())
 }

@@ -4,11 +4,14 @@ page_title: "hcloud_server_poweron Action - hcloud"
 subcategory: ""
 description: |-
   Power on a server in Hetzner Cloud.
+  See the Power on a Server documentation https://docs.hetzner.cloud/reference/cloud#tag/server-actions/poweron_server for more details.
 ---
 
 # hcloud_server_poweron (Action)
 
 Power on a server in Hetzner Cloud.
+
+See the [Power on a Server documentation](https://docs.hetzner.cloud/reference/cloud#tag/server-actions/poweron_server) for more details.
 
 
 

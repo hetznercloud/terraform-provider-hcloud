@@ -41,6 +41,8 @@ func NewPoweronAction() action.Action {
 		typeName: PoweronActionType,
 		markdownDescription: util.MarkdownDescription(`
 Power on a server in Hetzner Cloud.
+
+See the [Power on a Server documentation](https://docs.hetzner.cloud/reference/cloud#tag/server-actions/poweron_server) for more details.
 `),
 		invoke: func(ctx context.Context, client *hcloud.Client, server *hcloud.Server) (*hcloud.Action, error) {
 			apiAction, _, err := client.Server.Poweron(ctx, server)
@@ -54,6 +56,8 @@ func NewPoweroffAction() action.Action {
 		typeName: PoweroffActionType,
 		markdownDescription: util.MarkdownDescription(`
 Power off a server in Hetzner Cloud.
+
+See the [Power off a Server documentation](https://docs.hetzner.cloud/reference/cloud#tag/server-actions/poweroff_server) for more details.
 `),
 		invoke: func(ctx context.Context, client *hcloud.Client, server *hcloud.Server) (*hcloud.Action, error) {
 			apiAction, _, err := client.Server.Poweroff(ctx, server)
@@ -67,6 +71,8 @@ func NewRebootAction() action.Action {
 		typeName: RebootActionType,
 		markdownDescription: util.MarkdownDescription(`
 Reboot a server in Hetzner Cloud.
+
+See the [Soft-reboot a Server documentation](https://docs.hetzner.cloud/reference/cloud#tag/server-actions/reboot_server) for more details.
 `),
 		invoke: func(ctx context.Context, client *hcloud.Client, server *hcloud.Server) (*hcloud.Action, error) {
 			apiAction, _, err := client.Server.Reboot(ctx, server)
@@ -80,6 +86,8 @@ func NewResetAction() action.Action {
 		typeName: ResetActionType,
 		markdownDescription: util.MarkdownDescription(`
 Reset a server in Hetzner Cloud.
+
+See the [Reset a Server documentation](https://docs.hetzner.cloud/reference/cloud#tag/server-actions/reset_server) for more details.
 `),
 		invoke: func(ctx context.Context, client *hcloud.Client, server *hcloud.Server) (*hcloud.Action, error) {
 			apiAction, _, err := client.Server.Reset(ctx, server)

@@ -4,11 +4,14 @@ page_title: "hcloud_server_reset Action - hcloud"
 subcategory: ""
 description: |-
   Reset a server in Hetzner Cloud.
+  See the Reset a Server documentation https://docs.hetzner.cloud/reference/cloud#tag/server-actions/reset_server for more details.
 ---
 
 # hcloud_server_reset (Action)
 
 Reset a server in Hetzner Cloud.
+
+See the [Reset a Server documentation](https://docs.hetzner.cloud/reference/cloud#tag/server-actions/reset_server) for more details.
 
 
 

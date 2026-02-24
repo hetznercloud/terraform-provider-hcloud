@@ -4,11 +4,14 @@ page_title: "hcloud_server_poweroff Action - hcloud"
 subcategory: ""
 description: |-
   Power off a server in Hetzner Cloud.
+  See the Power off a Server documentation https://docs.hetzner.cloud/reference/cloud#tag/server-actions/poweroff_server for more details.
 ---
 
 # hcloud_server_poweroff (Action)
 
 Power off a server in Hetzner Cloud.
+
+See the [Power off a Server documentation](https://docs.hetzner.cloud/reference/cloud#tag/server-actions/poweroff_server) for more details.
 
 
 

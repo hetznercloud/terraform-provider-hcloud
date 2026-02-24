@@ -4,11 +4,14 @@ page_title: "hcloud_server_reboot Action - hcloud"
 subcategory: ""
 description: |-
   Reboot a server in Hetzner Cloud.
+  See the Soft-reboot a Server documentation https://docs.hetzner.cloud/reference/cloud#tag/server-actions/reboot_server for more details.
 ---
 
 # hcloud_server_reboot (Action)
 
 Reboot a server in Hetzner Cloud.
+
+See the [Soft-reboot a Server documentation](https://docs.hetzner.cloud/reference/cloud#tag/server-actions/reboot_server) for more details.
 
 
 
