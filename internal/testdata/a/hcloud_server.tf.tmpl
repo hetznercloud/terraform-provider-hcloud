@@ -1,0 +1,7 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+action "hcloud_server_{{ .Type }}" "{{ .RName }}" {
+  config {
+    server_id = {{ .ServerID }}
+  }
+}

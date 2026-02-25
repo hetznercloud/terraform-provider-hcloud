@@ -226,6 +226,9 @@ func resourcePrimaryIPUpdate(ctx context.Context, d *schema.ResourceData, m inte
 				return err
 			}
 		} else {
+			if err := UnassignPrimaryIP(ctx, client, primaryIP.ID); err != nil {
+				return err
+			}
 			if err := AssignPrimaryIP(ctx, client, primaryIP.ID, serverID); err != nil {
 				return err
 			}

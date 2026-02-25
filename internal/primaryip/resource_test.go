@@ -211,6 +211,127 @@ primary IP v6 one has assignee id %d and should shouldnt be assigned to server i
 	})
 }
 
+func TestAccPrimaryIPResource_Reassign(t *testing.T) {
+	var srvOne hcloud.Server
+	var srvTwo hcloud.Server
+	var primaryIP hcloud.PrimaryIP
+
+	testServerOneRes := &server.RData{
+		Name:         "primary-ip-reassign-one",
+		Type:         teste2e.TestServerType,
+		Image:        teste2e.TestImage,
+		LocationName: teste2e.TestLocationName,
+		PublicNet: map[string]interface{}{
+			"ipv4_enabled": false,
+			"ipv6_enabled": true,
+		},
+	}
+	testServerOneRes.SetRName("one")
+
+	testServerTwoRes := testtemplate.DeepCopy(t, testServerOneRes)
+	testServerTwoRes.Name = "primary-ip-reassign-two"
+	testServerTwoRes.SetRName("two")
+
+	initialIPRes := &primaryip.RData{
+		Name:         "primaryip-test-reassign",
+		Type:         "ipv4",
+		Labels:       nil,
+		AssigneeType: "server",
+		AssigneeID:   testServerOneRes.TFID() + ".id",
+		AutoDelete:   false,
+	}
+	initialIPRes.SetRName("reassign")
+
+	reassignedIPRes := testtemplate.DeepCopy(t, initialIPRes)
+	reassignedIPRes.AssigneeID = testServerTwoRes.TFID() + ".id"
+
+	tmplMan := testtemplate.Manager{}
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+			testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &srvOne)),
+			testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &srvTwo)),
+			testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &primaryIP)),
+		),
+		Steps: []resource.TestStep{
+			{
+				// Create two servers and shut them down to freely assign/unassign primary ip
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_server", testServerOneRes,
+					"testdata/r/hcloud_server", testServerTwoRes,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(testServerOneRes.TFID(), server.ByID(t, &srvOne)),
+					testsupport.CheckResourceExists(testServerTwoRes.TFID(), server.ByID(t, &srvTwo)),
+				),
+				PostApplyFunc: func() {
+					client, err := testsupport.CreateClient()
+					if err != nil {
+						t.Fatalf("Error in PostApplyFunc: %v", err)
+					}
+					actionOne, _, err := client.Server.Poweroff(t.Context(), &srvOne)
+					if err != nil {
+						t.Fatalf("Error in PostApplyFunc: %v", err)
+					}
+					actionTwo, _, err := client.Server.Poweroff(t.Context(), &srvTwo)
+					if err != nil {
+						t.Fatalf("Error in PostApplyFunc: %v", err)
+					}
+
+					err = client.Action.WaitFor(t.Context(), actionOne, actionTwo)
+					if err != nil {
+						t.Fatalf("Error in PostApplyFunc: %v", err)
+					}
+				},
+			},
+			{
+				// Create primary IP and assign it to the first server
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_server", testServerOneRes,
+					"testdata/r/hcloud_server", testServerTwoRes,
+					"testdata/r/hcloud_primary_ip", initialIPRes,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(initialIPRes.TFID(), primaryip.ByID(t, &primaryIP)),
+					resource.TestCheckResourceAttrWith(initialIPRes.TFID(), "assignee_id", func(value string) error {
+						id, err := util.ParseID(value)
+						if err != nil {
+							return err
+						}
+						if id != srvOne.ID {
+							return fmt.Errorf("wrong assignee_id, expected %d but got %d", srvOne.ID, id)
+						}
+
+						return nil
+					}),
+				),
+			},
+			{
+				// Reassign IP to second server
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_server", testServerOneRes,
+					"testdata/r/hcloud_server", testServerTwoRes,
+					"testdata/r/hcloud_primary_ip", reassignedIPRes,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrWith(reassignedIPRes.TFID(), "assignee_id", func(value string) error {
+						id, err := util.ParseID(value)
+						if err != nil {
+							return err
+						}
+						if id != srvTwo.ID {
+							return fmt.Errorf("wrong assignee_id, expected %d but got %d", srvTwo.ID, id)
+						}
+
+						return nil
+					}),
+				),
+			},
+		},
+	})
+}
+
 func TestAccPrimaryIPResource_FieldUpdates(t *testing.T) {
 	var (
 		pip hcloud.PrimaryIP

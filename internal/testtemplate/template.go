@@ -14,8 +14,8 @@ import (
 	"text/template"
 
 	"github.com/Masterminds/sprig"
-	hcl "github.com/hashicorp/hcl/v2"
-	hclwrite "github.com/hashicorp/hcl/v2/hclwrite"
+	"github.com/hashicorp/hcl/v2"
+	"github.com/hashicorp/hcl/v2/hclwrite"
 )
 
 // Data marks a struct as containing data for test templates.
@@ -92,6 +92,9 @@ func (ts *Manager) init(t *testing.T) {
 
 		dGlob := filepath.Join(DataSourceTemplateDir(t), "*.tf.tmpl")
 		parseTmplGlob(t, ts.tmpl, "testdata/d", dGlob)
+
+		aGlob := filepath.Join(ActionTemplateDir(t), "*.tf.tmpl")
+		parseTmplGlob(t, ts.tmpl, "testdata/a", aGlob)
 	})
 }
 
