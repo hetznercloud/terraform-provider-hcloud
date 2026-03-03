@@ -13,6 +13,9 @@ resource "hcloud_primary_ip" "{{ .RName }}" {
   {{- if .AssigneeType }}
   assignee_type       = "{{ .AssigneeType }}"
   {{ end }}
+  {{- if .AssigneeID }}
+  assignee_id       = {{ .AssigneeID }}
+  {{ end }}
 
   {{- if .Labels }}
   labels = {{ .Labels | toPrettyJson }}

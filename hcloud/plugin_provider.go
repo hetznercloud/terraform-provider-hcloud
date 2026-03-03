@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/action"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/function"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -39,6 +40,8 @@ import (
 type PluginProvider struct{}
 
 var _ provider.Provider = &PluginProvider{}
+var _ provider.ProviderWithActions = &PluginProvider{}
+var _ provider.ProviderWithFunctions = &PluginProvider{}
 
 func NewPluginProvider() provider.Provider {
 	return &PluginProvider{}
@@ -189,6 +192,7 @@ func (p *PluginProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	client := hcloud.NewClient(opts...)
 	resp.DataSourceData = client
 	resp.ResourceData = client
+	resp.ActionData = client
 
 	tflog.Info(ctx, "terraform-provider-hcloud info", map[string]any{"version": Version, "commit": Commit})
 	tflog.Info(ctx, "hcloud-go info", map[string]any{"version": hcloud.Version})
@@ -242,6 +246,15 @@ func (p *PluginProvider) Resources(_ context.Context) []func() resource.Resource
 		zone.NewResource,
 		zonerecord.NewResource,
 		zonerrset.NewResource,
+	}
+}
+
+func (p *PluginProvider) Actions(_ context.Context) []func() action.Action {
+	return []func() action.Action{
+		server.NewPoweronAction,
+		server.NewPoweroffAction,
+		server.NewRebootAction,
+		server.NewResetAction,
 	}
 }
 

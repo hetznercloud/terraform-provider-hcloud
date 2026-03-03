@@ -94,4 +94,8 @@ EOF
   {{- if .ShutdownBeforeDeletion }}
   shutdown_before_deletion = {{ .ShutdownBeforeDeletion }}
   {{ end }}
+
+{{- if .Raw }}
+{{ .Raw | indent 2 }}
+{{- end }}
 }
