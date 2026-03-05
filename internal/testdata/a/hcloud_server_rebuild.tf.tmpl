@@ -1,0 +1,11 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+action "hcloud_server_rebuild" "{{ .RName }}" {
+  config {
+    server_id = {{ .ServerID }}
+    image     = "{{ .Image }}"
+    {{- if .UserData }}
+    user_data = "{{ .UserData }}"
+    {{- end }}
+  }
+}

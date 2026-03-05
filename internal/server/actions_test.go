@@ -113,3 +113,80 @@ func TestAccServerActions(t *testing.T) {
 		},
 	})
 }
+
+func TestAccServerRebuildAction(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
+	s := &hcloud.Server{}
+
+	sk := sshkey.NewRData(t, "server-rebuild-action")
+
+	res := &server.RData{
+		Name:         "server-rebuild-action",
+		Type:         teste2e.TestServerType,
+		Image:        teste2e.TestImage,
+		LocationName: teste2e.TestLocationName,
+		SSHKeys:      []string{sk.TFID() + ".id"},
+	}
+	res.SetRName("default")
+
+	resActionRebuild := &server.ARebuildData{
+		ServerID: res.TFID() + ".id",
+		Image:    teste2e.TestImage,
+	}
+	resActionRebuild.SetRName("default")
+
+	res.Raw = fmt.Sprintf(`
+		lifecycle {
+			action_trigger {
+				events  = [after_create]
+				actions = [
+					%s
+				]
+			}
+		}
+	`, resActionRebuild.TFID())
+
+	resource.ParallelTest(t, resource.TestCase{
+		// Actions are only available in 1.14 and later
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.SkipBelow(tfversion.Version1_14_0),
+		},
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+
+		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_server", res,
+					"testdata/a/hcloud_server_rebuild", resActionRebuild,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckAPIResourcePresent(res.TFID(), testsupport.CopyAPIResource(s, server.GetAPIResource())),
+					func(_ *terraform.State) error {
+						client, err := testsupport.CreateClient()
+						if err != nil {
+							return err
+						}
+
+						actions, err := client.Server.Action.AllFor(context.Background(), s, hcloud.ActionListOpts{})
+						if err != nil {
+							return err
+						}
+
+						actionWithCommand := func(command string) func(*hcloud.Action) bool {
+							return func(action *hcloud.Action) bool {
+								return action.Command == command
+							}
+						}
+
+						assert.True(t, slices.ContainsFunc(actions, actionWithCommand("rebuild_server")))
+
+						return nil
+					},
+				),
+			},
+		},
+	})
+}

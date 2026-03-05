@@ -266,7 +266,7 @@ func Resource() *schema.Resource {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			"rebuild": {
+			"rebuild_when_necessary": {
 				Type:     schema.TypeBool,
 				Optional: true,
 				Default:  false,
@@ -584,17 +584,7 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 			return hcloudutil.ErrorToDiag(err)
 		}
 	}
-	if d.HasChange("user_data") {
-		if err := rebuildServer(ctx, c, d, server); err != nil {
-			return err
-		}
-	}
-	if d.HasChange("image") {
-		if err := rebuildServer(ctx, c, d, server); err != nil {
-			return err
-		}
-	}
-	if d.Get("rebuild").(bool) {
+	if d.Get("rebuild_when_necessary").(bool) && (d.HasChange("image") || d.HasChange("user_data")) {
 		if err := rebuildServer(ctx, c, d, server); err != nil {
 			return err
 		}
@@ -1494,7 +1484,7 @@ func publicNetRemovedDecision(ctx context.Context,
 }
 
 func resourceServerCustomizeDiff(ctx context.Context, d *schema.ResourceDiff, m interface{}) error {
-	rebuild, ok := d.GetOk("rebuild")
+	rebuild, ok := d.GetOk("rebuild_when_necessary")
 	if ok && rebuild.(bool) {
 		// If rebuild is true, allow update in-place (no ForceNew)
 		return validateUniqueNetworkIDs(d)
