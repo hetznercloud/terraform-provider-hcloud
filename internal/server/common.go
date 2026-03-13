@@ -21,7 +21,9 @@ func attachServerToNetwork(ctx context.Context, c *hcloud.Client, srv *hcloud.Se
 		Network:  nw,
 		IP:       ip,
 		AliasIPs: aliasIPs,
-		IPRange:  ipRange,
+	}
+	if ipRange != nil {
+		opts.IPRange = ipRange
 	}
 
 	err := control.Retry(control.DefaultRetries, func() error {
