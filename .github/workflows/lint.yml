@@ -18,6 +18,10 @@ jobs:
         with:
           python-version: 3.x
 
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: tools/go.mod
+
       - uses: opentofu/setup-opentofu@v2
         with:
           tofu_wrapper: false
