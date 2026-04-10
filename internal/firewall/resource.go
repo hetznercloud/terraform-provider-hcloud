@@ -379,10 +379,10 @@ func syncApplyTo(ctx context.Context, d *schema.ResourceData, client *hcloud.Cli
 	if len(removeResources) > 0 {
 		actions, _, err := client.Firewall.RemoveResources(ctx, firewall, removeResources)
 		if err != nil {
-			if !hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
+			if !hcloud.IsError(err, hcloud.ErrorCodeFirewallResourceNotFound, hcloud.ErrorCodeNotFound) {
 				return hcloudutil.ErrorToDiag(err)
 			}
-			log.Printf("[WARN] firewall (%s) resource not found, skipping remove: %v", d.Id(), err)
+			log.Printf("[WARN] resource that firewall (%s) was applied to not found, skipping remove: %v", d.Id(), err)
 		} else if err := waitForFirewallActions(ctx, client, actions, firewall); err != nil {
 			return hcloudutil.ErrorToDiag(err)
 		}
