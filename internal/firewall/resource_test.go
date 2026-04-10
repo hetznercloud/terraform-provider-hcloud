@@ -179,7 +179,7 @@ func TestAccFirewallResource_ApplyTo(t *testing.T) {
 	})
 }
 
-func TestAccFireWallResource_bug1379(t *testing.T) {
+func TestAccFirewallResource_ApplyToServerReplace(t *testing.T) {
 	var (
 		fw  hcloud.Firewall
 		srv hcloud.Server
