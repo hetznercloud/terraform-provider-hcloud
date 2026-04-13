@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
@@ -18,263 +17,342 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 )
 
 func TestAccPrimaryIPResource(t *testing.T) {
-	var pip hcloud.PrimaryIP
-
-	res := &primaryip.RData{
-		Name:         "primaryip-test",
-		Type:         "ipv4",
-		Labels:       nil,
-		Location:     teste2e.TestLocationName,
-		AssigneeType: "server",
-		AutoDelete:   false,
-	}
-	resRenamed := &primaryip.RData{
-		Name:         res.Name + "-renamed",
-		Type:         res.Type,
-		AssigneeType: res.AssigneeType,
-		Location:     res.Location,
-		AutoDelete:   res.AutoDelete,
-	}
-	resRenamed.SetRName(res.Name)
 	tmplMan := testtemplate.Manager{}
+
+	var hcPrimaryIP hcloud.PrimaryIP
+
+	res1 := &primaryip.RData{
+		Name:             "primary-ip",
+		Type:             "ipv6",
+		Location:         teste2e.TestLocationName,
+		AssigneeType:     "server",
+		AutoDelete:       false,
+		DeleteProtection: true,
+		Labels:           map[string]string{"key": "value"},
+	}
+	res1.SetRName("main")
+
+	res3 := testtemplate.DeepCopy(t, res1)
+	res3.Name = res1.Name + "-changed"
+	res3.Labels = map[string]string{"key": "changed"}
+	res3.AutoDelete = true
+	res3.DeleteProtection = false
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
 		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
-		CheckDestroy:             testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &pip)),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &hcPrimaryIP)),
 		Steps: []resource.TestStep{
 			{
-				// Create a new primary IP using the required values
-				// only.
-				Config: tmplMan.Render(t, "testdata/r/hcloud_primary_ip", res),
-				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(res.TFID(), primaryip.ByID(t, &pip)),
-					resource.TestCheckResourceAttr(res.TFID(), "name",
-						fmt.Sprintf("primaryip-test--%d", tmplMan.RandInt)),
-					resource.TestCheckResourceAttr(res.TFID(), "type", res.Type),
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_primary_ip", res1,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(res3.TFID(), plancheck.ResourceActionCreate),
+					},
+				},
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(res1.TFID(), primaryip.ByID(t, &hcPrimaryIP)),
+				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(res1.TFID(), tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("primary-ip--%d", tmplMan.RandInt))),
+					statecheck.ExpectKnownValue(res1.TFID(), tfjsonpath.New("type"), knownvalue.StringExact(res1.Type)),
+					statecheck.ExpectKnownValue(res1.TFID(), tfjsonpath.New("location"), knownvalue.StringExact(teste2e.TestLocationName)),
+					statecheck.ExpectKnownValue(res1.TFID(), tfjsonpath.New("labels"), knownvalue.MapExact(map[string]knownvalue.Check{"key": knownvalue.StringExact("value")})),
+					statecheck.ExpectKnownValue(res1.TFID(), tfjsonpath.New("assignee_id"), knownvalue.Int64Exact(0)),
+					statecheck.ExpectKnownValue(res1.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("server")),
+					statecheck.ExpectKnownValue(res1.TFID(), tfjsonpath.New("ip_address"), testsupport.StringExactFromFunc(func() string { return hcPrimaryIP.IP.String() })),
+					statecheck.ExpectKnownValue(res1.TFID(), tfjsonpath.New("delete_protection"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(res1.TFID(), tfjsonpath.New("auto_delete"), knownvalue.Bool(false)),
+				},
 			},
 			{
-				// Try to import the newly created primary IP
-				ResourceName:      res.TFID(),
+				ResourceName:      res1.TFID(),
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
 			{
-				// Update the primary IP created in the previous step by
-				// setting all optional fields and renaming the primary IP.
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_primary_ip", resRenamed,
+					"testdata/r/hcloud_primary_ip", res3,
 				),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resRenamed.TFID(), "name",
-						fmt.Sprintf("primaryip-test-renamed--%d", tmplMan.RandInt)),
-					resource.TestCheckResourceAttr(resRenamed.TFID(), "type", res.Type),
-				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						// Make sure that it's actually an update and not a replacement
+						plancheck.ExpectResourceAction(res3.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(res3.TFID(), tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("primary-ip-changed--%d", tmplMan.RandInt))),
+					statecheck.ExpectKnownValue(res3.TFID(), tfjsonpath.New("type"), knownvalue.StringExact(res3.Type)),
+					statecheck.ExpectKnownValue(res3.TFID(), tfjsonpath.New("location"), knownvalue.StringExact(teste2e.TestLocationName)),
+					statecheck.ExpectKnownValue(res3.TFID(), tfjsonpath.New("labels"), knownvalue.MapExact(map[string]knownvalue.Check{"key": knownvalue.StringExact("changed")})),
+					statecheck.ExpectKnownValue(res3.TFID(), tfjsonpath.New("assignee_id"), knownvalue.Int64Exact(0)),
+					statecheck.ExpectKnownValue(res3.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("server")),
+					statecheck.ExpectKnownValue(res3.TFID(), tfjsonpath.New("ip_address"), testsupport.StringExactFromFunc(func() string { return hcPrimaryIP.IP.String() })),
+					statecheck.ExpectKnownValue(res3.TFID(), tfjsonpath.New("delete_protection"), knownvalue.Bool(false)),
+					statecheck.ExpectKnownValue(res3.TFID(), tfjsonpath.New("auto_delete"), knownvalue.Bool(true)),
+				},
 			},
 		},
 	})
 }
 
 func TestAccPrimaryIPResource_WithServer(t *testing.T) {
-	var srv hcloud.Server
-	var primaryIPv4One hcloud.PrimaryIP
-	var primaryIPv4Two hcloud.PrimaryIP
-	var primaryIPv6One hcloud.PrimaryIP
-	primaryIPv4OneRes := &primaryip.RData{
-		Name:         "primaryip-test-v4-one",
+	tmplMan := testtemplate.Manager{}
+
+	var (
+		hcServer     hcloud.Server
+		hcPrimaryIPA hcloud.PrimaryIP
+		hcPrimaryIPB hcloud.PrimaryIP
+		hcPrimaryIPC hcloud.PrimaryIP
+	)
+
+	// Step 1
+	res1A := &primaryip.RData{
+		Name:         "a",
 		Type:         "ipv4",
-		Labels:       nil,
 		Location:     teste2e.TestLocationName,
 		AssigneeType: "server",
 		AutoDelete:   false,
 	}
-	primaryIPv4OneRes.SetRName("primary_ip_v4_test")
+	res1A.SetRName("a")
 
-	primaryIPv6OneRes := &primaryip.RData{
-		Name:         "primaryip-test-v6-one",
+	res1B := &primaryip.RData{
+		Name:         "b",
 		Type:         "ipv6",
-		Labels:       nil,
 		Location:     teste2e.TestLocationName,
 		AssigneeType: "server",
 		AutoDelete:   false,
 	}
-	primaryIPv6OneRes.SetRName("primary_ip_v6_test")
+	res1B.SetRName("b")
 
-	primaryIPv4TwoRes := &primaryip.RData{
-		Name:         "primaryip-test-v4-two",
+	res1C := &primaryip.RData{
+		Name:         "c",
 		Type:         "ipv4",
-		Labels:       nil,
 		Location:     teste2e.TestLocationName,
 		AssigneeType: "server",
-		AutoDelete:   true,
+		AutoDelete:   false,
 	}
-	primaryIPv4TwoRes.SetRName("primary_ip_v4_two_test")
+	res1C.SetRName("c")
 
-	testServerRes := &server.RData{
-		Name:         "server-test",
+	res1Server := &server.RData{
+		Name:         "primary-ip",
 		Type:         teste2e.TestServerType,
 		Image:        teste2e.TestImage,
 		LocationName: teste2e.TestLocationName,
-		Labels:       nil,
-		PublicNet: map[string]interface{}{
+		PublicNet: map[string]any{
 			"ipv4_enabled": true,
 			"ipv6_enabled": true,
-			"ipv4":         primaryIPv4OneRes.TFID() + ".id",
-			"ipv6":         primaryIPv6OneRes.TFID() + ".id",
+			"ipv4":         res1A.TFID() + ".id",
+			"ipv6":         res1B.TFID() + ".id",
 		},
 	}
+	res1Server.SetRName("primary_ip")
 
-	testServerUpdatedRes := &server.RData{
-		Name:         testServerRes.Name,
-		Type:         testServerRes.Type,
-		Image:        testServerRes.Image,
-		LocationName: testServerRes.LocationName,
-		Labels:       testServerRes.Labels,
-		PublicNet: map[string]interface{}{
-			"ipv4":         primaryIPv4TwoRes.TFID() + ".id",
-			"ipv6_enabled": false,
-		},
+	// Step 2
+	res2A := testtemplate.DeepCopy(t, res1A)
+	res2B := testtemplate.DeepCopy(t, res1B)
+	res2C := testtemplate.DeepCopy(t, res1C)
+
+	res2Server := testtemplate.DeepCopy(t, res1Server)
+	res2Server.PublicNet = map[string]any{
+		"ipv4":         res2C.TFID() + ".id",
+		"ipv6_enabled": false,
 	}
-	testServerUpdatedRes.SetRName(testServerRes.RName())
 
-	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
 		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
-			testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &srv)),
-			testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &primaryIPv4One)),
-			testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &primaryIPv4Two)),
-			testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &primaryIPv6One)),
+			testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &hcServer)),
+			testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &hcPrimaryIPA)),
+			testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &hcPrimaryIPB)),
+			testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &hcPrimaryIPC)),
 		),
 		Steps: []resource.TestStep{
 			{
-				// Create a new primary ip & server using the required values
-				// only.
+				// Create a new primary ip & server using the required values only.
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_primary_ip", primaryIPv4OneRes,
-					"testdata/r/hcloud_primary_ip", primaryIPv6OneRes,
-					"testdata/r/hcloud_primary_ip", primaryIPv4TwoRes,
-					"testdata/r/hcloud_server", testServerRes),
-
-				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(primaryIPv4OneRes.TFID(), primaryip.ByID(t, &primaryIPv4One)),
-					testsupport.CheckResourceExists(primaryIPv4TwoRes.TFID(), primaryip.ByID(t, &primaryIPv4Two)),
-					testsupport.CheckResourceExists(primaryIPv6OneRes.TFID(), primaryip.ByID(t, &primaryIPv6One)),
-					testsupport.CheckResourceExists(testServerRes.TFID(), server.ByID(t, &srv)),
-					resource.TestCheckResourceAttr(primaryIPv4OneRes.TFID(), "name",
-						fmt.Sprintf("primaryip-test-v4-one--%d", tmplMan.RandInt)),
-					resource.TestCheckResourceAttr(primaryIPv6OneRes.TFID(), "name",
-						fmt.Sprintf("primaryip-test-v6-one--%d", tmplMan.RandInt)),
-					resource.TestCheckResourceAttr(testServerRes.TFID(), "name",
-						fmt.Sprintf("server-test--%d", tmplMan.RandInt)),
-					resource.TestCheckResourceAttr(primaryIPv4OneRes.TFID(), "type", primaryIPv4OneRes.Type),
-					resource.TestCheckResourceAttr(testServerRes.TFID(), "server_type", testServerRes.Type),
-					resource.TestCheckResourceAttr(primaryIPv4OneRes.TFID(), "assignee_id", util.FormatID(primaryIPv4One.ID)),
+					"testdata/r/hcloud_primary_ip", res1A,
+					"testdata/r/hcloud_primary_ip", res1B,
+					"testdata/r/hcloud_primary_ip", res1C,
+					"testdata/r/hcloud_server", res1Server,
 				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(res1A.TFID(), primaryip.ByID(t, &hcPrimaryIPA)),
+					testsupport.CheckResourceExists(res1B.TFID(), primaryip.ByID(t, &hcPrimaryIPB)),
+					testsupport.CheckResourceExists(res1C.TFID(), primaryip.ByID(t, &hcPrimaryIPC)),
+					testsupport.CheckResourceExists(res1Server.TFID(), server.ByID(t, &hcServer)),
+				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(res1A.TFID(), tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("a--%d", tmplMan.RandInt))),
+					statecheck.ExpectKnownValue(res1B.TFID(), tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("b--%d", tmplMan.RandInt))),
+					statecheck.ExpectKnownValue(res1C.TFID(), tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("c--%d", tmplMan.RandInt))),
+					statecheck.ExpectKnownValue(res1A.TFID(), tfjsonpath.New("type"), knownvalue.StringExact("ipv4")),
+					statecheck.ExpectKnownValue(res1B.TFID(), tfjsonpath.New("type"), knownvalue.StringExact("ipv6")),
+					statecheck.ExpectKnownValue(res1C.TFID(), tfjsonpath.New("type"), knownvalue.StringExact("ipv4")),
+					// Because the primary ips were created before the server, the
+					// assignee_id is not refreshed after being attached to the server.
+					statecheck.ExpectKnownValue(res1A.TFID(), tfjsonpath.New("assignee_id"), knownvalue.Int64Exact(0)),
+					statecheck.ExpectKnownValue(res1B.TFID(), tfjsonpath.New("assignee_id"), knownvalue.Int64Exact(0)),
+					statecheck.ExpectKnownValue(res1C.TFID(), tfjsonpath.New("assignee_id"), knownvalue.Int64Exact(0)),
+					statecheck.ExpectKnownValue(res1A.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("server")),
+					statecheck.ExpectKnownValue(res1B.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("server")),
+					statecheck.ExpectKnownValue(res1C.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("server")),
+				},
 			},
 			{
-				Config: tmplMan.Render(t, "testdata/r/hcloud_primary_ip", primaryIPv4OneRes,
-					"testdata/r/hcloud_primary_ip", primaryIPv6OneRes,
-					"testdata/r/hcloud_primary_ip", primaryIPv4TwoRes,
-					"testdata/r/hcloud_server", testServerUpdatedRes),
+				// Noop step to check the state after it was refreshed
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_primary_ip", res1A,
+					"testdata/r/hcloud_primary_ip", res1B,
+					"testdata/r/hcloud_primary_ip", res1C,
+					"testdata/r/hcloud_server", res1Server,
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(res1A.TFID(), plancheck.ResourceActionNoop),
+						plancheck.ExpectResourceAction(res1B.TFID(), plancheck.ResourceActionNoop),
+						plancheck.ExpectResourceAction(res1C.TFID(), plancheck.ResourceActionNoop),
+						plancheck.ExpectResourceAction(res1Server.TFID(), plancheck.ResourceActionNoop),
+					},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(res1A.TFID(), tfjsonpath.New("assignee_id"), testsupport.Int64ExactFromFunc(func() int64 { return hcServer.ID })),
+					statecheck.ExpectKnownValue(res1B.TFID(), tfjsonpath.New("assignee_id"), testsupport.Int64ExactFromFunc(func() int64 { return hcServer.ID })),
+					statecheck.ExpectKnownValue(res1C.TFID(), tfjsonpath.New("assignee_id"), testsupport.Int64ExactFromFunc(func() int64 { return 0 })),
+				},
+			},
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_primary_ip", res2A,
+					"testdata/r/hcloud_primary_ip", res2B,
+					"testdata/r/hcloud_primary_ip", res2C,
+					"testdata/r/hcloud_server", res2Server,
+				),
 				Check: resource.ComposeTestCheckFunc(
 					// assign current hcloud primary ips + new server to local variables + check its existence
-					testsupport.CheckResourceExists(primaryIPv4OneRes.TFID(), primaryip.ByID(t, &primaryIPv4One)),
-					testsupport.CheckResourceExists(primaryIPv4TwoRes.TFID(), primaryip.ByID(t, &primaryIPv4Two)),
-					testsupport.CheckResourceExists(primaryIPv6OneRes.TFID(), primaryip.ByID(t, &primaryIPv6One)),
-					testsupport.CheckResourceExists(testServerUpdatedRes.TFID(), server.ByID(t, &srv)),
-					func(_ *terraform.State) error {
-						// check current hcloud state, validating if ips got assigned / unassigned correctly
-						if primaryIPv4Two.AssigneeID == srv.ID &&
-							primaryIPv6One.AssigneeID != srv.ID &&
-							primaryIPv4One.AssigneeID != srv.ID {
-							return nil
-						}
-						// nolint:revive
-						return fmt.Errorf(`state is not as expected:
-primary IP v4 two has assignee id %d which not equals target server id %d
-primary IP v4 one has assignee id %d and should shouldnt be assigned to server id %d
-primary IP v6 one has assignee id %d and should shouldnt be assigned to server id %d
-`,
-							primaryIPv4Two.AssigneeID, srv.ID,
-							primaryIPv4One.AssigneeID, srv.ID,
-							primaryIPv6One.AssigneeID, srv.ID,
-						)
-					}),
+					testsupport.CheckResourceExists(res2A.TFID(), primaryip.ByID(t, &hcPrimaryIPA)),
+					testsupport.CheckResourceExists(res2B.TFID(), primaryip.ByID(t, &hcPrimaryIPB)),
+					testsupport.CheckResourceExists(res2C.TFID(), primaryip.ByID(t, &hcPrimaryIPC)),
+					testsupport.CheckResourceExists(res2Server.TFID(), server.ByID(t, &hcServer)),
+				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(res2A.TFID(), tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("a--%d", tmplMan.RandInt))),
+					statecheck.ExpectKnownValue(res2B.TFID(), tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("b--%d", tmplMan.RandInt))),
+					statecheck.ExpectKnownValue(res2C.TFID(), tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("c--%d", tmplMan.RandInt))),
+					statecheck.ExpectKnownValue(res2A.TFID(), tfjsonpath.New("type"), knownvalue.StringExact("ipv4")),
+					statecheck.ExpectKnownValue(res2B.TFID(), tfjsonpath.New("type"), knownvalue.StringExact("ipv6")),
+					statecheck.ExpectKnownValue(res2C.TFID(), tfjsonpath.New("type"), knownvalue.StringExact("ipv4")),
+					statecheck.ExpectKnownValue(res2A.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("server")),
+					statecheck.ExpectKnownValue(res2B.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("server")),
+					statecheck.ExpectKnownValue(res2C.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("server")),
+				},
+			},
+			{
+				// Noop step to check the state after it was refreshed
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_primary_ip", res2A,
+					"testdata/r/hcloud_primary_ip", res2B,
+					"testdata/r/hcloud_primary_ip", res2C,
+					"testdata/r/hcloud_server", res2Server,
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(res2A.TFID(), plancheck.ResourceActionNoop),
+						plancheck.ExpectResourceAction(res2B.TFID(), plancheck.ResourceActionNoop),
+						plancheck.ExpectResourceAction(res2C.TFID(), plancheck.ResourceActionNoop),
+						plancheck.ExpectResourceAction(res2Server.TFID(), plancheck.ResourceActionNoop),
+					},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(res2A.TFID(), tfjsonpath.New("assignee_id"), testsupport.Int64ExactFromFunc(func() int64 { return 0 })),
+					statecheck.ExpectKnownValue(res2B.TFID(), tfjsonpath.New("assignee_id"), testsupport.Int64ExactFromFunc(func() int64 { return 0 })),
+					statecheck.ExpectKnownValue(res2C.TFID(), tfjsonpath.New("assignee_id"), testsupport.Int64ExactFromFunc(func() int64 { return hcServer.ID })),
+				},
 			},
 		},
 	})
 }
 
 func TestAccPrimaryIPResource_Reassign(t *testing.T) {
-	var srvOne hcloud.Server
-	var srvTwo hcloud.Server
-	var primaryIP hcloud.PrimaryIP
+	var (
+		hcServerA   hcloud.Server
+		hcServerB   hcloud.Server
+		hcPrimaryIP hcloud.PrimaryIP
+	)
 
-	testServerOneRes := &server.RData{
-		Name:         "primary-ip-reassign-one",
+	// Step 1
+	res1ServerA := &server.RData{
+		Name:         "a",
 		Type:         teste2e.TestServerType,
 		Image:        teste2e.TestImage,
 		LocationName: teste2e.TestLocationName,
-		PublicNet: map[string]interface{}{
+		PublicNet: map[string]any{
 			"ipv4_enabled": false,
 			"ipv6_enabled": true,
 		},
 	}
-	testServerOneRes.SetRName("one")
+	res1ServerA.SetRName("a")
 
-	testServerTwoRes := testtemplate.DeepCopy(t, testServerOneRes)
-	testServerTwoRes.Name = "primary-ip-reassign-two"
-	testServerTwoRes.SetRName("two")
+	res1ServerB := testtemplate.DeepCopy(t, res1ServerA)
+	res1ServerB.SetRName("b")
+	res1ServerB.Name = "b"
 
-	initialIPRes := &primaryip.RData{
-		Name:         "primaryip-test-reassign",
+	// Step 2
+	res2ServerA := testtemplate.DeepCopy(t, res1ServerA)
+	res2ServerB := testtemplate.DeepCopy(t, res1ServerB)
+
+	res2 := &primaryip.RData{
+		Name:         "primary-ip",
 		Type:         "ipv4",
-		Labels:       nil,
 		AssigneeType: "server",
-		AssigneeID:   testServerOneRes.TFID() + ".id",
+		AssigneeID:   res1ServerA.TFID() + ".id",
 		AutoDelete:   false,
 	}
-	initialIPRes.SetRName("reassign")
+	res2.SetRName("main")
 
-	reassignedIPRes := testtemplate.DeepCopy(t, initialIPRes)
-	reassignedIPRes.AssigneeID = testServerTwoRes.TFID() + ".id"
+	// Step 3
+	res3ServerA := testtemplate.DeepCopy(t, res2ServerA)
+	res3ServerB := testtemplate.DeepCopy(t, res2ServerB)
+
+	res3 := testtemplate.DeepCopy(t, res2)
+	res3.AssigneeID = res3ServerB.TFID() + ".id"
 
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
 		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
-			testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &srvOne)),
-			testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &srvTwo)),
-			testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &primaryIP)),
+			testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &hcServerA)),
+			testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &hcServerB)),
+			testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &hcPrimaryIP)),
 		),
 		Steps: []resource.TestStep{
 			{
 				// Create two servers and shut them down to freely assign/unassign primary ip
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_server", testServerOneRes,
-					"testdata/r/hcloud_server", testServerTwoRes,
+					"testdata/r/hcloud_server", res1ServerA,
+					"testdata/r/hcloud_server", res1ServerB,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(testServerOneRes.TFID(), server.ByID(t, &srvOne)),
-					testsupport.CheckResourceExists(testServerTwoRes.TFID(), server.ByID(t, &srvTwo)),
+					testsupport.CheckResourceExists(res1ServerA.TFID(), server.ByID(t, &hcServerA)),
+					testsupport.CheckResourceExists(res1ServerB.TFID(), server.ByID(t, &hcServerB)),
 				),
 				PostApplyFunc: func() {
 					client, err := testsupport.CreateClient()
 					if err != nil {
 						t.Fatalf("Error in PostApplyFunc: %v", err)
 					}
-					actionOne, _, err := client.Server.Poweroff(t.Context(), &srvOne)
+					actionOne, _, err := client.Server.Poweroff(t.Context(), &hcServerA)
 					if err != nil {
 						t.Fatalf("Error in PostApplyFunc: %v", err)
 					}
-					actionTwo, _, err := client.Server.Poweroff(t.Context(), &srvTwo)
+					actionTwo, _, err := client.Server.Poweroff(t.Context(), &hcServerB)
 					if err != nil {
 						t.Fatalf("Error in PostApplyFunc: %v", err)
 					}
@@ -288,139 +366,71 @@ func TestAccPrimaryIPResource_Reassign(t *testing.T) {
 			{
 				// Create primary IP and assign it to the first server
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_server", testServerOneRes,
-					"testdata/r/hcloud_server", testServerTwoRes,
-					"testdata/r/hcloud_primary_ip", initialIPRes,
+					"testdata/r/hcloud_server", res2ServerA,
+					"testdata/r/hcloud_server", res2ServerB,
+					"testdata/r/hcloud_primary_ip", res2,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(initialIPRes.TFID(), primaryip.ByID(t, &primaryIP)),
-					resource.TestCheckResourceAttrWith(initialIPRes.TFID(), "assignee_id", func(value string) error {
-						id, err := util.ParseID(value)
-						if err != nil {
-							return err
-						}
-						if id != srvOne.ID {
-							return fmt.Errorf("wrong assignee_id, expected %d but got %d", srvOne.ID, id)
-						}
-
-						return nil
-					}),
+					testsupport.CheckResourceExists(res2ServerA.TFID(), server.ByID(t, &hcServerA)),
+					testsupport.CheckResourceExists(res2ServerB.TFID(), server.ByID(t, &hcServerB)),
+					testsupport.CheckResourceExists(res2.TFID(), primaryip.ByID(t, &hcPrimaryIP)),
 				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(res2.TFID(), tfjsonpath.New("assignee_id"), testsupport.Int64ExactFromFunc(func() int64 { return hcServerA.ID })),
+				},
 			},
 			{
 				// Reassign IP to second server
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_server", testServerOneRes,
-					"testdata/r/hcloud_server", testServerTwoRes,
-					"testdata/r/hcloud_primary_ip", reassignedIPRes,
+					"testdata/r/hcloud_server", res3ServerA,
+					"testdata/r/hcloud_server", res3ServerB,
+					"testdata/r/hcloud_primary_ip", res3,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrWith(reassignedIPRes.TFID(), "assignee_id", func(value string) error {
-						id, err := util.ParseID(value)
-						if err != nil {
-							return err
-						}
-						if id != srvTwo.ID {
-							return fmt.Errorf("wrong assignee_id, expected %d but got %d", srvTwo.ID, id)
-						}
-
-						return nil
-					}),
+					testsupport.CheckResourceExists(res3ServerA.TFID(), server.ByID(t, &hcServerA)),
+					testsupport.CheckResourceExists(res3ServerB.TFID(), server.ByID(t, &hcServerB)),
+					testsupport.CheckResourceExists(res3.TFID(), primaryip.ByID(t, &hcPrimaryIP)),
 				),
-			},
-		},
-	})
-}
-
-func TestAccPrimaryIPResource_FieldUpdates(t *testing.T) {
-	var (
-		pip hcloud.PrimaryIP
-
-		res = &primaryip.RData{
-			Name:             "primaryip-protection",
-			Type:             "ipv4",
-			Labels:           nil,
-			Location:         teste2e.TestLocationName,
-			AssigneeType:     "server",
-			DeleteProtection: true,
-			AutoDelete:       true,
-		}
-
-		updateFields = func(d *primaryip.RData, protection bool, autoDelete bool) *primaryip.RData {
-			d.DeleteProtection = protection
-			d.AutoDelete = autoDelete
-			return d
-		}
-	)
-
-	tmplMan := testtemplate.Manager{}
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
-		CheckDestroy:             testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &pip)),
-		Steps: []resource.TestStep{
-			{
-				// Create a new primary IP using the required values
-				// only.
-				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_primary_ip", res,
-				),
-				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(res.TFID(), primaryip.ByID(t, &pip)),
-					resource.TestCheckResourceAttr(res.TFID(), "name",
-						fmt.Sprintf("primaryip-protection--%d", tmplMan.RandInt)),
-					resource.TestCheckResourceAttr(res.TFID(), "type", res.Type),
-					resource.TestCheckResourceAttr(res.TFID(), "delete_protection", fmt.Sprintf("%t", res.DeleteProtection)),
-				),
-			},
-			{
-				// Update delete protection
-				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_primary_ip", updateFields(res, false, false),
-				),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(res.TFID(), "delete_protection", fmt.Sprintf("%t", res.DeleteProtection)),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(res3.TFID(), tfjsonpath.New("assignee_id"), testsupport.Int64ExactFromFunc(func() int64 { return hcServerB.ID })),
+				},
 			},
 		},
 	})
 }
 
 func TestAccPrimaryIPResource_DeleteProtection(t *testing.T) {
-	var pip hcloud.PrimaryIP
+	tmplMan := testtemplate.Manager{}
+
+	var hcPrimaryIP hcloud.PrimaryIP
 
 	unprotected := &primaryip.RData{
-		Name:             "primaryip-test",
+		Name:             "main",
 		Type:             "ipv6",
 		Location:         teste2e.TestLocationName,
 		AssigneeType:     "server",
 		DeleteProtection: false,
 	}
+	unprotected.SetRName("main")
 
-	protected := &primaryip.RData{
-		Name:             unprotected.Name,
-		Type:             unprotected.Type,
-		Location:         unprotected.Location,
-		AssigneeType:     unprotected.AssigneeType,
-		DeleteProtection: true,
-	}
-
-	tmplMan := testtemplate.Manager{}
+	protected := testtemplate.DeepCopy(t, unprotected)
+	protected.DeleteProtection = true
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
 		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
-		CheckDestroy:             testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &pip)),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &hcPrimaryIP)),
 		Steps: []resource.TestStep{
 			{
 				// Create protected primary IP.
 				Config: tmplMan.Render(t, "testdata/r/hcloud_primary_ip", protected),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(protected.TFID(), primaryip.ByID(t, &pip)),
-					resource.TestCheckResourceAttr(protected.TFID(), "name", fmt.Sprintf("primaryip-test--%d", tmplMan.RandInt)),
-					resource.TestCheckResourceAttr(protected.TFID(), "type", protected.Type),
-					resource.TestCheckResourceAttr(protected.TFID(), "delete_protection", "true"),
+					testsupport.CheckResourceExists(protected.TFID(), primaryip.ByID(t, &hcPrimaryIP)),
 				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(protected.TFID(), tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("main--%d", tmplMan.RandInt))),
+					statecheck.ExpectKnownValue(protected.TFID(), tfjsonpath.New("delete_protection"), knownvalue.Bool(true)),
+				},
 			},
 			{
 				// Delete protected primary IP.
@@ -432,11 +442,12 @@ func TestAccPrimaryIPResource_DeleteProtection(t *testing.T) {
 				// Change primary IP protection.
 				Config: tmplMan.Render(t, "testdata/r/hcloud_primary_ip", unprotected),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(unprotected.TFID(), primaryip.ByID(t, &pip)),
-					resource.TestCheckResourceAttr(unprotected.TFID(), "name", fmt.Sprintf("primaryip-test--%d", tmplMan.RandInt)),
-					resource.TestCheckResourceAttr(unprotected.TFID(), "type", protected.Type),
-					resource.TestCheckResourceAttr(unprotected.TFID(), "delete_protection", "false"),
+					testsupport.CheckResourceExists(unprotected.TFID(), primaryip.ByID(t, &hcPrimaryIP)),
 				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(protected.TFID(), tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("main--%d", tmplMan.RandInt))),
+					statecheck.ExpectKnownValue(protected.TFID(), tfjsonpath.New("delete_protection"), knownvalue.Bool(false)),
+				},
 			},
 			{
 				// Delete unprotected primary IP.
@@ -450,20 +461,19 @@ func TestAccPrimaryIPResource_DeleteProtection(t *testing.T) {
 func TestAccPrimaryIPResource_DatacenterToLocation(t *testing.T) {
 	// Test for the "datacenter" deprecation, to make sure that its possible to move to "location" attribute
 	// See https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters
+	tmplMan := testtemplate.Manager{}
 
-	resDC := &primaryip.RData{
-		Name:         "primaryip-dc-to-location",
+	res1 := &primaryip.RData{
+		Name:         "datacenter-to-location",
 		Type:         "ipv6",
 		Datacenter:   teste2e.TestDataCenter,
 		AssigneeType: "server",
 	}
-	resDC.SetRName("dc_to_location")
+	res1.SetRName("main")
 
-	resLocation := testtemplate.DeepCopy(t, resDC)
-	resLocation.Datacenter = ""
-	resLocation.Location = teste2e.TestLocationName
-
-	tmplMan := testtemplate.Manager{}
+	res2 := testtemplate.DeepCopy(t, res1)
+	res2.Datacenter = ""
+	res2.Location = teste2e.TestLocationName
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
@@ -471,21 +481,21 @@ func TestAccPrimaryIPResource_DatacenterToLocation(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				// Create primary IP in Datacenter.
-				Config: tmplMan.Render(t, "testdata/r/hcloud_primary_ip", resDC),
+				Config: tmplMan.Render(t, "testdata/r/hcloud_primary_ip", res1),
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(resDC.TFID(), tfjsonpath.New("datacenter"), knownvalue.StringExact(teste2e.TestDataCenter)),
-					statecheck.ExpectKnownValue(resDC.TFID(), tfjsonpath.New("location"), knownvalue.StringExact(teste2e.TestLocationName)),
+					statecheck.ExpectKnownValue(res1.TFID(), tfjsonpath.New("datacenter"), knownvalue.StringExact(teste2e.TestDataCenter)),
+					statecheck.ExpectKnownValue(res1.TFID(), tfjsonpath.New("location"), knownvalue.StringExact(teste2e.TestLocationName)),
 				},
 			},
 			{
 				// Change config to Location.
-				Config: tmplMan.Render(t, "testdata/r/hcloud_primary_ip", resLocation),
+				Config: tmplMan.Render(t, "testdata/r/hcloud_primary_ip", res2),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(resDC.TFID(), tfjsonpath.New("datacenter"), knownvalue.StringExact(teste2e.TestDataCenter)),
-					statecheck.ExpectKnownValue(resDC.TFID(), tfjsonpath.New("location"), knownvalue.StringExact(teste2e.TestLocationName)),
+					statecheck.ExpectKnownValue(res1.TFID(), tfjsonpath.New("datacenter"), knownvalue.StringExact(teste2e.TestDataCenter)),
+					statecheck.ExpectKnownValue(res1.TFID(), tfjsonpath.New("location"), knownvalue.StringExact(teste2e.TestLocationName)),
 				},
 			},
 		},
@@ -495,20 +505,19 @@ func TestAccPrimaryIPResource_DatacenterToLocation(t *testing.T) {
 func TestAccPrimaryIPResource_DatacenterToLocationForceNew(t *testing.T) {
 	// Test for the "datacenter" deprecation, to make sure that its possible to move to "location" attribute
 	// See https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters
+	tmplMan := testtemplate.Manager{}
 
-	resDC := &primaryip.RData{
-		Name:         "primaryip-dc-to-location",
+	res1 := &primaryip.RData{
+		Name:         "datacenter-to-location",
 		Type:         "ipv6",
 		Datacenter:   teste2e.TestDataCenter,
 		AssigneeType: "server",
 	}
-	resDC.SetRName("dc_to_location")
+	res1.SetRName("main")
 
-	resLocation := testtemplate.DeepCopy(t, resDC)
-	resLocation.Datacenter = ""
-	resLocation.Location = teste2e.TestLocationName
-
-	tmplMan := testtemplate.Manager{}
+	res2 := testtemplate.DeepCopy(t, res1)
+	res2.Datacenter = ""
+	res2.Location = teste2e.TestLocationName
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: teste2e.PreCheck(t),
@@ -521,21 +530,21 @@ func TestAccPrimaryIPResource_DatacenterToLocationForceNew(t *testing.T) {
 					},
 				},
 				// Create primary IP in Datacenter.
-				Config: tmplMan.Render(t, "testdata/r/hcloud_primary_ip", resDC),
+				Config: tmplMan.Render(t, "testdata/r/hcloud_primary_ip", res1),
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(resDC.TFID(), tfjsonpath.New("datacenter"), knownvalue.StringExact(teste2e.TestDataCenter)),
+					statecheck.ExpectKnownValue(res1.TFID(), tfjsonpath.New("datacenter"), knownvalue.StringExact(teste2e.TestDataCenter)),
 				},
 			},
 			{
 				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
 				// Change config to Location.
-				Config: tmplMan.Render(t, "testdata/r/hcloud_primary_ip", resLocation),
+				Config: tmplMan.Render(t, "testdata/r/hcloud_primary_ip", res2),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(resLocation.TFID(), tfjsonpath.New("datacenter"), knownvalue.StringExact(teste2e.TestDataCenter)),
-					statecheck.ExpectKnownValue(resLocation.TFID(), tfjsonpath.New("location"), knownvalue.StringExact(teste2e.TestLocationName)),
+					statecheck.ExpectKnownValue(res2.TFID(), tfjsonpath.New("datacenter"), knownvalue.StringExact(teste2e.TestDataCenter)),
+					statecheck.ExpectKnownValue(res2.TFID(), tfjsonpath.New("location"), knownvalue.StringExact(teste2e.TestLocationName)),
 				},
 			},
 		},
