@@ -38,28 +38,26 @@ communicating with the API.
 
 ```terraform
 resource "hcloud_primary_ip" "main" {
-  name          = "primary_ip_test"
-  location      = "fsn1"
-  type          = "ipv4"
-  assignee_type = "server"
-  auto_delete   = true
+  name        = "primary-ip"
+  location    = "fsn1"
+  type        = "ipv4"
+  auto_delete = false
+
   labels = {
-    "hallo" : "welt"
+    key = "value"
   }
 }
+
 // Link a server to a primary IP
-resource "hcloud_server" "server_test" {
-  name        = "test-server"
+resource "hcloud_server" "main" {
+  name        = "server"
   image       = "ubuntu-24.04"
   server_type = "cx23"
   location    = "fsn1"
-  labels = {
-    "test" : "tessst1"
-  }
+
   public_net {
     ipv4 = hcloud_primary_ip.main.id
   }
-
 }
 ```
 
@@ -68,7 +66,6 @@ resource "hcloud_server" "server_test" {
 
 ### Required
 
-- `assignee_type` (String) Type of the resource the Primary IP should be assigned to.
 - `auto_delete` (Boolean) Whether auto delete is enabled. Setting `auto_delete` to `false` is recommended, because if a server assigned to the managed ip is getting deleted, it will also delete the primary IP which will break the terraform state.
 - `name` (String) Name of the Primary IP.
 - `type` (String) Type of the Primary IP (`ipv4` or `ipv6`).
@@ -76,6 +73,7 @@ resource "hcloud_server" "server_test" {
 ### Optional
 
 - `assignee_id` (Number) ID of the resource the Primary IP should be assigned to.
+- `assignee_type` (String) Type of the resource the Primary IP should be assigned to.
 - `datacenter` (String, Deprecated) Name of the Datacenter for the Primary IP. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-datacenters-are-there) for more details about datacenters.
 - `delete_protection` (Boolean) Whether delete protection is enabled.
 - `labels` (Map of String) User-defined [labels](https://docs.hetzner.cloud/reference/cloud#labels) (key-value pairs) for the resource.

@@ -20,11 +20,10 @@ func TestAccPrimaryIPDataSource(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	res := &primaryip.RData{
-		Name:         "main",
-		Type:         "ipv6",
-		Location:     teste2e.TestLocationName,
-		AssigneeType: "server",
-		Labels:       map[string]string{"key": randutil.GenerateID()},
+		Name:     "main",
+		Type:     "ipv6",
+		Location: teste2e.TestLocationName,
+		Labels:   map[string]string{"key": randutil.GenerateID()},
 	}
 	res.SetRName("main")
 
@@ -105,11 +104,10 @@ func TestAccPrimaryIPDataSource_UpgradePluginFramework(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	res := &primaryip.RData{
-		Name:         "main",
-		Type:         "ipv6",
-		Location:     teste2e.TestLocationName,
-		AssigneeType: "server",
-		Labels:       map[string]string{"key": randutil.GenerateID()},
+		Name:     "main",
+		Type:     "ipv6",
+		Location: teste2e.TestLocationName,
+		Labels:   map[string]string{"key": randutil.GenerateID()},
 	}
 	res.SetRName("main")
 
