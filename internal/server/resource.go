@@ -846,7 +846,7 @@ func publicNetUpdateDecision(ctx context.Context,
 				}
 			}
 		}
-		if err := primaryip.AssignPrimaryIP(ctx, c, ipID, server.ID); err != nil {
+		if err := primaryip.AssignPrimaryIP(ctx, c, ipID, server.ID, "server"); err != nil {
 			if err := powerOnServer(ctx, c, server); err != nil {
 				return hcloudutil.ErrorToDiag(err)
 			}

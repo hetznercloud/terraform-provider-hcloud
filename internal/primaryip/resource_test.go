@@ -28,7 +28,6 @@ func TestAccPrimaryIPResource(t *testing.T) {
 		Name:             "primary-ip",
 		Type:             "ipv6",
 		Location:         teste2e.TestLocationName,
-		AssigneeType:     "server",
 		AutoDelete:       false,
 		DeleteProtection: true,
 		Labels:           map[string]string{"key": "value"},
@@ -102,6 +101,36 @@ func TestAccPrimaryIPResource(t *testing.T) {
 	})
 }
 
+func TestAccPrimaryIPResource_ConfigValidation(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
+	var hcPrimaryIP hcloud.PrimaryIP
+
+	res1 := &primaryip.RData{
+		Name:       "primary-ip",
+		Type:       "ipv6",
+		Location:   teste2e.TestLocationName,
+		AssigneeID: "1",
+		// Test missing assignee_type
+	}
+	res1.SetRName("main")
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &hcPrimaryIP)),
+		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_primary_ip", res1,
+				),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`These attributes must be configured together: \[assignee_id,assignee_type\]`),
+			},
+		},
+	})
+}
+
 func TestAccPrimaryIPResource_WithServer(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
@@ -114,29 +143,26 @@ func TestAccPrimaryIPResource_WithServer(t *testing.T) {
 
 	// Step 1
 	res1A := &primaryip.RData{
-		Name:         "a",
-		Type:         "ipv4",
-		Location:     teste2e.TestLocationName,
-		AssigneeType: "server",
-		AutoDelete:   false,
+		Name:       "a",
+		Type:       "ipv4",
+		Location:   teste2e.TestLocationName,
+		AutoDelete: false,
 	}
 	res1A.SetRName("a")
 
 	res1B := &primaryip.RData{
-		Name:         "b",
-		Type:         "ipv6",
-		Location:     teste2e.TestLocationName,
-		AssigneeType: "server",
-		AutoDelete:   false,
+		Name:       "b",
+		Type:       "ipv6",
+		Location:   teste2e.TestLocationName,
+		AutoDelete: false,
 	}
 	res1B.SetRName("b")
 
 	res1C := &primaryip.RData{
-		Name:         "c",
-		Type:         "ipv4",
-		Location:     teste2e.TestLocationName,
-		AssigneeType: "server",
-		AutoDelete:   false,
+		Name:       "c",
+		Type:       "ipv4",
+		Location:   teste2e.TestLocationName,
+		AutoDelete: false,
 	}
 	res1C.SetRName("c")
 
@@ -311,8 +337,8 @@ func TestAccPrimaryIPResource_Reassign(t *testing.T) {
 	res2 := &primaryip.RData{
 		Name:         "primary-ip",
 		Type:         "ipv4",
-		AssigneeType: "server",
 		AssigneeID:   res1ServerA.TFID() + ".id",
+		AssigneeType: "server",
 		AutoDelete:   false,
 	}
 	res2.SetRName("main")
@@ -409,7 +435,6 @@ func TestAccPrimaryIPResource_DeleteProtection(t *testing.T) {
 		Name:             "main",
 		Type:             "ipv6",
 		Location:         teste2e.TestLocationName,
-		AssigneeType:     "server",
 		DeleteProtection: false,
 	}
 	unprotected.SetRName("main")
@@ -465,10 +490,9 @@ func TestAccPrimaryIPResource_DatacenterToLocation(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	res1 := &primaryip.RData{
-		Name:         "datacenter-to-location",
-		Type:         "ipv6",
-		Datacenter:   teste2e.TestDataCenter,
-		AssigneeType: "server",
+		Name:       "datacenter-to-location",
+		Type:       "ipv6",
+		Datacenter: teste2e.TestDataCenter,
 	}
 	res1.SetRName("main")
 
@@ -512,13 +536,14 @@ func TestAccPrimaryIPResource_DatacenterToLocationForceNew(t *testing.T) {
 		Name:         "datacenter-to-location",
 		Type:         "ipv6",
 		Datacenter:   teste2e.TestDataCenter,
-		AssigneeType: "server",
+		AssigneeType: "server", // Attribute was still required in previous versions
 	}
 	res1.SetRName("main")
 
 	res2 := testtemplate.DeepCopy(t, res1)
 	res2.Datacenter = ""
 	res2.Location = teste2e.TestLocationName
+	res2.AssigneeType = ""
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: teste2e.PreCheck(t),

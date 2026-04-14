@@ -721,22 +721,18 @@ func TestAccServerResource_PrimaryIPNetworkTests(t *testing.T) {
 	snwRes.SetRName("test-network-subnet")
 
 	primaryIPv4Res := &primaryip.RData{
-		Name:         "primaryip-v4-test",
-		Type:         "ipv4",
-		Labels:       nil,
-		Location:     teste2e.TestLocationName,
-		AssigneeType: "server",
-		AutoDelete:   false,
+		Name:       "primaryip-v4-test",
+		Type:       "ipv4",
+		Location:   teste2e.TestLocationName,
+		AutoDelete: false,
 	}
 	primaryIPv4Res.SetRName("primary-ip-v4")
 
 	primaryIPv6Res := &primaryip.RData{
-		Name:         "primaryip-v6-test",
-		Type:         "ipv6",
-		Labels:       nil,
-		Location:     teste2e.TestLocationName,
-		AssigneeType: "server",
-		AutoDelete:   false,
+		Name:       "primaryip-v6-test",
+		Type:       "ipv6",
+		Location:   teste2e.TestLocationName,
+		AutoDelete: false,
 	}
 	primaryIPv6Res.SetRName("primary-ip-v6")
 

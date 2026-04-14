@@ -119,10 +119,9 @@ func TestAccRDNSResource_PrimaryIP(t *testing.T) {
 
 			tmplMan := testtemplate.Manager{}
 			restPrimaryIP := &primaryip.RData{
-				Name:         tt.name,
-				Type:         tt.primaryIPType,
-				AssigneeType: "server",
-				Location:     teste2e.TestLocationName,
+				Name:     tt.name,
+				Type:     tt.primaryIPType,
+				Location: teste2e.TestLocationName,
 			}
 			restPrimaryIP.SetRName(tt.name)
 			resRDNS := rdns.NewRDataPrimaryIP(t, tt.name, restPrimaryIP.TFID()+".id", restPrimaryIP.TFID()+".ip_address", tt.dns)
