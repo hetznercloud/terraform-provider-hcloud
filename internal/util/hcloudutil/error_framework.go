@@ -52,7 +52,7 @@ func APIErrorDiagnostics(err error) diag.Diagnostics {
 					"%s\n\n"+
 					"Error code: %s\n"+
 					"%s",
-				hcloudErr.Message, hcloudErr.Code, statusCodeMessage,
+				hcloudErr.Error(), hcloudErr.Code, statusCodeMessage,
 			),
 		)
 		return diagnostics

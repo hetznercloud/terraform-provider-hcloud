@@ -435,12 +435,9 @@ func TestAccPrimaryIPResource_DeleteProtection(t *testing.T) {
 			},
 			{
 				// Delete protected primary IP.
-				Config:  tmplMan.Render(t, "testdata/r/hcloud_primary_ip", protected),
-				Destroy: true,
-				ExpectError: regexp.MustCompile(`Primary IP deletion is protected
-
-Error code: protected
-Status code: 423`),
+				Config:      tmplMan.Render(t, "testdata/r/hcloud_primary_ip", protected),
+				Destroy:     true,
+				ExpectError: regexp.MustCompile(`Error code: protected`),
 			},
 			{
 				// Change primary IP protection.
