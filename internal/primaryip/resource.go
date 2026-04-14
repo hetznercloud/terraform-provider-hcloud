@@ -279,7 +279,8 @@ func resourcePrimaryIPDelete(ctx context.Context, d *schema.ResourceData, m inte
 		if server, _, err := client.Server.GetByID(ctx, assigneeID); err == nil && server != nil {
 			// The server does not have this primary ip assigned anymore, no need to try to detach it before deleting
 			// Workaround for https://github.com/hashicorp/terraform/issues/35568
-			if server.PublicNet.IPv4.ID == assigneeID || server.PublicNet.IPv6.ID == assigneeID {
+			if server.PublicNet.IPv4.ID == primaryIPID ||
+				server.PublicNet.IPv6.ID == primaryIPID {
 				offAction, _, _ := client.Server.Poweroff(ctx, server)
 				// if offErr != nil {
 				// 	return hcloudutil.ErrorToDiag(offErr)
