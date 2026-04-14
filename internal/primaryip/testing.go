@@ -35,6 +35,8 @@ type DData struct {
 	PrimaryIPName string
 	PrimaryIPIP   string
 	LabelSelector string
+
+	Raw string
 }
 
 // TFID returns the data source identifier.
@@ -47,6 +49,8 @@ type DDataList struct {
 	testtemplate.DataCommon
 
 	LabelSelector string
+
+	Raw string
 }
 
 // TFID DDataList the data source identifier.
@@ -67,6 +71,8 @@ type RData struct {
 	Labels           map[string]string
 	AutoDelete       bool
 	DeleteProtection bool
+
+	Raw string
 }
 
 // TFID returns the resource identifier.

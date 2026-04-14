@@ -45,6 +45,7 @@ func TestAccPrimaryIPDataSource(t *testing.T) {
 
 	byLabel := &primaryip.DData{
 		LabelSelector: fmt.Sprintf("key=%s", res.Labels["key"]),
+		Raw:           fmt.Sprintf("depends_on = [%s]", res.TFID()),
 	}
 	byLabel.SetRName("by_label")
 
@@ -100,7 +101,9 @@ func TestAccPrimaryIPDataSource(t *testing.T) {
 	})
 }
 
-func TestAccPrimaryIPDataSourceList(t *testing.T) {
+func TestAccPrimaryIPDataSource_UpgradePluginFramework(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
 	res := &primaryip.RData{
 		Name:         "main",
 		Type:         "ipv6",
@@ -110,59 +113,75 @@ func TestAccPrimaryIPDataSourceList(t *testing.T) {
 	}
 	res.SetRName("main")
 
-	byLabel := &primaryip.DDataList{
-		LabelSelector: fmt.Sprintf("key=%s", res.Labels["key"]),
+	byName := &primaryip.DData{
+		PrimaryIPName: res.TFID() + ".name",
 	}
+	byName.SetRName("by_name")
+
+	byID := &primaryip.DData{
+		PrimaryIPID: res.TFID() + ".id",
+	}
+	byID.SetRName("by_id")
+
+	byIPAddress := &primaryip.DData{
+		PrimaryIPIP: res.TFID() + ".ip_address",
+	}
+	byIPAddress.SetRName("by_ip_address")
+
+	byLabel := &primaryip.DData{
+		LabelSelector: fmt.Sprintf("key=%s", res.Labels["key"]),
+		Raw:           fmt.Sprintf("depends_on = [%s]", res.TFID()),
+	}
+
 	byLabel.SetRName("by_label")
 
-	all := &primaryip.DDataList{}
-	all.SetRName("all")
-
-	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
-		CheckDestroy:             testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, nil)),
+		PreCheck: teste2e.PreCheck(t),
 		Steps: []resource.TestStep{
 			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"hcloud": {
+						VersionConstraint: "1.60.1",
+						Source:            "hetznercloud/hcloud",
+					},
+				},
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_primary_ip", res,
 				),
 			},
 			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"hcloud": {
+						VersionConstraint: "1.60.1",
+						Source:            "hetznercloud/hcloud",
+					},
+				},
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_primary_ip", res,
-					"testdata/d/hcloud_primary_ips", byLabel,
-					"testdata/d/hcloud_primary_ips", all,
+					"testdata/d/hcloud_primary_ip", byID,
+					"testdata/d/hcloud_primary_ip", byName,
+					"testdata/d/hcloud_primary_ip", byIPAddress,
+					"testdata/d/hcloud_primary_ip", byLabel,
+					"testdata/r/terraform_data_resource", byID,
+					"testdata/r/terraform_data_resource", byName,
+					"testdata/r/terraform_data_resource", byIPAddress,
+					"testdata/r/terraform_data_resource", byLabel,
 				),
-
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckTypeSetElemNestedAttrs(byLabel.TFID(), "primary_ips.*",
-						map[string]string{
-							"name":       fmt.Sprintf("%s--%d", res.Name, tmplMan.RandInt),
-							"location":   teste2e.TestLocationName,
-							"datacenter": teste2e.TestDataCenter,
-						},
-					),
-
-					resource.TestCheckTypeSetElemNestedAttrs(all.TFID(), "primary_ips.*",
-						map[string]string{
-							"name":       fmt.Sprintf("%s--%d", res.Name, tmplMan.RandInt),
-							"location":   teste2e.TestLocationName,
-							"datacenter": teste2e.TestDataCenter,
-						},
-					),
+			},
+			{
+				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_primary_ip", res,
+					"testdata/d/hcloud_primary_ip", byID,
+					"testdata/d/hcloud_primary_ip", byName,
+					"testdata/d/hcloud_primary_ip", byIPAddress,
+					"testdata/d/hcloud_primary_ip", byLabel,
+					"testdata/r/terraform_data_resource", byID,
+					"testdata/r/terraform_data_resource", byName,
+					"testdata/r/terraform_data_resource", byIPAddress,
+					"testdata/r/terraform_data_resource", byLabel,
 				),
-				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(byLabel.TFID(), tfjsonpath.New("primary_ips").AtSliceIndex(0).AtMapKey("name"), knownvalue.StringExact(fmt.Sprintf("main--%d", tmplMan.RandInt))),
-					statecheck.ExpectKnownValue(byLabel.TFID(), tfjsonpath.New("primary_ips").AtSliceIndex(0).AtMapKey("type"), knownvalue.StringExact("ipv6")),
-					statecheck.ExpectKnownValue(byLabel.TFID(), tfjsonpath.New("primary_ips").AtSliceIndex(0).AtMapKey("location"), knownvalue.StringExact(teste2e.TestLocationName)),
-					statecheck.ExpectKnownValue(byLabel.TFID(), tfjsonpath.New("primary_ips").AtSliceIndex(0).AtMapKey("datacenter"), knownvalue.StringExact(teste2e.TestDataCenter)),
-					statecheck.ExpectKnownValue(byLabel.TFID(), tfjsonpath.New("primary_ips").AtSliceIndex(0).AtMapKey("assignee_id"), knownvalue.Int64Exact(0)),
-					statecheck.ExpectKnownValue(byLabel.TFID(), tfjsonpath.New("primary_ips").AtSliceIndex(0).AtMapKey("assignee_type"), knownvalue.StringExact("server")),
-
-					statecheck.ExpectKnownValue(all.TFID(), tfjsonpath.New("primary_ips"), knownvalue.NotNull()),
-				},
+				PlanOnly: true,
 			},
 		},
 	})

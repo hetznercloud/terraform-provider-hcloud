@@ -25,4 +25,7 @@ resource "hcloud_primary_ip" "{{ .RName }}" {
   {{- if .DeleteProtection }}
   delete_protection = {{ .DeleteProtection }}
   {{ end }}
+{{- if .Raw }}
+{{ .Raw | indent 2 }}
+{{- end }}
 }

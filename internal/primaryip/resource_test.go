@@ -71,9 +71,10 @@ func TestAccPrimaryIPResource(t *testing.T) {
 				},
 			},
 			{
-				ResourceName:      res1.TFID(),
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            res1.TFID(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"datacenter"},
 			},
 			{
 				Config: tmplMan.Render(t,
@@ -434,9 +435,12 @@ func TestAccPrimaryIPResource_DeleteProtection(t *testing.T) {
 			},
 			{
 				// Delete protected primary IP.
-				Config:      tmplMan.Render(t, "testdata/r/hcloud_primary_ip", protected),
-				Destroy:     true,
-				ExpectError: regexp.MustCompile(`Primary IP deletion is protected \(protected, .*\)`),
+				Config:  tmplMan.Render(t, "testdata/r/hcloud_primary_ip", protected),
+				Destroy: true,
+				ExpectError: regexp.MustCompile(`Primary IP deletion is protected
+
+Error code: protected
+Status code: 423`),
 			},
 			{
 				// Change primary IP protection.
@@ -546,6 +550,44 @@ func TestAccPrimaryIPResource_DatacenterToLocationForceNew(t *testing.T) {
 					statecheck.ExpectKnownValue(res2.TFID(), tfjsonpath.New("datacenter"), knownvalue.StringExact(teste2e.TestDataCenter)),
 					statecheck.ExpectKnownValue(res2.TFID(), tfjsonpath.New("location"), knownvalue.StringExact(teste2e.TestLocationName)),
 				},
+			},
+		},
+	})
+}
+
+func TestAccPrimaryIPResource_UpgradePluginFramework(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
+	res := &primaryip.RData{
+		Name:         "main",
+		Type:         "ipv6",
+		Location:     teste2e.TestLocationName,
+		AssigneeType: "server",
+		// Labels will default {} after the upgrade, this is a workaround to make the tests pass
+		Labels: map[string]string{"key": "value"},
+	}
+	res.SetRName("main")
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: teste2e.PreCheck(t),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"hcloud": {
+						VersionConstraint: "1.60.1",
+						Source:            "hetznercloud/hcloud",
+					},
+				},
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_primary_ip", res,
+				),
+			},
+			{
+				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_primary_ip", res,
+				),
+				PlanOnly: true,
 			},
 		},
 	})

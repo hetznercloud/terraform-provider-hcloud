@@ -2,207 +2,213 @@ package primaryip
 
 import (
 	"context"
+	"maps"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/datasourceutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/merge"
 )
 
-const (
-	// DataSourceType is the type name of the Hetzner Cloud Primary IP resource.
-	DataSourceType = "hcloud_primary_ip"
+const DataSourceType = "hcloud_primary_ip"
 
-	// DataSourceListType is the type name to receive a list of Hetzner Cloud Primary IPs resources.
-	DataSourceListType = "hcloud_primary_ips"
-)
+func getCommonDataSourceSchema(readOnly bool) map[string]schema.Attribute {
+	return map[string]schema.Attribute{
+		"id": schema.Int64Attribute{
+			MarkdownDescription: "ID of the Primary IP.",
+			Optional:            !readOnly,
+			Computed:            readOnly,
+		},
+		"name": schema.StringAttribute{
+			MarkdownDescription: "Name of the Primary IP.",
+			Optional:            !readOnly,
+			Computed:            readOnly,
+		},
+		"type": schema.StringAttribute{
+			MarkdownDescription: "Type of the Primary IP (`ipv4` or `ipv6`).",
+			Computed:            true,
+		},
+		"location": schema.StringAttribute{
+			MarkdownDescription: "Name of the Location of the Primary IP.",
+			Computed:            true,
+		},
+		"datacenter": schema.StringAttribute{
+			MarkdownDescription: "Name of the Datacenter of the Primary IP.",
+			Computed:            true,
+			DeprecationMessage:  "The datacenter attribute is deprecated and will be removed after 1 July 2026. Please use the location attribute instead. See https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters.",
+		},
 
-// getCommonDataSchema returns a new common schema used by all primary ip data sources.
-func getCommonDataSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"id": {
-			Type:     schema.TypeInt,
-			Optional: true,
-			Computed: true,
+		"assignee_id": schema.Int64Attribute{
+			MarkdownDescription: "ID of the resource the Primary IP is assigned to.",
+			Computed:            true,
 		},
-		"name": {
-			Type:     schema.TypeString,
-			Optional: true,
+		"assignee_type": schema.StringAttribute{
+			MarkdownDescription: "Type of the resource the Primary IP is assigned to.",
+			Computed:            true,
 		},
-		"type": {
-			Type:     schema.TypeString,
-			Computed: true,
+
+		"auto_delete": schema.BoolAttribute{
+			MarkdownDescription: "Whether auto delete is enabled.",
+			Computed:            true,
 		},
-		"location": {
-			Type:     schema.TypeString,
-			Computed: true,
+		"labels": datasourceutil.LabelsSchema(),
+		"delete_protection": schema.BoolAttribute{
+			MarkdownDescription: " Whether delete protection is enabled.",
+			Computed:            true,
 		},
-		"datacenter": {
-			Type:       schema.TypeString,
-			Computed:   true,
-			Deprecated: "The datacenter attribute is deprecated and will be removed after 1 July 2026. Please use the location attribute instead. See https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters.",
+		"ip_address": schema.StringAttribute{
+			MarkdownDescription: "IP address of the Primary IP.",
+			Optional:            !readOnly,
+			Computed:            readOnly,
 		},
-		"assignee_id": {
-			Type:     schema.TypeInt,
-			Computed: true,
-			Optional: true,
-		},
-		"assignee_type": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"ip_address": {
-			Type:     schema.TypeString,
-			Optional: true,
-			Computed: true,
-		},
-		"ip_network": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"labels": {
-			Type:     schema.TypeMap,
-			Computed: true,
-		},
-		"delete_protection": {
-			Type:     schema.TypeBool,
-			Computed: true,
-		},
-		"auto_delete": {
-			Type:     schema.TypeBool,
-			Computed: true,
+		"ip_network": schema.StringAttribute{
+			MarkdownDescription: "IP network of the Primary IP for IPv6 addresses. Only set if `type` is `ipv6`.",
+			Computed:            true,
 		},
 	}
 }
 
-// DataSource creates a new Terraform schema for the hcloud_primary_ip data
-// source.
-func DataSource() *schema.Resource {
-	return &schema.Resource{
-		ReadContext: dataSourceHcloudPrimaryIPRead,
-		Schema: merge.Maps(
-			getCommonDataSchema(),
-			map[string]*schema.Schema{
-				"with_selector": {
-					Type:     schema.TypeString,
-					Optional: true,
-				},
-			},
+// Single
+var _ datasource.DataSource = (*DataSource)(nil)
+var _ datasource.DataSourceWithConfigure = (*DataSource)(nil)
+var _ datasource.DataSourceWithConfigValidators = (*DataSource)(nil)
+
+type DataSource struct {
+	client *hcloud.Client
+}
+
+func NewDataSource() datasource.DataSource {
+	return &DataSource{}
+}
+
+func (d *DataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = DataSourceType
+}
+
+func (d *DataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+	var newDiags diag.Diagnostics
+
+	d.client, newDiags = hcloudutil.ConfigureClient(req.ProviderData)
+	resp.Diagnostics.Append(newDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+}
+
+func (d *DataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema.MarkdownDescription = `
+Provides details about a Hetzner Cloud Primary IP.
+
+See the [Primary IPs API documentation](https://docs.hetzner.cloud/reference/cloud#tag/primary-ips) for more details.
+`
+
+	resp.Schema.Attributes = getCommonDataSourceSchema(false)
+	maps.Copy(resp.Schema.Attributes, map[string]schema.Attribute{
+		"with_selector": schema.StringAttribute{
+			MarkdownDescription: "Filter results using a [Label Selector](https://docs.hetzner.cloud/reference/cloud#label-selector).",
+			Optional:            true,
+		},
+	})
+}
+
+type dataSourceModel struct {
+	model
+
+	WithSelector types.String `tfsdk:"with_selector"`
+}
+
+var _ util.ModelFromAPI[*hcloud.PrimaryIP] = &dataSourceModel{}
+
+func (m *dataSourceModel) FromAPI(ctx context.Context, in *hcloud.PrimaryIP) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	diags.Append(m.model.FromAPI(ctx, in)...)
+
+	return diags
+}
+
+func (d *DataSource) ConfigValidators(_ context.Context) []datasource.ConfigValidator {
+	return []datasource.ConfigValidator{
+		datasourcevalidator.ExactlyOneOf(
+			path.MatchRoot("id"),
+			path.MatchRoot("name"),
+			path.MatchRoot("ip_address"),
+			path.MatchRoot("with_selector"),
 		),
 	}
 }
 
-func DataSourceList() *schema.Resource {
-	return &schema.Resource{
-		ReadContext: dataSourceHcloudPrimaryIPListRead,
-		Schema: map[string]*schema.Schema{
-			"primary_ips": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: getCommonDataSchema(),
-				},
-			},
-			"with_selector": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
-		},
+func (d *DataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data dataSourceModel
+
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-}
 
-func dataSourceHcloudPrimaryIPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*hcloud.Client)
+	var result *hcloud.PrimaryIP
+	var err error
 
-	if id, ok := d.GetOk("id"); ok {
-		f, _, err := client.PrimaryIP.GetByID(ctx, util.CastInt64(id))
+	switch {
+	case !data.ID.IsNull():
+		result, _, err = d.client.PrimaryIP.GetByID(ctx, data.ID.ValueInt64())
 		if err != nil {
-			return hcloudutil.ErrorToDiag(err)
+			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+			return
 		}
-		if f == nil {
-			return diag.Errorf("no Primary IP found with id %d", id)
+		if result == nil {
+			resp.Diagnostics.Append(hcloudutil.NotFoundDiagnostic("primary ip", "id", data.ID.String()))
+			return
 		}
-		setPrimaryIPSchema(d, f)
-		return nil
-	}
-	if name, ok := d.GetOk("name"); ok {
-		f, _, err := client.PrimaryIP.GetByName(ctx, name.(string))
+	case !data.Name.IsNull():
+		result, _, err = d.client.PrimaryIP.GetByName(ctx, data.Name.ValueString())
 		if err != nil {
-			return hcloudutil.ErrorToDiag(err)
+			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+			return
 		}
-		if f == nil {
-			return diag.Errorf("no Primary IP found with name %s", name)
+		if result == nil {
+			resp.Diagnostics.Append(hcloudutil.NotFoundDiagnostic("primary ip", "name", data.Name.String()))
+			return
 		}
-		setPrimaryIPSchema(d, f)
-		return nil
-	}
-	if ip, ok := d.GetOk("ip_address"); ok {
-		primaryIP, _, err := client.PrimaryIP.GetByIP(ctx, ip.(string))
+	case !data.IPAddress.IsNull():
+		result, _, err = d.client.PrimaryIP.GetByIP(ctx, data.IPAddress.ValueString())
 		if err != nil {
-			return hcloudutil.ErrorToDiag(err)
+			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+			return
 		}
-		setPrimaryIPSchema(d, primaryIP)
-		return nil
-	}
+		if result == nil {
+			resp.Diagnostics.Append(hcloudutil.NotFoundDiagnostic("primary ip", "ip_address", data.IPAddress.String()))
+			return
+		}
+	case !data.WithSelector.IsNull():
+		opts := hcloud.PrimaryIPListOpts{}
+		opts.LabelSelector = data.WithSelector.ValueString()
 
-	var selector string
-	if v, ok := d.Get("with_selector").(string); ok && v != "" {
-		selector = v
-	} else if v, ok := d.Get("selector").(string); ok && v != "" {
-		selector = v
-	}
-	if selector != "" {
-		var allIPs []*hcloud.PrimaryIP
-		opts := hcloud.PrimaryIPListOpts{
-			ListOpts: hcloud.ListOpts{
-				LabelSelector: selector,
-			},
-		}
-		allIPs, _, err := client.PrimaryIP.List(ctx, opts)
+		all, err := d.client.PrimaryIP.AllWithOpts(ctx, opts)
 		if err != nil {
-			return hcloudutil.ErrorToDiag(err)
+			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+			return
 		}
-		if len(allIPs) == 0 {
-			return diag.Errorf("no Primary IP found for selector %q", selector)
+
+		var newDiag diag.Diagnostic
+		result, newDiag = datasourceutil.GetOneResultForLabelSelector("primary ip", all, opts.LabelSelector)
+		if newDiag != nil {
+			resp.Diagnostics.Append(newDiag)
+			return
 		}
-		if len(allIPs) > 1 {
-			return diag.Errorf("more than one Primary IP found for selector %q", selector)
-		}
-		setPrimaryIPSchema(d, allIPs[0])
-		return nil
 	}
 
-	return diag.Errorf("please specify a id, ip_address or a selector to lookup the Primary IP")
-}
-
-func dataSourceHcloudPrimaryIPListRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	client := m.(*hcloud.Client)
-
-	selector := d.Get("with_selector").(string)
-
-	var allIPs []*hcloud.PrimaryIP
-	opts := hcloud.PrimaryIPListOpts{
-		ListOpts: hcloud.ListOpts{
-			LabelSelector: selector,
-		},
-	}
-	allIPs, err := client.PrimaryIP.AllWithOpts(ctx, opts)
-	if err != nil {
-		return hcloudutil.ErrorToDiag(err)
+	resp.Diagnostics.Append(data.FromAPI(ctx, result)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	ids := make([]string, len(allIPs))
-	tfIPs := make([]map[string]interface{}, len(allIPs))
-	for i, ip := range allIPs {
-		ids[i] = util.FormatID(ip.ID)
-		tfIPs[i] = getPrimaryIPAttributes(ip)
-	}
-	d.Set("primary_ips", tfIPs)
-	d.SetId(datasourceutil.ListID(ids))
-
-	return nil
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
