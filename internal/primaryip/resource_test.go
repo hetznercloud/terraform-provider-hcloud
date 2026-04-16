@@ -227,9 +227,9 @@ func TestAccPrimaryIPResource_WithServer(t *testing.T) {
 					statecheck.ExpectKnownValue(res1A.TFID(), tfjsonpath.New("assignee_id"), knownvalue.Int64Exact(0)),
 					statecheck.ExpectKnownValue(res1B.TFID(), tfjsonpath.New("assignee_id"), knownvalue.Int64Exact(0)),
 					statecheck.ExpectKnownValue(res1C.TFID(), tfjsonpath.New("assignee_id"), knownvalue.Int64Exact(0)),
-					statecheck.ExpectKnownValue(res1A.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("server")),
-					statecheck.ExpectKnownValue(res1B.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("server")),
-					statecheck.ExpectKnownValue(res1C.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("server")),
+					statecheck.ExpectKnownValue(res1A.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("unassigned")),
+					statecheck.ExpectKnownValue(res1B.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("unassigned")),
+					statecheck.ExpectKnownValue(res1C.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("unassigned")),
 				},
 			},
 			{
@@ -252,6 +252,9 @@ func TestAccPrimaryIPResource_WithServer(t *testing.T) {
 					statecheck.ExpectKnownValue(res1A.TFID(), tfjsonpath.New("assignee_id"), testsupport.Int64ExactFromFunc(func() int64 { return hcServer.ID })),
 					statecheck.ExpectKnownValue(res1B.TFID(), tfjsonpath.New("assignee_id"), testsupport.Int64ExactFromFunc(func() int64 { return hcServer.ID })),
 					statecheck.ExpectKnownValue(res1C.TFID(), tfjsonpath.New("assignee_id"), testsupport.Int64ExactFromFunc(func() int64 { return 0 })),
+					statecheck.ExpectKnownValue(res1A.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("server")),
+					statecheck.ExpectKnownValue(res1B.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("server")),
+					statecheck.ExpectKnownValue(res1C.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("unassigned")),
 				},
 			},
 			{
@@ -275,9 +278,9 @@ func TestAccPrimaryIPResource_WithServer(t *testing.T) {
 					statecheck.ExpectKnownValue(res2A.TFID(), tfjsonpath.New("type"), knownvalue.StringExact("ipv4")),
 					statecheck.ExpectKnownValue(res2B.TFID(), tfjsonpath.New("type"), knownvalue.StringExact("ipv6")),
 					statecheck.ExpectKnownValue(res2C.TFID(), tfjsonpath.New("type"), knownvalue.StringExact("ipv4")),
-					statecheck.ExpectKnownValue(res2A.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("server")),
-					statecheck.ExpectKnownValue(res2B.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("server")),
-					statecheck.ExpectKnownValue(res2C.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("server")),
+					statecheck.ExpectKnownValue(res1A.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("server")),
+					statecheck.ExpectKnownValue(res1B.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("server")),
+					statecheck.ExpectKnownValue(res1C.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("unassigned")),
 				},
 			},
 			{
@@ -300,6 +303,9 @@ func TestAccPrimaryIPResource_WithServer(t *testing.T) {
 					statecheck.ExpectKnownValue(res2A.TFID(), tfjsonpath.New("assignee_id"), testsupport.Int64ExactFromFunc(func() int64 { return 0 })),
 					statecheck.ExpectKnownValue(res2B.TFID(), tfjsonpath.New("assignee_id"), testsupport.Int64ExactFromFunc(func() int64 { return 0 })),
 					statecheck.ExpectKnownValue(res2C.TFID(), tfjsonpath.New("assignee_id"), testsupport.Int64ExactFromFunc(func() int64 { return hcServer.ID })),
+					statecheck.ExpectKnownValue(res2A.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("unassigned")),
+					statecheck.ExpectKnownValue(res2B.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("unassigned")),
+					statecheck.ExpectKnownValue(res2C.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("server")),
 				},
 			},
 		},
@@ -536,17 +542,15 @@ func TestAccPrimaryIPResource_DatacenterToLocationForceNew(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	res1 := &primaryip.RData{
-		Name:         "datacenter-to-location",
-		Type:         "ipv6",
-		Datacenter:   teste2e.TestDataCenter,
-		AssigneeType: "server", // Attribute was still required in previous versions
+		Name:       "datacenter-to-location",
+		Type:       "ipv6",
+		Datacenter: teste2e.TestDataCenter,
 	}
 	res1.SetRName("main")
 
 	res2 := testtemplate.DeepCopy(t, res1)
 	res2.Datacenter = ""
 	res2.Location = teste2e.TestLocationName
-	res2.AssigneeType = ""
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: teste2e.PreCheck(t),
