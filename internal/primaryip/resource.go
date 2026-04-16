@@ -26,11 +26,13 @@ import (
 
 const ResourceType = "hcloud_primary_ip"
 
-var _ resource.Resource = (*Resource)(nil)
-var _ resource.ResourceWithConfigure = (*Resource)(nil)
-var _ resource.ResourceWithConfigValidators = (*Resource)(nil)
-var _ resource.ResourceWithValidateConfig = (*Resource)(nil)
-var _ resource.ResourceWithImportState = (*Resource)(nil)
+var (
+	_ resource.Resource                     = (*Resource)(nil)
+	_ resource.ResourceWithConfigure        = (*Resource)(nil)
+	_ resource.ResourceWithConfigValidators = (*Resource)(nil)
+	_ resource.ResourceWithValidateConfig   = (*Resource)(nil)
+	_ resource.ResourceWithImportState      = (*Resource)(nil)
+)
 
 type Resource struct {
 	client *hcloud.Client
@@ -349,7 +351,9 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 		!plan.AssigneeID.Equal(data.AssigneeID) ||
 		!plan.AssigneeType.Equal(data.AssigneeType) {
 
-		if data.AssigneeID.ValueInt64() == 0 { // This handles assignee_id=null
+		// The outer condition guarantees the assignee changed. Unassign the old
+		// assignee first (if any), then assign the new one (if any).
+		if data.AssigneeID.ValueInt64() != 0 {
 			action, _, err := r.client.PrimaryIP.Unassign(ctx, primaryIP.ID)
 			if err != nil {
 				resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
@@ -360,34 +364,22 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 			if resp.Diagnostics.HasError() {
 				return
 			}
-		} else {
-			{
-				action, _, err := r.client.PrimaryIP.Unassign(ctx, primaryIP.ID)
-				if err != nil {
-					resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
-					return
-				}
+		}
 
-				resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, action)...)
-				if resp.Diagnostics.HasError() {
-					return
-				}
+		if plan.AssigneeID.ValueInt64() != 0 {
+			action, _, err := r.client.PrimaryIP.Assign(ctx, hcloud.PrimaryIPAssignOpts{
+				ID:           primaryIP.ID,
+				AssigneeID:   plan.AssigneeID.ValueInt64(),
+				AssigneeType: plan.AssigneeType.ValueString(),
+			})
+			if err != nil {
+				resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+				return
 			}
-			{
-				action, _, err := r.client.PrimaryIP.Assign(ctx, hcloud.PrimaryIPAssignOpts{
-					ID:           primaryIP.ID,
-					AssigneeID:   plan.AssigneeID.ValueInt64(),
-					AssigneeType: plan.AssigneeType.ValueString(),
-				})
-				if err != nil {
-					resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
-					return
-				}
 
-				resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, action)...)
-				if resp.Diagnostics.HasError() {
-					return
-				}
+			resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, action)...)
+			if resp.Diagnostics.HasError() {
+				return
 			}
 		}
 	}
