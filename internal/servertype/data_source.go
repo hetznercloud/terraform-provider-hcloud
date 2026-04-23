@@ -202,11 +202,11 @@ func getCommonDataSchema(readOnly bool) map[string]schema.Attribute {
 								Computed:            true,
 							},
 							"available": schema.BoolAttribute{
-								MarkdownDescription: "True if currently available in this Location.",
+								MarkdownDescription: "Whether the Server Type is temporarily unavailable in this Location.",
 								Computed:            true,
 							},
 							"recommended": schema.BoolAttribute{
-								MarkdownDescription: "True if currently recommended in this Location.",
+								MarkdownDescription: "Whether the Server Type is recommended in this Location.",
 								Computed:            true,
 							},
 						},

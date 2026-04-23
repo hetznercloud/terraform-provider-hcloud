@@ -1,7 +1,6 @@
 package servertype_test
 
 import (
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -10,8 +9,6 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
-
-var boolRegexp = regexp.MustCompile("^(true|false)$")
 
 func TestAccServerTypeDataSource(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
@@ -46,8 +43,8 @@ func TestAccServerTypeDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr(byName.TFID(), "locations.0.id", "1"),
 					resource.TestCheckResourceAttr(byName.TFID(), "locations.0.name", "fsn1"),
 					resource.TestCheckResourceAttr(byName.TFID(), "locations.0.is_deprecated", "false"),
-					resource.TestMatchResourceAttr(byName.TFID(), "locations.0.available", boolRegexp),
-					resource.TestMatchResourceAttr(byName.TFID(), "locations.0.recommended", boolRegexp),
+					resource.TestCheckResourceAttrSet(byName.TFID(), "locations.0.available"),
+					resource.TestCheckResourceAttrSet(byName.TFID(), "locations.0.recommended"),
 
 					resource.TestCheckResourceAttr(byName.TFID(), "included_traffic", "0"),
 					resource.TestCheckResourceAttr(byName.TFID(), "is_deprecated", "false"),
@@ -67,8 +64,8 @@ func TestAccServerTypeDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr(byID.TFID(), "locations.0.id", "1"),
 					resource.TestCheckResourceAttr(byID.TFID(), "locations.0.name", "fsn1"),
 					resource.TestCheckResourceAttr(byID.TFID(), "locations.0.is_deprecated", "false"),
-					resource.TestMatchResourceAttr(byID.TFID(), "locations.0.available", boolRegexp),
-					resource.TestMatchResourceAttr(byID.TFID(), "locations.0.recommended", boolRegexp),
+					resource.TestCheckResourceAttrSet(byID.TFID(), "locations.0.available"),
+					resource.TestCheckResourceAttrSet(byID.TFID(), "locations.0.recommended"),
 
 					resource.TestCheckResourceAttr(byID.TFID(), "included_traffic", "0"),
 					resource.TestCheckResourceAttr(byID.TFID(), "is_deprecated", "false"),
