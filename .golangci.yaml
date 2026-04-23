@@ -90,6 +90,10 @@ linters:
           - gosec
         text: G104
 
+      - linters:
+          - staticcheck
+        text: ServerTypes is deprecated
+
 formatters:
   enable:
     - gci
