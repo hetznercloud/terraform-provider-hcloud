@@ -61,8 +61,10 @@ resource "hcloud_server" "main" {
 
 Read-Only:
 
+- `available` (Boolean) Whether the Server Type is temporarily unavailable in this Location.
 - `deprecation_announced` (String) Date of the Server Type deprecation announcement.
 - `id` (Number) ID of the Location.
 - `is_deprecated` (Boolean) Whether the Server Type is deprecated.
 - `name` (String) Name of the Location.
+- `recommended` (Boolean) Whether the Server Type is recommended in this Location.
 - `unavailable_after` (String) Date of the Server Type removal. After this date, the Server Type cannot be used anymore.

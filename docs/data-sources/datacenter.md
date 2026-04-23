@@ -35,7 +35,7 @@ data "hcloud_datacenter" "by_name" {
 
 ### Read-Only
 
-- `available_server_type_ids` (List of Number) List of currently available Server Types in the Datacenter.
+- `available_server_type_ids` (List of Number, Deprecated) List of currently available Server Types in the Datacenter.
 - `description` (String) Description of the Datacenter.
 - `location` (Map of String) Location of the Datacenter. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-locations-are-there) for more details about locations.
-- `supported_server_type_ids` (List of Number) List of supported Server Types in the Datacenter.
+- `supported_server_type_ids` (List of Number, Deprecated) List of supported Server Types in the Datacenter.
