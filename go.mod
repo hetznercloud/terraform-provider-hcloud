@@ -1,6 +1,6 @@
 module github.com/hetznercloud/terraform-provider-hcloud
 
-go 1.25.0
+go 1.25.8
 
 toolchain go1.26.2
 
@@ -27,12 +27,12 @@ require (
 require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver v1.5.0 // indirect
-	github.com/ProtonMail/go-crypto v1.3.0 // indirect
+	github.com/ProtonMail/go-crypto v1.4.1 // indirect
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/cloudflare/circl v1.6.1 // indirect
+	github.com/cloudflare/circl v1.6.3 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
@@ -43,8 +43,8 @@ require (
 	github.com/hashicorp/go-plugin v1.7.0 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.8 // indirect
 	github.com/hashicorp/go-uuid v1.0.3 // indirect
-	github.com/hashicorp/go-version v1.8.0 // indirect
-	github.com/hashicorp/hc-install v0.9.3 // indirect
+	github.com/hashicorp/go-version v1.9.0 // indirect
+	github.com/hashicorp/hc-install v0.9.4 // indirect
 	github.com/hashicorp/logutils v1.0.0 // indirect
 	github.com/hashicorp/terraform-exec v0.25.0 // indirect
 	github.com/hashicorp/terraform-json v0.27.2 // indirect
@@ -74,7 +74,7 @@ require (
 	github.com/zclconf/go-cty v1.17.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.2 // indirect
 	golang.org/x/crypto v0.50.0 // indirect
-	golang.org/x/mod v0.34.0 // indirect
+	golang.org/x/mod v0.35.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
 	golang.org/x/sys v0.43.0 // indirect
 	golang.org/x/text v0.36.0 // indirect
