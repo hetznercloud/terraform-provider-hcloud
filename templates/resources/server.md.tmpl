@@ -194,7 +194,7 @@ The following arguments are supported:
 
 **Note:** Exactly one of `network_id` or `subnet_id` must be specified.
 
-- `network_id` - (Optional, int) **Deprecated.** ID of the network to attach the server to. Use `subnet_id` instead. When used alone without `subnet_id`, the server will be attached to the last subnet (ordered by `ip_range`), which may be unpredictable.
+- `network_id` - (Optional, int) ID of the network to attach the server to. Using `subnet_id` is preferred. When used alone without `subnet_id`, the server will be attached to the last subnet (ordered by `ip_range`), which may be unpredictable.
 - `subnet_id` - (Optional, string) ID of the network subnet to attach the server to.
 - `ip` - (Optional, string) Specify the IP the server should get in the network
 - `alias_ips` - (Optional, list) Alias IPs the server should have in the Network.
@@ -238,7 +238,7 @@ a single entry in `network` support the following fields:
 
 **Note:** Exactly one of `network_id` or `subnet_id` must be specified.
 
-- `network_id` - (Optional, int) **Deprecated.** ID of the network to attach the server to. Use `subnet_id` instead. When used alone without `subnet_id`, the server will be attached to the last subnet (ordered by `ip_range`), which may be unpredictable.
+- `network_id` - (Optional, int) ID of the network to attach the server to. Using `subnet_id` is preferred. When used alone without `subnet_id`, the server will be attached to the last subnet (ordered by `ip_range`), which may be unpredictable.
 - `subnet_id` - (Optional, string) ID of the network subnet to attach the server to.
 - `ip` - (Optional, string) Specify the IP the server should get in the network
 - `alias_ips` - (Optional, list) Alias IPs the server should have in the Network.

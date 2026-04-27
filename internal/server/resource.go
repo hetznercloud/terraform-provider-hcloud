@@ -204,10 +204,9 @@ func Resource() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"network_id": {
-							Type:       schema.TypeInt,
-							Optional:   true,
-							Computed:   true,
-							Deprecated: "Use subnet_id instead. network_id relies on implicit subnet selection which can lead to unpredictable behavior.",
+							Type:     schema.TypeInt,
+							Optional: true,
+							Computed: true,
 						},
 						"subnet_id": {
 							Type:     schema.TypeString,
@@ -1128,7 +1127,11 @@ func inlineAttachServerToNetwork(ctx context.Context, c *hcloud.Client, s *hclou
 			return fmt.Errorf("%s: %w", op, err)
 		}
 	} else {
-		nw = &hcloud.Network{ID: util.CastInt64(nwData["network_id"])}
+		networkID := util.CastInt64(nwData["network_id"])
+		if networkID == 0 {
+			return fmt.Errorf("%s: either subnet_id or network_id must be set", op)
+		}
+		nw = &hcloud.Network{ID: networkID}
 	}
 
 	ip := net.ParseIP(nwData["ip"].(string))
@@ -1153,7 +1156,16 @@ func updateServerInlineNetworkAttachments(ctx context.Context, c *hcloud.Client,
 	cfgNetworks := make(map[int64]map[string]interface{}, data.Len())
 	for _, v := range data.List() {
 		nwData := v.(map[string]interface{})
-		nwID := util.CastInt64(nwData["network_id"])
+
+		var nwID int64
+		if subnetIDStr, ok := nwData["subnet_id"].(string); ok && subnetIDStr != "" {
+			if subnetNetwork, _, err := ParseSubnetID(subnetIDStr); err == nil {
+				nwID = subnetNetwork.ID
+			}
+		} else {
+			nwID = util.CastInt64(nwData["network_id"])
+		}
+
 		cfgNetworks[nwID] = nwData
 	}
 
@@ -1306,15 +1318,20 @@ func networkToTerraformNetworks(d *schema.ResourceData, privateNetworks []hcloud
 		if nwSet, ok := d.GetOk("network"); ok {
 			for _, item := range nwSet.(*schema.Set).List() {
 				nwData := item.(map[string]interface{})
-				configNetworkID := util.CastInt64(nwData["network_id"])
 				configSubnetID, hasSubnetID := nwData["subnet_id"].(string)
 
 				// Match API response to config entry by network_id or subnet_id
-				matchesNetwork := configNetworkID == privateNetwork.Network.ID
-				if !matchesNetwork && hasSubnetID && configSubnetID != "" {
+				var matchesNetwork bool
+				var configNetworkID int64
+
+				if hasSubnetID && configSubnetID != "" {
 					if subnetNetwork, _, err := ParseSubnetID(configSubnetID); err == nil {
+						configNetworkID = subnetNetwork.ID
 						matchesNetwork = subnetNetwork.ID == privateNetwork.Network.ID
 					}
+				} else {
+					configNetworkID = util.CastInt64(nwData["network_id"])
+					matchesNetwork = configNetworkID == privateNetwork.Network.ID
 				}
 
 				if matchesNetwork {
@@ -1513,7 +1530,7 @@ func validateUniqueNetworkIDs(d *schema.ResourceDiff) error {
 				return fmt.Errorf("network item has unexpected type: %T", networkI)
 			}
 
-			networkID := util.CastInt64(network["network_id"])
+			var networkID int64
 			subnetIDStr, _ := network["subnet_id"].(string)
 
 			// When subnet_id is specified, extract network_id and validate IP range
@@ -1533,6 +1550,8 @@ func validateUniqueNetworkIDs(d *schema.ResourceDiff) error {
 						return fmt.Errorf("server IP (%s) is outside subnet IP range (%s)", ip.String(), subnetIPRange.String())
 					}
 				}
+			} else {
+				networkID = util.CastInt64(network["network_id"])
 			}
 
 			if networkID == 0 {
