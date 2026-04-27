@@ -66,8 +66,10 @@ var resourceDataAttrTypes = merge.Maps(
 )
 
 type resourceDataLocation struct {
-	ID   types.Int64  `tfsdk:"id"`
-	Name types.String `tfsdk:"name"`
+	ID          types.Int64  `tfsdk:"id"`
+	Name        types.String `tfsdk:"name"`
+	Available   types.Bool   `tfsdk:"available"`
+	Recommended types.Bool   `tfsdk:"recommended"`
 
 	deprecation.DeprecationModel
 }
@@ -79,8 +81,10 @@ func (m *resourceDataLocation) tfType() attr.Type {
 func (m *resourceDataLocation) tfAttributesTypes() map[string]attr.Type {
 	return merge.Maps(
 		map[string]attr.Type{
-			"id":   types.Int64Type,
-			"name": types.StringType,
+			"id":          types.Int64Type,
+			"name":        types.StringType,
+			"available":   types.BoolType,
+			"recommended": types.BoolType,
 		},
 		deprecation.AttrTypes(),
 	)
@@ -110,8 +114,10 @@ func newResourceData(ctx context.Context, in *hcloud.ServerType) (resourceData, 
 		tfItems := make([]attr.Value, 0, len(in.Locations))
 		for _, hcItem := range in.Locations {
 			m := &resourceDataLocation{
-				ID:   types.Int64Value(hcItem.Location.ID),
-				Name: types.StringValue(hcItem.Location.Name),
+				ID:          types.Int64Value(hcItem.Location.ID),
+				Name:        types.StringValue(hcItem.Location.Name),
+				Available:   types.BoolValue(hcItem.Available),
+				Recommended: types.BoolValue(hcItem.Recommended),
 			}
 			m.DeprecationModel, newDiags = deprecation.NewDeprecationModel(ctx, hcItem)
 			diags.Append(newDiags...)
@@ -193,6 +199,14 @@ func getCommonDataSchema(readOnly bool) map[string]schema.Attribute {
 							},
 							"name": schema.StringAttribute{
 								MarkdownDescription: "Name of the Location.",
+								Computed:            true,
+							},
+							"available": schema.BoolAttribute{
+								MarkdownDescription: "Whether the Server Type is temporarily unavailable in this Location.",
+								Computed:            true,
+							},
+							"recommended": schema.BoolAttribute{
+								MarkdownDescription: "Whether the Server Type is recommended in this Location.",
 								Computed:            true,
 							},
 						},

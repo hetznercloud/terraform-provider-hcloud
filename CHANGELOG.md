@@ -1,5 +1,25 @@
 # Changelog
 
+## [v1.61.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.61.0)
+
+### Available and recommended Server Types have been moved
+
+- Data sources `hcloud_datacenter`/`hcloud_datacenters[]`: Attributes `supported_server_type_ids[]` and `available_server_type_ids[]` have been deprecated.
+- Data sources `hcloud_server_type`/`hcloud_server_types[]`: Attributes `locations[].available` and `locations[].recommended` have been added as a replacement for the deprecated datacenter attributes.
+
+See the [changelog](https://docs.hetzner.cloud/changelog#2026-04-01-datacenter-deprecations) for more details.
+
+### Features
+
+- **server**: implement actions for poweron, poweroff, reset, and reboot (#1342)
+- **datacenter, server_type**: move available and recommended to server_type (#1378)
+
+### Bug Fixes
+
+- **primary-ip**: reassigning fails as IP needs to be unassigned first (#1353)
+- **primary-ip**: unassign before deleting a primary ip (#1384)
+- include response correlation id in api error diagnostics (#1386)
+
 ## [v1.60.1](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.60.1)
 
 ### Bug Fixes

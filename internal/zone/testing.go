@@ -3,12 +3,18 @@ package zone
 import (
 	"context"
 	"fmt"
+	"regexp"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/hcloud-go/v2/hcloud/schema"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
+
+// RegistrarRegexp matches valid registrar values in tests. Registrar is
+// resolved by an async operation not bound to zone creation, so it may be
+// "other" or "unknown" depending on timing.
+var RegistrarRegexp = regexp.MustCompile(`^(other|unknown)$`)
 
 // GetAPIResource returns a [testsupport.GetAPIResourceFunc] for [hcloud.Zone].
 func GetAPIResource() testsupport.GetAPIResourceFunc[hcloud.Zone] {

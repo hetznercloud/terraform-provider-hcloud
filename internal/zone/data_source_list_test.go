@@ -69,7 +69,7 @@ func TestAccZoneDataSourceList(t *testing.T) {
 					resource.TestCheckResourceAttr(byLabel.TFID(), "zones.0.primary_nameservers.#", "0"),
 					resource.TestCheckResourceAttr(byLabel.TFID(), "zones.0.delete_protection", "false"),
 					resource.TestCheckResourceAttr(byLabel.TFID(), "zones.0.authoritative_nameservers.assigned.#", "3"),
-					resource.TestCheckResourceAttr(byLabel.TFID(), "zones.0.registrar", "other"),
+					resource.TestMatchResourceAttr(byLabel.TFID(), "zones.0.registrar", zone.RegistrarRegexp),
 				),
 			},
 		},

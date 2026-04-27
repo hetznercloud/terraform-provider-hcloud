@@ -72,7 +72,7 @@ Status code: 400
 					"API request failed",
 					`An unexpected error was encountered during an API request.
 
-rate limit exceeded
+rate limit exceeded (rate_limit_exceeded)
 
 Error code: rate_limit_exceeded
 Status code: 429

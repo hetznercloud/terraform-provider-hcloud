@@ -21,7 +21,7 @@ jobs:
 
       - run: go test -v -timeout=30s -parallel=8 -coverprofile=coverage.txt -coverpkg=./... ./...
 
-      - uses: codecov/codecov-action@v5
+      - uses: codecov/codecov-action@v6
         if: >
           !startsWith(github.head_ref, 'renovate/') &&
           !startsWith(github.head_ref, 'release-please--')
@@ -68,7 +68,7 @@ jobs:
           terraform_wrapper: false
 
       - if: matrix.tool == 'opentofu'
-        uses: opentofu/setup-opentofu@v1
+        uses: opentofu/setup-opentofu@v2
         with:
           tofu_version: ${{ matrix.version }}
           tofu_wrapper: false
@@ -98,7 +98,7 @@ jobs:
           TEST_DATACENTER: ${{ vars.TEST_DATACENTER }}
           TEST_LOCATION: ${{ vars.TEST_LOCATION }}
 
-      - uses: codecov/codecov-action@v5
+      - uses: codecov/codecov-action@v6
         if: >
           !startsWith(github.head_ref, 'renovate/') &&
           !startsWith(github.head_ref, 'releaser-pleaser--')

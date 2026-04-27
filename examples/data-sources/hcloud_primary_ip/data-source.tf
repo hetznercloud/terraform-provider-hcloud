@@ -13,7 +13,7 @@ resource "hcloud_server" "server_test" {
   name        = "test-server"
   image       = "ubuntu-24.04"
   server_type = "cx23"
-  datacenter  = "fsn1-dc14"
+  location    = "fsn1"
   labels = {
     "test" : "tessst1"
   }

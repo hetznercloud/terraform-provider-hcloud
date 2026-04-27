@@ -5,4 +5,7 @@ data "hcloud_primary_ip" "{{ .RName }}" {
   {{ if .PrimaryIPName -}}  name          =  {{ .PrimaryIPName }} {{ end -}}
   {{ if .PrimaryIPIP -}}  ip_address      =  {{ .PrimaryIPIP }}   {{ end -}}
   {{ if .LabelSelector -}}  with_selector = "{{ .LabelSelector }}"{{ end }}
+{{- if .Raw }}
+{{ .Raw | indent 2 }}
+{{- end }}
 }

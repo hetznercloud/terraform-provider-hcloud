@@ -110,11 +110,13 @@ func getCommonDataSchema(readOnly bool) map[string]schema.Attribute {
 			MarkdownDescription: "List of supported Server Types in the Datacenter.",
 			ElementType:         types.Int64Type,
 			Computed:            true,
+			DeprecationMessage:  "This attribute is deprecated and will be dropped after 2026-10-01. Use hcloud_server_types[].locations[] instead.",
 		},
 		"available_server_type_ids": schema.ListAttribute{
 			MarkdownDescription: "List of currently available Server Types in the Datacenter.",
 			ElementType:         types.Int64Type,
 			Computed:            true,
+			DeprecationMessage:  "This attribute is deprecated and will be dropped after 2026-10-01. Use hcloud_server_types[].locations[].available instead.",
 		},
 	}
 }
