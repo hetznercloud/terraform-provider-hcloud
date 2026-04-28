@@ -20,6 +20,7 @@ resource "hcloud_load_balancer_service" "{{ .Name }}" {
     {{ if .HTTP.RedirectHTTP -}}  redirect_http    = {{ .HTTP.RedirectHTTP }}{{ end }}
     {{ if .HTTP.Certificates -}}  certificates     = [{{ .HTTP.Certificates | join ", " }}]{{ end }}
     {{ if .HTTP.StickySessions -}} sticky_sessions = "{{ .HTTP.StickySessions }}"{{ end }}
+    {{ if .HTTP.TimeoutIdle -}}   timeout_idle    = {{ .HTTP.TimeoutIdle }}{{ end }}
   }
   {{ end }}
   {{- if .AddHealthCheck }}

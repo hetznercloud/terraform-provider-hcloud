@@ -148,6 +148,10 @@ func getCommonDataSchema() map[string]*schema.Schema {
 									Type:     schema.TypeBool,
 									Computed: true,
 								},
+								"timeout_idle": {
+									Type:     schema.TypeInt,
+									Computed: true,
+								},
 							},
 						},
 					},

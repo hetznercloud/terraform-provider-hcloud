@@ -102,6 +102,12 @@ func ServiceResource() *schema.Resource {
 							Optional: true,
 							Computed: true,
 						},
+						"timeout_idle": {
+							Type:         schema.TypeInt,
+							Optional:     true,
+							Computed:     true,
+							ValidateFunc: validation.IntBetween(30, 300),
+						},
 					},
 				},
 			},
@@ -363,6 +369,9 @@ func setLoadBalancerServiceSchema(d *schema.ResourceData, lb *hcloud.LoadBalance
 		if svc.HTTP.CookieLifetime > 0 {
 			httpMap["cookie_lifetime"] = int(svc.HTTP.CookieLifetime.Seconds())
 		}
+		if svc.HTTP.TimeoutIdle > 0 {
+			httpMap["timeout_idle"] = int(svc.HTTP.TimeoutIdle.Seconds())
+		}
 		if len(svc.HTTP.Certificates) > 0 {
 			certIDs := make([]int, len(svc.HTTP.Certificates))
 			for i := 0; i < len(svc.HTTP.Certificates); i++ {
@@ -451,6 +460,9 @@ func parseTFHTTP(tfHTTP []any) *hcloud.LoadBalancerAddServiceOptsHTTP {
 	if redirectHTTP, ok := httpMap["redirect_http"]; ok {
 		http.RedirectHTTP = hcloud.Ptr(redirectHTTP.(bool))
 	}
+	if timeoutIdle, ok := httpMap["timeout_idle"]; ok && timeoutIdle != 0 {
+		http.TimeoutIdle = hcloud.Ptr(timeutil.DurationFromSeconds(timeoutIdle.(int)))
+	}
 	return http
 }
 
@@ -478,6 +490,9 @@ func parseUpdateTFHTTP(tfHTTP []any) *hcloud.LoadBalancerUpdateServiceOptsHTTP {
 	}
 	if redirectHTTP, ok := httpMap["redirect_http"]; ok {
 		http.RedirectHTTP = hcloud.Ptr(redirectHTTP.(bool))
+	}
+	if timeoutIdle, ok := httpMap["timeout_idle"]; ok && timeoutIdle != 0 {
+		http.TimeoutIdle = hcloud.Ptr(timeutil.DurationFromSeconds(timeoutIdle.(int)))
 	}
 	return http
 }
