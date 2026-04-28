@@ -104,6 +104,7 @@ type RDataServiceHTTP struct {
 	Certificates   []string
 	RedirectHTTP   bool
 	StickySessions bool
+	TimeoutIdle    int
 }
 
 // RDataServiceHealthCheck contains data for a load balancer service

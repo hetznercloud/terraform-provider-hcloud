@@ -60,6 +60,7 @@ resource "hcloud_load_balancer_service" "load_balancer_service" {
 - `cookie_lifetime` - (Optional, int) Lifetime of the cookie for sticky session (in seconds). Default: `300`
 - `certificates` - (Optional, list[int]) List of IDs from certificates which the Load Balancer has.
 - `redirect_http` - (Optional, bool) Redirect HTTP to HTTPS traffic. Only supported for services with `protocol` `https` using the default HTTP port `80`.
+- `timeout_idle` - (Optional, int) Idle timeout for HTTP connections in seconds. Must be between `30` and `300`.
 
 `health_check` supports the following fields:
 
@@ -92,6 +93,7 @@ resource "hcloud_load_balancer_service" "load_balancer_service" {
 - `cookie_name` - (string) Name of the cookie for sticky session.
 - `cookie_lifetime` - (int) Lifetime of the cookie for sticky session (in seconds).
 - `certificates` - (list[int]) List of IDs from certificates which the Load Balancer has.
+- `timeout_idle` - (int) Idle timeout for HTTP connections in seconds.
 
 `health_check` supports the following fields:
 

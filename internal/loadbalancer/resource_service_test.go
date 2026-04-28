@@ -142,6 +142,7 @@ func TestAccLoadBalancerServiceResource_HTTP(t *testing.T) {
 						HTTP: loadbalancer.RDataServiceHTTP{
 							CookieName:     "TESTCOOKIE",
 							CookieLifeTime: 800,
+							TimeoutIdle:    60,
 						},
 					},
 				),
@@ -156,6 +157,7 @@ func TestAccLoadBalancerServiceResource_HTTP(t *testing.T) {
 					resource.TestCheckResourceAttr(svcResName, "destination_port", "8080"),
 					resource.TestCheckResourceAttr(svcResName, "http.0.cookie_name", "TESTCOOKIE"),
 					resource.TestCheckResourceAttr(svcResName, "http.0.cookie_lifetime", "800"),
+					resource.TestCheckResourceAttr(svcResName, "http.0.timeout_idle", "60"),
 				),
 			},
 			{
