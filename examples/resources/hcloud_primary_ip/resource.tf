@@ -1,24 +1,22 @@
 resource "hcloud_primary_ip" "main" {
-  name          = "primary_ip_test"
-  location      = "fsn1"
-  type          = "ipv4"
-  assignee_type = "server"
-  auto_delete   = true
+  name        = "primary-ip"
+  location    = "fsn1"
+  type        = "ipv4"
+  auto_delete = false
+
   labels = {
-    "hallo" : "welt"
+    key = "value"
   }
 }
+
 // Link a server to a primary IP
-resource "hcloud_server" "server_test" {
-  name        = "test-server"
+resource "hcloud_server" "main" {
+  name        = "server"
   image       = "ubuntu-24.04"
   server_type = "cx23"
   location    = "fsn1"
-  labels = {
-    "test" : "tessst1"
-  }
+
   public_net {
     ipv4 = hcloud_primary_ip.main.id
   }
-
 }

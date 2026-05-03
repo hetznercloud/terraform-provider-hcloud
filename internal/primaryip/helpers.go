@@ -11,11 +11,11 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
-func AssignPrimaryIP(ctx context.Context, c *hcloud.Client, primaryIPID int64, serverID int64) diag.Diagnostics {
+func AssignPrimaryIP(ctx context.Context, c *hcloud.Client, primaryIPID int64, assigneeID int64, assigneeType string) diag.Diagnostics {
 	action, _, err := c.PrimaryIP.Assign(ctx, hcloud.PrimaryIPAssignOpts{
 		ID:           primaryIPID,
-		AssigneeID:   serverID,
-		AssigneeType: "server",
+		AssigneeID:   assigneeID,
+		AssigneeType: assigneeType,
 	})
 	if err != nil {
 		return hcloudutil.ErrorToDiag(err)

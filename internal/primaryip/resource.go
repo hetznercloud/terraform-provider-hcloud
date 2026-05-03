@@ -29,6 +29,7 @@ const ResourceType = "hcloud_primary_ip"
 var _ resource.Resource = (*Resource)(nil)
 var _ resource.ResourceWithConfigure = (*Resource)(nil)
 var _ resource.ResourceWithConfigValidators = (*Resource)(nil)
+var _ resource.ResourceWithValidateConfig = (*Resource)(nil)
 var _ resource.ResourceWithImportState = (*Resource)(nil)
 
 type Resource struct {
@@ -118,7 +119,8 @@ communicating with the API.
 		},
 		"assignee_type": schema.StringAttribute{
 			MarkdownDescription: "Type of the resource the Primary IP should be assigned to.",
-			Required:            true,
+			Optional:            true,
+			Computed:            true,
 		},
 		"auto_delete": schema.BoolAttribute{
 			MarkdownDescription: "Whether auto delete is enabled. Setting `auto_delete` to `false` is recommended, because if a server assigned to the managed ip is getting deleted, it will also delete the primary IP which will break the terraform state.",
@@ -158,6 +160,33 @@ func (r *Resource) ConfigValidators(_ context.Context) []resource.ConfigValidato
 	}
 }
 
+func (r *Resource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var data model
+
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Raise errors/warnings for the assignee_type and assignee_id attributes. We cannot
+	// leverage [resourcevalidator.RequiredTogether] without introducing a breaking
+	// change, so we raise errors/warnings here.
+	if !data.AssigneeID.IsUnknown() && !data.AssigneeID.IsNull() && (data.AssigneeType.IsUnknown() || data.AssigneeType.IsNull()) {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("assignee_id"),
+			"Invalid Attribute Combination",
+			"These attributes must be configured together: [assignee_id,assignee_type]",
+		)
+	}
+	if !data.AssigneeType.IsUnknown() && !data.AssigneeType.IsNull() && (data.AssigneeID.IsUnknown() || data.AssigneeID.IsNull()) {
+		resp.Diagnostics.AddAttributeWarning(
+			path.Root("assignee_type"),
+			"Unused Attribute",
+			"This attribute is now optional and is only required together with the assignee_id attribute. Please remove it from your configuration.",
+		)
+	}
+}
+
 func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data model
 
@@ -169,8 +198,6 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	opts := hcloud.PrimaryIPCreateOpts{
 		Name: data.Name.ValueString(),
 		Type: hcloud.PrimaryIPType(data.Type.ValueString()),
-
-		AssigneeType: data.AssigneeType.ValueString(),
 
 		AutoDelete: data.AutoDelete.ValueBoolPointer(),
 	}
@@ -193,6 +220,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		opts.Location = parts[0]
 	case !data.AssigneeID.IsUnknown() && !data.AssigneeID.IsNull():
 		opts.AssigneeID = data.AssigneeID.ValueInt64Pointer()
+		opts.AssigneeType = data.AssigneeType.ValueString()
 	}
 
 	if resp.Diagnostics.HasError() {
@@ -317,8 +345,13 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 	}
 
 	// Action: Assignee ID
-	if !plan.AssigneeID.IsUnknown() && !plan.AssigneeID.Equal(data.AssigneeID) {
-		if data.AssigneeID.ValueInt64() == 0 { // This handles assignee_id=null
+	if !plan.AssigneeID.IsUnknown() &&
+		!plan.AssigneeID.Equal(data.AssigneeID) ||
+		!plan.AssigneeType.Equal(data.AssigneeType) {
+
+		// The outer condition guarantees the assignee changed. Unassign the old
+		// assignee first (if any), then assign the new one (if any).
+		if data.AssigneeID.ValueInt64() != 0 {
 			action, _, err := r.client.PrimaryIP.Unassign(ctx, primaryIP.ID)
 			if err != nil {
 				resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
@@ -329,34 +362,22 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 			if resp.Diagnostics.HasError() {
 				return
 			}
-		} else {
-			{
-				action, _, err := r.client.PrimaryIP.Unassign(ctx, primaryIP.ID)
-				if err != nil {
-					resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
-					return
-				}
+		}
 
-				resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, action)...)
-				if resp.Diagnostics.HasError() {
-					return
-				}
+		if plan.AssigneeID.ValueInt64() != 0 {
+			action, _, err := r.client.PrimaryIP.Assign(ctx, hcloud.PrimaryIPAssignOpts{
+				ID:           primaryIP.ID,
+				AssigneeID:   plan.AssigneeID.ValueInt64(),
+				AssigneeType: plan.AssigneeType.ValueString(),
+			})
+			if err != nil {
+				resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+				return
 			}
-			{
-				action, _, err := r.client.PrimaryIP.Assign(ctx, hcloud.PrimaryIPAssignOpts{
-					ID:           primaryIP.ID,
-					AssigneeID:   plan.AssigneeID.ValueInt64(),
-					AssigneeType: "server",
-				})
-				if err != nil {
-					resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
-					return
-				}
 
-				resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, action)...)
-				if resp.Diagnostics.HasError() {
-					return
-				}
+			resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, action)...)
+			if resp.Diagnostics.HasError() {
+				return
 			}
 		}
 	}
@@ -419,41 +440,52 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 
 	// Unassign Primary IP before deletion
 	if data.AssigneeID.ValueInt64() != 0 {
-		server, _, err := r.client.Server.GetByID(ctx, data.AssigneeID.ValueInt64())
-		if err == nil && server != nil {
-			// The server does not have this primary ip assigned anymore, no need to try to detach it before deleting
-			// Workaround for https://github.com/hashicorp/terraform/issues/35568
-			if server.PublicNet.IPv4.ID == primaryIP.ID ||
-				server.PublicNet.IPv6.ID == primaryIP.ID {
+		switch data.AssigneeType.ValueString() {
+		case "server":
+			server, _, err := r.client.Server.GetByID(ctx, data.AssigneeID.ValueInt64())
+			if err == nil && server != nil {
+				// The server does not have this primary ip assigned anymore, no need to try to detach it before deleting
+				// Workaround for https://github.com/hashicorp/terraform/issues/35568
+				if server.PublicNet.IPv4.ID == primaryIP.ID ||
+					server.PublicNet.IPv6.ID == primaryIP.ID {
 
-				{ // Power off
-					action, _, _ := r.client.Server.Poweroff(ctx, server)
-					// No error handling
+					{ // Power off
+						action, _, _ := r.client.Server.Poweroff(ctx, server)
+						// No error handling
 
-					resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, action)...)
-					if resp.Diagnostics.HasError() {
-						return
+						resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, action)...)
+						if resp.Diagnostics.HasError() {
+							return
+						}
+					}
+					{ // Unassign
+						action, _, _ := r.client.PrimaryIP.Unassign(ctx, primaryIP.ID)
+						// No error handling, because its possible that the primary IP got
+						// already unassigned on server destroy
+
+						resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, action)...)
+						if resp.Diagnostics.HasError() {
+							return
+						}
+					}
+					{ // Power on
+						action, _, _ := r.client.Server.Poweron(ctx, server)
+						// No error handling
+
+						resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, action)...)
+						if resp.Diagnostics.HasError() {
+							return
+						}
 					}
 				}
-				{ // Unassign
-					action, _, _ := r.client.PrimaryIP.Unassign(ctx, primaryIP.ID)
-					// No error handling, because its possible that the primary IP got
-					// already unassigned on server destroy
+			}
+		default:
+			action, _, _ := r.client.PrimaryIP.Unassign(ctx, primaryIP.ID)
+			// No error handling, because it could already be unassigned from elsewhere
 
-					resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, action)...)
-					if resp.Diagnostics.HasError() {
-						return
-					}
-				}
-				{ // Power on
-					action, _, _ := r.client.Server.Poweron(ctx, server)
-					// No error handling
-
-					resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, action)...)
-					if resp.Diagnostics.HasError() {
-						return
-					}
-				}
+			resp.Diagnostics.Append(hcloudutil.SettleActions(ctx, &r.client.Action, action)...)
+			if resp.Diagnostics.HasError() {
+				return
 			}
 		}
 	}
