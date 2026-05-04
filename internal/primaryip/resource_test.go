@@ -227,9 +227,9 @@ func TestAccPrimaryIPResource_WithServer(t *testing.T) {
 					statecheck.ExpectKnownValue(res1A.TFID(), tfjsonpath.New("assignee_id"), knownvalue.Int64Exact(0)),
 					statecheck.ExpectKnownValue(res1B.TFID(), tfjsonpath.New("assignee_id"), knownvalue.Int64Exact(0)),
 					statecheck.ExpectKnownValue(res1C.TFID(), tfjsonpath.New("assignee_id"), knownvalue.Int64Exact(0)),
-					statecheck.ExpectKnownValue(res1A.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("server")),
-					statecheck.ExpectKnownValue(res1B.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("server")),
-					statecheck.ExpectKnownValue(res1C.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("server")),
+					statecheck.ExpectKnownValue(res1A.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("unassigned")),
+					statecheck.ExpectKnownValue(res1B.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("unassigned")),
+					statecheck.ExpectKnownValue(res1C.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("unassigned")),
 				},
 			},
 			{
@@ -277,7 +277,7 @@ func TestAccPrimaryIPResource_WithServer(t *testing.T) {
 					statecheck.ExpectKnownValue(res2C.TFID(), tfjsonpath.New("type"), knownvalue.StringExact("ipv4")),
 					statecheck.ExpectKnownValue(res2A.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("server")),
 					statecheck.ExpectKnownValue(res2B.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("server")),
-					statecheck.ExpectKnownValue(res2C.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("server")),
+					statecheck.ExpectKnownValue(res2C.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("unassigned")),
 				},
 			},
 			{

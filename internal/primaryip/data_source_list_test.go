@@ -18,11 +18,10 @@ import (
 
 func TestAccPrimaryIPDataSourceList(t *testing.T) {
 	res := &primaryip.RData{
-		Name:         "main",
-		Type:         "ipv6",
-		Location:     teste2e.TestLocationName,
-		AssigneeType: "server",
-		Labels:       map[string]string{"key": randutil.GenerateID()},
+		Name:     "main",
+		Type:     "ipv6",
+		Location: teste2e.TestLocationName,
+		Labels:   map[string]string{"key": randutil.GenerateID()},
 	}
 	res.SetRName("main")
 
@@ -58,7 +57,7 @@ func TestAccPrimaryIPDataSourceList(t *testing.T) {
 					statecheck.ExpectKnownValue(byLabel.TFID(), tfjsonpath.New("primary_ips").AtSliceIndex(0).AtMapKey("location"), knownvalue.StringExact(teste2e.TestLocationName)),
 					statecheck.ExpectKnownValue(byLabel.TFID(), tfjsonpath.New("primary_ips").AtSliceIndex(0).AtMapKey("datacenter"), knownvalue.StringExact(teste2e.TestDataCenter)),
 					statecheck.ExpectKnownValue(byLabel.TFID(), tfjsonpath.New("primary_ips").AtSliceIndex(0).AtMapKey("assignee_id"), knownvalue.Int64Exact(0)),
-					statecheck.ExpectKnownValue(byLabel.TFID(), tfjsonpath.New("primary_ips").AtSliceIndex(0).AtMapKey("assignee_type"), knownvalue.StringExact("server")),
+					statecheck.ExpectKnownValue(byLabel.TFID(), tfjsonpath.New("primary_ips").AtSliceIndex(0).AtMapKey("assignee_type"), knownvalue.StringExact("unassigned")),
 
 					statecheck.ExpectKnownValue(all.TFID(), tfjsonpath.New("primary_ips"), knownvalue.NotNull()),
 				},
