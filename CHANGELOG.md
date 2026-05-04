@@ -1,5 +1,11 @@
 # Changelog
 
+## [v1.63.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.63.0)
+
+### Features
+
+- **server**: add subnet_id support (#1278)
+
 ## [v1.62.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.62.0)
 
 ### Primary IPs `assignee_type` behavior change
