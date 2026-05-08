@@ -2,7 +2,7 @@ module github.com/hetznercloud/terraform-provider-hcloud
 
 go 1.25.8
 
-toolchain go1.26.2
+toolchain go1.26.3
 
 require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
