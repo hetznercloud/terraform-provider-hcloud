@@ -75,7 +75,7 @@ func GeneratePassword(t *testing.T) string {
 
 	for _, chars := range characterSets {
 		for range 32 {
-			password.WriteString(string(chars[rand.IntN(len(chars))])) // nolint:gosec // Only used for tests
+			password.WriteByte(chars[rand.IntN(len(chars))]) // nolint:gosec // Only used for tests
 		}
 	}
 
