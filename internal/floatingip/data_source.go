@@ -112,7 +112,7 @@ func DataSourceList() *schema.Resource {
 	}
 }
 
-func dataSourceHcloudFloatingIPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourceHcloudFloatingIPRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	if id, ok := d.GetOk("id"); ok {
@@ -184,7 +184,7 @@ func dataSourceHcloudFloatingIPRead(ctx context.Context, d *schema.ResourceData,
 	return diag.Errorf("please specify a id, ip_address or a selector to lookup the FloatingIP")
 }
 
-func dataSourceHcloudFloatingIPListRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourceHcloudFloatingIPListRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	selector := d.Get("with_selector").(string)
@@ -201,7 +201,7 @@ func dataSourceHcloudFloatingIPListRead(ctx context.Context, d *schema.ResourceD
 	}
 
 	ids := make([]string, len(allIPs))
-	tfIPs := make([]map[string]interface{}, len(allIPs))
+	tfIPs := make([]map[string]any, len(allIPs))
 	for i, ip := range allIPs {
 		ids[i] = util.FormatID(ip.ID)
 		tfIPs[i] = getFloatingIPAttributes(ip)

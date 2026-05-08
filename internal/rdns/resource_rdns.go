@@ -66,7 +66,7 @@ func Resource() *schema.Resource {
 	}
 }
 
-func resourceReverseDNSRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceReverseDNSRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	c := m.(*hcloud.Client)
 
 	rdns, ip, err := lookupRDNSID(ctx, d.Id(), c)
@@ -106,7 +106,7 @@ func resourceReverseDNSRead(ctx context.Context, d *schema.ResourceData, m inter
 	return nil
 }
 
-func resourceReverseDNSCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceReverseDNSCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	c := m.(*hcloud.Client)
 	serverID, serverOK := d.GetOk("server_id")
 	primaryIPID, primaryIPOK := d.GetOk("primary_ip_id")
@@ -159,7 +159,7 @@ func resourceReverseDNSCreate(ctx context.Context, d *schema.ResourceData, m int
 	return resourceReverseDNSRead(ctx, d, m)
 }
 
-func resourceReverseDNSUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceReverseDNSUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	c := m.(*hcloud.Client)
 
 	rdns, _, err := lookupRDNSID(ctx, d.Id(), c)
@@ -192,7 +192,7 @@ func resourceReverseDNSUpdate(ctx context.Context, d *schema.ResourceData, m int
 	return resourceReverseDNSRead(ctx, d, m)
 }
 
-func resourceReverseDNSDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceReverseDNSDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	c := m.(*hcloud.Client)
 
 	rdns, ip, err := lookupRDNSID(ctx, d.Id(), c)

@@ -47,7 +47,7 @@ func Resource() *schema.Resource {
 	}
 }
 
-func resourceSnapshotCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSnapshotCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	serverID := util.CastInt64(d.Get("server_id"))
@@ -58,7 +58,7 @@ func resourceSnapshotCreate(ctx context.Context, d *schema.ResourceData, m inter
 
 	if labels, ok := d.GetOk("labels"); ok {
 		tmpLabels := make(map[string]string)
-		for k, v := range labels.(map[string]interface{}) {
+		for k, v := range labels.(map[string]any) {
 			tmpLabels[k] = v.(string)
 		}
 		opts.Labels = tmpLabels
@@ -77,7 +77,7 @@ func resourceSnapshotCreate(ctx context.Context, d *schema.ResourceData, m inter
 	return resourceSnapshotRead(ctx, d, m)
 }
 
-func resourceSnapshotRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSnapshotRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	id, err := util.ParseID(d.Id())
@@ -106,7 +106,7 @@ func resourceSnapshotRead(ctx context.Context, d *schema.ResourceData, m interfa
 	return nil
 }
 
-func resourceSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	id, err := util.ParseID(d.Id())
@@ -135,7 +135,7 @@ func resourceSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	if d.HasChange("labels") {
 		labels := d.Get("labels")
 		tmpLabels := make(map[string]string)
-		for k, v := range labels.(map[string]interface{}) {
+		for k, v := range labels.(map[string]any) {
 			tmpLabels[k] = v.(string)
 		}
 		_, _, err := client.Image.Update(ctx, image, hcloud.ImageUpdateOpts{
@@ -153,7 +153,7 @@ func resourceSnapshotUpdate(ctx context.Context, d *schema.ResourceData, m inter
 	return resourceSnapshotRead(ctx, d, m)
 }
 
-func resourceSnapshotDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceSnapshotDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	imageID, err := util.ParseID(d.Id())

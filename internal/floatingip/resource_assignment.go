@@ -40,7 +40,7 @@ func AssignmentResource() *schema.Resource {
 	}
 }
 
-func resourceFloatingIPAssignmentCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceFloatingIPAssignmentCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	floatingIPID := d.Get("floating_ip_id")
@@ -64,7 +64,7 @@ func resourceFloatingIPAssignmentCreate(ctx context.Context, d *schema.ResourceD
 	return resourceFloatingIPAssignmentRead(ctx, d, m)
 }
 
-func resourceFloatingIPAssignmentRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceFloatingIPAssignmentRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	floatingIPID, err := util.ParseID(d.Id())
@@ -116,7 +116,7 @@ func resourceFloatingIPAssignmentRead(ctx context.Context, d *schema.ResourceDat
 	return nil
 }
 
-func resourceFloatingIPAssignmentUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceFloatingIPAssignmentUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	floatingIPID, err := util.ParseID(d.Id())
@@ -172,7 +172,7 @@ func resourceFloatingIPAssignmentUpdate(ctx context.Context, d *schema.ResourceD
 	return resourceFloatingIPAssignmentRead(ctx, d, m)
 }
 
-func resourceFloatingIPAssignmentDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceFloatingIPAssignmentDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	floatingIPID, err := util.ParseID(d.Id())

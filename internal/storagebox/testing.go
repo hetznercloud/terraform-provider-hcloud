@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/rand/v2"
+	"strings"
 	"testing"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
@@ -70,13 +71,13 @@ func GeneratePassword(t *testing.T) string {
 		"!$%/()=?+#-.",
 	}
 
-	password := ""
+	var password strings.Builder
 
 	for _, chars := range characterSets {
-		for i := 0; i < 32; i++ {
-			password += string(chars[rand.IntN(len(chars))]) // nolint:gosec // Only used for tests
+		for range 32 {
+			password.WriteString(string(chars[rand.IntN(len(chars))])) // nolint:gosec // Only used for tests
 		}
 	}
 
-	return password
+	return password.String()
 }

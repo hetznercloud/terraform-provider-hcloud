@@ -82,8 +82,8 @@ func UploadedResource() *schema.Resource {
 				Type:     schema.TypeMap,
 				Optional: true,
 				Elem:     schema.TypeString,
-				ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics { // nolint:revive
-					if ok, err := hcloud.ValidateResourceLabels(i.(map[string]interface{})); !ok {
+				ValidateDiagFunc: func(i any, path cty.Path) diag.Diagnostics { // nolint:revive
+					if ok, err := hcloud.ValidateResourceLabels(i.(map[string]any)); !ok {
 						return diag.FromErr(err)
 					}
 					return nil
@@ -182,7 +182,7 @@ func ManagedResource() *schema.Resource {
 	}
 }
 
-func createUploadedResource(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func createUploadedResource(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	opts := hcloud.CertificateCreateOpts{
@@ -192,7 +192,7 @@ func createUploadedResource(ctx context.Context, d *schema.ResourceData, m inter
 	}
 	if labels, ok := d.GetOk("labels"); ok {
 		opts.Labels = make(map[string]string)
-		for k, v := range labels.(map[string]interface{}) {
+		for k, v := range labels.(map[string]any) {
 			opts.Labels[k] = v.(string)
 		}
 	}
@@ -205,7 +205,7 @@ func createUploadedResource(ctx context.Context, d *schema.ResourceData, m inter
 	return readResource(ctx, d, m)
 }
 
-func createManagedResource(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func createManagedResource(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	c := m.(*hcloud.Client)
 
 	opts := hcloud.CertificateCreateOpts{
@@ -221,7 +221,7 @@ func createManagedResource(ctx context.Context, d *schema.ResourceData, m interf
 
 	if labels, ok := d.GetOk("labels"); ok {
 		opts.Labels = make(map[string]string)
-		for k, v := range labels.(map[string]interface{}) {
+		for k, v := range labels.(map[string]any) {
 			opts.Labels[k] = v.(string)
 		}
 	}
@@ -238,7 +238,7 @@ func createManagedResource(ctx context.Context, d *schema.ResourceData, m interf
 	return readResource(ctx, d, m)
 }
 
-func readResource(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func readResource(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	cert, _, err := client.Certificate.Get(ctx, d.Id())
@@ -271,8 +271,8 @@ func setCertificateSchema(d *schema.ResourceData, cert *hcloud.Certificate) {
 	util.SetSchemaFromAttributes(d, getCertificateAttributes(cert))
 }
 
-func getCertificateAttributes(cert *hcloud.Certificate) map[string]interface{} {
-	return map[string]interface{}{
+func getCertificateAttributes(cert *hcloud.Certificate) map[string]any {
+	return map[string]any{
 		"id":               cert.ID,
 		"name":             cert.Name,
 		"type":             cert.Type,
@@ -286,7 +286,7 @@ func getCertificateAttributes(cert *hcloud.Certificate) map[string]interface{} {
 	}
 }
 
-func updateResource(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func updateResource(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	cert, _, err := client.Certificate.Get(ctx, d.Id())
@@ -311,7 +311,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, m interface{}) 
 		opts := hcloud.CertificateUpdateOpts{
 			Labels: make(map[string]string),
 		}
-		for k, v := range d.Get("labels").(map[string]interface{}) {
+		for k, v := range d.Get("labels").(map[string]any) {
 			opts.Labels[k] = v.(string)
 		}
 		if _, _, err := client.Certificate.Update(ctx, cert, opts); err != nil {
@@ -322,7 +322,7 @@ func updateResource(ctx context.Context, d *schema.ResourceData, m interface{}) 
 	return readResource(ctx, d, m)
 }
 
-func deleteResource(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func deleteResource(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	certID, err := util.ParseID(d.Id())
@@ -362,8 +362,8 @@ func uploadedAndManagedResourceV0() *schema.Resource {
 }
 
 func upgradeUploadedAndManagedResourceV0(
-	_ context.Context, rawState map[string]interface{}, _ interface{},
-) (map[string]interface{}, error) {
+	_ context.Context, rawState map[string]any, _ any,
+) (map[string]any, error) {
 	fields := []string{"created", "not_valid_before", "not_valid_after"}
 	for _, field := range fields {
 		cur := rawState[field].(string)

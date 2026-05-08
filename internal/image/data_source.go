@@ -162,7 +162,7 @@ func DataSourceList() *schema.Resource {
 	}
 }
 
-func dataSourceHcloudImageRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourceHcloudImageRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 	if id, ok := d.GetOk("id"); ok {
 		i, _, err := client.Image.GetByID(ctx, util.CastInt64(id))
@@ -202,7 +202,7 @@ func dataSourceHcloudImageRead(ctx context.Context, d *schema.ResourceData, m in
 	}
 
 	statuses := make([]hcloud.ImageStatus, 0)
-	for _, status := range d.Get("with_status").([]interface{}) {
+	for _, status := range d.Get("with_status").([]any) {
 		statuses = append(statuses, hcloud.ImageStatus(status.(string)))
 	}
 	opts.Status = statuses
@@ -236,13 +236,13 @@ func dataSourceHcloudImageRead(ctx context.Context, d *schema.ResourceData, m in
 	return nil
 }
 
-func dataSourceHcloudImageListRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourceHcloudImageListRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	selector := d.Get("with_selector").(string)
 
 	statuses := make([]hcloud.ImageStatus, 0)
-	for _, status := range d.Get("with_status").([]interface{}) {
+	for _, status := range d.Get("with_status").([]any) {
 		statuses = append(statuses, hcloud.ImageStatus(status.(string)))
 	}
 
@@ -266,7 +266,7 @@ func dataSourceHcloudImageListRead(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	ids := make([]string, len(allImages))
-	tfImages := make([]map[string]interface{}, len(allImages))
+	tfImages := make([]map[string]any, len(allImages))
 	for i, image := range allImages {
 		ids[i] = util.FormatID(image.ID)
 		tfImages[i] = getImageAttributes(image)
@@ -287,8 +287,8 @@ func setImageSchema(d *schema.ResourceData, i *hcloud.Image) {
 	util.SetSchemaFromAttributes(d, getImageAttributes(i))
 }
 
-func getImageAttributes(i *hcloud.Image) map[string]interface{} {
-	res := map[string]interface{}{
+func getImageAttributes(i *hcloud.Image) map[string]any {
+	res := map[string]any{
 		"id":           i.ID,
 		"type":         i.Type,
 		"name":         i.Name,

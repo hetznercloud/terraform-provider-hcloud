@@ -20,18 +20,18 @@ func TestAPIErrorDiagnostics(t *testing.T) {
 	for _, tc := range []struct {
 		name          string
 		err           error
-		errRaw        map[string]interface{}
+		errRaw        map[string]any
 		errStatusCode int
 		diagnostics   diag.Diagnostics
 	}{
 		{
 			name: "hcloud invalid input error",
-			errRaw: map[string]interface{}{
-				"error": map[string]interface{}{
+			errRaw: map[string]any{
+				"error": map[string]any{
 					"code":    "invalid_input",
 					"message": "something is fishy",
-					"details": map[string]interface{}{
-						"fields": []map[string]interface{}{
+					"details": map[string]any{
+						"fields": []map[string]any{
 							{"name": "foobar", "messages": []string{"must be bar", "foo too long"}},
 						},
 					},
@@ -60,8 +60,8 @@ Status code: 400
 				Code:    hcloud.ErrorCodeRateLimitExceeded,
 				Message: "rate limit exceeded",
 			},
-			errRaw: map[string]interface{}{
-				"error": map[string]interface{}{
+			errRaw: map[string]any{
+				"error": map[string]any{
 					"code":    "rate_limit_exceeded",
 					"message": "rate limit exceeded",
 				},
@@ -108,7 +108,7 @@ something broke :(
 
 // hcloudErrorFromErrorAndStatus is a hack to fill the private field `hcloud.Error.response` with a sensible response
 // so we can fully test the logged error messages.
-func hcloudErrorFromErrorAndStatus(errRaw map[string]interface{}, statusCode int) error {
+func hcloudErrorFromErrorAndStatus(errRaw map[string]any, statusCode int) error {
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
 	defer server.Close()

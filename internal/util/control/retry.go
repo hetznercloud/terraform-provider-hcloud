@@ -41,7 +41,7 @@ func Retry(maxTries int, f func() error) error {
 
 	backoff := hcloud.ExponentialBackoff(2, 1*time.Second)
 
-	for try := 0; try < maxTries; try++ {
+	for try := range maxTries {
 		var aerr abortErr
 
 		err = f()

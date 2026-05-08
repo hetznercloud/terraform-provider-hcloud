@@ -3,7 +3,7 @@ package datacenter
 import (
 	"context"
 	"fmt"
-	"sort"
+	"slices"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -73,8 +73,8 @@ func newResourceData(ctx context.Context, in *hcloud.Datacenter) (resourceData, 
 	for i, v := range in.ServerTypes.Available {
 		availableServerTypeIDs[i] = v.ID
 	}
-	sort.Slice(supportedServerTypeIDs, func(i, j int) bool { return supportedServerTypeIDs[i] < supportedServerTypeIDs[j] })
-	sort.Slice(availableServerTypeIDs, func(i, j int) bool { return availableServerTypeIDs[i] < availableServerTypeIDs[j] })
+	slices.Sort(supportedServerTypeIDs)
+	slices.Sort(availableServerTypeIDs)
 
 	data.SupportedServerTypeIDs, newDiags = types.ListValueFrom(ctx, types.Int64Type, supportedServerTypeIDs)
 	diags.Append(newDiags...)

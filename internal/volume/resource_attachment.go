@@ -47,7 +47,7 @@ func AttachmentResource() *schema.Resource {
 	}
 }
 
-func resourceVolumeAttachmentCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceVolumeAttachmentCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	var action *hcloud.Action
 
 	c := m.(*hcloud.Client)
@@ -89,7 +89,7 @@ func resourceVolumeAttachmentCreate(ctx context.Context, d *schema.ResourceData,
 	return resourceVolumeAttachmentRead(ctx, d, m)
 }
 
-func resourceVolumeAttachmentRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceVolumeAttachmentRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	volumeID, err := util.ParseID(d.Id())
@@ -141,7 +141,7 @@ func resourceVolumeAttachmentRead(ctx context.Context, d *schema.ResourceData, m
 	return nil
 }
 
-func resourceVolumeAttachmentDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceVolumeAttachmentDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	c := m.(*hcloud.Client)
 
 	volumeID, err := util.ParseID(d.Id())
