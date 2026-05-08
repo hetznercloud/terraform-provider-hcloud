@@ -54,7 +54,7 @@ func Resource() *schema.Resource {
 			"image": {
 				Type:     schema.TypeString,
 				Optional: true,
-				ForceNew: true,
+				ForceNew: false,
 				ValidateFunc: func(val interface{}, key string) (i []string, errors []error) {
 					image := val.(string)
 					if len(image) == 0 {
@@ -79,7 +79,7 @@ func Resource() *schema.Resource {
 			"user_data": {
 				Type:             schema.TypeString,
 				Optional:         true,
-				ForceNew:         true,
+				ForceNew:         false,
 				DiffSuppressFunc: userDataDiffSuppress,
 				StateFunc: func(v interface{}) string {
 					switch x := v.(type) {
@@ -271,6 +271,23 @@ func Resource() *schema.Resource {
 			"primary_disk_size": {
 				Type:     schema.TypeInt,
 				Computed: true,
+			},
+			"rebuild_when_necessary": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+				Description: "If set to true, the server will be rebuilt. WARNING: Rebuilding will destroy all data on the server's disk. Make sure you have backups before proceeding.",
+				ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics {
+					if b, ok := i.(bool); ok && b {
+						return diag.Diagnostics{
+							{
+								Severity: diag.Warning,
+								Summary:  "Rebuilding will destroy all data on its disk. Ensure you have backups before proceeding.",
+							},
+						}
+					}
+					return nil
+				},
 			},
 		},
 	}
@@ -573,6 +590,11 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 			return hcloudutil.ErrorToDiag(err)
 		}
 	}
+	if d.Get("rebuild_when_necessary").(bool) && (d.HasChange("image") || d.HasChange("user_data")) {
+		if err := rebuildServer(ctx, c, d, server); err != nil {
+			return err
+		}
+	}
 	if d.HasChange("labels") {
 		labels := d.Get("labels")
 		tmpLabels := make(map[string]string)
@@ -736,6 +758,44 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 
 	d.Partial(false)
 	return resourceServerRead(ctx, d, m)
+}
+
+func rebuildServer(ctx context.Context, c *hcloud.Client, d *schema.ResourceData, server *hcloud.Server) diag.Diagnostics {
+	newImage := d.Get("image")
+	newUserData := d.Get("user_data")
+
+	// Look up the image by name or ID
+	serverType, _, err := c.ServerType.Get(ctx, d.Get("server_type").(string))
+	if err != nil {
+		return hcloudutil.ErrorToDiag(err)
+	}
+	image, _, err := c.Image.GetForArchitecture(ctx, newImage.(string), serverType.Architecture)
+	if err != nil {
+		return hcloudutil.ErrorToDiag(err)
+	}
+	if image == nil {
+		return hcloudutil.ErrorToDiag(fmt.Errorf("image %s for architecture %s not found", newImage.(string), serverType.Architecture))
+	}
+
+	var userDataPtr *string
+	if s, ok := newUserData.(string); ok && s != "" {
+		userDataPtr = &s
+	}
+
+	action, _, err := c.Server.Rebuild(ctx, server, hcloud.ServerRebuildOpts{
+		Image:    image,
+		UserData: userDataPtr,
+	})
+	if err != nil {
+		if resourceServerIsNotFound(err, d) {
+			return nil
+		}
+		return hcloudutil.ErrorToDiag(err)
+	}
+	if err = c.Action.WaitFor(ctx, action); err != nil {
+		return hcloudutil.ErrorToDiag(err)
+	}
+	return nil
 }
 
 func updatePublicNet(ctx context.Context, o interface{}, n interface{}, c *hcloud.Client, server *hcloud.Server) diag.Diagnostics {
@@ -1488,7 +1548,25 @@ func publicNetRemovedDecision(ctx context.Context,
 	return nil
 }
 
-func resourceServerCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
+func resourceServerCustomizeDiff(ctx context.Context, d *schema.ResourceDiff, m interface{}) error {
+	rebuild, ok := d.GetOk("rebuild_when_necessary")
+	if ok && rebuild.(bool) {
+		// If rebuild is true, allow update in-place (no ForceNew)
+		return validateUniqueNetworkIDs(d)
+	}
+
+	// If rebuild is not true, force recreation on user_data or image changes
+	if d.HasChange("user_data") {
+		if err := d.ForceNew("user_data"); err != nil {
+			return err
+		}
+	}
+	if d.HasChange("image") {
+		if err := d.ForceNew("image"); err != nil {
+			return err
+		}
+	}
+
 	return validateUniqueNetworkIDs(d)
 }
 

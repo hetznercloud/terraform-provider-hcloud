@@ -259,6 +259,7 @@ func (p *PluginProvider) Actions(_ context.Context) []func() action.Action {
 		server.NewPoweroffAction,
 		server.NewRebootAction,
 		server.NewResetAction,
+		server.NewRebuildAction,
 	}
 }
 
