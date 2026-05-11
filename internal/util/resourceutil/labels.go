@@ -31,7 +31,7 @@ func (l labelsValidator) ValidateMap(_ context.Context, req validator.MapRequest
 	}
 
 	for k, v := range req.ConfigValue.Elements() {
-		label := map[string]interface{}{k: v.(types.String).ValueString()}
+		label := map[string]any{k: v.(types.String).ValueString()}
 
 		if ok, err := hcloud.ValidateResourceLabels(label); !ok {
 			resp.Diagnostics.AddAttributeError(req.Path.AtMapKey(k), "Invalid label", err.Error())

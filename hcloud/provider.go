@@ -41,7 +41,7 @@ func Provider() *schema.Provider {
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("HCLOUD_TOKEN", nil),
 				Description: "The Hetzner Cloud API token, can also be specified with the HCLOUD_TOKEN environment variable.",
-				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) { // nolint:revive
+				ValidateFunc: func(val any, key string) (warns []string, errs []error) { // nolint:revive
 					token := val.(string)
 					if len(token) != 64 {
 						errs = append(errs, errors.New("entered token is invalid (must be exactly 64 characters long)"))
@@ -121,7 +121,7 @@ func Provider() *schema.Provider {
 	}
 }
 
-func providerConfigure(_ context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+func providerConfigure(_ context.Context, d *schema.ResourceData) (any, diag.Diagnostics) {
 	opts := []hcloud.ClientOption{
 		hcloud.WithToken(d.Get("token").(string)),
 		hcloud.WithApplication("hcloud-terraform", Version),

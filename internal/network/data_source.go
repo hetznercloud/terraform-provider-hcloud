@@ -96,7 +96,7 @@ func DataSourceList() *schema.Resource {
 	}
 }
 
-func dataSourceHcloudNetworkRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourceHcloudNetworkRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	if id, ok := d.GetOk("id"); ok {
@@ -147,7 +147,7 @@ func dataSourceHcloudNetworkRead(ctx context.Context, d *schema.ResourceData, m 
 	return diag.Errorf("please specify an id, a name or a selector to lookup the network")
 }
 
-func dataSourceHcloudNetworkListRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourceHcloudNetworkListRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	selector := d.Get("with_selector").(string)
@@ -163,7 +163,7 @@ func dataSourceHcloudNetworkListRead(ctx context.Context, d *schema.ResourceData
 	}
 
 	ids := make([]string, len(allNetworks))
-	tsNetworks := make([]map[string]interface{}, len(allNetworks))
+	tsNetworks := make([]map[string]any, len(allNetworks))
 	for i, firewall := range allNetworks {
 		ids[i] = util.FormatID(firewall.ID)
 		tsNetworks[i] = getNetworkAttributes(firewall)

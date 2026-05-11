@@ -55,7 +55,7 @@ func Resource() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				ForceNew: true,
-				ValidateFunc: func(val interface{}, key string) (i []string, errors []error) {
+				ValidateFunc: func(val any, key string) (i []string, errors []error) {
 					image := val.(string)
 					if len(image) == 0 {
 						errors = append(errors, fmt.Errorf("%q must have more than 0 characters. Have you set the name instead of an ID?", key))
@@ -81,7 +81,7 @@ func Resource() *schema.Resource {
 				Optional:         true,
 				ForceNew:         true,
 				DiffSuppressFunc: userDataDiffSuppress,
-				StateFunc: func(v interface{}) string {
+				StateFunc: func(v any) string {
 					switch x := v.(type) {
 					case string:
 						return userDataHashSum(x)
@@ -94,7 +94,7 @@ func Resource() *schema.Resource {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Schema{Type: schema.TypeString,
-					ValidateDiagFunc: func(i interface{}, _ cty.Path) diag.Diagnostics {
+					ValidateDiagFunc: func(i any, _ cty.Path) diag.Diagnostics {
 						s := i.(string)
 						if len(s) == 0 {
 							return diag.Errorf("Invalid ssh key passed. You need to pass a string with at least 1 character")
@@ -151,8 +151,8 @@ func Resource() *schema.Resource {
 			"labels": {
 				Type:     schema.TypeMap,
 				Optional: true,
-				ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics { // nolint:revive
-					if ok, err := hcloud.ValidateResourceLabels(i.(map[string]interface{})); !ok {
+				ValidateDiagFunc: func(i any, path cty.Path) diag.Diagnostics { // nolint:revive
+					if ok, err := hcloud.ValidateResourceLabels(i.(map[string]any)); !ok {
 						return diag.FromErr(err)
 					}
 					return nil
@@ -296,7 +296,7 @@ const ChangeDeprecatedServerTypeMessage = `Existing servers of that plan will ` 
 	`It is possible to migrate this Server to another Server Type by using ` +
 	`the "hcloud server change-type" command.`
 
-func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interface{}) (diags diag.Diagnostics) {
+func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m any) (diags diag.Diagnostics) {
 	c := m.(*hcloud.Client)
 
 	// Get server type to select correct image (based on arch)
@@ -391,7 +391,7 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 
 	if labels, ok := d.GetOk("labels"); ok {
 		tmpLabels := make(map[string]string)
-		for k, v := range labels.(map[string]interface{}) {
+		for k, v := range labels.(map[string]any) {
 			tmpLabels[k] = v.(string)
 		}
 		opts.Labels = tmpLabels
@@ -416,7 +416,7 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	if publicNet, ok := d.GetOk("public_net"); ok {
 		createPublicNet := hcloud.ServerCreatePublicNet{}
 		for _, publicNetBlock := range publicNet.(*schema.Set).List() {
-			publicNetEntry := publicNetBlock.(map[string]interface{})
+			publicNetEntry := publicNetBlock.(map[string]any)
 			if enableIPv4, err := ToPublicNetField[bool](publicNetEntry, "ipv4_enabled"); err == nil {
 				createPublicNet.EnableIPv4 = enableIPv4
 			}
@@ -474,7 +474,7 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 
 	if nwSet, ok := d.GetOk("network"); ok {
 		for _, item := range nwSet.(*schema.Set).List() {
-			nwData := item.(map[string]interface{})
+			nwData := item.(map[string]any)
 			if err := inlineAttachServerToNetwork(ctx, c, res.Server, nwData); err != nil {
 				diags = append(diags, hcloudutil.ErrorToDiag(err)...)
 				return
@@ -524,7 +524,7 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m interfa
 	return
 }
 
-func resourceServerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceServerRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	server, _, err := client.Server.Get(ctx, d.Id())
@@ -548,7 +548,7 @@ func resourceServerRead(ctx context.Context, d *schema.ResourceData, m interface
 	return nil
 }
 
-func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	c := m.(*hcloud.Client)
 
 	server, _, err := c.Server.Get(ctx, d.Id())
@@ -576,7 +576,7 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 	if d.HasChange("labels") {
 		labels := d.Get("labels")
 		tmpLabels := make(map[string]string)
-		for k, v := range labels.(map[string]interface{}) {
+		for k, v := range labels.(map[string]any) {
 			tmpLabels[k] = v.(string)
 		}
 		_, _, err := c.Server.Update(ctx, server, hcloud.ServerUpdateOpts{
@@ -738,7 +738,7 @@ func resourceServerUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 	return resourceServerRead(ctx, d, m)
 }
 
-func updatePublicNet(ctx context.Context, o interface{}, n interface{}, c *hcloud.Client, server *hcloud.Server) diag.Diagnostics {
+func updatePublicNet(ctx context.Context, o any, n any, c *hcloud.Client, server *hcloud.Server) diag.Diagnostics {
 	diffToRemove := o.(*schema.Set).Difference(n.(*schema.Set))
 	diffToAdd := n.(*schema.Set).Difference(o.(*schema.Set))
 
@@ -748,7 +748,7 @@ func updatePublicNet(ctx context.Context, o interface{}, n interface{}, c *hclou
 	ipv6EnabledInRemoveDiff := true
 	// collect ip IDs which got removed
 	for _, d := range diffToRemove.List() {
-		fields := d.(map[string]interface{})
+		fields := d.(map[string]any)
 		ipv4IDToRemove, ipv6IDToRemove = collectPrimaryIPIDs(fields)
 		if ipv4Enabled, err := ToPublicNetField[bool](fields, "ipv4_enabled"); err == nil {
 			ipv4EnabledInRemoveDiff = ipv4Enabled
@@ -789,7 +789,7 @@ func updatePublicNet(ctx context.Context, o interface{}, n interface{}, c *hclou
 
 	// Check ip bool together with IDs to trigger the right actions
 	for _, d := range diffToAdd.List() {
-		fields := d.(map[string]interface{})
+		fields := d.(map[string]any)
 		ipv4IDToAdd, ipv6IDToAdd := collectPrimaryIPIDs(fields)
 
 		if ipv4Enabled, err := ToPublicNetField[bool](fields, "ipv4_enabled"); err == nil {
@@ -909,7 +909,7 @@ func publicNetUpdateDecision(ctx context.Context,
 	return nil
 }
 
-func resourceServerDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceServerDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	serverID, err := util.ParseID(d.Id())
@@ -1097,7 +1097,7 @@ func setRescue(ctx context.Context, c *hcloud.Client, server *hcloud.Server, res
 }
 
 func getSSHkeys(ctx context.Context, client *hcloud.Client, d *schema.ResourceData) (sshKeys []*hcloud.SSHKey, err error) {
-	for _, sshKeyValue := range d.Get("ssh_keys").([]interface{}) {
+	for _, sshKeyValue := range d.Get("ssh_keys").([]any) {
 		sshKeyIDOrName := sshKeyValue.(string)
 		var sshKey *hcloud.SSHKey
 		sshKey, _, err = client.SSHKey.Get(ctx, sshKeyIDOrName)
@@ -1113,7 +1113,7 @@ func getSSHkeys(ctx context.Context, client *hcloud.Client, d *schema.ResourceDa
 	return
 }
 
-func inlineAttachServerToNetwork(ctx context.Context, c *hcloud.Client, s *hcloud.Server, nwData map[string]interface{}) error {
+func inlineAttachServerToNetwork(ctx context.Context, c *hcloud.Client, s *hcloud.Server, nwData map[string]any) error {
 	const op = "hcloud/inlineAttachServerToNetwork"
 
 	// Extract network from network_id or subnet_id
@@ -1153,9 +1153,9 @@ func updateServerInlineNetworkAttachments(ctx context.Context, c *hcloud.Client,
 
 	log.Printf("[INFO] Updating inline network attachments for server %d", s.ID)
 
-	cfgNetworks := make(map[int64]map[string]interface{}, data.Len())
+	cfgNetworks := make(map[int64]map[string]any, data.Len())
 	for _, v := range data.List() {
-		nwData := v.(map[string]interface{})
+		nwData := v.(map[string]any)
 
 		var nwID int64
 		if subnetIDStr, ok := nwData["subnet_id"].(string); ok && subnetIDStr != "" {
@@ -1217,7 +1217,7 @@ func updateServerInlineNetworkAttachments(ctx context.Context, c *hcloud.Client,
 }
 
 func newIPSet(f schema.SchemaSetFunc, ips []net.IP) *schema.Set {
-	ss := make([]interface{}, len(ips))
+	ss := make([]any, len(ips))
 	for i, ip := range ips {
 		ss[i] = ip.String()
 	}
@@ -1228,13 +1228,13 @@ func setServerSchema(d *schema.ResourceData, s *hcloud.Server, forceSetNetworkAt
 	util.SetSchemaFromAttributes(d, getServerAttributes(d, s, forceSetNetworkAttribute))
 }
 
-func getServerAttributes(d *schema.ResourceData, s *hcloud.Server, forceSetNetworkAttribute bool) map[string]interface{} {
+func getServerAttributes(d *schema.ResourceData, s *hcloud.Server, forceSetNetworkAttribute bool) map[string]any {
 	firewallIDs := make([]int, len(s.PublicNet.Firewalls))
 	for i, firewall := range s.PublicNet.Firewalls {
 		firewallIDs[i] = util.CastInt(firewall.Firewall.ID)
 	}
 
-	res := map[string]interface{}{
+	res := map[string]any{
 		"id":                 s.ID,
 		"name":               s.Name,
 		"location":           s.Location.Name,
@@ -1307,17 +1307,17 @@ func getServerAttributes(d *schema.ResourceData, s *hcloud.Server, forceSetNetwo
 	return res
 }
 
-func networkToTerraformNetworks(d *schema.ResourceData, privateNetworks []hcloud.ServerPrivateNet) []map[string]interface{} {
-	tfPrivateNetworks := make([]map[string]interface{}, len(privateNetworks))
+func networkToTerraformNetworks(d *schema.ResourceData, privateNetworks []hcloud.ServerPrivateNet) []map[string]any {
+	tfPrivateNetworks := make([]map[string]any, len(privateNetworks))
 	for i, privateNetwork := range privateNetworks {
-		tfPrivateNetwork := make(map[string]interface{})
+		tfPrivateNetwork := make(map[string]any)
 		tfPrivateNetwork["ip"] = privateNetwork.IP.String()
 		tfPrivateNetwork["mac_address"] = privateNetwork.MACAddress
 
 		// Check the user input to preserve the same structure in state
 		if nwSet, ok := d.GetOk("network"); ok {
 			for _, item := range nwSet.(*schema.Set).List() {
-				nwData := item.(map[string]interface{})
+				nwData := item.(map[string]any)
 				configSubnetID, hasSubnetID := nwData["subnet_id"].(string)
 
 				// Match API response to config entry by network_id or subnet_id
@@ -1421,7 +1421,7 @@ func setProtection(ctx context.Context, c *hcloud.Client, server *hcloud.Server,
 	return c.Action.WaitFor(ctx, action)
 }
 
-func collectPrimaryIPIDs(primaryIPList map[string]interface{}) (int64, int64) {
+func collectPrimaryIPIDs(primaryIPList map[string]any) (int64, int64) {
 	var IPv4ID int64
 	var IPv6ID int64
 	if id, err := ToPublicNetField[int](primaryIPList, "ipv4"); id != 0 && err == nil {
@@ -1433,7 +1433,7 @@ func collectPrimaryIPIDs(primaryIPList map[string]interface{}) (int64, int64) {
 	return IPv4ID, IPv6ID
 }
 
-func ToPublicNetField[V int | bool](field map[string]interface{}, key string) (V, error) {
+func ToPublicNetField[V int | bool](field map[string]any, key string) (V, error) {
 	var op = "ToPublicNetField"
 
 	if value, ok := field[key]; ok {
@@ -1488,7 +1488,7 @@ func publicNetRemovedDecision(ctx context.Context,
 	return nil
 }
 
-func resourceServerCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ interface{}) error {
+func resourceServerCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ any) error {
 	return validateUniqueNetworkIDs(d)
 }
 
@@ -1525,7 +1525,7 @@ func validateUniqueNetworkIDs(d *schema.ResourceDiff) error {
 		uniqueNetworkIDs := map[int64]bool{}
 
 		for _, networkI := range networks.List() {
-			network, ok := networkI.(map[string]interface{})
+			network, ok := networkI.(map[string]any)
 			if !ok {
 				return fmt.Errorf("network item has unexpected type: %T", networkI)
 			}

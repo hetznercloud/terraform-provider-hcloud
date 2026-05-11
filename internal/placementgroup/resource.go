@@ -33,8 +33,8 @@ func Resource() *schema.Resource {
 			"labels": {
 				Type:     schema.TypeMap,
 				Optional: true,
-				ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics { // nolint:revive
-					if ok, err := hcloud.ValidateResourceLabels(i.(map[string]interface{})); !ok {
+				ValidateDiagFunc: func(i any, path cty.Path) diag.Diagnostics { // nolint:revive
+					if ok, err := hcloud.ValidateResourceLabels(i.(map[string]any)); !ok {
 						return diag.FromErr(err)
 					}
 					return nil
@@ -50,7 +50,7 @@ func Resource() *schema.Resource {
 			"type": {
 				Type:     schema.TypeString,
 				Required: true,
-				ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics { // nolint:revive
+				ValidateDiagFunc: func(i any, path cty.Path) diag.Diagnostics { // nolint:revive
 					placementGroupType := i.(string)
 					switch hcloud.PlacementGroupType(placementGroupType) {
 					case hcloud.PlacementGroupTypeSpread:
@@ -64,7 +64,7 @@ func Resource() *schema.Resource {
 	}
 }
 
-func resourcePlacementGroupCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourcePlacementGroupCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	opts := hcloud.PlacementGroupCreateOpts{
@@ -73,7 +73,7 @@ func resourcePlacementGroupCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 	if labels, ok := d.GetOk("labels"); ok {
 		tmpLabels := make(map[string]string)
-		for k, v := range labels.(map[string]interface{}) {
+		for k, v := range labels.(map[string]any) {
 			tmpLabels[k] = v.(string)
 		}
 		opts.Labels = tmpLabels
@@ -92,7 +92,7 @@ func resourcePlacementGroupCreate(ctx context.Context, d *schema.ResourceData, m
 	return resourcePlacementGroupRead(ctx, d, m)
 }
 
-func resourcePlacementGroupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourcePlacementGroupRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	id, err := util.ParseID(d.Id())
@@ -116,7 +116,7 @@ func resourcePlacementGroupRead(ctx context.Context, d *schema.ResourceData, m i
 	return nil
 }
 
-func resourcePlacementGroupUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourcePlacementGroupUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	id, err := util.ParseID(d.Id())
@@ -152,7 +152,7 @@ func resourcePlacementGroupUpdate(ctx context.Context, d *schema.ResourceData, m
 	if d.HasChange("labels") {
 		labels := d.Get("labels")
 		tmpLabels := make(map[string]string)
-		for k, v := range labels.(map[string]interface{}) {
+		for k, v := range labels.(map[string]any) {
 			tmpLabels[k] = v.(string)
 		}
 		_, _, err := client.PlacementGroup.Update(ctx, placementGroup, hcloud.PlacementGroupUpdateOpts{
@@ -170,7 +170,7 @@ func resourcePlacementGroupUpdate(ctx context.Context, d *schema.ResourceData, m
 	return resourcePlacementGroupRead(ctx, d, m)
 }
 
-func resourcePlacementGroupDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourcePlacementGroupDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	id, err := util.ParseID(d.Id())
@@ -199,8 +199,8 @@ func setSchema(d *schema.ResourceData, pg *hcloud.PlacementGroup) {
 	util.SetSchemaFromAttributes(d, getAttributes(pg))
 }
 
-func getAttributes(pg *hcloud.PlacementGroup) map[string]interface{} {
-	return map[string]interface{}{
+func getAttributes(pg *hcloud.PlacementGroup) map[string]any {
+	return map[string]any{
 		"id":      pg.ID,
 		"name":    pg.Name,
 		"labels":  pg.Labels,

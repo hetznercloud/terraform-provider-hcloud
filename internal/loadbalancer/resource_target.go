@@ -82,7 +82,7 @@ func TargetResource() *schema.Resource {
 	}
 }
 
-func resourceLoadBalancerTargetCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLoadBalancerTargetCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	var (
 		lb     *hcloud.LoadBalancer
 		tgt    hcloud.LoadBalancerTarget
@@ -256,7 +256,7 @@ func resourceLoadBalancerCreateIPTarget(
 	return action, tgt, nil
 }
 
-func resourceLoadBalancerTargetRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLoadBalancerTargetRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 	lbID := util.CastInt64(d.Get("load_balancer_id"))
 	tgtType := hcloud.LoadBalancerTargetType(d.Get("type").(string))
@@ -277,7 +277,7 @@ func resourceLoadBalancerTargetRead(ctx context.Context, d *schema.ResourceData,
 // resourceLoadBalancerTargetImport parses the passed ID and tries to import a
 // matching load balancer target.
 // The passed ID has the format `<load-balancer-id>__<type>__<identifier>`.
-func resourceLoadBalancerTargetImport(ctx context.Context, d *schema.ResourceData, m interface{}) ([]*schema.ResourceData, error) {
+func resourceLoadBalancerTargetImport(ctx context.Context, d *schema.ResourceData, m any) ([]*schema.ResourceData, error) {
 	parts := strings.SplitN(d.Id(), "__", 3) // split into at-most 3 parts, everything after that might be label_selector
 	if len(parts) != 3 {
 		return nil, fmt.Errorf("import id has invalid format: %s", d.Id())
@@ -331,7 +331,7 @@ func resourceLoadBalancerTargetImport(ctx context.Context, d *schema.ResourceDat
 	return []*schema.ResourceData{d}, nil
 }
 
-func resourceLoadBalancerTargetUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLoadBalancerTargetUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 	lbID := util.CastInt64(d.Get("load_balancer_id"))
 	tgtType := hcloud.LoadBalancerTargetType(d.Get("type").(string))
@@ -350,7 +350,7 @@ func resourceLoadBalancerTargetUpdate(ctx context.Context, d *schema.ResourceDat
 	return resourceLoadBalancerTargetCreate(ctx, d, m)
 }
 
-func resourceLoadBalancerTargetDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLoadBalancerTargetDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 	tgtType := hcloud.LoadBalancerTargetType(d.Get("type").(string))
 	lbID := util.CastInt64(d.Get("load_balancer_id"))

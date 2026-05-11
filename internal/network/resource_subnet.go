@@ -70,7 +70,7 @@ func SubnetResource() *schema.Resource {
 	}
 }
 
-func resourceNetworkSubnetCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceNetworkSubnetCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	var action *hcloud.Action
 
 	c := m.(*hcloud.Client)
@@ -120,7 +120,7 @@ func resourceNetworkSubnetCreate(ctx context.Context, d *schema.ResourceData, m 
 	return resourceNetworkSubnetRead(ctx, d, m)
 }
 
-func resourceNetworkSubnetRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceNetworkSubnetRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	network, subnet, err := lookupNetworkSubnetID(ctx, d.Id(), client)
@@ -142,7 +142,7 @@ func resourceNetworkSubnetRead(ctx context.Context, d *schema.ResourceData, m in
 	return nil
 }
 
-func resourceNetworkSubnetDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceNetworkSubnetDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	var (
 		action  *hcloud.Action
 		network *hcloud.Network

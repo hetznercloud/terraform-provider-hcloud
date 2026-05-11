@@ -177,7 +177,7 @@ func ServiceResource() *schema.Resource {
 	}
 }
 
-func resourceLoadBalancerServiceCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLoadBalancerServiceCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	var action *hcloud.Action
 
 	c := m.(*hcloud.Client)
@@ -213,10 +213,10 @@ func resourceLoadBalancerServiceCreate(ctx context.Context, d *schema.ResourceDa
 		opts.Proxyprotocol = hcloud.Ptr(pp.(bool))
 	}
 	if tfHTTP, ok := d.GetOk("http"); ok {
-		opts.HTTP = parseTFHTTP(tfHTTP.([]interface{}))
+		opts.HTTP = parseTFHTTP(tfHTTP.([]any))
 	}
 	if tfHealthCheck, ok := d.GetOk("health_check"); ok {
-		opts.HealthCheck = parseTFHealthCheckAdd(tfHealthCheck.([]interface{}))
+		opts.HealthCheck = parseTFHealthCheckAdd(tfHealthCheck.([]any))
 	}
 
 	err = control.Retry(control.DefaultRetries, func() error {
@@ -251,7 +251,7 @@ func resourceLoadBalancerServiceCreate(ctx context.Context, d *schema.ResourceDa
 	return resourceLoadBalancerServiceRead(ctx, d, m)
 }
 
-func resourceLoadBalancerServiceUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLoadBalancerServiceUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	c := m.(*hcloud.Client)
 
 	lb, svc, err := lookupLoadBalancerServiceID(ctx, d.Id(), c)
@@ -276,11 +276,11 @@ func resourceLoadBalancerServiceUpdate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	if tfHTTP, ok := d.GetOk("http"); ok {
-		opts.HTTP = parseUpdateTFHTTP(tfHTTP.([]interface{}))
+		opts.HTTP = parseUpdateTFHTTP(tfHTTP.([]any))
 	}
 
 	if tfHealthCheck, ok := d.GetOk("health_check"); ok {
-		opts.HealthCheck = parseTFHealthCheckUpdate(tfHealthCheck.([]interface{}))
+		opts.HealthCheck = parseTFHealthCheckUpdate(tfHealthCheck.([]any))
 	}
 
 	action, _, err := c.LoadBalancer.UpdateService(ctx, lb, svc.ListenPort, opts)
@@ -296,7 +296,7 @@ func resourceLoadBalancerServiceUpdate(ctx context.Context, d *schema.ResourceDa
 	return resourceLoadBalancerServiceRead(ctx, d, m)
 }
 
-func resourceLoadBalancerServiceRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLoadBalancerServiceRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 	lb, svc, err := lookupLoadBalancerServiceID(ctx, d.Id(), client)
 	if errors.Is(err, errInvalidLoadBalancerServiceID) {
@@ -313,7 +313,7 @@ func resourceLoadBalancerServiceRead(ctx context.Context, d *schema.ResourceData
 	return nil
 }
 
-func resourceLoadBalancerServiceDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLoadBalancerServiceDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	const op = "hcloud/resourceLoadBalancerServiceDelete"
 
 	c := m.(*hcloud.Client)
@@ -353,7 +353,7 @@ func setLoadBalancerServiceSchema(d *schema.ResourceData, lb *hcloud.LoadBalance
 	d.Set("proxyprotocol", svc.Proxyprotocol)
 
 	if svc.Protocol != hcloud.LoadBalancerServiceProtocolTCP {
-		httpMap := make(map[string]interface{})
+		httpMap := make(map[string]any)
 		if svc.HTTP.StickySessions {
 			httpMap["sticky_sessions"] = svc.HTTP.StickySessions
 		}
@@ -372,13 +372,13 @@ func setLoadBalancerServiceSchema(d *schema.ResourceData, lb *hcloud.LoadBalance
 		}
 		httpMap["redirect_http"] = svc.HTTP.RedirectHTTP
 		if len(httpMap) > 0 {
-			d.Set("http", []interface{}{httpMap})
+			d.Set("http", []any{httpMap})
 		}
 	}
 
 	healthCheck := toTFHealthCheck(svc.HealthCheck)
 	if len(healthCheck) > 0 {
-		d.Set("health_check", []interface{}{healthCheck})
+		d.Set("health_check", []any{healthCheck})
 	}
 }
 
@@ -426,11 +426,11 @@ func lookupLoadBalancerServiceID(
 	return nil, nil, errInvalidLoadBalancerServiceID
 }
 
-func parseTFHTTP(tfHTTP []interface{}) *hcloud.LoadBalancerAddServiceOptsHTTP {
+func parseTFHTTP(tfHTTP []any) *hcloud.LoadBalancerAddServiceOptsHTTP {
 	if len(tfHTTP) != 1 {
 		return nil
 	}
-	httpMap := tfHTTP[0].(map[string]interface{})
+	httpMap := tfHTTP[0].(map[string]any)
 	if len(httpMap) == 0 {
 		return nil
 	}
@@ -454,11 +454,11 @@ func parseTFHTTP(tfHTTP []interface{}) *hcloud.LoadBalancerAddServiceOptsHTTP {
 	return http
 }
 
-func parseUpdateTFHTTP(tfHTTP []interface{}) *hcloud.LoadBalancerUpdateServiceOptsHTTP {
+func parseUpdateTFHTTP(tfHTTP []any) *hcloud.LoadBalancerUpdateServiceOptsHTTP {
 	if len(tfHTTP) != 1 {
 		return nil
 	}
-	httpMap := tfHTTP[0].(map[string]interface{})
+	httpMap := tfHTTP[0].(map[string]any)
 	if len(httpMap) == 0 {
 		return nil
 	}
@@ -493,8 +493,8 @@ func parseTFCertificates(tfCerts *schema.Set) []*hcloud.Certificate {
 	return certs
 }
 
-func toTFHealthCheck(healthCheck hcloud.LoadBalancerServiceHealthCheck) map[string]interface{} {
-	healthCheckMap := make(map[string]interface{})
+func toTFHealthCheck(healthCheck hcloud.LoadBalancerServiceHealthCheck) map[string]any {
+	healthCheckMap := make(map[string]any)
 
 	healthCheckMap["protocol"] = healthCheck.Protocol
 	healthCheckMap["port"] = healthCheck.Port
@@ -504,7 +504,7 @@ func toTFHealthCheck(healthCheck hcloud.LoadBalancerServiceHealthCheck) map[stri
 		healthCheckMap["retries"] = healthCheck.Retries
 	}
 	if healthCheck.HTTP != nil {
-		httpMap := make(map[string]interface{})
+		httpMap := make(map[string]any)
 
 		if healthCheck.HTTP.Domain != "" {
 			httpMap["domain"] = healthCheck.HTTP.Domain
@@ -518,19 +518,19 @@ func toTFHealthCheck(healthCheck hcloud.LoadBalancerServiceHealthCheck) map[stri
 		httpMap["tls"] = healthCheck.HTTP.TLS
 		httpMap["status_codes"] = healthCheck.HTTP.StatusCodes
 
-		healthCheckMap["http"] = []interface{}{httpMap}
+		healthCheckMap["http"] = []any{httpMap}
 	}
 
 	return healthCheckMap
 }
 
-func parseTFHealthCheckAdd(tfHealthCheck []interface{}) *hcloud.LoadBalancerAddServiceOptsHealthCheck {
+func parseTFHealthCheckAdd(tfHealthCheck []any) *hcloud.LoadBalancerAddServiceOptsHealthCheck {
 	var healthCheckOpts hcloud.LoadBalancerAddServiceOptsHealthCheck
 
 	if len(tfHealthCheck) != 1 {
 		return nil
 	}
-	healthCheckMap := tfHealthCheck[0].(map[string]interface{})
+	healthCheckMap := tfHealthCheck[0].(map[string]any)
 	healthCheckOpts.Protocol = hcloud.LoadBalancerServiceProtocol(healthCheckMap["protocol"].(string))
 	if port, ok := healthCheckMap["port"]; ok {
 		healthCheckOpts.Port = hcloud.Ptr(port.(int))
@@ -545,19 +545,19 @@ func parseTFHealthCheckAdd(tfHealthCheck []interface{}) *hcloud.LoadBalancerAddS
 		healthCheckOpts.Retries = hcloud.Ptr(retries.(int))
 	}
 	if http, ok := healthCheckMap["http"]; ok {
-		healthCheckOpts.HTTP = parseTFHealthCheckHTTPAdd(http.([]interface{}))
+		healthCheckOpts.HTTP = parseTFHealthCheckHTTPAdd(http.([]any))
 	}
 
 	return &healthCheckOpts
 }
 
-func parseTFHealthCheckUpdate(tfHealthCheck []interface{}) *hcloud.LoadBalancerUpdateServiceOptsHealthCheck {
+func parseTFHealthCheckUpdate(tfHealthCheck []any) *hcloud.LoadBalancerUpdateServiceOptsHealthCheck {
 	var healthCheckOpts hcloud.LoadBalancerUpdateServiceOptsHealthCheck
 
 	if len(tfHealthCheck) != 1 {
 		return nil
 	}
-	healthCheckMap := tfHealthCheck[0].(map[string]interface{})
+	healthCheckMap := tfHealthCheck[0].(map[string]any)
 	healthCheckOpts.Protocol = hcloud.LoadBalancerServiceProtocol(healthCheckMap["protocol"].(string))
 	if port, ok := healthCheckMap["port"]; ok {
 		healthCheckOpts.Port = hcloud.Ptr(port.(int))
@@ -572,17 +572,17 @@ func parseTFHealthCheckUpdate(tfHealthCheck []interface{}) *hcloud.LoadBalancerU
 		healthCheckOpts.Retries = hcloud.Ptr(retries.(int))
 	}
 	if http, ok := healthCheckMap["http"]; ok {
-		healthCheckOpts.HTTP = parseTFHealthCheckHTTPUpdate(http.([]interface{}))
+		healthCheckOpts.HTTP = parseTFHealthCheckHTTPUpdate(http.([]any))
 	}
 
 	return &healthCheckOpts
 }
 
-func parseTFHealthCheckHTTPAdd(tfHealthCheckHTTP []interface{}) *hcloud.LoadBalancerAddServiceOptsHealthCheckHTTP {
+func parseTFHealthCheckHTTPAdd(tfHealthCheckHTTP []any) *hcloud.LoadBalancerAddServiceOptsHealthCheckHTTP {
 	if len(tfHealthCheckHTTP) != 1 {
 		return nil
 	}
-	httpMap := tfHealthCheckHTTP[0].(map[string]interface{})
+	httpMap := tfHealthCheckHTTP[0].(map[string]any)
 	httpHealthCheck := &hcloud.LoadBalancerAddServiceOptsHealthCheckHTTP{}
 
 	if domain, ok := httpMap["domain"]; ok {
@@ -600,7 +600,7 @@ func parseTFHealthCheckHTTPAdd(tfHealthCheckHTTP []interface{}) *hcloud.LoadBala
 	if scs, ok := httpMap["status_codes"]; ok {
 		var statusCodes []string
 
-		for _, sc := range scs.([]interface{}) {
+		for _, sc := range scs.([]any) {
 			statusCodes = append(statusCodes, sc.(string))
 		}
 		httpHealthCheck.StatusCodes = statusCodes
@@ -608,11 +608,11 @@ func parseTFHealthCheckHTTPAdd(tfHealthCheckHTTP []interface{}) *hcloud.LoadBala
 	return httpHealthCheck
 }
 
-func parseTFHealthCheckHTTPUpdate(tfHealthCheckHTTP []interface{}) *hcloud.LoadBalancerUpdateServiceOptsHealthCheckHTTP {
+func parseTFHealthCheckHTTPUpdate(tfHealthCheckHTTP []any) *hcloud.LoadBalancerUpdateServiceOptsHealthCheckHTTP {
 	if len(tfHealthCheckHTTP) != 1 {
 		return nil
 	}
-	httpMap := tfHealthCheckHTTP[0].(map[string]interface{})
+	httpMap := tfHealthCheckHTTP[0].(map[string]any)
 	httpHealthCheck := &hcloud.LoadBalancerUpdateServiceOptsHealthCheckHTTP{}
 
 	if domain, ok := httpMap["domain"]; ok {
@@ -630,7 +630,7 @@ func parseTFHealthCheckHTTPUpdate(tfHealthCheckHTTP []interface{}) *hcloud.LoadB
 	if scs, ok := httpMap["status_codes"]; ok {
 		var statusCodes []string
 
-		for _, sc := range scs.([]interface{}) {
+		for _, sc := range scs.([]any) {
 			statusCodes = append(statusCodes, sc.(string))
 		}
 		httpHealthCheck.StatusCodes = statusCodes

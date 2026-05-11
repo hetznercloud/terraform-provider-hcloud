@@ -14,16 +14,16 @@ import (
 func TestAttachment_FromResourceData(t *testing.T) {
 	tests := []struct {
 		name      string
-		rawData   map[string]interface{}
+		rawData   map[string]any
 		att       attachment
 		assertErr assert.ErrorAssertionFunc
 	}{
 		{
 			name: "server_ids and label_selectors present",
-			rawData: map[string]interface{}{
+			rawData: map[string]any{
 				"firewall_id":     4711,
-				"server_ids":      []interface{}{1, 2, 3},
-				"label_selectors": []interface{}{"key1=value1", "key2=value2"},
+				"server_ids":      []any{1, 2, 3},
+				"label_selectors": []any{"key1=value1", "key2=value2"},
 			},
 			att: attachment{
 				FirewallID:     4711,
@@ -33,9 +33,9 @@ func TestAttachment_FromResourceData(t *testing.T) {
 		},
 		{
 			name: "only server_ids present",
-			rawData: map[string]interface{}{
+			rawData: map[string]any{
 				"firewall_id": 4712,
-				"server_ids":  []interface{}{4, 5, 6},
+				"server_ids":  []any{4, 5, 6},
 			},
 			att: attachment{
 				FirewallID: 4712,
@@ -44,9 +44,9 @@ func TestAttachment_FromResourceData(t *testing.T) {
 		},
 		{
 			name: "only label_selectors present",
-			rawData: map[string]interface{}{
+			rawData: map[string]any{
 				"firewall_id":     4713,
-				"label_selectors": []interface{}{"key3=value3", "key4=value4"},
+				"label_selectors": []any{"key3=value3", "key4=value4"},
 			},
 			att: attachment{
 				FirewallID:     4713,
@@ -55,20 +55,19 @@ func TestAttachment_FromResourceData(t *testing.T) {
 		},
 		{
 			name: "only firewall id present",
-			rawData: map[string]interface{}{
+			rawData: map[string]any{
 				"firewall_id": 4714,
 			},
 			att: attachment{
 				FirewallID: 4714,
 			},
-			assertErr: func(t assert.TestingT, err error, args ...interface{}) bool {
+			assertErr: func(t assert.TestingT, err error, args ...any) bool {
 				return assert.EqualError(t, err, "no resources referenced", args...)
 			},
 		},
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			var actual attachment
 
@@ -87,7 +86,7 @@ func TestAttachment_FromResourceData(t *testing.T) {
 func TestAttachment_ToResourceData(t *testing.T) {
 	tests := []struct {
 		name    string
-		rawData map[string]interface{}
+		rawData map[string]any
 		att     attachment
 	}{
 		{
@@ -114,9 +113,9 @@ func TestAttachment_ToResourceData(t *testing.T) {
 		},
 		{
 			name: "remove pre-existing server_ids",
-			rawData: map[string]interface{}{
+			rawData: map[string]any{
 				"firewall_id": 4714,
-				"server_ids":  []interface{}{1, 2, 3},
+				"server_ids":  []any{1, 2, 3},
 			},
 			att: attachment{
 				FirewallID:     4714,
@@ -125,9 +124,9 @@ func TestAttachment_ToResourceData(t *testing.T) {
 		},
 		{
 			name: "remove pre-existing label_selectors",
-			rawData: map[string]interface{}{
+			rawData: map[string]any{
 				"firewall_id":     4714,
-				"label_selectors": []interface{}{"key1=value1", "key2=value2"},
+				"label_selectors": []any{"key1=value1", "key2=value2"},
 			},
 			att: attachment{
 				FirewallID: 4714,
@@ -137,7 +136,6 @@ func TestAttachment_ToResourceData(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			data := schema.TestResourceDataRaw(t, AttachmentResource().Schema, tt.rawData)
 
@@ -222,14 +220,13 @@ func TestAttachment_FromFirewall(t *testing.T) {
 					},
 				},
 			},
-			assertError: func(t assert.TestingT, err error, args ...interface{}) bool {
+			assertError: func(t assert.TestingT, err error, args ...any) bool {
 				return assert.EqualError(t, err, "invalid firewall resource type: invalid", args...)
 			},
 		},
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			att := attachment{FirewallID: tt.fw.ID}
 			err := att.FromFirewall(tt.fw)
@@ -270,7 +267,6 @@ func TestAttachment_AllResources(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			actual := tt.att.AllResources()
 			assert.ElementsMatch(t, tt.res, actual)
@@ -336,7 +332,6 @@ func TestAttachment_DiffResources(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			less, more := tt.att.DiffResources(tt.other)
 			assert.ElementsMatch(t, tt.less, less)

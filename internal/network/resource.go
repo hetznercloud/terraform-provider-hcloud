@@ -43,8 +43,8 @@ func Resource() *schema.Resource {
 			"labels": {
 				Type:     schema.TypeMap,
 				Optional: true,
-				ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics { // nolint:revive
-					if ok, err := hcloud.ValidateResourceLabels(i.(map[string]interface{})); !ok {
+				ValidateDiagFunc: func(i any, path cty.Path) diag.Diagnostics { // nolint:revive
+					if ok, err := hcloud.ValidateResourceLabels(i.(map[string]any)); !ok {
 						return diag.FromErr(err)
 					}
 					return nil
@@ -65,7 +65,7 @@ func Resource() *schema.Resource {
 	}
 }
 
-func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	_, ipRange, err := net.ParseCIDR(d.Get("ip_range").(string))
@@ -80,7 +80,7 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 	}
 	if labels, ok := d.GetOk("labels"); ok {
 		tmpLabels := make(map[string]string)
-		for k, v := range labels.(map[string]interface{}) {
+		for k, v := range labels.(map[string]any) {
 			tmpLabels[k] = v.(string)
 		}
 		opts.Labels = tmpLabels
@@ -103,7 +103,7 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 	return resourceNetworkRead(ctx, d, m)
 }
 
-func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	network, _, err := client.Network.Get(ctx, d.Id())
@@ -121,7 +121,7 @@ func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interfac
 	return nil
 }
 
-func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	network, _, err := client.Network.Get(ctx, d.Id())
@@ -149,7 +149,7 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interf
 	if d.HasChange("labels") {
 		labels := d.Get("labels")
 		tmpLabels := make(map[string]string)
-		for k, v := range labels.(map[string]interface{}) {
+		for k, v := range labels.(map[string]any) {
 			tmpLabels[k] = v.(string)
 		}
 		_, _, err := client.Network.Update(ctx, network, hcloud.NetworkUpdateOpts{
@@ -187,7 +187,7 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interf
 	return resourceNetworkRead(ctx, d, m)
 }
 
-func resourceNetworkDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceNetworkDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	networkID, err := util.ParseID(d.Id())
@@ -221,8 +221,8 @@ func setNetworkSchema(d *schema.ResourceData, n *hcloud.Network) {
 	util.SetSchemaFromAttributes(d, getNetworkAttributes(n))
 }
 
-func getNetworkAttributes(n *hcloud.Network) map[string]interface{} {
-	return map[string]interface{}{
+func getNetworkAttributes(n *hcloud.Network) map[string]any {
+	return map[string]any{
 		"id":                       n.ID,
 		"ip_range":                 n.IPRange.String(),
 		"name":                     n.Name,

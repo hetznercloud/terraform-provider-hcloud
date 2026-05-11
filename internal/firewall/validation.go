@@ -15,7 +15,7 @@ var (
 	defaultMaskIPv6 = net.CIDRMask(128, 128)
 )
 
-func validateIPDiag(i interface{}, _ cty.Path) diag.Diagnostics {
+func validateIPDiag(i any, _ cty.Path) diag.Diagnostics {
 	i = normalizeIP(i)
 
 	ipS := i.(string)
@@ -33,7 +33,7 @@ func validateIPDiag(i interface{}, _ cty.Path) diag.Diagnostics {
 //  1. It normalizes an IP address or CIDR block to a CIDR block. To allow users to specify the IP directly.
 //  2. The API modifies CIDRs to lower case and IPv6 to its minimal form. This function does the same to
 //     have clean diffs, even if the user input does not match the desired format by the API.
-func normalizeIP(i interface{}) string {
+func normalizeIP(i any) string {
 	input := i.(string)
 
 	ip, ipnet, err := net.ParseCIDR(input)

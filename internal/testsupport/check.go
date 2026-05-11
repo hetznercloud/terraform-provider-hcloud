@@ -86,7 +86,7 @@ func backendResourceByKey(s *terraform.State, name string, k KeyFunc) error {
 // The valueFunc may either be a func() string or a func() []string. If
 // valueFunc is a func() []string it is enough if the resource attribute
 // matches any value in the string slice returned by valueFunc.
-func CheckResourceAttrFunc(name, key string, valueFunc interface{}) resource.TestCheckFunc {
+func CheckResourceAttrFunc(name, key string, valueFunc any) resource.TestCheckFunc {
 	switch f := valueFunc.(type) {
 	case func() string:
 		return func(s *terraform.State) error {

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"sort"
+	"slices"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -56,7 +56,7 @@ func AttachmentResource() *schema.Resource {
 	}
 }
 
-func readAttachment(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func readAttachment(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	var att attachment
 
 	if err := att.FromResourceData(d); err != nil {
@@ -86,7 +86,7 @@ func readAttachment(ctx context.Context, d *schema.ResourceData, m interface{}) 
 	return nil
 }
 
-func createAttachment(ctx context.Context, d *schema.ResourceData, m interface{}) (diags diag.Diagnostics) {
+func createAttachment(ctx context.Context, d *schema.ResourceData, m any) (diags diag.Diagnostics) {
 	var att attachment
 
 	if err := att.FromResourceData(d); err != nil {
@@ -108,7 +108,7 @@ func createAttachment(ctx context.Context, d *schema.ResourceData, m interface{}
 	return readAttachment(ctx, d, m)
 }
 
-func updateAttachment(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func updateAttachment(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	var (
 		tf, hc  attachment
 		actions []*hcloud.Action
@@ -152,7 +152,7 @@ func updateAttachment(ctx context.Context, d *schema.ResourceData, m interface{}
 	return readAttachment(ctx, d, m)
 }
 
-func deleteAttachment(ctx context.Context, d *schema.ResourceData, m interface{}) (diags diag.Diagnostics) {
+func deleteAttachment(ctx context.Context, d *schema.ResourceData, m any) (diags diag.Diagnostics) {
 	var att attachment
 
 	defer func() {
@@ -193,9 +193,7 @@ func (a *attachment) FromResourceData(d *schema.ResourceData) error {
 		for _, v := range srvIDs.(*schema.Set).List() {
 			a.ServerIDs = append(a.ServerIDs, util.CastInt64(v))
 		}
-		sort.Slice(a.ServerIDs, func(i, j int) bool {
-			return a.ServerIDs[i] < a.ServerIDs[j]
-		})
+		slices.Sort(a.ServerIDs)
 	}
 
 	lSels, ok := d.GetOk("label_selectors")
@@ -203,9 +201,7 @@ func (a *attachment) FromResourceData(d *schema.ResourceData) error {
 		for _, v := range lSels.(*schema.Set).List() {
 			a.LabelSelectors = append(a.LabelSelectors, v.(string))
 		}
-		sort.Slice(a.LabelSelectors, func(i, j int) bool {
-			return a.LabelSelectors[i] < a.LabelSelectors[j]
-		})
+		slices.Sort(a.LabelSelectors)
 	}
 
 	if len(a.ServerIDs) == 0 && len(a.LabelSelectors) == 0 {
@@ -221,7 +217,7 @@ func (a *attachment) ToResourceData(d *schema.ResourceData) {
 	var srvIDs, lSels *schema.Set
 
 	if len(a.ServerIDs) > 0 {
-		vals := make([]interface{}, len(a.ServerIDs))
+		vals := make([]any, len(a.ServerIDs))
 		for i, id := range a.ServerIDs {
 			vals[i] = util.CastInt(id)
 		}
@@ -231,7 +227,7 @@ func (a *attachment) ToResourceData(d *schema.ResourceData) {
 	d.Set("server_ids", srvIDs)
 
 	if len(a.LabelSelectors) > 0 {
-		vals := make([]interface{}, len(a.LabelSelectors))
+		vals := make([]any, len(a.LabelSelectors))
 		for i, ls := range a.LabelSelectors {
 			vals[i] = ls
 		}
@@ -353,7 +349,7 @@ func labelSelectorResource(ls string) hcloud.FirewallResource {
 	}
 }
 
-func resourceFirewallAttachmentImport(_ context.Context, d *schema.ResourceData, _ interface{}) ([]*schema.ResourceData, error) {
+func resourceFirewallAttachmentImport(_ context.Context, d *schema.ResourceData, _ any) ([]*schema.ResourceData, error) {
 	firewallID, err := util.ParseID(d.Id())
 	if err != nil {
 		return nil, err

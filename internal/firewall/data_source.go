@@ -140,7 +140,7 @@ func DataSourceList() *schema.Resource {
 	}
 }
 
-func dataSourceHcloudFirewallRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourceHcloudFirewallRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 	if id, ok := d.GetOk("id"); ok {
 		i, _, err := client.Firewall.GetByID(ctx, util.CastInt64(id))
@@ -189,7 +189,7 @@ func dataSourceHcloudFirewallRead(ctx context.Context, d *schema.ResourceData, m
 	return diag.Errorf("please specify an id, a name or a selector to lookup the firewall")
 }
 
-func dataSourceHcloudFirewallListRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourceHcloudFirewallListRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	selector := d.Get("with_selector").(string)
@@ -205,7 +205,7 @@ func dataSourceHcloudFirewallListRead(ctx context.Context, d *schema.ResourceDat
 	}
 
 	ids := make([]string, len(allFirewalls))
-	tfFirewalls := make([]map[string]interface{}, len(allFirewalls))
+	tfFirewalls := make([]map[string]any, len(allFirewalls))
 	for i, firewall := range allFirewalls {
 		ids[i] = util.FormatID(firewall.ID)
 		tfFirewalls[i] = getFirewallAttributes(firewall)

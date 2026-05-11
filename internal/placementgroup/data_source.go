@@ -98,7 +98,7 @@ func DataSourceList() *schema.Resource {
 	}
 }
 
-func dataSourceHcloudPlacementGroupRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourceHcloudPlacementGroupRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 	if id, ok := d.GetOk("id"); ok {
 		i, _, err := client.PlacementGroup.GetByID(ctx, util.CastInt64(id))
@@ -146,7 +146,7 @@ func dataSourceHcloudPlacementGroupRead(ctx context.Context, d *schema.ResourceD
 	return diag.Errorf("please specify an id, a name or a selector to lookup the placement group")
 }
 
-func dataSourceHcloudPlacementGroupListRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourceHcloudPlacementGroupListRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	selector := d.Get("with_selector")
@@ -162,7 +162,7 @@ func dataSourceHcloudPlacementGroupListRead(ctx context.Context, d *schema.Resou
 	}
 
 	ids := make([]string, len(allPlacementGroups))
-	tfPlacementGroups := make([]map[string]interface{}, len(allPlacementGroups))
+	tfPlacementGroups := make([]map[string]any, len(allPlacementGroups))
 	for i, firewall := range allPlacementGroups {
 		ids[i] = util.FormatID(firewall.ID)
 		tfPlacementGroups[i] = getAttributes(firewall)

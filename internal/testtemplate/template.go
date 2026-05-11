@@ -99,7 +99,7 @@ func (ts *Manager) init(t *testing.T) {
 }
 
 // Render renders the passed template to a string using the provided data.
-func (ts *Manager) Render(t *testing.T, args ...interface{}) string {
+func (ts *Manager) Render(t *testing.T, args ...any) string {
 	t.Helper()
 	ts.init(t)
 

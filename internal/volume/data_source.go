@@ -118,7 +118,7 @@ func DataSourceList() *schema.Resource {
 	}
 }
 
-func dataSourceHcloudVolumeRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourceHcloudVolumeRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	if id, ok := d.GetOk("id"); ok {
@@ -154,7 +154,7 @@ func dataSourceHcloudVolumeRead(ctx context.Context, d *schema.ResourceData, m i
 		var allVolumes []*hcloud.Volume
 
 		var statuses []hcloud.VolumeStatus
-		for _, status := range d.Get("with_status").([]interface{}) {
+		for _, status := range d.Get("with_status").([]any) {
 			statuses = append(statuses, hcloud.VolumeStatus(status.(string)))
 		}
 
@@ -180,13 +180,13 @@ func dataSourceHcloudVolumeRead(ctx context.Context, d *schema.ResourceData, m i
 	return diag.Errorf("please specify an id, a name or a selector to lookup the volume")
 }
 
-func dataSourceHcloudVolumeListRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourceHcloudVolumeListRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	selector := d.Get("with_selector").(string)
 
 	statuses := make([]hcloud.VolumeStatus, 0)
-	for _, status := range d.Get("with_status").([]interface{}) {
+	for _, status := range d.Get("with_status").([]any) {
 		statuses = append(statuses, hcloud.VolumeStatus(status.(string)))
 	}
 
@@ -202,7 +202,7 @@ func dataSourceHcloudVolumeListRead(ctx context.Context, d *schema.ResourceData,
 	}
 
 	ids := make([]string, len(allVolumes))
-	tfVolume := make([]map[string]interface{}, len(allVolumes))
+	tfVolume := make([]map[string]any, len(allVolumes))
 	for i, volume := range allVolumes {
 		ids[i] = util.FormatID(volume.ID)
 		tfVolume[i] = getVolumeAttributes(volume)

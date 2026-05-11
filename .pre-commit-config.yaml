@@ -67,3 +67,11 @@ repos:
         entry: make generate
         pass_filenames: false
         files: (^examples/|\.go$)
+
+  - repo: local
+    hooks:
+      - id: go-fix
+        name: go fix
+        language: golang
+        entry: go fix ./...
+        pass_filenames: false
