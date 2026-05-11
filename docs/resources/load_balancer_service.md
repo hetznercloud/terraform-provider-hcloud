@@ -93,7 +93,6 @@ resource "hcloud_load_balancer_service" "load_balancer_service" {
 - `cookie_name` - (string) Name of the cookie for sticky session.
 - `cookie_lifetime` - (int) Lifetime of the cookie for sticky session (in seconds).
 - `certificates` - (list[int]) List of IDs from certificates which the Load Balancer has.
-- `timeout_idle` - (int) Idle timeout for HTTP connections in seconds.
 
 `health_check` supports the following fields:
 
