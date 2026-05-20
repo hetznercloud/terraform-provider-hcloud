@@ -88,8 +88,8 @@ func Resource() *schema.Resource {
 				Type:     schema.TypeMap,
 				Optional: true,
 				Computed: true,
-				ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics { // nolint:revive
-					if ok, err := hcloud.ValidateResourceLabels(i.(map[string]interface{})); !ok {
+				ValidateDiagFunc: func(i any, path cty.Path) diag.Diagnostics { // nolint:revive
+					if ok, err := hcloud.ValidateResourceLabels(i.(map[string]any)); !ok {
 						return diag.FromErr(err)
 					}
 					return nil
@@ -131,7 +131,7 @@ func Resource() *schema.Resource {
 	}
 }
 
-func resourceLoadBalancerCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLoadBalancerCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	c := m.(*hcloud.Client)
 
 	opts := hcloud.LoadBalancerCreateOpts{
@@ -139,7 +139,7 @@ func resourceLoadBalancerCreate(ctx context.Context, d *schema.ResourceData, m i
 		LoadBalancerType: &hcloud.LoadBalancerType{Name: d.Get("load_balancer_type").(string)},
 	}
 	if algorithm, ok := d.GetOk("algorithm"); ok {
-		tmpAlgorithm := parseTerraformAlgorithm(algorithm.([]interface{}))
+		tmpAlgorithm := parseTerraformAlgorithm(algorithm.([]any))
 		opts.Algorithm = &tmpAlgorithm
 	}
 	if location, ok := d.GetOk("location"); ok {
@@ -150,7 +150,7 @@ func resourceLoadBalancerCreate(ctx context.Context, d *schema.ResourceData, m i
 	}
 	if labels, ok := d.GetOk("labels"); ok {
 		tmpLabels := make(map[string]string)
-		for k, v := range labels.(map[string]interface{}) {
+		for k, v := range labels.(map[string]any) {
 			tmpLabels[k] = v.(string)
 		}
 		opts.Labels = tmpLabels
@@ -179,7 +179,7 @@ func resourceLoadBalancerCreate(ctx context.Context, d *schema.ResourceData, m i
 	return resourceLoadBalancerRead(ctx, d, m)
 }
 
-func resourceLoadBalancerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLoadBalancerRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	loadBalancer, _, err := client.LoadBalancer.Get(ctx, d.Id())
@@ -197,7 +197,7 @@ func resourceLoadBalancerRead(ctx context.Context, d *schema.ResourceData, m int
 	return nil
 }
 
-func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	c := m.(*hcloud.Client)
 	loadBalancer, _, err := c.LoadBalancer.Get(ctx, d.Id())
 	if err != nil {
@@ -240,7 +240,7 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, m i
 
 	if d.HasChange("algorithm") {
 		algorithm := d.Get("algorithm")
-		hcloudAlgorithm := parseTerraformAlgorithm(algorithm.([]interface{}))
+		hcloudAlgorithm := parseTerraformAlgorithm(algorithm.([]any))
 		ao := hcloud.LoadBalancerChangeAlgorithmOpts{ //nolint:staticcheck
 			Type: hcloudAlgorithm.Type,
 		}
@@ -260,7 +260,7 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, m i
 	if d.HasChange("labels") {
 		labels := d.Get("labels")
 		tmpLabels := make(map[string]string)
-		for k, v := range labels.(map[string]interface{}) {
+		for k, v := range labels.(map[string]any) {
 			tmpLabels[k] = v.(string)
 		}
 		_, _, err := c.LoadBalancer.Update(ctx, loadBalancer, hcloud.LoadBalancerUpdateOpts{
@@ -351,7 +351,7 @@ func resourceLoadBalancerUpdate(ctx context.Context, d *schema.ResourceData, m i
 	return resourceLoadBalancerRead(ctx, d, m)
 }
 
-func resourceLoadBalancerDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceLoadBalancerDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	loadBalancer, _, err := client.LoadBalancer.Get(ctx, d.Id())
@@ -387,8 +387,8 @@ func setLoadBalancerSchema(d *schema.ResourceData, lb *hcloud.LoadBalancer) {
 	util.SetSchemaFromAttributes(d, getLoadBalancerAttributes(lb))
 }
 
-func getLoadBalancerAttributes(lb *hcloud.LoadBalancer) map[string]interface{} {
-	res := map[string]interface{}{
+func getLoadBalancerAttributes(lb *hcloud.LoadBalancer) map[string]any {
+	res := map[string]any{
 		"id":                 lb.ID,
 		"name":               lb.Name,
 		"load_balancer_type": lb.LoadBalancerType.Name,
@@ -412,7 +412,7 @@ func getLoadBalancerAttributes(lb *hcloud.LoadBalancer) map[string]interface{} {
 
 func parseTerraformTarget(tfTargets *schema.Set) (opts []hcloud.LoadBalancerCreateOptsTarget) {
 	for _, _tfTarget := range tfTargets.List() {
-		tfTarget := _tfTarget.(map[string]interface{})
+		tfTarget := _tfTarget.(map[string]any)
 		opt := hcloud.LoadBalancerCreateOptsTarget{
 			Type: hcloud.LoadBalancerTargetType(tfTarget["type"].(string)),
 		}
@@ -424,10 +424,10 @@ func parseTerraformTarget(tfTargets *schema.Set) (opts []hcloud.LoadBalancerCrea
 	return
 }
 
-func targetToTerraformTargets(targets []hcloud.LoadBalancerTarget) []map[string]interface{} {
-	tfTargets := make([]map[string]interface{}, len(targets))
+func targetToTerraformTargets(targets []hcloud.LoadBalancerTarget) []map[string]any {
+	tfTargets := make([]map[string]any, len(targets))
 	for i, target := range targets {
-		tfTarget := make(map[string]interface{})
+		tfTarget := make(map[string]any)
 		tfTarget["type"] = string(target.Type)
 		if target.Type == hcloud.LoadBalancerTargetTypeServer {
 			tfTarget["server_id"] = target.Server.Server.ID
@@ -438,13 +438,13 @@ func targetToTerraformTargets(targets []hcloud.LoadBalancerTarget) []map[string]
 	return tfTargets
 }
 
-func parseTerraformAlgorithm(tfAlgorithms []interface{}) (algorithm hcloud.LoadBalancerAlgorithm) {
-	algorithm.Type = hcloud.LoadBalancerAlgorithmType(tfAlgorithms[0].(map[string]interface{})["type"].(string))
+func parseTerraformAlgorithm(tfAlgorithms []any) (algorithm hcloud.LoadBalancerAlgorithm) {
+	algorithm.Type = hcloud.LoadBalancerAlgorithmType(tfAlgorithms[0].(map[string]any)["type"].(string))
 	return
 }
 
-func algorithmToTerraformAlgorithm(algorithm hcloud.LoadBalancerAlgorithm) (tfAlgorithms []map[string]interface{}) {
-	tfAlgorithm := make(map[string]interface{})
+func algorithmToTerraformAlgorithm(algorithm hcloud.LoadBalancerAlgorithm) (tfAlgorithms []map[string]any) {
+	tfAlgorithm := make(map[string]any)
 	tfAlgorithm["type"] = string(algorithm.Type)
 	tfAlgorithms = append(tfAlgorithms, tfAlgorithm)
 	return

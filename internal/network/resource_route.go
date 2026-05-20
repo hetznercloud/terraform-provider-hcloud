@@ -50,7 +50,7 @@ func RouteResource() *schema.Resource {
 	}
 }
 
-func resourceNetworkRouteCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceNetworkRouteCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	var action *hcloud.Action
 
 	c := m.(*hcloud.Client)
@@ -95,7 +95,7 @@ func resourceNetworkRouteCreate(ctx context.Context, d *schema.ResourceData, m i
 	return resourceNetworkRouteRead(ctx, d, m)
 }
 
-func resourceNetworkRouteRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceNetworkRouteRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	network, route, err := lookupNetworkRouteID(ctx, d.Id(), client)
@@ -117,7 +117,7 @@ func resourceNetworkRouteRead(ctx context.Context, d *schema.ResourceData, m int
 	return nil
 }
 
-func resourceNetworkRouteDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceNetworkRouteDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	var action *hcloud.Action
 
 	c := m.(*hcloud.Client)

@@ -63,8 +63,8 @@ func Resource() *schema.Resource {
 			"labels": {
 				Type:     schema.TypeMap,
 				Optional: true,
-				ValidateDiagFunc: func(i interface{}, path cty.Path) diag.Diagnostics { // nolint:revive
-					if ok, err := hcloud.ValidateResourceLabels(i.(map[string]interface{})); !ok {
+				ValidateDiagFunc: func(i any, path cty.Path) diag.Diagnostics { // nolint:revive
+					if ok, err := hcloud.ValidateResourceLabels(i.(map[string]any)); !ok {
 						return diag.FromErr(err)
 					}
 					return nil
@@ -79,7 +79,7 @@ func Resource() *schema.Resource {
 	}
 }
 
-func resourceFloatingIPCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceFloatingIPCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	opts := hcloud.FloatingIPCreateOpts{
@@ -97,7 +97,7 @@ func resourceFloatingIPCreate(ctx context.Context, d *schema.ResourceData, m int
 	}
 	if labels, ok := d.GetOk("labels"); ok {
 		tmpLabels := make(map[string]string)
-		for k, v := range labels.(map[string]interface{}) {
+		for k, v := range labels.(map[string]any) {
 			tmpLabels[k] = v.(string)
 		}
 		opts.Labels = tmpLabels
@@ -123,7 +123,7 @@ func resourceFloatingIPCreate(ctx context.Context, d *schema.ResourceData, m int
 	return resourceFloatingIPRead(ctx, d, m)
 }
 
-func resourceFloatingIPRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceFloatingIPRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	id, err := util.ParseID(d.Id())
@@ -147,7 +147,7 @@ func resourceFloatingIPRead(ctx context.Context, d *schema.ResourceData, m inter
 	return nil
 }
 
-func resourceFloatingIPUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceFloatingIPUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	id, err := util.ParseID(d.Id())
@@ -215,7 +215,7 @@ func resourceFloatingIPUpdate(ctx context.Context, d *schema.ResourceData, m int
 	if d.HasChange("labels") {
 		labels := d.Get("labels")
 		tmpLabels := make(map[string]string)
-		for k, v := range labels.(map[string]interface{}) {
+		for k, v := range labels.(map[string]any) {
 			tmpLabels[k] = v.(string)
 		}
 		_, _, err := client.FloatingIP.Update(ctx, floatingIP, hcloud.FloatingIPUpdateOpts{
@@ -241,7 +241,7 @@ func resourceFloatingIPUpdate(ctx context.Context, d *schema.ResourceData, m int
 	return resourceFloatingIPRead(ctx, d, m)
 }
 
-func resourceFloatingIPDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceFloatingIPDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	floatingIPID, err := util.ParseID(d.Id())
@@ -301,8 +301,8 @@ func setFloatingIPSchema(d *schema.ResourceData, f *hcloud.FloatingIP) {
 	util.SetSchemaFromAttributes(d, getFloatingIPAttributes(f))
 }
 
-func getFloatingIPAttributes(f *hcloud.FloatingIP) map[string]interface{} {
-	res := map[string]interface{}{
+func getFloatingIPAttributes(f *hcloud.FloatingIP) map[string]any {
+	res := map[string]any{
 		"id":                f.ID,
 		"ip_address":        f.IP.String(),
 		"name":              f.Name,

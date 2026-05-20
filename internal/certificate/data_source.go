@@ -108,7 +108,7 @@ func DataSourceList() *schema.Resource {
 	}
 }
 
-func dataSourceHcloudCertificateRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourceHcloudCertificateRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	if id, ok := d.GetOk("id"); ok {
@@ -157,7 +157,7 @@ func dataSourceHcloudCertificateRead(ctx context.Context, d *schema.ResourceData
 	return diag.Errorf("please specify an id or name to lookup the certificate")
 }
 
-func dataSourceHcloudCertificateListRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourceHcloudCertificateListRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	selector := d.Get("with_selector")
@@ -172,7 +172,7 @@ func dataSourceHcloudCertificateListRead(ctx context.Context, d *schema.Resource
 	}
 
 	ids := make([]string, len(allCertificates))
-	tfCertificates := make([]map[string]interface{}, len(allCertificates))
+	tfCertificates := make([]map[string]any, len(allCertificates))
 	for i, certificate := range allCertificates {
 		ids[i] = util.FormatID(certificate.ID)
 		tfCertificates[i] = getCertificateAttributes(certificate)

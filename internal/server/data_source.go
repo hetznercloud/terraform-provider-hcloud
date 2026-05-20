@@ -193,7 +193,7 @@ func DataSourceList() *schema.Resource {
 	}
 }
 
-func dataSourceHcloudServerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourceHcloudServerRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	if id, ok := d.GetOk("id"); ok {
@@ -229,7 +229,7 @@ func dataSourceHcloudServerRead(ctx context.Context, d *schema.ResourceData, m i
 	if selector != "" {
 		var allServers []*hcloud.Server
 		var statuses []hcloud.ServerStatus
-		for _, status := range d.Get("with_status").([]interface{}) {
+		for _, status := range d.Get("with_status").([]any) {
 			statuses = append(statuses, hcloud.ServerStatus(status.(string)))
 		}
 
@@ -256,13 +256,13 @@ func dataSourceHcloudServerRead(ctx context.Context, d *schema.ResourceData, m i
 	return diag.Errorf("please specify a id, name or a selector to lookup the Server")
 }
 
-func dataSourceHcloudServerListRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourceHcloudServerListRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	selector := d.Get("with_selector").(string)
 
 	statuses := make([]hcloud.ServerStatus, 0)
-	for _, status := range d.Get("with_status").([]interface{}) {
+	for _, status := range d.Get("with_status").([]any) {
 		statuses = append(statuses, hcloud.ServerStatus(status.(string)))
 	}
 
@@ -278,7 +278,7 @@ func dataSourceHcloudServerListRead(ctx context.Context, d *schema.ResourceData,
 	}
 
 	ids := make([]string, len(allServers))
-	tfServers := make([]map[string]interface{}, len(allServers))
+	tfServers := make([]map[string]any, len(allServers))
 	for i, server := range allServers {
 		ids[i] = util.FormatID(server.ID)
 		tfServers[i] = getServerAttributes(d, server, true)

@@ -71,7 +71,7 @@ type RData struct {
 	Image                  string
 	LocationName           string
 	Datacenter             string
-	PublicNet              map[string]interface{}
+	PublicNet              map[string]any
 	SSHKeys                []string
 	KeepDisk               bool
 	Rescue                 string

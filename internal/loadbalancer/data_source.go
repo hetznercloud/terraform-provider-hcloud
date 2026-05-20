@@ -256,7 +256,7 @@ func DataSourceList() *schema.Resource {
 	}
 }
 
-func dataSourceHcloudLoadBalancerRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourceHcloudLoadBalancerRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 	if id, ok := d.GetOk("id"); ok {
 		lb, _, err := client.LoadBalancer.GetByID(ctx, util.CastInt64(id))
@@ -306,7 +306,7 @@ func dataSourceHcloudLoadBalancerRead(ctx context.Context, d *schema.ResourceDat
 	return diag.Errorf("please specify an id, a name or a selector to lookup the Load Balancer")
 }
 
-func dataSourceHcloudLoadBalancerListRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func dataSourceHcloudLoadBalancerListRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	client := m.(*hcloud.Client)
 
 	selector := d.Get("with_selector").(string)
@@ -318,7 +318,7 @@ func dataSourceHcloudLoadBalancerListRead(ctx context.Context, d *schema.Resourc
 	}
 
 	ids := make([]string, len(allLoadBalancers))
-	tfLoadBalancers := make([]map[string]interface{}, len(allLoadBalancers))
+	tfLoadBalancers := make([]map[string]any, len(allLoadBalancers))
 	for i, loadBalancer := range allLoadBalancers {
 		ids[i] = util.FormatID(loadBalancer.ID)
 		tfLoadBalancers[i] = getLoadBalancerAttributes(loadBalancer)

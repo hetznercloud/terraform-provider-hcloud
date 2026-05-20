@@ -1030,7 +1030,7 @@ func TestAccServerResource_PrimaryIPNetworkTests(t *testing.T) {
 			IP:        "10.0.1.5",
 			AliasIPs:  []string{"10.0.1.6", "10.0.1.7"},
 		}},
-		PublicNet: map[string]interface{}{
+		PublicNet: map[string]any{
 			"ipv4_enabled": true,
 			"ipv6_enabled": true,
 		},
@@ -1045,7 +1045,7 @@ func TestAccServerResource_PrimaryIPNetworkTests(t *testing.T) {
 		Image:        sResWithNetAndPublicNet.Image,
 		SSHKeys:      sResWithNetAndPublicNet.SSHKeys,
 		Networks:     sResWithNetAndPublicNet.Networks,
-		PublicNet: map[string]interface{}{
+		PublicNet: map[string]any{
 			"ipv4_enabled": false,
 			"ipv6_enabled": false,
 		},
@@ -1060,7 +1060,7 @@ func TestAccServerResource_PrimaryIPNetworkTests(t *testing.T) {
 		Image:        sResWithoutPublicNet.Image,
 		SSHKeys:      sResWithoutPublicNet.SSHKeys,
 		Networks:     sResWithoutPublicNet.Networks,
-		PublicNet: map[string]interface{}{
+		PublicNet: map[string]any{
 			"ipv4_enabled": true,
 			"ipv4":         primaryIPv4Res.TFID() + ".id",
 			"ipv6_enabled": false,
@@ -1077,7 +1077,7 @@ func TestAccServerResource_PrimaryIPNetworkTests(t *testing.T) {
 		Image:        sResWithPrimaryIP.Image,
 		SSHKeys:      sResWithPrimaryIP.SSHKeys,
 		Networks:     sResWithPrimaryIP.Networks,
-		PublicNet: map[string]interface{}{
+		PublicNet: map[string]any{
 			"ipv4_enabled": true,
 			"ipv4":         primaryIPv4Res.TFID() + ".id",
 			"ipv6_enabled": true,
@@ -1106,7 +1106,7 @@ func TestAccServerResource_PrimaryIPNetworkTests(t *testing.T) {
 		Image:        sResWithNoPublicNet.Image,
 		SSHKeys:      sResWithNoPublicNet.SSHKeys,
 		Networks:     sResWithNoPublicNet.Networks,
-		PublicNet: map[string]interface{}{
+		PublicNet: map[string]any{
 			"ipv4_enabled": false,
 			"ipv6_enabled": true,
 			"ipv6":         primaryIPv6Res.TFID() + ".id",
@@ -1123,7 +1123,7 @@ func TestAccServerResource_PrimaryIPNetworkTests(t *testing.T) {
 		Image:        sResWithOnlyIPv6.Image,
 		SSHKeys:      sResWithOnlyIPv6.SSHKeys,
 		Networks:     sResWithOnlyIPv6.Networks,
-		PublicNet: map[string]interface{}{
+		PublicNet: map[string]any{
 			"ipv4_enabled": false,
 			"ipv6_enabled": true,
 		},
@@ -1311,7 +1311,7 @@ func TestAccServerResource_PrivateNetworkBastion(t *testing.T) {
 		Networks: []server.RDataInlineNetwork{{
 			NetworkID: networkRes.TFID() + ".id",
 		}},
-		PublicNet: map[string]interface{}{
+		PublicNet: map[string]any{
 			"ipv4_enabled": true,
 			"ipv6_enabled": true,
 		},
@@ -1337,7 +1337,7 @@ runcmd:
 		Networks: []server.RDataInlineNetwork{{
 			NetworkID: networkRes.TFID() + ".id",
 		}},
-		PublicNet: map[string]interface{}{
+		PublicNet: map[string]any{
 			"ipv4_enabled": false,
 			"ipv6_enabled": false,
 		},
