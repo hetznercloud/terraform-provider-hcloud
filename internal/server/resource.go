@@ -26,6 +26,11 @@ import (
 // ResourceType is the type name of the Hetzner Cloud Server resource.
 const ResourceType = "hcloud_server"
 
+const (
+	serverPowerStateRunning = "running"
+	serverPowerStateOff     = "off"
+)
+
 // Resource creates a Terraform schema for the hcloud_server resource.
 func Resource() *schema.Resource {
 	return &schema.Resource{
@@ -1469,6 +1474,47 @@ func powerOnServer(ctx context.Context, c *hcloud.Client, server *hcloud.Server)
 		return err
 	}
 	return nil
+}
+
+func powerStateFromServerStatus(status hcloud.ServerStatus) string {
+	switch status {
+	case hcloud.ServerStatusRunning, hcloud.ServerStatusStarting:
+		return serverPowerStateRunning
+	case hcloud.ServerStatusOff, hcloud.ServerStatusStopping:
+		return serverPowerStateOff
+	default:
+		return string(status)
+	}
+}
+
+func setPowerState(ctx context.Context, c *hcloud.Client, server *hcloud.Server, powerState string) error {
+	serverID := server.ID
+	server, _, err := c.Server.GetByID(ctx, serverID)
+	if err != nil {
+		return err
+	}
+	if server == nil {
+		return fmt.Errorf("server not found: %d", serverID)
+	}
+
+	switch powerState {
+	case serverPowerStateRunning:
+		if server.Status == hcloud.ServerStatusRunning || server.Status == hcloud.ServerStatusStarting {
+			return nil
+		}
+		return powerOnServer(ctx, c, server)
+	case serverPowerStateOff:
+		if server.Status == hcloud.ServerStatusOff || server.Status == hcloud.ServerStatusStopping {
+			return nil
+		}
+		action, _, err := c.Server.Poweroff(ctx, server)
+		if err != nil {
+			return err
+		}
+		return c.Action.WaitFor(ctx, action)
+	default:
+		return fmt.Errorf("unsupported power_state %q", powerState)
+	}
 }
 
 func publicNetRemovedDecision(ctx context.Context,

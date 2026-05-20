@@ -124,6 +124,19 @@ func (d *RDataNetwork) TFID() string {
 	return fmt.Sprintf("%s.%s", NetworkResourceType, d.RName())
 }
 
+// RDataPowerState defines the fields for the "testdata/r/hcloud_server_power_state" template.
+type RDataPowerState struct {
+	testtemplate.DataCommon
+
+	ServerID string
+	State    string
+}
+
+// TFID returns the resource identifier.
+func (d *RDataPowerState) TFID() string {
+	return fmt.Sprintf("%s.%s", PowerStateResourceType, d.RName())
+}
+
 // AData defines the fields for the "testdata/a/hcloud_server"
 // template.
 type AData struct {

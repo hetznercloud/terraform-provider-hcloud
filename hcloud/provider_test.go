@@ -41,6 +41,7 @@ func TestProvider_Resources(t *testing.T) {
 		network.RouteResourceType,
 		network.SubnetResourceType,
 		rdns.ResourceType,
+		server.PowerStateResourceType,
 		server.ResourceType,
 		snapshot.ResourceType,
 		volume.AttachmentResourceType,
