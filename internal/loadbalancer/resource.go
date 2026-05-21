@@ -399,6 +399,8 @@ func getLoadBalancerAttributes(lb *hcloud.LoadBalancer) map[string]any {
 		"network_zone":       lb.Location.NetworkZone,
 		"labels":             lb.Labels,
 		"target":             targetToTerraformTargets(lb.Targets),
+		"service":            serviceToTerraformServices(lb, lb.Services),
+		"private_net":        privateNetToTerraformPrivateNets(lb.PrivateNet),
 		"delete_protection":  lb.Protection.Delete,
 	}
 
@@ -408,6 +410,25 @@ func getLoadBalancerAttributes(lb *hcloud.LoadBalancer) map[string]any {
 	}
 
 	return res
+}
+
+func privateNetToTerraformPrivateNets(nets []hcloud.LoadBalancerPrivateNet) []map[string]any {
+	tfPrivateNets := make([]map[string]any, len(nets))
+	for i, net := range nets {
+		tfPrivateNets[i] = map[string]any{
+			"id":   net.Network.ID,
+			"ipv4": net.IP.String(),
+		}
+	}
+	return tfPrivateNets
+}
+
+func serviceToTerraformServices(lb *hcloud.LoadBalancer, services []hcloud.LoadBalancerService) []map[string]any {
+	tfServices := make([]map[string]any, len(services))
+	for i, service := range services {
+		tfServices[i] = getLoadBalancerServiceAttributes(lb, &service)
+	}
+	return tfServices
 }
 
 func parseTerraformTarget(tfTargets *schema.Set) (opts []hcloud.LoadBalancerCreateOptsTarget) {

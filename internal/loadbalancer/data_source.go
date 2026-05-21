@@ -56,12 +56,30 @@ func getCommonDataSchema() map[string]*schema.Schema {
 			Computed: true,
 		},
 		"network_id": {
-			Type:     schema.TypeInt,
-			Computed: true,
+			Type:       schema.TypeInt,
+			Computed:   true,
+			Deprecated: "This attribute is deprecated. Use hcloud_load_balancer.private_net[].id instead.",
 		},
 		"network_ip": {
-			Type:     schema.TypeString,
+			Type:       schema.TypeString,
+			Computed:   true,
+			Deprecated: "This attribute is deprecated. Use hcloud_load_balancer.private_net[].ipv4 instead.",
+		},
+		"private_net": {
+			Type:     schema.TypeList,
 			Computed: true,
+			Elem: &schema.Resource{
+				Schema: map[string]*schema.Schema{
+					"id": {
+						Type:     schema.TypeInt,
+						Computed: true,
+					},
+					"ipv4": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
+				},
+			},
 		},
 		"algorithm": {
 			Type:     schema.TypeList,

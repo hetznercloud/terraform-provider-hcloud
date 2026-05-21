@@ -349,14 +349,18 @@ func resourceLoadBalancerServiceDelete(ctx context.Context, d *schema.ResourceDa
 }
 
 func setLoadBalancerServiceSchema(d *schema.ResourceData, lb *hcloud.LoadBalancer, svc *hcloud.LoadBalancerService) {
-	svcID := fmt.Sprintf("%d__%d", lb.ID, svc.ListenPort)
+	util.SetSchemaFromAttributes(d, getLoadBalancerServiceAttributes(lb, svc))
+}
 
-	d.SetId(svcID)
-	d.Set("load_balancer_id", util.FormatID(lb.ID))
-	d.Set("protocol", string(svc.Protocol))
-	d.Set("listen_port", svc.ListenPort)
-	d.Set("destination_port", svc.DestinationPort)
-	d.Set("proxyprotocol", svc.Proxyprotocol)
+func getLoadBalancerServiceAttributes(lb *hcloud.LoadBalancer, svc *hcloud.LoadBalancerService) map[string]any {
+	res := map[string]any{
+		"id":               fmt.Sprintf("%d__%d", lb.ID, svc.ListenPort),
+		"load_balancer_id": util.FormatID(lb.ID),
+		"protocol":         string(svc.Protocol),
+		"listen_port":      svc.ListenPort,
+		"destination_port": svc.DestinationPort,
+		"proxyprotocol":    svc.Proxyprotocol,
+	}
 
 	if svc.Protocol != hcloud.LoadBalancerServiceProtocolTCP {
 		httpMap := make(map[string]any)
@@ -381,14 +385,16 @@ func setLoadBalancerServiceSchema(d *schema.ResourceData, lb *hcloud.LoadBalance
 		}
 		httpMap["redirect_http"] = svc.HTTP.RedirectHTTP
 		if len(httpMap) > 0 {
-			d.Set("http", []any{httpMap})
+			res["http"] = httpMap
 		}
 	}
 
 	healthCheck := toTFHealthCheck(svc.HealthCheck)
 	if len(healthCheck) > 0 {
-		d.Set("health_check", []any{healthCheck})
+		res["health_check"] = []any{healthCheck}
 	}
+
+	return res
 }
 
 var errInvalidLoadBalancerServiceID = errors.New("invalid load balancer service id")
