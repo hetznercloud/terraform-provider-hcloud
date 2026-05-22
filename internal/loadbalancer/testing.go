@@ -6,8 +6,17 @@ import (
 	"testing"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
+
+// GetAPIResource returns a [testsupport.GetAPIResourceFunc] for [hcloud.LoadBalancer].
+func GetAPIResource() testsupport.GetAPIResourceFunc[hcloud.LoadBalancer] {
+	return func(c *hcloud.Client, attrs map[string]string) (*hcloud.LoadBalancer, error) {
+		result, _, err := c.LoadBalancer.Get(context.Background(), attrs["id"])
+		return result, err
+	}
+}
 
 // ByID returns a function that obtains a loadbalancer by its ID.
 func ByID(t *testing.T, lb *hcloud.LoadBalancer) func(*hcloud.Client, int64) bool {
