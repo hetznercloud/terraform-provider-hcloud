@@ -1,6 +1,6 @@
 {{- /* vim: set ft=terraform: */ -}}
 
-resource "hcloud_load_balancer" "{{ .Name }}" {
+resource "hcloud_load_balancer" "{{ .RName }}" {
   {{/* Required properties */ -}}
   name               = "{{ .Name }}--{{ .RInt }}"
   load_balancer_type = "{{ if .Type }}{{ .Type }}{{ else }}lb11{{ end }}"

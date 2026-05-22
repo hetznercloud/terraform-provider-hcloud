@@ -69,7 +69,7 @@ type RData struct {
 
 // TFID returns the resource identifier.
 func (d *RData) TFID() string {
-	return fmt.Sprintf("%s.%s", ResourceType, d.Name)
+	return fmt.Sprintf("%s.%s", ResourceType, d.RName())
 }
 
 // RDataInlineServerTarget represents a Load Balancer server target

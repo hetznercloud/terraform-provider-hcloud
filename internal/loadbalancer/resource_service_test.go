@@ -313,6 +313,8 @@ func TestAccLoadBalancerServiceResource_HTTPS_UpdateUnchangedCertificates(t *tes
 		Name:         "load-balancer-certificates-unchanged",
 		LocationName: teste2e.TestLocationName,
 	}
+	lbRes.SetRName("main")
+
 	svcRes := &loadbalancer.RDataService{
 		Name:           "service-with-two-certs",
 		LoadBalancerID: lbRes.TFID() + ".id",

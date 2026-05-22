@@ -24,6 +24,8 @@ func TestAccLoadBalancerDataSource(t *testing.T) {
 			"key": strconv.Itoa(acctest.RandInt()),
 		},
 	}
+	res.SetRName("main")
+
 	lbByName := &loadbalancer.DData{
 		LoadBalancerName: res.TFID() + ".name",
 	}
@@ -87,6 +89,7 @@ func TestAccLoadBalancerDataSourceList(t *testing.T) {
 			"key": strconv.Itoa(acctest.RandInt()),
 		},
 	}
+	res.SetRName("main")
 
 	loadBalancersBySel := &loadbalancer.DDataList{
 		LabelSelector: fmt.Sprintf("key=${%s.labels[\"key\"]}", res.TFID()),
