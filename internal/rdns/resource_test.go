@@ -1,7 +1,9 @@
 package rdns_test
 
 import (
+	"fmt"
 	"net"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -19,6 +21,39 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
+
+func TestAccRDNSResource_Errors(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_rdns", rdns.NewRDataPrimaryIP(t,
+						"ipv6",
+						"12345", // Not found
+						fmt.Sprintf("%q", "2001:0db8::231"),
+						"ipv6.example.org",
+					),
+				),
+				ExpectError: regexp.MustCompile(`Resource \(primary ip\) was not found: id=12345`),
+			},
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_rdns", rdns.NewRDataPrimaryIP(t,
+						"ipv6",
+						"12345",
+						fmt.Sprintf("%q", "2001"), // Invalid ip address
+						"ipv6.example.org",
+					),
+				),
+				ExpectError: regexp.MustCompile(`Invalid IP Address String Value`),
+			},
+		},
+	})
+}
 
 func TestAccRDNSResource_Server(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
@@ -256,16 +291,16 @@ func TestAccRDNSResource_PrimaryIP_UpgradePluginFramework(t *testing.T) {
 
 	resPrimaryIP := &primaryip.RData{
 		Name:     randutil.GenerateID(),
-		Type:     "ipv4",
+		Type:     "ipv6",
 		Location: teste2e.TestLocationName,
 	}
-	resPrimaryIP.SetRName("ipv4")
+	resPrimaryIP.SetRName("ipv6")
 
 	res := rdns.NewRDataPrimaryIP(t,
-		"ipv4",
+		"ipv6",
 		resPrimaryIP.TFID()+".id",
 		resPrimaryIP.TFID()+".ip_address",
-		"ipv4.example.org",
+		"ipv6.example.org",
 	)
 
 	resource.ParallelTest(t, resource.TestCase{
