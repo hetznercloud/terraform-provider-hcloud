@@ -1,13 +1,14 @@
 package rdns_test
 
 import (
-	"fmt"
+	"net"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud/exp/kit/randutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/floatingip"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancer"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/primaryip"
@@ -20,271 +21,364 @@ import (
 )
 
 func TestAccRDNSResource_Server(t *testing.T) {
-	tests := []struct {
-		name        string
-		dns         string
-		ipAddress   string
-		ipAsStrFunc func(s *hcloud.Server) string
-	}{
-		{
-			name:      "server-ipv6-rdns",
-			dns:       "ipv6.example.hetzner.cloud",
-			ipAddress: ".ipv6_address",
-			ipAsStrFunc: func(s *hcloud.Server) string {
-				return s.PublicNet.IPv6.IP.String() + "1"
+	tmplMan := testtemplate.Manager{}
+
+	var hcServer hcloud.Server
+
+	resSSHKey := sshkey.NewRData(t, "main")
+	resServer := &server.RData{
+		Name:    randutil.GenerateID(),
+		Type:    teste2e.TestServerType,
+		Image:   teste2e.TestImage,
+		SSHKeys: []string{resSSHKey.TFID() + ".id"},
+	}
+	resServer.SetRName("main")
+
+	// IPv4
+	resA1 := rdns.NewRDataServer(t,
+		"ipv4",
+		resServer.TFID()+".id",
+		resServer.TFID()+".ipv4_address",
+		"ipv4.example.org",
+	)
+	resA2 := testtemplate.DeepCopy(t, resA1)
+	resA2.DNSPTR = "changed." + resA1.DNSPTR
+
+	// IPv6
+	resB1 := rdns.NewRDataServer(t,
+		"ipv6",
+		resServer.TFID()+".id",
+		resServer.TFID()+".ipv6_address",
+		"ipv6.example.org",
+	)
+	resB2 := testtemplate.DeepCopy(t, resB1)
+	resB2.DNSPTR = "changed." + resB1.DNSPTR
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckAPIResourceAllAbsent(server.ResourceType, server.GetAPIResource()),
+		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_server", resServer,
+					"testdata/r/hcloud_rdns", resA1,
+					"testdata/r/hcloud_rdns", resB1,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(resServer.TFID(), server.ByID(t, &hcServer)),
+					resource.TestCheckResourceAttr(resA1.TFID(), "dns_ptr", resA1.DNSPTR),
+					resource.TestCheckResourceAttr(resB1.TFID(), "dns_ptr", resB1.DNSPTR),
+				),
+			},
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_server", resServer,
+					"testdata/r/hcloud_rdns", resA2,
+					"testdata/r/hcloud_rdns", resB2,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(resServer.TFID(), server.ByID(t, &hcServer)),
+					resource.TestCheckResourceAttr(resA2.TFID(), "dns_ptr", resA2.DNSPTR),
+					resource.TestCheckResourceAttr(resB2.TFID(), "dns_ptr", resB2.DNSPTR),
+				),
+			},
+			{
+				ResourceName: resA2.TFID(),
+				ImportStateIdFunc: func(_ *terraform.State) (string, error) {
+					return rdns.FormatID(&hcServer, hcServer.PublicNet.IPv4.IP), nil
+				},
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				ResourceName: resB2.TFID(),
+				ImportStateIdFunc: func(_ *terraform.State) (string, error) {
+					ip := net.ParseIP(hcServer.PublicNet.IPv6.IP.String() + "1")
+					return rdns.FormatID(&hcServer, ip), nil
+				},
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
-		{
-			name:      "server-ipv4-rdns",
-			dns:       "ipv4.example.hetzner.cloud",
-			ipAddress: ".ipv4_address",
-			ipAsStrFunc: func(s *hcloud.Server) string {
-				return s.PublicNet.IPv4.IP.String()
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			var s hcloud.Server
-			tmplMan := testtemplate.Manager{}
-
-			sk := sshkey.NewRData(t, tt.name)
-			resServer := &server.RData{
-				Name:  tt.name,
-				Type:  teste2e.TestServerType,
-				Image: teste2e.TestImage,
-				Labels: map[string]string{
-					"tf-test": fmt.Sprintf("tf-test-rdns-%d", tmplMan.RandInt),
-				},
-				SSHKeys: []string{sk.TFID() + ".id"},
-			}
-			resServer.SetRName(tt.name)
-			resRDNS := rdns.NewRDataServer(t, tt.name, resServer.TFID()+".id", resServer.TFID()+tt.ipAddress, tt.dns)
-
-			resource.ParallelTest(t, resource.TestCase{
-				PreCheck:                 teste2e.PreCheck(t),
-				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
-				CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
-				Steps: []resource.TestStep{
-					{
-						// Create a new RDNS using the required values
-						// only.
-						Config: tmplMan.Render(t,
-							"testdata/r/hcloud_ssh_key", sk,
-							"testdata/r/hcloud_server", resServer,
-							"testdata/r/hcloud_rdns", resRDNS,
-						),
-						Check: resource.ComposeTestCheckFunc(
-							testsupport.CheckResourceExists(resServer.TFID(), server.ByID(t, &s)),
-							resource.TestCheckResourceAttr(resRDNS.TFID(), "dns_ptr", tt.dns),
-						),
-					},
-					{
-						// Try to import the newly created RDNS
-						ResourceName: resRDNS.TFID(),
-						ImportStateIdFunc: func(_ *terraform.State) (string, error) {
-							return fmt.Sprintf("s-%d-%s", s.ID, tt.ipAsStrFunc(&s)), nil
-						},
-						ImportState:       true,
-						ImportStateVerify: true,
-					},
-				},
-			})
-		})
-	}
+	})
 }
 
 func TestAccRDNSResource_PrimaryIP(t *testing.T) {
-	tests := []struct {
-		name          string
-		dns           string
-		primaryIPType string
-	}{
-		{
-			name:          "primary-ipv6-rdns",
-			dns:           "ipv6.example.hetzner.cloud",
-			primaryIPType: "ipv6",
-		},
-		{
-			name:          "primary-ipv4-rdns",
-			dns:           "ipv4.example.hetzner.cloud",
-			primaryIPType: "ipv4",
-		},
+	tmplMan := testtemplate.Manager{}
+
+	var (
+		hcPrimaryIPv4 hcloud.PrimaryIP
+		hcPrimaryIPv6 hcloud.PrimaryIP
+	)
+
+	resPrimaryIPv4 := &primaryip.RData{
+		Name:     randutil.GenerateID(),
+		Type:     "ipv4",
+		Location: teste2e.TestLocationName,
 	}
+	resPrimaryIPv4.SetRName("ipv4")
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			var primaryIP hcloud.PrimaryIP
+	resPrimaryIPv6 := &primaryip.RData{
+		Name:     randutil.GenerateID(),
+		Type:     "ipv6",
+		Location: teste2e.TestLocationName,
+	}
+	resPrimaryIPv6.SetRName("ipv6")
 
-			tmplMan := testtemplate.Manager{}
-			restPrimaryIP := &primaryip.RData{
-				Name:     tt.name,
-				Type:     tt.primaryIPType,
-				Location: teste2e.TestLocationName,
-			}
-			restPrimaryIP.SetRName(tt.name)
-			resRDNS := rdns.NewRDataPrimaryIP(t, tt.name, restPrimaryIP.TFID()+".id", restPrimaryIP.TFID()+".ip_address", tt.dns)
+	// IPv4
+	resA1 := rdns.NewRDataPrimaryIP(t,
+		"ipv4",
+		resPrimaryIPv4.TFID()+".id",
+		resPrimaryIPv4.TFID()+".ip_address",
+		"ipv4.example.org",
+	)
 
-			resource.ParallelTest(t, resource.TestCase{
-				PreCheck:                 teste2e.PreCheck(t),
-				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
-				CheckDestroy:             testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &primaryIP)),
-				Steps: []resource.TestStep{
-					{
-						// Create a new SSH Key using the required values
-						// only.
-						Config: tmplMan.Render(t,
-							"testdata/r/hcloud_primary_ip", restPrimaryIP,
-							"testdata/r/hcloud_rdns", resRDNS,
-						),
-						Check: resource.ComposeTestCheckFunc(
-							testsupport.CheckResourceExists(restPrimaryIP.TFID(), primaryip.ByID(t, &primaryIP)),
-							resource.TestCheckResourceAttr(resRDNS.TFID(), "dns_ptr", tt.dns),
-						),
-					},
-					{
-						// Try to import the newly created RDNS
-						ResourceName: resRDNS.TFID(),
-						ImportStateIdFunc: func(_ *terraform.State) (string, error) {
-							return fmt.Sprintf("p-%d-%s", primaryIP.ID, primaryIP.IP.String()), nil
-						},
-						ImportState:       true,
-						ImportStateVerify: true,
-					},
+	resA2 := testtemplate.DeepCopy(t, resA1)
+	resA2.DNSPTR = "changed." + resA1.DNSPTR
+
+	// IPv6
+	resB1 := rdns.NewRDataPrimaryIP(t,
+		"ipv6",
+		resPrimaryIPv6.TFID()+".id",
+		resPrimaryIPv6.TFID()+".ip_address",
+		"ipv6.example.org",
+	)
+
+	resB2 := testtemplate.DeepCopy(t, resB1)
+	resB2.DNSPTR = "changed." + resB1.DNSPTR
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckAPIResourceAllAbsent(primaryip.ResourceType, primaryip.GetAPIResource()),
+		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_primary_ip", resPrimaryIPv4,
+					"testdata/r/hcloud_primary_ip", resPrimaryIPv6,
+					"testdata/r/hcloud_rdns", resA1,
+					"testdata/r/hcloud_rdns", resB1,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(resPrimaryIPv4.TFID(), primaryip.ByID(t, &hcPrimaryIPv4)),
+					testsupport.CheckResourceExists(resPrimaryIPv6.TFID(), primaryip.ByID(t, &hcPrimaryIPv6)),
+					resource.TestCheckResourceAttr(resA1.TFID(), "dns_ptr", resA1.DNSPTR),
+					resource.TestCheckResourceAttr(resB1.TFID(), "dns_ptr", resB1.DNSPTR),
+				),
+			},
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_primary_ip", resPrimaryIPv4,
+					"testdata/r/hcloud_primary_ip", resPrimaryIPv6,
+					"testdata/r/hcloud_rdns", resA2,
+					"testdata/r/hcloud_rdns", resB2,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(resPrimaryIPv4.TFID(), primaryip.ByID(t, &hcPrimaryIPv4)),
+					testsupport.CheckResourceExists(resPrimaryIPv6.TFID(), primaryip.ByID(t, &hcPrimaryIPv6)),
+					resource.TestCheckResourceAttr(resA2.TFID(), "dns_ptr", resA2.DNSPTR),
+					resource.TestCheckResourceAttr(resB2.TFID(), "dns_ptr", resB2.DNSPTR),
+				),
+			},
+			{
+				ResourceName: resA2.TFID(),
+				ImportStateIdFunc: func(_ *terraform.State) (string, error) {
+					return rdns.FormatID(&hcPrimaryIPv4, hcPrimaryIPv4.IP), nil
 				},
-			})
-		})
-	}
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				ResourceName: resB2.TFID(),
+				ImportStateIdFunc: func(_ *terraform.State) (string, error) {
+					return rdns.FormatID(&hcPrimaryIPv6, hcPrimaryIPv6.IP), nil
+				},
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
 }
 
 func TestAccRDNSResource_FloatingIP(t *testing.T) {
-	tests := []struct {
-		name           string
-		dns            string
-		floatingIPType string
-	}{
-		{
-			name:           "floating-ipv6-rdns",
-			dns:            "ipv6.example.hetzner.cloud",
-			floatingIPType: "ipv6",
-		},
-		{
-			name:           "floating-ipv4-rdns",
-			dns:            "ipv4.example.hetzner.cloud",
-			floatingIPType: "ipv4",
-		},
+	tmplMan := testtemplate.Manager{}
+
+	var (
+		hcFloatingIPv4 hcloud.FloatingIP
+		hcFloatingIPv6 hcloud.FloatingIP
+	)
+
+	resFloatingIPv4 := &floatingip.RData{
+		Name:             randutil.GenerateID(),
+		Type:             "ipv4",
+		HomeLocationName: teste2e.TestLocationName,
 	}
+	resFloatingIPv4.SetRName("ipv4")
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			var fl hcloud.FloatingIP
+	resFloatingIPv6 := &floatingip.RData{
+		Name:             randutil.GenerateID(),
+		Type:             "ipv6",
+		HomeLocationName: teste2e.TestLocationName,
+	}
+	resFloatingIPv6.SetRName("ipv6")
 
-			tmplMan := testtemplate.Manager{}
-			restFloatingIP := &floatingip.RData{
-				Name:             tt.name,
-				Type:             tt.floatingIPType,
-				HomeLocationName: teste2e.TestLocationName,
-			}
-			restFloatingIP.SetRName(tt.name)
-			resRDNS := rdns.NewRDataFloatingIP(t, tt.name, restFloatingIP.TFID()+".id", restFloatingIP.TFID()+".ip_address", tt.dns)
+	// IPv4
+	resA1 := rdns.NewRDataFloatingIP(t,
+		"ipv4",
+		resFloatingIPv4.TFID()+".id",
+		resFloatingIPv4.TFID()+".ip_address",
+		"ipv4.example.org",
+	)
 
-			resource.ParallelTest(t, resource.TestCase{
-				PreCheck:                 teste2e.PreCheck(t),
-				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
-				CheckDestroy:             testsupport.CheckResourcesDestroyed(floatingip.ResourceType, floatingip.ByID(t, &fl)),
-				Steps: []resource.TestStep{
-					{
-						// Create a new SSH Key using the required values
-						// only.
-						Config: tmplMan.Render(t,
-							"testdata/r/hcloud_floating_ip", restFloatingIP,
-							"testdata/r/hcloud_rdns", resRDNS,
-						),
-						Check: resource.ComposeTestCheckFunc(
-							testsupport.CheckResourceExists(restFloatingIP.TFID(), floatingip.ByID(t, &fl)),
-							resource.TestCheckResourceAttr(resRDNS.TFID(), "dns_ptr", tt.dns),
-						),
-					},
-					{
-						// Try to import the newly created RDNS
-						ResourceName: resRDNS.TFID(),
-						ImportStateIdFunc: func(_ *terraform.State) (string, error) {
-							return fmt.Sprintf("f-%d-%s", fl.ID, fl.IP.String()), nil
-						},
-						ImportState:       true,
-						ImportStateVerify: true,
-					},
+	resA2 := testtemplate.DeepCopy(t, resA1)
+	resA2.DNSPTR = "changed." + resA1.DNSPTR
+
+	// IPv6
+	resB1 := rdns.NewRDataFloatingIP(t,
+		"ipv6",
+		resFloatingIPv6.TFID()+".id",
+		resFloatingIPv6.TFID()+".ip_address",
+		"ipv6.example.org",
+	)
+
+	resB2 := testtemplate.DeepCopy(t, resB1)
+	resB2.DNSPTR = "changed." + resB1.DNSPTR
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckAPIResourceAllAbsent(floatingip.ResourceType, floatingip.GetAPIResource()),
+		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_floating_ip", resFloatingIPv4,
+					"testdata/r/hcloud_floating_ip", resFloatingIPv6,
+					"testdata/r/hcloud_rdns", resA1,
+					"testdata/r/hcloud_rdns", resB1,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(resFloatingIPv4.TFID(), floatingip.ByID(t, &hcFloatingIPv4)),
+					testsupport.CheckResourceExists(resFloatingIPv6.TFID(), floatingip.ByID(t, &hcFloatingIPv6)),
+					resource.TestCheckResourceAttr(resA1.TFID(), "dns_ptr", resA1.DNSPTR),
+					resource.TestCheckResourceAttr(resB1.TFID(), "dns_ptr", resB1.DNSPTR),
+				),
+			},
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_floating_ip", resFloatingIPv4,
+					"testdata/r/hcloud_floating_ip", resFloatingIPv6,
+					"testdata/r/hcloud_rdns", resA2,
+					"testdata/r/hcloud_rdns", resB2,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(resFloatingIPv4.TFID(), floatingip.ByID(t, &hcFloatingIPv4)),
+					testsupport.CheckResourceExists(resFloatingIPv6.TFID(), floatingip.ByID(t, &hcFloatingIPv6)),
+					resource.TestCheckResourceAttr(resA2.TFID(), "dns_ptr", resA2.DNSPTR),
+					resource.TestCheckResourceAttr(resB2.TFID(), "dns_ptr", resB2.DNSPTR),
+				),
+			},
+			{
+				ResourceName: resA2.TFID(),
+				ImportStateIdFunc: func(_ *terraform.State) (string, error) {
+					return rdns.FormatID(&hcFloatingIPv4, hcFloatingIPv4.IP), nil
 				},
-			})
-		})
-	}
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				ResourceName: resB2.TFID(),
+				ImportStateIdFunc: func(_ *terraform.State) (string, error) {
+					return rdns.FormatID(&hcFloatingIPv6, hcFloatingIPv6.IP), nil
+				},
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
 }
 
 func TestAccRDNSResource_LoadBalancer(t *testing.T) {
-	tests := []struct {
-		name        string
-		ipAddress   string
-		dns         string
-		ipAsStrFunc func(lb *hcloud.LoadBalancer) string
-	}{
-		{
-			name:      "load-balancer-ipv6-rdns",
-			ipAddress: ".ipv6",
-			dns:       "ipv6.example.hetzner.cloud",
-			ipAsStrFunc: func(lb *hcloud.LoadBalancer) string {
-				return lb.PublicNet.IPv6.IP.String()
-			},
-		},
-		{
-			name:      "load-balancer-ipv4-rdns",
-			ipAddress: ".ipv4",
-			dns:       "ipv4.example.hetzner.cloud",
-			ipAsStrFunc: func(lb *hcloud.LoadBalancer) string {
-				return lb.PublicNet.IPv4.IP.String()
-			},
-		},
+	tmplMan := testtemplate.Manager{}
+
+	var hcLoadBalancer hcloud.LoadBalancer
+
+	resLoadBalancer := &loadbalancer.RData{
+		Name:         randutil.GenerateID(),
+		LocationName: teste2e.TestLocationName,
 	}
+	resLoadBalancer.SetRName("main")
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			var lb hcloud.LoadBalancer
+	// IPv4
+	resA1 := rdns.NewRDataLoadBalancer(t,
+		"ipv4",
+		resLoadBalancer.TFID()+".id",
+		resLoadBalancer.TFID()+".ipv4",
+		"ipv4.example.org",
+	)
 
-			tmplMan := testtemplate.Manager{}
-			restLoadBalancer := &loadbalancer.RData{
-				Name:         tt.name,
-				LocationName: teste2e.TestLocationName,
-			}
-			restLoadBalancer.SetRName(tt.name)
+	resA2 := testtemplate.DeepCopy(t, resA1)
+	resA2.DNSPTR = "changed." + resA1.DNSPTR
 
-			resRDNS := rdns.NewRDataLoadBalancer(t, tt.name, restLoadBalancer.TFID()+".id", restLoadBalancer.TFID()+tt.ipAddress, tt.dns)
+	// IPv6
+	resB1 := rdns.NewRDataLoadBalancer(t,
+		"ipv6",
+		resLoadBalancer.TFID()+".id",
+		resLoadBalancer.TFID()+".ipv6",
+		"ipv6.example.org",
+	)
 
-			resource.ParallelTest(t, resource.TestCase{
-				PreCheck:                 teste2e.PreCheck(t),
-				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
-				CheckDestroy:             testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, &lb)),
-				Steps: []resource.TestStep{
-					{
-						Config: tmplMan.Render(t,
-							"testdata/r/hcloud_load_balancer", restLoadBalancer,
-							"testdata/r/hcloud_rdns", resRDNS,
-						),
-						Check: resource.ComposeTestCheckFunc(
-							testsupport.CheckResourceExists(restLoadBalancer.TFID(), loadbalancer.ByID(t, &lb)),
-							resource.TestCheckResourceAttr(resRDNS.TFID(), "dns_ptr", tt.dns),
-						),
-					},
-					{
-						// Try to import the newly created RDNS
-						ResourceName: resRDNS.TFID(),
-						ImportStateIdFunc: func(_ *terraform.State) (string, error) {
-							return fmt.Sprintf("l-%d-%s", lb.ID, tt.ipAsStrFunc(&lb)), nil
-						},
-						ImportState:       true,
-						ImportStateVerify: true,
-					},
+	resB2 := testtemplate.DeepCopy(t, resB1)
+	resB2.DNSPTR = "changed." + resB1.DNSPTR
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+
+		CheckDestroy: testsupport.CheckAPIResourceAllAbsent(loadbalancer.ResourceType, loadbalancer.GetAPIResource()),
+		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_load_balancer", resLoadBalancer,
+					"testdata/r/hcloud_rdns", resA1,
+					"testdata/r/hcloud_rdns", resB1,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(resLoadBalancer.TFID(), loadbalancer.ByID(t, &hcLoadBalancer)),
+					resource.TestCheckResourceAttr(resA1.TFID(), "dns_ptr", resA1.DNSPTR),
+					resource.TestCheckResourceAttr(resB1.TFID(), "dns_ptr", resB1.DNSPTR),
+				),
+			},
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_load_balancer", resLoadBalancer,
+					"testdata/r/hcloud_rdns", resA2,
+					"testdata/r/hcloud_rdns", resB2,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(resLoadBalancer.TFID(), loadbalancer.ByID(t, &hcLoadBalancer)),
+					resource.TestCheckResourceAttr(resA1.TFID(), "dns_ptr", resA2.DNSPTR),
+					resource.TestCheckResourceAttr(resB2.TFID(), "dns_ptr", resB2.DNSPTR),
+				),
+			},
+			{
+				ResourceName: resA2.TFID(),
+				ImportStateIdFunc: func(_ *terraform.State) (string, error) {
+					return rdns.FormatID(&hcLoadBalancer, hcLoadBalancer.PublicNet.IPv4.IP), nil
 				},
-			})
-		})
-	}
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				ResourceName: resB2.TFID(),
+				ImportStateIdFunc: func(_ *terraform.State) (string, error) {
+					return rdns.FormatID(&hcLoadBalancer, hcLoadBalancer.PublicNet.IPv6.IP), nil
+				},
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
 }
