@@ -106,6 +106,54 @@ func TestAccRDNSResource_Server(t *testing.T) {
 	})
 }
 
+func TestAccRDNSResource_Server_UpgradePluginFramework(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
+	resSSHKey := sshkey.NewRData(t, "main")
+	resServer := &server.RData{
+		Name:    randutil.GenerateID(),
+		Type:    teste2e.TestServerType,
+		Image:   teste2e.TestImage,
+		SSHKeys: []string{resSSHKey.TFID() + ".id"},
+	}
+	resServer.SetRName("main")
+
+	res := rdns.NewRDataServer(t,
+		"ipv4",
+		resServer.TFID()+".id",
+		resServer.TFID()+".ipv4_address",
+		"ipv4.example.org",
+	)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: teste2e.PreCheck(t),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"hcloud": {
+						VersionConstraint: "1.63.0",
+						Source:            "hetznercloud/hcloud",
+					},
+				},
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_server", resServer,
+					"testdata/r/hcloud_rdns", res,
+				),
+			},
+			{
+				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_server", resServer,
+					"testdata/r/hcloud_rdns", res,
+				),
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
 func TestAccRDNSResource_PrimaryIP(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
@@ -198,6 +246,50 @@ func TestAccRDNSResource_PrimaryIP(t *testing.T) {
 				},
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccRDNSResource_PrimaryIP_UpgradePluginFramework(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
+	resPrimaryIP := &primaryip.RData{
+		Name:     randutil.GenerateID(),
+		Type:     "ipv4",
+		Location: teste2e.TestLocationName,
+	}
+	resPrimaryIP.SetRName("ipv4")
+
+	res := rdns.NewRDataPrimaryIP(t,
+		"ipv4",
+		resPrimaryIP.TFID()+".id",
+		resPrimaryIP.TFID()+".ip_address",
+		"ipv4.example.org",
+	)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: teste2e.PreCheck(t),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"hcloud": {
+						VersionConstraint: "1.63.0",
+						Source:            "hetznercloud/hcloud",
+					},
+				},
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_primary_ip", resPrimaryIP,
+					"testdata/r/hcloud_rdns", res,
+				),
+			},
+			{
+				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_primary_ip", resPrimaryIP,
+					"testdata/r/hcloud_rdns", res,
+				),
+				PlanOnly: true,
 			},
 		},
 	})
@@ -300,6 +392,50 @@ func TestAccRDNSResource_FloatingIP(t *testing.T) {
 	})
 }
 
+func TestAccRDNSResource_FloatingIP_UpgradePluginFramework(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
+	resFloatingIP := &floatingip.RData{
+		Name:             randutil.GenerateID(),
+		Type:             "ipv4",
+		HomeLocationName: teste2e.TestLocationName,
+	}
+	resFloatingIP.SetRName("ipv4")
+
+	res := rdns.NewRDataFloatingIP(t,
+		"ipv4",
+		resFloatingIP.TFID()+".id",
+		resFloatingIP.TFID()+".ip_address",
+		"ipv4.example.org",
+	)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: teste2e.PreCheck(t),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"hcloud": {
+						VersionConstraint: "1.63.0",
+						Source:            "hetznercloud/hcloud",
+					},
+				},
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_floating_ip", resFloatingIP,
+					"testdata/r/hcloud_rdns", res,
+				),
+			},
+			{
+				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_floating_ip", resFloatingIP,
+					"testdata/r/hcloud_rdns", res,
+				),
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
 func TestAccRDNSResource_LoadBalancer(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
@@ -378,6 +514,49 @@ func TestAccRDNSResource_LoadBalancer(t *testing.T) {
 				},
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
+func TestAccRDNSResource_LoadBalancer_UpgradePluginFramework(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
+	resLoadBalancer := &loadbalancer.RData{
+		Name:         randutil.GenerateID(),
+		LocationName: teste2e.TestLocationName,
+	}
+	resLoadBalancer.SetRName("main")
+
+	res := rdns.NewRDataLoadBalancer(t,
+		"ipv4",
+		resLoadBalancer.TFID()+".id",
+		resLoadBalancer.TFID()+".ipv4",
+		"ipv4.example.org",
+	)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: teste2e.PreCheck(t),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"hcloud": {
+						VersionConstraint: "1.63.0",
+						Source:            "hetznercloud/hcloud",
+					},
+				},
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_load_balancer", resLoadBalancer,
+					"testdata/r/hcloud_rdns", res,
+				),
+			},
+			{
+				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_load_balancer", resLoadBalancer,
+					"testdata/r/hcloud_rdns", res,
+				),
+				PlanOnly: true,
 			},
 		},
 	})
