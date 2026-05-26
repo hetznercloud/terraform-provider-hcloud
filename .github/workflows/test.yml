@@ -48,11 +48,11 @@ jobs:
       matrix:
         include:
           - tool: opentofu
-            version: v1.9.x
-          - tool: opentofu
             version: v1.10.x
           - tool: opentofu
             version: v1.11.x
+          - tool: opentofu
+            version: v1.12.x
           - tool: terraform
             version: v1.14.x
           - tool: terraform
