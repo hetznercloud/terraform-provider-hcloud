@@ -106,6 +106,11 @@ type RDataService struct {
 	HealthCheck    RDataServiceHealthCheck
 }
 
+// TFID returns the resource identifier.
+func (d *RDataService) TFID() string {
+	return fmt.Sprintf("%s.%s", ServiceResourceType, d.RName())
+}
+
 // RDataServiceHTTP contains data for an HTTP load balancer service.
 type RDataServiceHTTP struct {
 	CookieName     string
@@ -150,6 +155,11 @@ type RDataTarget struct {
 	IP             string
 	UsePrivateIP   bool
 	DependsOn      []string
+}
+
+// TFID returns the resource identifier.
+func (d *RDataTarget) TFID() string {
+	return fmt.Sprintf("%s.%s", TargetResourceType, d.RName())
 }
 
 // RDataNetwork defines the fields for the
