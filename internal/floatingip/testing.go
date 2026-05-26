@@ -6,8 +6,17 @@ import (
 	"testing"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
+
+// GetAPIResource returns a [testsupport.GetAPIResourceFunc] for [hcloud.FloatingIP].
+func GetAPIResource() testsupport.GetAPIResourceFunc[hcloud.FloatingIP] {
+	return func(c *hcloud.Client, attrs map[string]string) (*hcloud.FloatingIP, error) {
+		result, _, err := c.FloatingIP.Get(context.Background(), attrs["id"])
+		return result, err
+	}
+}
 
 // ByID returns a function that obtains a Floating IP by its ID.
 func ByID(t *testing.T, fl *hcloud.FloatingIP) func(*hcloud.Client, int64) bool {

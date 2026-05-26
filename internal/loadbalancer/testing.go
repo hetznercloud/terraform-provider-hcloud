@@ -6,8 +6,17 @@ import (
 	"testing"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
+
+// GetAPIResource returns a [testsupport.GetAPIResourceFunc] for [hcloud.LoadBalancer].
+func GetAPIResource() testsupport.GetAPIResourceFunc[hcloud.LoadBalancer] {
+	return func(c *hcloud.Client, attrs map[string]string) (*hcloud.LoadBalancer, error) {
+		result, _, err := c.LoadBalancer.Get(context.Background(), attrs["id"])
+		return result, err
+	}
+}
 
 // ByID returns a function that obtains a loadbalancer by its ID.
 func ByID(t *testing.T, lb *hcloud.LoadBalancer) func(*hcloud.Client, int64) bool {
@@ -69,7 +78,7 @@ type RData struct {
 
 // TFID returns the resource identifier.
 func (d *RData) TFID() string {
-	return fmt.Sprintf("%s.%s", ResourceType, d.Name)
+	return fmt.Sprintf("%s.%s", ResourceType, d.RName())
 }
 
 // RDataInlineServerTarget represents a Load Balancer server target
@@ -95,6 +104,11 @@ type RDataService struct {
 
 	AddHealthCheck bool // Required as the RLoadBalancerServiceHealthCheck is not comparable
 	HealthCheck    RDataServiceHealthCheck
+}
+
+// TFID returns the resource identifier.
+func (d *RDataService) TFID() string {
+	return fmt.Sprintf("%s.%s", ServiceResourceType, d.RName())
 }
 
 // RDataServiceHTTP contains data for an HTTP load balancer service.
@@ -141,6 +155,11 @@ type RDataTarget struct {
 	IP             string
 	UsePrivateIP   bool
 	DependsOn      []string
+}
+
+// TFID returns the resource identifier.
+func (d *RDataTarget) TFID() string {
+	return fmt.Sprintf("%s.%s", TargetResourceType, d.RName())
 }
 
 // RDataNetwork defines the fields for the
