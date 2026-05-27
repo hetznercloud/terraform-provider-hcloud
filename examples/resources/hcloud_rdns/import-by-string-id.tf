@@ -1,6 +1,6 @@
 import {
   to = hcloud_rdns.example
-  id = "$PREFIX-$RESOURCE_ID-$IP_ADDRESS"
+  id = "$RESOURCE_PREFIX-$RESOURCE_ID-$IP_ADDRESS"
 
   # A Server with id 132022102 and ip 203.0.113.10
   # id = "s-132022102-203.0.113.10"

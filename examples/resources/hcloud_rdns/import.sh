@@ -1,4 +1,4 @@
-terraform import hcloud_rdns.example "$PREFIX-$ID-$IP"
+terraform import hcloud_rdns.example "$RESOURCE_PREFIX-$ID-$IP"
 
 # A Server with id 132022102 and ip 203.0.113.10
 terraform import hcloud_rdns.server1 "s-132022102-203.0.113.10"

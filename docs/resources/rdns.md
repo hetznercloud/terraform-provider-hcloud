@@ -92,7 +92,7 @@ In Terraform v1.5.0 and later, the [`import` block](https://developer.hashicorp.
 ```terraform
 import {
   to = hcloud_rdns.example
-  id = "$PREFIX-$RESOURCE_ID-$IP_ADDRESS"
+  id = "$RESOURCE_PREFIX-$RESOURCE_ID-$IP_ADDRESS"
 
   # A Server with id 132022102 and ip 203.0.113.10
   # id = "s-132022102-203.0.113.10"
@@ -111,7 +111,7 @@ import {
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-terraform import hcloud_rdns.example "$PREFIX-$ID-$IP"
+terraform import hcloud_rdns.example "$RESOURCE_PREFIX-$ID-$IP"
 
 # A Server with id 132022102 and ip 203.0.113.10
 terraform import hcloud_rdns.server1 "s-132022102-203.0.113.10"
