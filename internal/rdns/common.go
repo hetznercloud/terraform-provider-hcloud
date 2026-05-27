@@ -15,7 +15,7 @@ const IDFormat = "$RESOURCE_PREFIX-$RESOURCE_ID-$IP_ADDRESS"
 type IDResourcePrefix string
 
 const (
-	IDResourcePrefixServer IDResourcePrefix = "s"
+	IDResourcePrefixServer       IDResourcePrefix = "s"
 	IDResourcePrefixPrimaryIP    IDResourcePrefix = "p"
 	IDResourcePrefixFloatingIP   IDResourcePrefix = "f"
 	IDResourcePrefixLoadBalancer IDResourcePrefix = "l"
@@ -43,11 +43,11 @@ func ParseID(value string) (hcloud.RDNSSupporter, net.IP, error) {
 	switch IDResourcePrefix(parts[0]) {
 	case IDResourcePrefixServer:
 		rdns = &hcloud.Server{ID: resID}
-	case IDResourcePrimaryIP:
+	case IDResourcePrefixPrimaryIP:
 		rdns = &hcloud.PrimaryIP{ID: resID}
-	case IDResourceFloatingIP:
+	case IDResourcePrefixFloatingIP:
 		rdns = &hcloud.FloatingIP{ID: resID}
-	case IDResourceLoadBalancer:
+	case IDResourcePrefixLoadBalancer:
 		rdns = &hcloud.LoadBalancer{ID: resID}
 	default:
 		return nil, nil, util.NewInvalidIDError(value, IDFormat).WithHint("is $RESOURCE_PREFIX valid?")
@@ -67,11 +67,11 @@ func FormatID(rdns hcloud.RDNSSupporter, ip net.IP) string {
 	case *hcloud.Server:
 		return fmt.Sprintf("%s-%d-%s", IDResourcePrefixServer, v.ID, ip)
 	case *hcloud.PrimaryIP:
-		return fmt.Sprintf("%s-%d-%s", IDResourcePrimaryIP, v.ID, ip)
+		return fmt.Sprintf("%s-%d-%s", IDResourcePrefixPrimaryIP, v.ID, ip)
 	case *hcloud.FloatingIP:
-		return fmt.Sprintf("%s-%d-%s", IDResourceFloatingIP, v.ID, ip)
+		return fmt.Sprintf("%s-%d-%s", IDResourcePrefixFloatingIP, v.ID, ip)
 	case *hcloud.LoadBalancer:
-		return fmt.Sprintf("%s-%d-%s", IDResourceLoadBalancer, v.ID, ip)
+		return fmt.Sprintf("%s-%d-%s", IDResourcePrefixLoadBalancer, v.ID, ip)
 	default:
 		return ""
 	}
