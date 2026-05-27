@@ -1,0 +1,6 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+resource "hcloud_server_power_state" "{{ .RName }}" {
+  server_id = {{ .ServerID }}
+  state     = "{{ .State }}"
+}
