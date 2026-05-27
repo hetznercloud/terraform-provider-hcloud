@@ -89,9 +89,10 @@ resource "hcloud_server" "server" {
   location    = "nbg1"
 
   network {
-    subnet_id = hcloud_network_subnet.network_subnet.id
-    ip        = "10.0.1.5"
-    alias_ips = [
+    network_id = hcloud_network.network.id
+    subnet_id  = hcloud_network_subnet.network_subnet.id
+    ip         = "10.0.1.5"
+    alias_ips  = [
       "10.0.1.6",
       "10.0.1.7"
     ]
@@ -192,9 +193,7 @@ The following arguments are supported:
 
 `network` support the following fields:
 
-**Note:** Exactly one of `network_id` or `subnet_id` must be specified.
-
-- `network_id` - (Optional, int) ID of the network to attach the server to. Using `subnet_id` is preferred. When used alone without `subnet_id`, the server will be attached to the last subnet (ordered by `ip_range`), which may be unpredictable.
+- `network_id` - (Required, int) ID of the network to attach the server to. Using along `subnet_id` is preferred. When used alone without `subnet_id`, the server will be attached to the last subnet (ordered by `ip_range`), which may be unpredictable.
 - `subnet_id` - (Optional, string) ID of the network subnet to attach the server to.
 - `ip` - (Optional, string) Specify the IP the server should get in the network
 - `alias_ips` - (Optional, list) Alias IPs the server should have in the Network.
@@ -236,9 +235,7 @@ The following attributes are exported:
 
 a single entry in `network` support the following fields:
 
-**Note:** Exactly one of `network_id` or `subnet_id` must be specified.
-
-- `network_id` - (Optional, int) ID of the network to attach the server to. Using `subnet_id` is preferred. When used alone without `subnet_id`, the server will be attached to the last subnet (ordered by `ip_range`), which may be unpredictable.
+- `network_id` - (Required, int) ID of the network to attach the server to. Using along `subnet_id` is preferred. When used alone without `subnet_id`, the server will be attached to the last subnet (ordered by `ip_range`), which may be unpredictable.
 - `subnet_id` - (Optional, string) ID of the network subnet to attach the server to.
 - `ip` - (Optional, string) Specify the IP the server should get in the network
 - `alias_ips` - (Optional, list) Alias IPs the server should have in the Network.

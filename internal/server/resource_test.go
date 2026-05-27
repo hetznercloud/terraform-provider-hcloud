@@ -742,7 +742,8 @@ func TestAccServerResource_DirectAttachToNetworkSubnetID(t *testing.T) {
 		Image:        teste2e.TestImage,
 		SSHKeys:      []string{sk.TFID() + ".id"},
 		Networks: []server.RDataInlineNetwork{{
-			SubnetID: snw2Res.TFID() + ".id",
+			NetworkID: nwRes.TFID() + ".id",
+			SubnetID:  snw2Res.TFID() + ".id",
 		}},
 		DependsOn: []string{snw1Res.TFID(), snw2Res.TFID()},
 	}
@@ -756,8 +757,9 @@ func TestAccServerResource_DirectAttachToNetworkSubnetID(t *testing.T) {
 		Image:        sRes.Image,
 		SSHKeys:      sRes.SSHKeys,
 		Networks: []server.RDataInlineNetwork{{
-			SubnetID: snw2Res.TFID() + ".id",
-			IP:       "10.0.2.10",
+			NetworkID: nwRes.TFID() + ".id",
+			SubnetID:  snw2Res.TFID() + ".id",
+			IP:        "10.0.2.10",
 		}},
 		DependsOn: []string{snw1Res.TFID(), snw2Res.TFID()},
 	}
@@ -786,30 +788,6 @@ func TestAccServerResource_DirectAttachToNetworkSubnetID(t *testing.T) {
 				),
 			},
 			{
-				// Fail when both network_id and subnet_id are specified
-				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_network", nwRes,
-					"testdata/r/hcloud_network_subnet", snw1Res,
-					"testdata/r/hcloud_network_subnet", snw2Res,
-					"testdata/r/hcloud_server", &server.RData{
-						Name:         sRes.Name,
-						Type:         sRes.Type,
-						LocationName: sRes.LocationName,
-						Image:        sRes.Image,
-						SSHKeys:      sRes.SSHKeys,
-						Networks: []server.RDataInlineNetwork{
-							{
-								NetworkID: nwRes.TFID() + ".id",
-								SubnetID:  snw1Res.TFID() + ".id",
-							},
-						},
-						DependsOn: []string{snw1Res.TFID(), snw2Res.TFID()},
-					},
-				),
-				ExpectError: regexp.MustCompile(`cannot specify both network_id and subnet_id`),
-			},
-			{
 				// Fail when trying to attach to the same network twice using subnet_id
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_ssh_key", sk,
@@ -824,17 +802,43 @@ func TestAccServerResource_DirectAttachToNetworkSubnetID(t *testing.T) {
 						SSHKeys:      sRes.SSHKeys,
 						Networks: []server.RDataInlineNetwork{
 							{
-								SubnetID: snw2Res.TFID() + ".id",
+								NetworkID: nwRes.TFID() + ".id",
+								SubnetID:  snw2Res.TFID() + ".id",
 							},
 							{
-								SubnetID: snw1Res.TFID() + ".id",
-								IP:       "10.0.1.5",
+								NetworkID: nwRes.TFID() + ".id",
+								SubnetID:  snw1Res.TFID() + ".id",
+								IP:        "10.0.1.5",
 							},
 						},
 						DependsOn: []string{snw1Res.TFID(), snw2Res.TFID()},
 					},
 				),
 				ExpectError: regexp.MustCompile(`server is only allowed to be attached to each network once: \d+`),
+			},
+			{
+				// Fail when subnet_id does not belong to network_id
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_network", nwRes,
+					"testdata/r/hcloud_network_subnet", snw1Res,
+					"testdata/r/hcloud_network_subnet", snw2Res,
+					"testdata/r/hcloud_server", &server.RData{
+						Name:         sRes.Name,
+						Type:         sRes.Type,
+						LocationName: sRes.LocationName,
+						Image:        sRes.Image,
+						SSHKeys:      sRes.SSHKeys,
+						Networks: []server.RDataInlineNetwork{
+							{
+								NetworkID: nwRes.TFID() + ".id",
+								SubnetID:  `"999999-10.0.1.0/24"`,
+							},
+						},
+						DependsOn: []string{snw1Res.TFID(), snw2Res.TFID()},
+					},
+				),
+				ExpectError: regexp.MustCompile(`subnet_id \(999999-10\.0\.1\.0/24\) does not belong to the specified network_id \(\d+\)`),
 			},
 			{
 				// Fail when IP is outside subnet range
@@ -851,8 +855,9 @@ func TestAccServerResource_DirectAttachToNetworkSubnetID(t *testing.T) {
 						SSHKeys:      sRes.SSHKeys,
 						Networks: []server.RDataInlineNetwork{
 							{
-								SubnetID: snw2Res.TFID() + ".id",
-								IP:       "10.0.1.5", // Outside 10.0.2.0/24 range
+								NetworkID: nwRes.TFID() + ".id",
+								SubnetID:  snw2Res.TFID() + ".id",
+								IP:        "10.0.1.5", // Outside 10.0.2.0/24 range
 							},
 						},
 						DependsOn: []string{snw1Res.TFID(), snw2Res.TFID()},
@@ -876,29 +881,6 @@ func TestAccServerResource_DirectAttachToNetworkSubnetID(t *testing.T) {
 					resource.TestCheckResourceAttr(sRes.TFID(), "network.#", "1"),
 					resource.TestCheckResourceAttr(sRes.TFID(), "network.0.ip", "10.0.2.10"),
 				),
-			},
-			{
-				// Fail when neither network_id nor subnet_id is specified
-				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_network", nwRes,
-					"testdata/r/hcloud_network_subnet", snw1Res,
-					"testdata/r/hcloud_network_subnet", snw2Res,
-					"testdata/r/hcloud_server", &server.RData{
-						Name:         sRes.Name,
-						Type:         sRes.Type,
-						LocationName: sRes.LocationName,
-						Image:        sRes.Image,
-						SSHKeys:      sRes.SSHKeys,
-						Networks: []server.RDataInlineNetwork{
-							{
-								IP: "10.0.2.5",
-							},
-						},
-						DependsOn: []string{snw1Res.TFID(), snw2Res.TFID()},
-					},
-				),
-				ExpectError: regexp.MustCompile(`must specify either network_id or subnet_id`),
 			},
 			{
 				// Apply a valid config after the error test to allow proper cleanup
@@ -1757,7 +1739,7 @@ func TestAccServerResource_MigrateNetworkIDToSubnetID(t *testing.T) {
 		DependsOn: []string{snwRes.TFID()},
 	}
 
-	// Step 2: Switch to subnet_id, keep same IP
+	// Step 2: Add subnet_id alongside network_id, keep same IP
 	sResWithSubnetID := &server.RData{
 		Name:         sResWithNetworkID.Name,
 		Type:         sResWithNetworkID.Type,
@@ -1765,8 +1747,9 @@ func TestAccServerResource_MigrateNetworkIDToSubnetID(t *testing.T) {
 		Image:        sResWithNetworkID.Image,
 		SSHKeys:      sResWithNetworkID.SSHKeys,
 		Networks: []server.RDataInlineNetwork{{
-			SubnetID: snwRes.TFID() + ".id",
-			IP:       "10.0.1.5",
+			NetworkID: nwRes.TFID() + ".id",
+			SubnetID:  snwRes.TFID() + ".id",
+			IP:        "10.0.1.5",
 		}},
 		DependsOn: []string{snwRes.TFID()},
 	}
@@ -1779,7 +1762,8 @@ func TestAccServerResource_MigrateNetworkIDToSubnetID(t *testing.T) {
 		Image:        sResWithNetworkID.Image,
 		SSHKeys:      sResWithNetworkID.SSHKeys,
 		Networks: []server.RDataInlineNetwork{{
-			SubnetID: snwRes.TFID() + ".id",
+			NetworkID: nwRes.TFID() + ".id",
+			SubnetID:  snwRes.TFID() + ".id",
 		}},
 		DependsOn: []string{snwRes.TFID()},
 	}
@@ -1807,7 +1791,7 @@ func TestAccServerResource_MigrateNetworkIDToSubnetID(t *testing.T) {
 				),
 			},
 			{
-				// Migrate to subnet_id, server should update, not replace
+				// Add subnet_id alongside network_id, server should update, not replace
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_ssh_key", sk,
 					"testdata/r/hcloud_network", nwRes,
@@ -1904,8 +1888,9 @@ func TestAccServerResource_SwitchSubnet(t *testing.T) {
 		Image:        teste2e.TestImage,
 		SSHKeys:      []string{sk.TFID() + ".id"},
 		Networks: []server.RDataInlineNetwork{{
-			SubnetID: snw1Res.TFID() + ".id",
-			IP:       "10.0.1.5",
+			NetworkID: nwRes.TFID() + ".id",
+			SubnetID:  snw1Res.TFID() + ".id",
+			IP:        "10.0.1.5",
 		}},
 		DependsOn: []string{snw1Res.TFID(), snw2Res.TFID()},
 	}
@@ -1919,8 +1904,9 @@ func TestAccServerResource_SwitchSubnet(t *testing.T) {
 		Image:        sResSubnet1.Image,
 		SSHKeys:      sResSubnet1.SSHKeys,
 		Networks: []server.RDataInlineNetwork{{
-			SubnetID: snw2Res.TFID() + ".id",
-			IP:       "10.0.2.5",
+			NetworkID: nwRes.TFID() + ".id",
+			SubnetID:  snw2Res.TFID() + ".id",
+			IP:        "10.0.2.5",
 		}},
 		DependsOn: []string{snw1Res.TFID(), snw2Res.TFID()},
 	}
@@ -2007,7 +1993,7 @@ func TestAccServerResource_MixedNetworkAndSubnetID(t *testing.T) {
 	}
 	snw2Res.SetRName("test-subnet-mixed-2")
 
-	// Server: network1 via network_id, network2 via subnet_id
+	// Server: network1 via network_id, network2 via network_id + subnet_id
 	sRes := &server.RData{
 		Name:         "server-mixed",
 		Type:         teste2e.TestServerType,
@@ -2020,15 +2006,16 @@ func TestAccServerResource_MixedNetworkAndSubnetID(t *testing.T) {
 				IP:        "10.0.1.5",
 			},
 			{
-				SubnetID: snw2Res.TFID() + ".id",
-				IP:       "10.1.1.5",
+				NetworkID: nw2Res.TFID() + ".id",
+				SubnetID:  snw2Res.TFID() + ".id",
+				IP:        "10.1.1.5",
 			},
 		},
 		DependsOn: []string{snw1Res.TFID(), snw2Res.TFID()},
 	}
 	sRes.SetRName("server-mixed")
 
-	// Detach network1, keep network2 via subnet_id
+	// Detach network1, keep network2 via network_id + subnet_id
 	sResOnlySubnet := &server.RData{
 		Name:         sRes.Name,
 		Type:         sRes.Type,
@@ -2037,8 +2024,9 @@ func TestAccServerResource_MixedNetworkAndSubnetID(t *testing.T) {
 		SSHKeys:      sRes.SSHKeys,
 		Networks: []server.RDataInlineNetwork{
 			{
-				SubnetID: snw2Res.TFID() + ".id",
-				IP:       "10.1.1.5",
+				NetworkID: nw2Res.TFID() + ".id",
+				SubnetID:  snw2Res.TFID() + ".id",
+				IP:        "10.1.1.5",
 			},
 		},
 		DependsOn: []string{snw1Res.TFID(), snw2Res.TFID()},
