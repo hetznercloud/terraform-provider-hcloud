@@ -15,6 +15,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/primaryip"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/testmux"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
@@ -42,7 +43,7 @@ func TestAccPrimaryIPResource(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &hcPrimaryIP)),
 		Steps: []resource.TestStep{
 			{
@@ -117,7 +118,7 @@ func TestAccPrimaryIPResource_ConfigValidation(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &hcPrimaryIP)),
 		Steps: []resource.TestStep{
 			{
@@ -193,7 +194,7 @@ func TestAccPrimaryIPResource_WithServer(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &hcServer)),
 			testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &hcPrimaryIPA)),
@@ -353,7 +354,7 @@ func TestAccPrimaryIPResource_Reassign(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &hcServerA)),
 			testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &hcServerB)),
@@ -444,7 +445,7 @@ func TestAccPrimaryIPResource_DeleteProtection(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &hcPrimaryIP)),
 		Steps: []resource.TestStep{
 			{
@@ -502,7 +503,7 @@ func TestAccPrimaryIPResource_DatacenterToLocation(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				// Create primary IP in Datacenter.
@@ -562,7 +563,7 @@ func TestAccPrimaryIPResource_DatacenterToLocationForceNew(t *testing.T) {
 				},
 			},
 			{
-				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+				ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 				// Change config to Location.
 				Config: tmplMan.Render(t, "testdata/r/hcloud_primary_ip", res2),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -605,7 +606,7 @@ func TestAccPrimaryIPResource_UpgradePluginFramework(t *testing.T) {
 				),
 			},
 			{
-				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+				ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_primary_ip", res,
 				),
