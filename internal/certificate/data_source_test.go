@@ -8,6 +8,7 @@ import (
 
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/certificate"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/testmux"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
@@ -31,7 +32,7 @@ func TestAccCertificateDataSource(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(certificate.ResourceType, certificate.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
@@ -79,7 +80,7 @@ func TestAccCertificateDataSourceList(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(certificate.ResourceType, certificate.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{

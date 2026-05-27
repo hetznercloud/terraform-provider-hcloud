@@ -19,9 +19,10 @@ linters:
     - gochecksumtype
     - gocritic
     - gomoddirectives
-    - gomodguard
+    - gomodguard_v2
     - gosec
     - gosmopolitan
+    - importas
     - loggercheck
     - makezero
     - musttag
@@ -52,6 +53,12 @@ linters:
           pkg: github.com/hashicorp/terraform-plugin-testing/helper/resource
           msg: "Do not implement unused test sweepers"
       analyze-types: true
+
+    importas:
+      alias:
+        # Do not conflict with github.com/hetznercloud/hcloud-go/v2/hcloud
+        - pkg: github.com/hetznercloud/terraform-provider-hcloud/hcloud
+          alias: tfhcloud
 
   exclusions:
     generated: lax

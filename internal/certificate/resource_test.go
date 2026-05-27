@@ -11,6 +11,7 @@ import (
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/certificate"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/testmux"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
@@ -31,7 +32,7 @@ func TestAccCertificateResource_Uploaded(t *testing.T) {
 	// Not parallel because number of certificates per domain is limited
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(certificate.UploadedResourceType, certificate.ByID(t, &cert)),
 		Steps: []resource.TestStep{
 			{
@@ -78,7 +79,7 @@ func TestAccCertificateResource_Uploaded_ChangeCertRequiresNewResource(t *testin
 	// Not parallel because number of certificates per domain is limited
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(certificate.UploadedResourceType, certificate.ByID(t, &cert)),
 		Steps: []resource.TestStep{
 			{
@@ -133,7 +134,7 @@ func TestAccCertificateResource_Managed(t *testing.T) {
 	// Not parallel because number of certificates per domain is limited
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(certificate.ManagedResourceType, certificate.ByID(t, &cert)),
 		Steps: []resource.TestStep{
 			{

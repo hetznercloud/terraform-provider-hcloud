@@ -11,6 +11,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/certificate"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancer"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/testmux"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
@@ -37,7 +38,7 @@ func TestAccLoadBalancerServiceResource_TCP(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
@@ -129,7 +130,7 @@ func TestAccLoadBalancerServiceResource_HTTP(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
@@ -221,7 +222,7 @@ func TestAccLoadBalancerServiceResource_HTTP_StickySessions(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
@@ -271,7 +272,7 @@ func TestAccLoadBalancerServiceResource_HTTPS(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
@@ -319,7 +320,7 @@ func TestAccLoadBalancerServiceResource_HTTPS_UpdateUnchangedCertificates(t *tes
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
@@ -346,7 +347,7 @@ func TestAccLoadBalancerServiceResource_CreateDelete_NoListenPort(t *testing.T) 
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			// HTTP
@@ -423,7 +424,7 @@ func TestAccLoadBalancerServiceResource_ChangeListenPort(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
