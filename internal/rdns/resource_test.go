@@ -18,6 +18,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/testmux"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
@@ -27,7 +28,7 @@ func TestAccRDNSResource_Errors(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
@@ -91,7 +92,7 @@ func TestAccRDNSResource_Server(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckAPIResourceAllAbsent(server.ResourceType, server.GetAPIResource()),
 		Steps: []resource.TestStep{
 			{
@@ -177,7 +178,7 @@ func TestAccRDNSResource_Server_UpgradePluginFramework(t *testing.T) {
 				),
 			},
 			{
-				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+				ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_ssh_key", resSSHKey,
 					"testdata/r/hcloud_server", resServer,
@@ -235,7 +236,7 @@ func TestAccRDNSResource_PrimaryIP(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckAPIResourceAllAbsent(primaryip.ResourceType, primaryip.GetAPIResource()),
 		Steps: []resource.TestStep{
 			{
@@ -319,7 +320,7 @@ func TestAccRDNSResource_PrimaryIP_UpgradePluginFramework(t *testing.T) {
 				),
 			},
 			{
-				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+				ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_primary_ip", resPrimaryIP,
 					"testdata/r/hcloud_rdns", res,
@@ -376,7 +377,7 @@ func TestAccRDNSResource_FloatingIP(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckAPIResourceAllAbsent(floatingip.ResourceType, floatingip.GetAPIResource()),
 		Steps: []resource.TestStep{
 			{
@@ -460,7 +461,7 @@ func TestAccRDNSResource_FloatingIP_UpgradePluginFramework(t *testing.T) {
 				),
 			},
 			{
-				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+				ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_floating_ip", resFloatingIP,
 					"testdata/r/hcloud_rdns", res,
@@ -506,7 +507,7 @@ func TestAccRDNSResource_LoadBalancer(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 
 		CheckDestroy: testsupport.CheckAPIResourceAllAbsent(loadbalancer.ResourceType, loadbalancer.GetAPIResource()),
 		Steps: []resource.TestStep{
@@ -586,7 +587,7 @@ func TestAccRDNSResource_LoadBalancer_UpgradePluginFramework(t *testing.T) {
 				),
 			},
 			{
-				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+				ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_load_balancer", resLoadBalancer,
 					"testdata/r/hcloud_rdns", res,

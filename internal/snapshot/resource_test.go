@@ -11,6 +11,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/snapshot"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/testmux"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
@@ -47,7 +48,7 @@ func TestAccSnapshotResource(t *testing.T) {
 	resRenamed.SetRName("snapshot-basic")
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(snapshot.ResourceType, snapshot.ByID(t, &s)),
 		Steps: []resource.TestStep{
 			{

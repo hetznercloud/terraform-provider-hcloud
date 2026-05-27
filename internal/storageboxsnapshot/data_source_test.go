@@ -17,6 +17,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/storagebox"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/storageboxsnapshot"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/testmux"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
@@ -61,7 +62,7 @@ func TestAccStorageBoxSnapshotDataSource(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckAPIResourceAllAbsent(storageboxsnapshot.ResourceType, storageboxsnapshot.GetAPIResource()),
 		Steps: []resource.TestStep{
 			{
