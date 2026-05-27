@@ -530,7 +530,7 @@ func TestAccRDNSResource_LoadBalancer(t *testing.T) {
 				),
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckResourceExists(resLoadBalancer.TFID(), loadbalancer.ByID(t, &hcLoadBalancer)),
-					resource.TestCheckResourceAttr(resA1.TFID(), "dns_ptr", resA2.DNSPTR),
+					resource.TestCheckResourceAttr(resA2.TFID(), "dns_ptr", resA2.DNSPTR),
 					resource.TestCheckResourceAttr(resB2.TFID(), "dns_ptr", resB2.DNSPTR),
 				),
 			},

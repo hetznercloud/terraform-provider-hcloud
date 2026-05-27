@@ -16,9 +16,9 @@ type IDResourcePrefix string
 
 const (
 	IDResourcePrefixServer IDResourcePrefix = "s"
-	IDResourcePrimaryIP    IDResourcePrefix = "p"
-	IDResourceFloatingIP   IDResourcePrefix = "f"
-	IDResourceLoadBalancer IDResourcePrefix = "l"
+	IDResourcePrefixPrimaryIP    IDResourcePrefix = "p"
+	IDResourcePrefixFloatingIP   IDResourcePrefix = "f"
+	IDResourcePrefixLoadBalancer IDResourcePrefix = "l"
 )
 
 // ParseID parses the terraform RDNS ID "$RESOURCE_PREFIX-$RESOURCE_ID-$IP_ADDRESS".
