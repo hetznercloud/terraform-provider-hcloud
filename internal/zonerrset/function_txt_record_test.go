@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
+
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testmux"
 )
 
