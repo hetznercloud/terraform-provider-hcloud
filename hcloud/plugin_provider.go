@@ -208,6 +208,7 @@ func (p *PluginProvider) DataSources(_ context.Context) []func() datasource.Data
 	return []func() datasource.DataSource{
 		datacenter.NewDataSource,
 		datacenter.NewDataSourceList,
+		loadbalancer.NewDataSourceService,
 		loadbalancertype.NewDataSource,
 		loadbalancertype.NewDataSourceList,
 		location.NewDataSource,

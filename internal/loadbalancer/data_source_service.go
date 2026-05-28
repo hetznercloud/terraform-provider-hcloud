@@ -2,14 +2,15 @@ package loadbalancer
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/datasourceutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
@@ -18,127 +19,92 @@ const (
 	DataSourceServiceType = "hcloud_load_balancer_service"
 
 	// DataSourceServiceListType is the type name to receive a list of Hetzner Cloud Load Balancer Service resources.
-	DataSourceServiceListType = "hcloud_load_balancer_services"
+	// TODO DataSourceServiceListType = "hcloud_load_balancer_services"
 )
 
-func getCommonServiceDataSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"id": {
-			Type:     schema.TypeString,
+func getCommonServiceDataSchema() map[string]schema.Attribute {
+	return map[string]schema.Attribute{
+		"id": schema.StringAttribute{
 			Optional: true,
 			Computed: true,
 		},
-		"load_balancer_id": {
-			Type:     schema.TypeInt,
+		"load_balancer_id": schema.Int64Attribute{
 			Optional: true,
 			Computed: true,
 		},
-		"protocol": {
-			Type:     schema.TypeString,
+		"protocol": schema.StringAttribute{
 			Computed: true,
 		},
-		"listen_port": {
-			Type:     schema.TypeInt,
+		"listen_port": schema.Int32Attribute{
 			Computed: true,
 			Optional: true,
 		},
-		"destination_port": {
-			Type:     schema.TypeInt,
+		"destination_port": schema.Int32Attribute{
 			Computed: true,
 		},
-		"proxyprotocol": {
-			Type:     schema.TypeBool,
+		"proxyprotocol": schema.BoolAttribute{
 			Computed: true,
 		},
-		"http": {
-			Type:     schema.TypeList,
+		"http": schema.SingleNestedAttribute{
 			Computed: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"sticky_sessions": {
-						Type:     schema.TypeBool,
-						Computed: true,
-					},
-					"cookie_name": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"cookie_lifetime": {
-						Type:     schema.TypeInt,
-						Computed: true,
-					},
-					"certificates": {
-						Type:     schema.TypeList,
-						Computed: true,
-						Elem: &schema.Schema{
-							Type: schema.TypeString,
-						},
-					},
-					"redirect_http": {
-						Type:     schema.TypeBool,
-						Computed: true,
-					},
-					"timeout_idle": {
-						Type:     schema.TypeInt,
-						Computed: true,
-					},
+			Attributes: map[string]schema.Attribute{
+				"sticky_sessions": schema.BoolAttribute{
+					Computed: true,
+				},
+				"cookie_name": schema.StringAttribute{
+					Computed: true,
+				},
+				"cookie_lifetime": schema.Int32Attribute{
+					Computed: true,
+				},
+				"certificates": schema.ListAttribute{
+					Computed:    true,
+					ElementType: types.Int64Type,
+				},
+				"redirect_http": schema.BoolAttribute{
+					Computed: true,
+				},
+				"timeout_idle": schema.Int32Attribute{
+					Computed: true,
 				},
 			},
 		},
-		"health_check": {
-			Type:     schema.TypeList,
+		"health_check": schema.SingleNestedAttribute{
 			Computed: true,
-			Elem: &schema.Resource{
-				Schema: map[string]*schema.Schema{
-					"protocol": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-					"port": {
-						Type:     schema.TypeInt,
-						Computed: true,
-					},
-					"interval": {
-						Type:     schema.TypeInt,
-						Computed: true,
-					},
-					"timeout": {
-						Type:     schema.TypeInt,
-						Computed: true,
-					},
-					"retries": {
-						Type:     schema.TypeInt,
-						Computed: true,
-					},
-					"http": {
-						Type:     schema.TypeList,
-						Computed: true,
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"domain": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"path": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"response": {
-									Type:     schema.TypeString,
-									Computed: true,
-								},
-								"tls": {
-									Type:     schema.TypeBool,
-									Computed: true,
-								},
-								"status_codes": {
-									Type:     schema.TypeList,
-									Computed: true,
-									Elem: &schema.Schema{
-										Type: schema.TypeString,
-									},
-								},
-							},
+			Attributes: map[string]schema.Attribute{
+				"protocol": schema.StringAttribute{
+					Computed: true,
+				},
+				"port": schema.Int32Attribute{
+					Computed: true,
+				},
+				"interval": schema.Int32Attribute{
+					Computed: true,
+				},
+				"timeout": schema.Int32Attribute{
+					Computed: true,
+				},
+				"retries": schema.Int32Attribute{
+					Computed: true,
+				},
+				"http": schema.SingleNestedAttribute{
+					Computed: true,
+					Attributes: map[string]schema.Attribute{
+						"domain": schema.StringAttribute{
+							Computed: true,
+						},
+						"path": schema.StringAttribute{
+							Computed: true,
+						},
+						"response": schema.StringAttribute{
+							Computed: true,
+						},
+						"tls": schema.BoolAttribute{
+							Computed: true,
+						},
+						"status_codes": schema.ListAttribute{
+							Computed:    true,
+							ElementType: types.StringType,
 						},
 					},
 				},
@@ -147,91 +113,118 @@ func getCommonServiceDataSchema() map[string]*schema.Schema {
 	}
 }
 
-// DataSourceService creates a new Terraform schema for the hcloud_load_balancer_service
-// resource.
-func DataSourceService() *schema.Resource {
-	return &schema.Resource{
-		ReadContext: dataSourceHcloudLoadBalancerServiceRead,
-		Schema:      getCommonServiceDataSchema(),
+var _ datasource.DataSource = (*DataSourceService)(nil)
+var _ datasource.DataSourceWithConfigure = (*DataSourceService)(nil)
+var _ datasource.DataSourceWithConfigValidators = (*DataSourceService)(nil)
+
+type DataSourceService struct {
+	client *hcloud.Client
+}
+
+func NewDataSourceService() datasource.DataSource {
+	return &DataSourceService{}
+}
+
+// ConfigValidators returns a list of ConfigValidators. Each ConfigValidator's Validate method will be called when validating the data source.
+func (d *DataSourceService) ConfigValidators(_ context.Context) []datasource.ConfigValidator {
+	return []datasource.ConfigValidator{
+		datasourcevalidator.AtLeastOneOf(
+			path.MatchRoot("id"),
+			path.MatchRoot("load_balancer_id"),
+			path.MatchRoot("listen_port"),
+		),
+		datasourcevalidator.RequiredTogether(
+			path.MatchRoot("load_balancer_id"),
+			path.MatchRoot("listen_port"),
+		),
+		datasourcevalidator.Conflicting(
+			path.MatchRoot("id"),
+			path.MatchRoot("load_balancer_id"),
+		),
 	}
 }
 
-func DataSourceServiceList() *schema.Resource {
-	return &schema.Resource{
-		ReadContext: dataSourceHcloudLoadBalancerServiceListRead,
-		Schema: map[string]*schema.Schema{
-			"service": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: getCommonServiceDataSchema(),
-				},
-			},
-			"load_balancer_id": {
-				Type:     schema.TypeInt,
-				Required: true,
-			},
-		},
+// Metadata should return the full name of the data source.
+func (d *DataSourceService) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = DataSourceServiceType
+}
+
+// Configure enables provider-level data or clients to be set in the
+// provider-defined DataSource type. It is separately executed for each
+// ReadDataSource RPC.
+func (d *DataSourceService) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+	var newDiags diag.Diagnostics
+
+	d.client, newDiags = hcloudutil.ConfigureClient(req.ProviderData)
+	resp.Diagnostics.Append(newDiags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 }
 
-func dataSourceHcloudLoadBalancerServiceRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	client := m.(*hcloud.Client)
+// Schema should return the schema for this data source.
+func (d *DataSourceService) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema.MarkdownDescription = "Provides details about a Hetzner Cloud Load Balancer Service."
+	resp.Schema.Attributes = getCommonServiceDataSchema()
+}
 
-	var id string
-	if _id, ok := d.GetOk("id"); ok {
-		id = _id.(string)
+// Read is called when the provider must read data source values in
+// order to update state. Config values should be read from the
+// ReadRequest and new state values set on the ReadResponse.
+func (d *DataSourceService) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data serviceDataSourceModel
+
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
 	var (
-		lbID       int64
-		listenPort int
+		lb  *hcloud.LoadBalancer
+		svc *hcloud.LoadBalancerService
+		err error
 	)
-	if _lbID, ok := d.GetOk("load_balancer_id"); ok {
-		lbID = util.CastInt64(_lbID)
-	}
-	if _listenPort, ok := d.GetOk("listen_port"); ok {
-		listenPort = _listenPort.(int)
-	}
-	if lbID > 0 && listenPort > 0 {
-		id = fmt.Sprintf("%d__%d", lbID, listenPort)
-	}
 
-	if id != "" {
-		lb, svc, err := lookupLoadBalancerServiceID(ctx, id, client)
+	switch {
+	case !data.ID.IsNull():
+		lb, svc, err = lookupLoadBalancerServiceID(ctx, data.ID.ValueString(), d.client)
 		if err != nil {
-			return hcloudutil.ErrorToDiag(err)
+			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+			return
 		}
-		setLoadBalancerServiceSchema(d, lb, svc, false)
-		return nil
+
+	case !data.LoadBalancerID.IsNull() && !data.ListenPort.IsNull():
+		lb, _, err = d.client.LoadBalancer.GetByID(ctx, data.LoadBalancerID.ValueInt64())
+		if err != nil {
+			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+			return
+		}
+		if lb == nil {
+			resp.Diagnostics.Append(hcloudutil.NotFoundDiagnostic("load_balancer", "id", data.LoadBalancerID.String()))
+			return
+		}
+
+		listenPort := int(data.ListenPort.ValueInt32())
+		for _, _svc := range lb.Services {
+			if _svc.ListenPort == listenPort {
+				svc = &_svc
+				break
+			}
+		}
+		if svc == nil {
+			resp.Diagnostics.Append(hcloudutil.NotFoundDiagnostic("load_balancer_service", "listen_port", data.ListenPort.String()))
+			return
+		}
 	}
 
-	return diag.Errorf("please specify an id or a load_balancer_id and listen_port to lookup the Load Balancer")
-}
-
-func dataSourceHcloudLoadBalancerServiceListRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	client := m.(*hcloud.Client)
-
-	var lbID int64
-	if _lbID, ok := d.GetOk("load_balancer_id"); ok {
-		lbID = util.CastInt64(_lbID)
+	if lb == nil || svc == nil {
+		return
 	}
 
-	lb, _, err := client.LoadBalancer.GetByID(ctx, lbID)
-	if err != nil {
-		return hcloudutil.ErrorToDiag(err)
-	}
-	if lb == nil {
-		return diag.Errorf("load balancer %d: not found", lbID)
+	resp.Diagnostics.Append(populateServiceDataSourceModel(ctx, &data, lb, svc)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	ids := make([]int, len(lb.Services))
-	services := make([]any, len(lb.Services))
-	for i, svc := range lb.Services {
-		ids[i] = svc.ListenPort
-		services[i] = getLoadBalancerServiceAttributes(lb, &svc, false)
-	}
-	d.SetId(datasourceutil.ListID(ids))
-	d.Set("service", services)
-	return nil
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

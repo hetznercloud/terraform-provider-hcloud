@@ -3,12 +3,12 @@
 page_title: "hcloud_load_balancer_service Data Source - hcloud"
 subcategory: ""
 description: |-
-  
+  Provides details about a Hetzner Cloud Load Balancer Service.
 ---
 
 # hcloud_load_balancer_service (Data Source)
 
-
+Provides details about a Hetzner Cloud Load Balancer Service.
 
 
 
@@ -23,8 +23,8 @@ description: |-
 ### Read-Only
 
 - `destination_port` (Number)
-- `health_check` (List of Object) (see [below for nested schema](#nestedatt--health_check))
-- `http` (List of Object) (see [below for nested schema](#nestedatt--http))
+- `health_check` (Attributes) (see [below for nested schema](#nestedatt--health_check))
+- `http` (Attributes) (see [below for nested schema](#nestedatt--http))
 - `id` (String) The ID of this resource.
 - `protocol` (String)
 - `proxyprotocol` (Boolean)
@@ -34,14 +34,14 @@ description: |-
 
 Read-Only:
 
-- `http` (List of Object) (see [below for nested schema](#nestedobjatt--health_check--http))
+- `http` (Attributes) (see [below for nested schema](#nestedatt--health_check--http))
 - `interval` (Number)
 - `port` (Number)
 - `protocol` (String)
 - `retries` (Number)
 - `timeout` (Number)
 
-<a id="nestedobjatt--health_check--http"></a>
+<a id="nestedatt--health_check--http"></a>
 ### Nested Schema for `health_check.http`
 
 Read-Only:
@@ -59,7 +59,7 @@ Read-Only:
 
 Read-Only:
 
-- `certificates` (List of String)
+- `certificates` (List of Number)
 - `cookie_lifetime` (Number)
 - `cookie_name` (String)
 - `redirect_http` (Boolean)
