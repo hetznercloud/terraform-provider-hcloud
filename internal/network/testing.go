@@ -102,3 +102,67 @@ type RDataRoute struct {
 func (d *RDataRoute) TFID() string {
 	return fmt.Sprintf("%s.%s", RouteResourceType, d.RName())
 }
+
+type Blueprint struct {
+	NetworkA *RData
+	SubnetA1 *RDataSubnet
+	SubnetA2 *RDataSubnet
+
+	NetworkB *RData
+	SubnetB1 *RDataSubnet
+	SubnetB2 *RDataSubnet
+}
+
+func NewBlueprint(t *testing.T) *Blueprint {
+	t.Helper()
+
+	b := &Blueprint{}
+
+	// Network A
+	b.NetworkA = &RData{
+		Name:    "a",
+		IPRange: "10.0.0.0/16",
+	}
+	b.NetworkA.SetRName("network_a")
+
+	b.SubnetA1 = &RDataSubnet{
+		NetworkID:   b.NetworkA.TFID() + ".id",
+		NetworkZone: "eu-central",
+		IPRange:     "10.0.1.0/24",
+		Type:        "cloud",
+	}
+	b.SubnetA1.SetRName("subnet_a1")
+
+	b.SubnetA2 = &RDataSubnet{
+		NetworkID:   b.NetworkA.TFID() + ".id",
+		NetworkZone: "eu-central",
+		IPRange:     "10.0.2.0/24",
+		Type:        "cloud",
+	}
+	b.SubnetA2.SetRName("subnet_a2")
+
+	// Network B
+	b.NetworkB = &RData{
+		Name:    "b",
+		IPRange: "172.16.0.0/16",
+	}
+	b.NetworkB.SetRName("network_b")
+
+	b.SubnetB1 = &RDataSubnet{
+		NetworkID:   b.NetworkB.TFID() + ".id",
+		NetworkZone: "eu-central",
+		IPRange:     "172.16.1.0/24",
+		Type:        "cloud",
+	}
+	b.SubnetB1.SetRName("subnet_b1")
+
+	b.SubnetB2 = &RDataSubnet{
+		NetworkID:   b.NetworkB.TFID() + ".id",
+		NetworkZone: "eu-central",
+		IPRange:     "172.16.2.0/24",
+		Type:        "cloud",
+	}
+	b.SubnetB2.SetRName("subnet_b2")
+
+	return b
+}

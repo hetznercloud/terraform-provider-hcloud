@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
@@ -87,4 +88,51 @@ type RData struct {
 // TFID returns the resource identifier.
 func (d *RData) TFID() string {
 	return fmt.Sprintf("%s.%s", ResourceType, d.RName())
+}
+
+type Blueprint struct {
+	PrimaryIPv4A *RData
+	PrimaryIPv4B *RData
+	PrimaryIPv6C *RData
+	PrimaryIPv6D *RData
+}
+
+func NewBlueprint(t *testing.T) *Blueprint {
+	t.Helper()
+
+	b := &Blueprint{}
+
+	b.PrimaryIPv4A = &RData{
+		Name:       "a-ipv4",
+		Type:       "ipv4",
+		Location:   teste2e.TestLocationName,
+		AutoDelete: false,
+	}
+	b.PrimaryIPv4A.SetRName("primary_ipv4_a")
+
+	b.PrimaryIPv4B = &RData{
+		Name:       "b-ipv4",
+		Type:       "ipv4",
+		Location:   teste2e.TestLocationName,
+		AutoDelete: false,
+	}
+	b.PrimaryIPv4B.SetRName("primary_ipv4_b")
+
+	b.PrimaryIPv6C = &RData{
+		Name:       "c-ipv6",
+		Type:       "ipv6",
+		Location:   teste2e.TestLocationName,
+		AutoDelete: false,
+	}
+	b.PrimaryIPv6C.SetRName("primary_ipv6_c")
+
+	b.PrimaryIPv6D = &RData{
+		Name:       "d-ipv6",
+		Type:       "ipv6",
+		Location:   teste2e.TestLocationName,
+		AutoDelete: false,
+	}
+	b.PrimaryIPv6D.SetRName("primary_ipv6_d")
+
+	return b
 }

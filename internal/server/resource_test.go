@@ -25,6 +25,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/testmux"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
@@ -59,7 +60,7 @@ func TestAccServerResource(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
 		Steps: []resource.TestStep{
 			{
@@ -149,7 +150,7 @@ func TestAccServerResource_UnavailableServerType(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
 		Steps: []resource.TestStep{
 			{
@@ -181,7 +182,7 @@ func TestAccServerResource_ImageID(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
 		Steps: []resource.TestStep{
 			{
@@ -226,7 +227,7 @@ func TestAccServerResource_Resize(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
 		Steps: []resource.TestStep{
 			{
@@ -287,7 +288,7 @@ func TestAccServerResource_ChangeUserData(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &hcServer1)),
 		Steps: []resource.TestStep{
 			{
@@ -354,7 +355,7 @@ func TestAccServerResource_ISO(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
 		Steps: []resource.TestStep{
 			{
@@ -419,7 +420,7 @@ func TestAccServerResource_Rescue(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
 		Steps: []resource.TestStep{
 			{
@@ -581,7 +582,7 @@ func TestAccServerResource_DirectAttachToNetwork(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
@@ -765,7 +766,7 @@ func TestAccServerResource_DirectAttachToNetworkSubnetID(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
@@ -1004,7 +1005,7 @@ func TestAccServerResource_DirectAttachToNetworkID(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
@@ -1028,302 +1029,251 @@ func TestAccServerResource_DirectAttachToNetworkID(t *testing.T) {
 	})
 }
 
-func TestAccServerResource_PrimaryIPNetworkTests(t *testing.T) {
+func TestAccServerResource_PrimaryIPs(t *testing.T) {
+	// This test focus on the server primary ips.
+
+	tmplMan := testtemplate.Manager{}
+
 	var (
-		nw hcloud.Network
-		s  hcloud.Server
-		p  hcloud.PrimaryIP
+		hcServer    hcloud.Server
+		hcPrimaryIP hcloud.PrimaryIP
 	)
 
-	sk := sshkey.NewRData(t, "server-iso")
-	nwRes := &network.RData{
-		Name:    "test-network",
-		IPRange: "10.0.0.0/16",
-	}
-	nwRes.SetRName("test-network")
-	snwRes := &network.RDataSubnet{
-		Type:        "cloud",
-		NetworkID:   nwRes.TFID() + ".id",
-		NetworkZone: "eu-central",
-		IPRange:     "10.0.1.0/24",
-	}
-	snwRes.SetRName("test-network-subnet")
+	ips := primaryip.NewBlueprint(t)
+	nws := network.NewBlueprint(t)
 
-	primaryIPv4Res := &primaryip.RData{
-		Name:       "primaryip-v4-test",
-		Type:       "ipv4",
-		Location:   teste2e.TestLocationName,
-		AutoDelete: false,
-	}
-	primaryIPv4Res.SetRName("primary-ip-v4")
+	resSSHKey := sshkey.NewRData(t, "server")
 
-	primaryIPv6Res := &primaryip.RData{
-		Name:       "primaryip-v6-test",
-		Type:       "ipv6",
-		Location:   teste2e.TestLocationName,
-		AutoDelete: false,
-	}
-	primaryIPv6Res.SetRName("primary-ip-v6")
-
-	sResWithNetAndPublicNet := &server.RData{
-		Name:         "server-primaryIP-network-test",
+	// Create server with unmanaged primary ips and network
+	res1 := &server.RData{
+		Name:         "primary-ips-test",
 		Type:         teste2e.TestServerType,
 		LocationName: teste2e.TestLocationName,
 		Image:        teste2e.TestImage,
-		SSHKeys:      []string{sk.TFID() + ".id"},
+		SSHKeys:      []string{resSSHKey.TFID() + ".id"},
 		Networks: []server.RDataInlineNetwork{{
-			NetworkID: nwRes.TFID() + ".id",
+			NetworkID: nws.NetworkA.TFID() + ".id",
 			IP:        "10.0.1.5",
-			AliasIPs:  []string{"10.0.1.6", "10.0.1.7"},
 		}},
 		PublicNet: map[string]any{
 			"ipv4_enabled": true,
 			"ipv6_enabled": true,
 		},
-		DependsOn: []string{snwRes.TFID()},
+		DependsOn: []string{nws.SubnetA1.TFID()},
 	}
-	sResWithNetAndPublicNet.SetRName(sResWithNetAndPublicNet.Name)
+	res1.SetRName(res1.Name)
 
-	sResWithoutPublicNet := &server.RData{
-		Name:         sResWithNetAndPublicNet.Name,
-		Type:         sResWithNetAndPublicNet.Type,
-		LocationName: sResWithNetAndPublicNet.LocationName,
-		Image:        sResWithNetAndPublicNet.Image,
-		SSHKeys:      sResWithNetAndPublicNet.SSHKeys,
-		Networks:     sResWithNetAndPublicNet.Networks,
-		PublicNet: map[string]any{
-			"ipv4_enabled": false,
-			"ipv6_enabled": false,
-		},
-		DependsOn: sResWithNetAndPublicNet.DependsOn,
-	}
-	sResWithoutPublicNet.SetRName(sResWithoutPublicNet.Name)
-
-	sResWithPrimaryIP := &server.RData{
-		Name:         sResWithoutPublicNet.Name,
-		Type:         sResWithoutPublicNet.Type,
-		LocationName: sResWithoutPublicNet.LocationName,
-		Image:        sResWithoutPublicNet.Image,
-		SSHKeys:      sResWithoutPublicNet.SSHKeys,
-		Networks:     sResWithoutPublicNet.Networks,
-		PublicNet: map[string]any{
-			"ipv4_enabled": true,
-			"ipv4":         primaryIPv4Res.TFID() + ".id",
-			"ipv6_enabled": false,
-		},
-		DependsOn: sResWithoutPublicNet.DependsOn,
+	// - Remove unmanaged primary ipv4
+	// - Remove unmanaged primary ipv6
+	res2 := testtemplate.DeepCopy(t, res1)
+	res2.PublicNet = map[string]any{
+		"ipv4_enabled": false,
+		"ipv6_enabled": false,
 	}
 
-	sResWithPrimaryIP.SetRName(sResWithPrimaryIP.Name)
-
-	sResWithTwoPrimaryIPs := &server.RData{
-		Name:         sResWithPrimaryIP.Name,
-		Type:         sResWithPrimaryIP.Type,
-		LocationName: sResWithPrimaryIP.LocationName,
-		Image:        sResWithPrimaryIP.Image,
-		SSHKeys:      sResWithPrimaryIP.SSHKeys,
-		Networks:     sResWithPrimaryIP.Networks,
-		PublicNet: map[string]any{
-			"ipv4_enabled": true,
-			"ipv4":         primaryIPv4Res.TFID() + ".id",
-			"ipv6_enabled": true,
-		},
-		DependsOn: sResWithoutPublicNet.DependsOn,
+	// - Add managed primary ipv4
+	res3 := testtemplate.DeepCopy(t, res2)
+	res3.PublicNet = map[string]any{
+		"ipv4_enabled": true,
+		"ipv4":         ips.PrimaryIPv4A.TFID() + ".id",
+		"ipv6_enabled": false,
 	}
 
-	sResWithTwoPrimaryIPs.SetRName(sResWithTwoPrimaryIPs.Name)
-
-	sResWithNoPublicNet := &server.RData{
-		Name:         sResWithTwoPrimaryIPs.Name,
-		Type:         sResWithTwoPrimaryIPs.Type,
-		LocationName: sResWithTwoPrimaryIPs.LocationName,
-		Image:        sResWithTwoPrimaryIPs.Image,
-		SSHKeys:      sResWithTwoPrimaryIPs.SSHKeys,
-		Networks:     sResWithTwoPrimaryIPs.Networks,
-		DependsOn:    sResWithTwoPrimaryIPs.DependsOn,
+	// - Add unmanaged primary ipv6
+	res4 := testtemplate.DeepCopy(t, res3)
+	res4.PublicNet = map[string]any{
+		"ipv4_enabled": true,
+		"ipv4":         ips.PrimaryIPv4A.TFID() + ".id",
+		"ipv6_enabled": true,
 	}
 
-	sResWithNoPublicNet.SetRName(sResWithNoPublicNet.Name)
+	// Remove public net config, and rely on the defaults:
+	// - Remove managed primary ipv4
+	// - Add unmanaged primary ipv4
+	res5 := testtemplate.DeepCopy(t, res4)
+	res5.PublicNet = nil
 
-	sResWithOnlyIPv6 := &server.RData{
-		Name:         sResWithNoPublicNet.Name,
-		Type:         sResWithNoPublicNet.Type,
-		LocationName: sResWithNoPublicNet.LocationName,
-		Image:        sResWithNoPublicNet.Image,
-		SSHKeys:      sResWithNoPublicNet.SSHKeys,
-		Networks:     sResWithNoPublicNet.Networks,
-		PublicNet: map[string]any{
-			"ipv4_enabled": false,
-			"ipv6_enabled": true,
-			"ipv6":         primaryIPv6Res.TFID() + ".id",
-		},
-		DependsOn: sResWithNoPublicNet.DependsOn,
+	// - Remove unmanaged primary ipv4
+	// - Remove unmanaged primary ipv6
+	// - Add managed primary ipv6
+	res6 := testtemplate.DeepCopy(t, res5)
+	res6.PublicNet = map[string]any{
+		"ipv4_enabled": false,
+		"ipv6_enabled": true,
+		"ipv6":         ips.PrimaryIPv6C.TFID() + ".id",
 	}
 
-	sResWithOnlyIPv6.SetRName(sResWithOnlyIPv6.Name)
-
-	sResWithOnlyIPv6AutoGenerated := &server.RData{
-		Name:         sResWithOnlyIPv6.Name,
-		Type:         sResWithOnlyIPv6.Type,
-		LocationName: sResWithOnlyIPv6.LocationName,
-		Image:        sResWithOnlyIPv6.Image,
-		SSHKeys:      sResWithOnlyIPv6.SSHKeys,
-		Networks:     sResWithOnlyIPv6.Networks,
-		PublicNet: map[string]any{
-			"ipv4_enabled": false,
-			"ipv6_enabled": true,
-		},
-		DependsOn: sResWithOnlyIPv6.DependsOn,
+	// - Remove managed primary ipv6
+	// - Add unmanaged primary ipv6
+	res7 := testtemplate.DeepCopy(t, res6)
+	res7.PublicNet = map[string]any{
+		"ipv4_enabled": false,
+		"ipv6_enabled": true,
 	}
 
-	sResWithOnlyIPv6AutoGenerated.SetRName(sResWithOnlyIPv6AutoGenerated.Name)
-
-	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
-		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, nil)),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckAPIResourceAllAbsent(server.ResourceType, server.GetAPIResource()),
 		Steps: []resource.TestStep{
 			{
-				// Create a new server with unmanaged primary IPs + network
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_network", nwRes,
-					"testdata/r/hcloud_network_subnet", snwRes,
-					"testdata/r/hcloud_server", sResWithNetAndPublicNet,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_network", nws.NetworkA,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA1,
+					"testdata/r/hcloud_server", res1,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(nwRes.TFID(), network.ByID(t, &nw)),
-					testsupport.CheckResourceExists(sResWithNetAndPublicNet.TFID(), server.ByID(t, &s)),
-					testsupport.LiftTCF(hasServerNetwork(t, &s, &nw, "10.0.1.5", "10.0.1.6", "10.0.1.7")),
-					resource.TestCheckResourceAttr(sResWithNetAndPublicNet.TFID(), "network.#", "1"),
-					resource.TestCheckResourceAttr(sResWithNetAndPublicNet.TFID(), "network.0.ip", "10.0.1.5"),
-					resource.TestCheckResourceAttr(sResWithNetAndPublicNet.TFID(), "network.0.alias_ips.#", "2"),
+					testsupport.CheckResourceExists(res1.TFID(), server.ByID(t, &hcServer)),
+					resource.TestCheckResourceAttr(res1.TFID(), "network.#", "1"),
+
 					testsupport.LiftTCF(func() error {
-						assert.NotEqual(t, int64(0), s.PublicNet.IPv4.ID)
-						assert.NotEqual(t, int64(0), s.PublicNet.IPv6.ID)
+						assert.NotEqual(t, int64(0), hcServer.PublicNet.IPv4.ID)
+						assert.NotEqual(t, int64(0), hcServer.PublicNet.IPv6.ID)
 						return nil
 					}),
 				),
 			},
 			{
-				// Primary IPs getting removed
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_network", nwRes,
-					"testdata/r/hcloud_network_subnet", snwRes,
-					"testdata/r/hcloud_server", sResWithoutPublicNet,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_network", nws.NetworkA,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA1,
+					"testdata/r/hcloud_server", res2,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(res2.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(nwRes.TFID(), network.ByID(t, &nw)),
-					testsupport.CheckResourceExists(sResWithoutPublicNet.TFID(), server.ByID(t, &s)),
-					testsupport.LiftTCF(hasServerNetwork(t, &s, &nw, "10.0.1.5", "10.0.1.6", "10.0.1.7")),
-					resource.TestCheckResourceAttr(sResWithoutPublicNet.TFID(), "network.#", "1"),
-					resource.TestCheckResourceAttr(sResWithoutPublicNet.TFID(), "network.0.ip", "10.0.1.5"),
-					resource.TestCheckResourceAttr(sResWithoutPublicNet.TFID(), "network.0.alias_ips.#", "2"),
+					testsupport.CheckResourceExists(res2.TFID(), server.ByID(t, &hcServer)),
 					testsupport.LiftTCF(func() error {
-						assert.Nil(t, s.PublicNet.IPv4.IP)
-						assert.Nil(t, s.PublicNet.IPv6.IP)
+						assert.Nil(t, hcServer.PublicNet.IPv4.IP)
+						assert.Nil(t, hcServer.PublicNet.IPv6.IP)
 						return nil
 					}),
 				),
 			},
 			{
-				// Add ipv4 via ID
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_network", nwRes,
-					"testdata/r/hcloud_network_subnet", snwRes,
-					"testdata/r/hcloud_primary_ip", primaryIPv4Res,
-					"testdata/r/hcloud_server", sResWithPrimaryIP,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_network", nws.NetworkA,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA1,
+					"testdata/r/hcloud_primary_ip", ips.PrimaryIPv4A,
+					"testdata/r/hcloud_server", res3,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(res3.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(primaryIPv4Res.TFID(), primaryip.ByID(t, &p)),
-					testsupport.CheckResourceExists(sResWithPrimaryIP.TFID(), server.ByID(t, &s)),
+					testsupport.CheckResourceExists(res3.TFID(), server.ByID(t, &hcServer)),
+					testsupport.CheckResourceExists(ips.PrimaryIPv4A.TFID(), primaryip.ByID(t, &hcPrimaryIP)),
 					testsupport.LiftTCF(func() error {
-						assert.Equal(t, p.AssigneeID, s.ID)
-						assert.Equal(t, p.ID, s.PublicNet.IPv4.ID)
-						assert.Equal(t, int64(0), s.PublicNet.IPv6.ID)
+						assert.Equal(t, hcPrimaryIP.AssigneeID, hcServer.ID)
+						assert.Equal(t, hcPrimaryIP.ID, hcServer.PublicNet.IPv4.ID)
+						assert.Equal(t, int64(0), hcServer.PublicNet.IPv6.ID)
 						return nil
 					}),
 				),
 			},
 			{
-				// Add ipv6 but auto generated (only ipv6_enabled = true, without an ID)
-				// now ipv4 is a TF resource and ipv6 is auto generated
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_network", nwRes,
-					"testdata/r/hcloud_network_subnet", snwRes,
-					"testdata/r/hcloud_primary_ip", primaryIPv4Res,
-					"testdata/r/hcloud_server", sResWithTwoPrimaryIPs,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_network", nws.NetworkA,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA1,
+					"testdata/r/hcloud_primary_ip", ips.PrimaryIPv4A,
+					"testdata/r/hcloud_server", res4,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(res4.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(primaryIPv4Res.TFID(), primaryip.ByID(t, &p)),
-					testsupport.CheckResourceExists(sResWithPrimaryIP.TFID(), server.ByID(t, &s)),
+					testsupport.CheckResourceExists(res4.TFID(), server.ByID(t, &hcServer)),
+					testsupport.CheckResourceExists(ips.PrimaryIPv4A.TFID(), primaryip.ByID(t, &hcPrimaryIP)),
 					testsupport.LiftTCF(func() error {
-						assert.Equal(t, p.AssigneeID, s.ID)
-						assert.Equal(t, s.PublicNet.IPv4.ID, p.ID)
-						assert.NotEqual(t, int64(0), s.PublicNet.IPv6.ID)
+						assert.Equal(t, hcPrimaryIP.AssigneeID, hcServer.ID)
+						assert.Equal(t, hcPrimaryIP.ID, hcServer.PublicNet.IPv4.ID)
+						assert.NotEqual(t, int64(0), hcServer.PublicNet.IPv6.ID)
 						return nil
 					}),
 				),
 			},
 			{
-				// Remove public net, so attached ipv4 gets unattached + an ipv4 should be auto generated
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_network", nwRes,
-					"testdata/r/hcloud_network_subnet", snwRes,
-					"testdata/r/hcloud_primary_ip", primaryIPv4Res,
-					"testdata/r/hcloud_server", sResWithNoPublicNet,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_network", nws.NetworkA,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA1,
+					"testdata/r/hcloud_primary_ip", ips.PrimaryIPv4A,
+					"testdata/r/hcloud_server", res5,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(res5.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(primaryIPv4Res.TFID(), primaryip.ByID(t, &p)),
-					testsupport.CheckResourceExists(sResWithPrimaryIP.TFID(), server.ByID(t, &s)),
+					testsupport.CheckResourceExists(res5.TFID(), server.ByID(t, &hcServer)),
+					testsupport.CheckResourceExists(ips.PrimaryIPv4A.TFID(), primaryip.ByID(t, &hcPrimaryIP)),
 					testsupport.LiftTCF(func() error {
-						assert.NotEqual(t, p.ID, s.PublicNet.IPv4.ID)
-						assert.NotEqual(t, int64(0), s.PublicNet.IPv4.ID)
-						assert.NotEqual(t, int64(0), s.PublicNet.IPv6.ID)
+						assert.NotEqual(t, hcPrimaryIP.ID, hcServer.PublicNet.IPv4.ID)
+						assert.NotEqual(t, int64(0), hcServer.PublicNet.IPv4.ID)
+						assert.NotEqual(t, int64(0), hcServer.PublicNet.IPv6.ID)
 						return nil
 					}),
 				),
 			},
 			{
-				// should remove auto generated ipv4 / 6 + attach managed ipv6
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_network", nwRes,
-					"testdata/r/hcloud_network_subnet", snwRes,
-					"testdata/r/hcloud_primary_ip", primaryIPv6Res,
-					"testdata/r/hcloud_server", sResWithOnlyIPv6,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_network", nws.NetworkA,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA1,
+					"testdata/r/hcloud_primary_ip", ips.PrimaryIPv6C,
+					"testdata/r/hcloud_server", res6,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(res6.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(primaryIPv6Res.TFID(), primaryip.ByID(t, &p)),
-					testsupport.CheckResourceExists(sResWithOnlyIPv6.TFID(), server.ByID(t, &s)),
+					testsupport.CheckResourceExists(res6.TFID(), server.ByID(t, &hcServer)),
+					testsupport.CheckResourceExists(ips.PrimaryIPv6C.TFID(), primaryip.ByID(t, &hcPrimaryIP)),
 					testsupport.LiftTCF(func() error {
-						assert.Equal(t, p.ID, s.PublicNet.IPv6.ID)
-						assert.Equal(t, int64(0), s.PublicNet.IPv4.ID)
+						assert.Equal(t, hcPrimaryIP.ID, hcServer.PublicNet.IPv6.ID)
+						assert.Equal(t, int64(0), hcServer.PublicNet.IPv4.ID)
 						return nil
 					}),
 				),
 			},
 			{
-				// should remove attached ipv6 and auto generate an ipv6
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_network", nwRes,
-					"testdata/r/hcloud_network_subnet", snwRes,
-					"testdata/r/hcloud_primary_ip", primaryIPv6Res,
-					"testdata/r/hcloud_server", sResWithOnlyIPv6AutoGenerated,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_network", nws.NetworkA,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA1,
+					"testdata/r/hcloud_primary_ip", ips.PrimaryIPv6C,
+					"testdata/r/hcloud_server", res7,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						// TODO: The resource should be updated.
+						plancheck.ExpectResourceAction(res7.TFID(), plancheck.ResourceActionNoop),
+					},
+				},
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(primaryIPv6Res.TFID(), primaryip.ByID(t, &p)),
-					testsupport.CheckResourceExists(sResWithOnlyIPv6AutoGenerated.TFID(), server.ByID(t, &s)),
+					testsupport.CheckResourceExists(res7.TFID(), server.ByID(t, &hcServer)),
+					testsupport.CheckResourceExists(ips.PrimaryIPv6C.TFID(), primaryip.ByID(t, &hcPrimaryIP)),
 					testsupport.LiftTCF(func() error {
-						assert.NotEqual(t, p.ID, s.PublicNet.IPv4.ID)
-						assert.Equal(t, int64(0), s.PublicNet.IPv4.ID)
-						assert.NotEqual(t, int64(0), s.PublicNet.IPv6.ID)
+						assert.NotEqual(t, hcPrimaryIP.ID, hcServer.PublicNet.IPv4.ID)
+						// TODO: The managed primary ipv6 should have been removed and
+						// replaced with an unmanaged one.
+						assert.Equal(t, hcPrimaryIP.ID, hcServer.PublicNet.IPv6.ID)
+						assert.Equal(t, int64(0), hcServer.PublicNet.IPv4.ID)
+						assert.NotEqual(t, int64(0), hcServer.PublicNet.IPv6.ID)
 						return nil
 					}),
 				),
@@ -1403,7 +1353,7 @@ runcmd:
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
@@ -1476,7 +1426,7 @@ func TestAccServerResource_Firewalls(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
 		Steps: []resource.TestStep{
 			{
@@ -1546,7 +1496,7 @@ func TestAccServerResource_PlacementGroup(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &srv)),
 		Steps: []resource.TestStep{
 			{
@@ -1656,7 +1606,7 @@ func TestAccServerResource_Protection(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &srv)),
 		Steps: []resource.TestStep{
 			{
@@ -1705,7 +1655,7 @@ func TestAccServerResource_EmptySSHKey(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &srv)),
 		Steps: []resource.TestStep{
 			{
@@ -1740,7 +1690,7 @@ func TestAccServerResource_DatacenterToLocation(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				// Create server in Datacenter.
@@ -1832,7 +1782,7 @@ func TestAccServerResource_MigrateNetworkIDToSubnetID(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
@@ -1974,7 +1924,7 @@ func TestAccServerResource_SwitchSubnet(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
@@ -2093,7 +2043,7 @@ func TestAccServerResource_MixedNetworkAndSubnetID(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
