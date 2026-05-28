@@ -29,7 +29,6 @@ func TestAccPrimaryIPResource(t *testing.T) {
 		Name:             "primary-ip",
 		Type:             "ipv6",
 		Location:         teste2e.TestLocationName,
-		AutoDelete:       false,
 		DeleteProtection: true,
 		Labels:           map[string]string{"key": "value"},
 	}
@@ -38,7 +37,7 @@ func TestAccPrimaryIPResource(t *testing.T) {
 	res3 := testtemplate.DeepCopy(t, res1)
 	res3.Name = res1.Name + "-changed"
 	res3.Labels = map[string]string{"key": "changed"}
-	res3.AutoDelete = true
+	res3.AutoDelete = hcloud.Ptr(true)
 	res3.DeleteProtection = false
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -144,26 +143,23 @@ func TestAccPrimaryIPResource_WithServer(t *testing.T) {
 
 	// Step 1
 	res1A := &primaryip.RData{
-		Name:       "a",
-		Type:       "ipv4",
-		Location:   teste2e.TestLocationName,
-		AutoDelete: false,
+		Name:     "a",
+		Type:     "ipv4",
+		Location: teste2e.TestLocationName,
 	}
 	res1A.SetRName("a")
 
 	res1B := &primaryip.RData{
-		Name:       "b",
-		Type:       "ipv6",
-		Location:   teste2e.TestLocationName,
-		AutoDelete: false,
+		Name:     "b",
+		Type:     "ipv6",
+		Location: teste2e.TestLocationName,
 	}
 	res1B.SetRName("b")
 
 	res1C := &primaryip.RData{
-		Name:       "c",
-		Type:       "ipv4",
-		Location:   teste2e.TestLocationName,
-		AutoDelete: false,
+		Name:     "c",
+		Type:     "ipv4",
+		Location: teste2e.TestLocationName,
 	}
 	res1C.SetRName("c")
 
@@ -340,7 +336,7 @@ func TestAccPrimaryIPResource_Reassign(t *testing.T) {
 		Type:         "ipv4",
 		AssigneeID:   res1ServerA.TFID() + ".id",
 		AssigneeType: "server",
-		AutoDelete:   false,
+		AutoDelete:   hcloud.Ptr(false),
 	}
 	res2.SetRName("main")
 

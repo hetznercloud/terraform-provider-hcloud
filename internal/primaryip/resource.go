@@ -124,7 +124,8 @@ communicating with the API.
 		},
 		"auto_delete": schema.BoolAttribute{
 			MarkdownDescription: "Whether auto delete is enabled. Setting `auto_delete` to `false` is recommended, because if a server assigned to the managed ip is getting deleted, it will also delete the primary IP which will break the terraform state.",
-			Required:            true,
+			Optional:            true,
+			Computed:            true,
 		},
 		"labels": resourceutil.LabelsSchema(),
 		"delete_protection": schema.BoolAttribute{
@@ -198,8 +199,10 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	opts := hcloud.PrimaryIPCreateOpts{
 		Name: data.Name.ValueString(),
 		Type: hcloud.PrimaryIPType(data.Type.ValueString()),
+	}
 
-		AutoDelete: data.AutoDelete.ValueBoolPointer(),
+	if !data.AutoDelete.IsUnknown() && !data.AutoDelete.IsNull() {
+		opts.AutoDelete = data.AutoDelete.ValueBoolPointer()
 	}
 
 	resp.Diagnostics.Append(hcloudutil.TerraformLabelsToHCloud(ctx, data.Labels, &opts.Labels)...)
