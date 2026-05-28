@@ -786,7 +786,7 @@ func TestAccServerResource_DirectAttachToNetworkSubnetID(t *testing.T) {
 				),
 			},
 			{
-				// Fail when both network_id and subnet_id are specified
+				// Specify both network_id and subnet_id
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_ssh_key", sk,
 					"testdata/r/hcloud_network", nwRes,
@@ -801,13 +801,59 @@ func TestAccServerResource_DirectAttachToNetworkSubnetID(t *testing.T) {
 						Networks: []server.RDataInlineNetwork{
 							{
 								NetworkID: nwRes.TFID() + ".id",
-								SubnetID:  snw1Res.TFID() + ".id",
+								SubnetID:  snw2Res.TFID() + ".id",
 							},
 						},
 						DependsOn: []string{snw1Res.TFID(), snw2Res.TFID()},
 					},
 				),
-				ExpectError: regexp.MustCompile(`cannot specify both network_id and subnet_id`),
+			},
+			{
+				// Fail when network_id and subnet_id mismatch
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_network", nwRes,
+					"testdata/r/hcloud_network_subnet", snw1Res,
+					"testdata/r/hcloud_network_subnet", snw2Res,
+					"testdata/r/hcloud_server", &server.RData{
+						Name:         sRes.Name,
+						Type:         sRes.Type,
+						LocationName: sRes.LocationName,
+						Image:        sRes.Image,
+						SSHKeys:      sRes.SSHKeys,
+						Networks: []server.RDataInlineNetwork{
+							{
+								NetworkID: "999999",
+								SubnetID:  snw2Res.TFID() + ".id",
+							},
+						},
+						DependsOn: []string{snw1Res.TFID(), snw2Res.TFID()},
+					},
+				),
+				ExpectError: regexp.MustCompile(`subnet_id \([^)]+\) does not belong to the specified network_id \(999999\)`),
+			},
+			{
+				// Fail when neither network_id nor subnet_id is specified
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_network", nwRes,
+					"testdata/r/hcloud_network_subnet", snw1Res,
+					"testdata/r/hcloud_network_subnet", snw2Res,
+					"testdata/r/hcloud_server", &server.RData{
+						Name:         sRes.Name,
+						Type:         sRes.Type,
+						LocationName: sRes.LocationName,
+						Image:        sRes.Image,
+						SSHKeys:      sRes.SSHKeys,
+						Networks: []server.RDataInlineNetwork{
+							{
+								IP: "10.0.1.5",
+							},
+						},
+						DependsOn: []string{snw1Res.TFID(), snw2Res.TFID()},
+					},
+				),
+				ExpectError: regexp.MustCompile(`must specify either network_id or subnet_id`),
 			},
 			{
 				// Fail when trying to attach to the same network twice using subnet_id

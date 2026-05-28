@@ -1493,22 +1493,14 @@ func resourceServerCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ an
 }
 
 func validateUniqueNetworkIDs(d *schema.ResourceDiff) error {
-	rawConfig := d.GetRawConfig()
-	rawNetworks := rawConfig.GetAttr("network")
-
-	if !rawNetworks.IsNull() {
+	// Validate that at least one of network_id or subnet_id is specified.
+	if rawNetworks := d.GetRawConfig().GetAttr("network"); !rawNetworks.IsNull() {
 		for it := rawNetworks.ElementIterator(); it.Next(); {
 			_, networkVal := it.Element()
 
-			rawNetworkID := networkVal.GetAttr("network_id")
-			rawSubnetID := networkVal.GetAttr("subnet_id")
+			hasNetworkID := !networkVal.GetAttr("network_id").IsNull()
+			hasSubnetID := !networkVal.GetAttr("subnet_id").IsNull()
 
-			hasNetworkID := !rawNetworkID.IsNull()
-			hasSubnetID := !rawSubnetID.IsNull()
-
-			if hasNetworkID && hasSubnetID {
-				return fmt.Errorf("cannot specify both network_id and subnet_id, specify only one of them (subnet_id is recommended)")
-			}
 			if !hasNetworkID && !hasSubnetID {
 				return fmt.Errorf("must specify either network_id or subnet_id")
 			}
@@ -1531,6 +1523,7 @@ func validateUniqueNetworkIDs(d *schema.ResourceDiff) error {
 			}
 
 			var networkID int64
+			configNetworkID := util.CastInt64(network["network_id"])
 			subnetIDStr, _ := network["subnet_id"].(string)
 
 			// When subnet_id is specified, extract network_id and validate IP range
@@ -1538,6 +1531,11 @@ func validateUniqueNetworkIDs(d *schema.ResourceDiff) error {
 				subnetNetwork, subnetIPRange, err := ParseSubnetID(subnetIDStr)
 				if err != nil {
 					continue
+				}
+
+				// If the user specified both network_id and subnet_id, they must match.
+				if configNetworkID != 0 && subnetNetwork.ID != configNetworkID {
+					return fmt.Errorf("subnet_id (%s) does not belong to the specified network_id (%d)", subnetIDStr, configNetworkID)
 				}
 
 				// Extract network_id from parsed subnet
