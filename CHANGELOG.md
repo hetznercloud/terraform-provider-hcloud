@@ -1,5 +1,21 @@
 # Changelog
 
+## [v1.64.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.64.0)
+
+### Features
+
+- **load-balancer**: support `timeout_idle` http service attribute (#1398)
+- drop support for terraform v1.13 (#1418)
+- add support for terraform v1.15 (#1418)
+- drop support for opentofu v1.9 (#1420)
+- add support for opentofu v1.12 (#1420)
+
+### Bug Fixes
+
+- **rdns**: gracefully handle not found errors (#1419)
+- **server**: handle ipv6 when removing public net block (#1427)
+- **server**: allow both `network_id` and `subnet_id` to be defined (#1430)
+
 ## [v1.63.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.63.0)
 
 ### Features
