@@ -41,7 +41,7 @@ func populateNetworkResourceData(
 	return nil
 }
 
-type serviceDataSourceModel struct {
+type serviceModel struct {
 	ID              types.String `tfsdk:"id"`
 	LoadBalancerID  types.Int64  `tfsdk:"load_balancer_id"`
 	Protocol        types.String `tfsdk:"protocol"`
@@ -52,7 +52,7 @@ type serviceDataSourceModel struct {
 	HealthCheck     types.Object `tfsdk:"health_check"`
 }
 
-func (m *serviceDataSourceModel) tfAttributesTypesHTTP() map[string]attr.Type {
+func (m *serviceModel) tfAttributesTypesHTTP() map[string]attr.Type {
 	return map[string]attr.Type{
 		"sticky_sessions": types.BoolType,
 		"cookie_name":     types.StringType,
@@ -63,7 +63,7 @@ func (m *serviceDataSourceModel) tfAttributesTypesHTTP() map[string]attr.Type {
 	}
 }
 
-func (m *serviceDataSourceModel) tfAttributesTypesHealthCheckHTTP() map[string]attr.Type {
+func (m *serviceModel) tfAttributesTypesHealthCheckHTTP() map[string]attr.Type {
 	return map[string]attr.Type{
 		"domain":       types.StringType,
 		"path":         types.StringType,
@@ -73,7 +73,7 @@ func (m *serviceDataSourceModel) tfAttributesTypesHealthCheckHTTP() map[string]a
 	}
 }
 
-func (m *serviceDataSourceModel) tfAttributesTypesHealthCheck() map[string]attr.Type {
+func (m *serviceModel) tfAttributesTypesHealthCheck() map[string]attr.Type {
 	return map[string]attr.Type{
 		"protocol": types.StringType,
 		"port":     types.Int32Type,
@@ -84,7 +84,7 @@ func (m *serviceDataSourceModel) tfAttributesTypesHealthCheck() map[string]attr.
 	}
 }
 
-func (m *serviceDataSourceModel) tfAttributesTypes() map[string]attr.Type {
+func (m *serviceModel) tfAttributesTypes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"id":               types.StringType,
 		"load_balancer_id": types.Int64Type,
@@ -97,14 +97,14 @@ func (m *serviceDataSourceModel) tfAttributesTypes() map[string]attr.Type {
 	}
 }
 
-func (m *serviceDataSourceModel) tfType() attr.Type {
+func (m *serviceModel) tfType() attr.Type {
 	return basetypes.ObjectType{AttrTypes: m.tfAttributesTypes()}
 }
 
-var _ util.ModelFromAPI[*hcloud.LoadBalancerService] = &serviceDataSourceModel{}
-var _ util.ModelToTerraform[types.Object] = &serviceDataSourceModel{}
+var _ util.ModelFromAPI[*hcloud.LoadBalancerService] = &serviceModel{}
+var _ util.ModelToTerraform[types.Object] = &serviceModel{}
 
-func (m *serviceDataSourceModel) FromAPI(_ context.Context, hc *hcloud.LoadBalancerService) diag.Diagnostics {
+func (m *serviceModel) FromAPI(_ context.Context, hc *hcloud.LoadBalancerService) diag.Diagnostics {
 	var httpCertIDs []attr.Value
 	for _, cert := range hc.HTTP.Certificates {
 		httpCertIDs = append(httpCertIDs, types.Int64Value(cert.ID))
@@ -151,16 +151,6 @@ func (m *serviceDataSourceModel) FromAPI(_ context.Context, hc *hcloud.LoadBalan
 	return nil
 }
 
-func (m *serviceDataSourceModel) ToTerraform(ctx context.Context) (types.Object, diag.Diagnostics) {
+func (m *serviceModel) ToTerraform(ctx context.Context) (types.Object, diag.Diagnostics) {
 	return types.ObjectValueFrom(ctx, m.tfAttributesTypes(), m)
-}
-
-func populateServiceDataSourceModel(ctx context.Context, data *serviceDataSourceModel, lb *hcloud.LoadBalancer, svc *hcloud.LoadBalancerService) diag.Diagnostics {
-	var diags diag.Diagnostics
-
-	diags.Append(data.FromAPI(ctx, svc)...)
-	data.ID = types.StringValue(fmt.Sprintf("%d__%d", lb.ID, svc.ListenPort))
-	data.LoadBalancerID = types.Int64Value(lb.ID)
-
-	return diags
 }

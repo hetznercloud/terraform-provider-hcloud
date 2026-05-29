@@ -2,6 +2,7 @@ package loadbalancer
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -14,30 +15,25 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
-const (
-	// DataSourceServiceType is the type name of the Hetzner Cloud Load Balancer Service resource.
-	DataSourceServiceType = "hcloud_load_balancer_service"
+// DataSourceServiceType is the type name of the Hetzner Cloud Load Balancer Service resource.
+const DataSourceServiceType = "hcloud_load_balancer_service"
 
-	// DataSourceServiceListType is the type name to receive a list of Hetzner Cloud Load Balancer Service resources.
-	// TODO DataSourceServiceListType = "hcloud_load_balancer_services"
-)
-
-func getCommonServiceDataSchema() map[string]schema.Attribute {
+func getCommonServiceDataSchema(readOnly bool) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"id": schema.StringAttribute{
-			Optional: true,
+			Optional: !readOnly,
 			Computed: true,
 		},
 		"load_balancer_id": schema.Int64Attribute{
-			Optional: true,
+			Optional: !readOnly,
 			Computed: true,
 		},
 		"protocol": schema.StringAttribute{
 			Computed: true,
 		},
 		"listen_port": schema.Int32Attribute{
+			Optional: !readOnly,
 			Computed: true,
-			Optional: true,
 		},
 		"destination_port": schema.Int32Attribute{
 			Computed: true,
@@ -113,6 +109,20 @@ func getCommonServiceDataSchema() map[string]schema.Attribute {
 	}
 }
 
+type dataSourceServiceModel struct {
+	serviceModel
+}
+
+func populateDataSourceServiceModel(ctx context.Context, data *dataSourceServiceModel, lb *hcloud.LoadBalancer, svc *hcloud.LoadBalancerService) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	diags.Append(data.FromAPI(ctx, svc)...)
+	data.ID = types.StringValue(fmt.Sprintf("%d__%d", lb.ID, svc.ListenPort))
+	data.LoadBalancerID = types.Int64Value(lb.ID)
+
+	return diags
+}
+
 var _ datasource.DataSource = (*DataSourceService)(nil)
 var _ datasource.DataSourceWithConfigure = (*DataSourceService)(nil)
 var _ datasource.DataSourceWithConfigValidators = (*DataSourceService)(nil)
@@ -165,14 +175,14 @@ func (d *DataSourceService) Configure(_ context.Context, req datasource.Configur
 // Schema should return the schema for this data source.
 func (d *DataSourceService) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema.MarkdownDescription = "Provides details about a Hetzner Cloud Load Balancer Service."
-	resp.Schema.Attributes = getCommonServiceDataSchema()
+	resp.Schema.Attributes = getCommonServiceDataSchema(false)
 }
 
 // Read is called when the provider must read data source values in
 // order to update state. Config values should be read from the
 // ReadRequest and new state values set on the ReadResponse.
 func (d *DataSourceService) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data serviceDataSourceModel
+	var data dataSourceServiceModel
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -221,7 +231,7 @@ func (d *DataSourceService) Read(ctx context.Context, req datasource.ReadRequest
 		return
 	}
 
-	resp.Diagnostics.Append(populateServiceDataSourceModel(ctx, &data, lb, svc)...)
+	resp.Diagnostics.Append(populateDataSourceServiceModel(ctx, &data, lb, svc)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
