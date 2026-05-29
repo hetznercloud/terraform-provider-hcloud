@@ -1274,7 +1274,7 @@ func TestAccServerResource_Firewalls(t *testing.T) {
 	res2.FirewallIDs = []string{resFirewallB.TFID() + ".id"}
 
 	res3 := testtemplate.DeepCopy(t, res2)
-	res3.FirewallIDs = nil
+	res3.FirewallIDs = []string{}
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
