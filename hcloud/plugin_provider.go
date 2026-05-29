@@ -213,6 +213,7 @@ func (p *PluginProvider) DataSources(_ context.Context) []func() datasource.Data
 		image.NewDataSource,
 		image.NewDataSourceList,
 		loadbalancer.NewDataSourceService,
+		loadbalancer.NewDataSourceServiceList,
 		loadbalancertype.NewDataSource,
 		loadbalancertype.NewDataSourceList,
 		location.NewDataSource,
