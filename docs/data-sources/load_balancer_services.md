@@ -67,7 +67,7 @@ Read-Only:
 
 Read-Only:
 
-- `certificates` (List of Number)
+- `certificate_ids` (List of Number)
 - `cookie_lifetime` (Number)
 - `cookie_name` (String)
 - `redirect_http` (Boolean)
