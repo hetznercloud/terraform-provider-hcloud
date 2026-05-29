@@ -73,7 +73,7 @@ resource "hcloud_server" "main" {
 
 - `assignee_id` (Number) ID of the resource the Primary IP should be assigned to.
 - `assignee_type` (String) Type of the resource the Primary IP should be assigned to.
-- `auto_delete` (Boolean) Whether auto delete is enabled. Setting `auto_delete` to `false` is recommended, because if a server assigned to the managed ip is getting deleted, it will also delete the primary IP which will break the terraform state.
+- `auto_delete` (Boolean) Whether auto delete is enabled. Setting `auto_delete` to `true` is not recommended, because if a server assigned to the managed ip is deleted, it will also delete the primary IP which will break the terraform state.
 - `datacenter` (String, Deprecated) Name of the Datacenter for the Primary IP. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-datacenters-are-there) for more details about datacenters.
 - `delete_protection` (Boolean) Whether delete protection is enabled.
 - `labels` (Map of String) User-defined [labels](https://docs.hetzner.cloud/reference/cloud#labels) (key-value pairs) for the resource.
