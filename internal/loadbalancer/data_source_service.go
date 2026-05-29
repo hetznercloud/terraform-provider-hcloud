@@ -21,86 +21,111 @@ const DataSourceServiceType = "hcloud_load_balancer_service"
 func getCommonServiceDataSchema(readOnly bool) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"id": schema.StringAttribute{
-			Optional: !readOnly,
-			Computed: true,
+			MarkdownDescription: "ID of the Load Balancer Service. Format: `<load_balancer_id>__<listen_port>`",
+			Optional:            !readOnly,
+			Computed:            true,
 		},
 		"load_balancer_id": schema.Int64Attribute{
-			Optional: !readOnly,
-			Computed: true,
+			MarkdownDescription: "ID of the Load Balancer this Service belongs to.",
+			Optional:            !readOnly,
+			Computed:            true,
 		},
 		"protocol": schema.StringAttribute{
-			Computed: true,
+			MarkdownDescription: "Protocol of the Load Balancer. One of `tcp`, `http`, `https`.",
+			Computed:            true,
 		},
 		"listen_port": schema.Int32Attribute{
-			Optional: !readOnly,
-			Computed: true,
+			MarkdownDescription: "Port the Load Balancer listens on.",
+			Optional:            !readOnly,
+			Computed:            true,
 		},
 		"destination_port": schema.Int32Attribute{
-			Computed: true,
+			MarkdownDescription: "Port the Load Balancer will balance to.",
+			Computed:            true,
 		},
 		"proxyprotocol": schema.BoolAttribute{
-			Computed: true,
+			MarkdownDescription: "Whether Proxyprotocol is enabled or not.",
+			Computed:            true,
 		},
 		"http": schema.SingleNestedAttribute{
-			Computed: true,
+			MarkdownDescription: "Configuration for http(s) protocol.",
+			Computed:            true,
 			Attributes: map[string]schema.Attribute{
 				"sticky_sessions": schema.BoolAttribute{
-					Computed: true,
+					MarkdownDescription: "Whether to use sticky sessions.",
+					Computed:            true,
 				},
 				"cookie_name": schema.StringAttribute{
-					Computed: true,
+					MarkdownDescription: "Name of the cookie used for sticky sessions.",
+					Computed:            true,
 				},
 				"cookie_lifetime": schema.Int32Attribute{
-					Computed: true,
+					MarkdownDescription: "Lifetime of the cookie used for sticky sessions (in seconds).",
+					Computed:            true,
 				},
 				"certificate_ids": schema.ListAttribute{
-					Computed:    true,
-					ElementType: types.Int64Type,
+					MarkdownDescription: "IDs of the Certificates to use for TLS/SSL termination by the Load Balancer; empty for TLS/SSL passthrough.",
+					Computed:            true,
+					ElementType:         types.Int64Type,
 				},
 				"redirect_http": schema.BoolAttribute{
-					Computed: true,
+					MarkdownDescription: "Redirect HTTP requests to HTTPS.",
+					Computed:            true,
 				},
 				"timeout_idle": schema.Int32Attribute{
-					Computed: true,
+					MarkdownDescription: "Idle timeout in seconds for the client and server side.",
+					Computed:            true,
 				},
 			},
 		},
 		"health_check": schema.SingleNestedAttribute{
-			Computed: true,
+			MarkdownDescription: "Service health check.",
+			Computed:            true,
 			Attributes: map[string]schema.Attribute{
 				"protocol": schema.StringAttribute{
-					Computed: true,
+					MarkdownDescription: "Type of the health check. One of `tcp`, `http`.",
+					Computed:            true,
 				},
 				"port": schema.Int32Attribute{
-					Computed: true,
+					MarkdownDescription: "Port the health check will be performed on.",
+					Computed:            true,
 				},
 				"interval": schema.Int32Attribute{
-					Computed: true,
+					MarkdownDescription: "Time interval in seconds health checks are performed.",
+					Computed:            true,
 				},
 				"timeout": schema.Int32Attribute{
-					Computed: true,
+					MarkdownDescription: "Time in seconds after an attempt is considered a timeout.",
+					Computed:            true,
 				},
 				"retries": schema.Int32Attribute{
-					Computed: true,
+					MarkdownDescription: "Unsuccessful retries needed until a target is considered unhealthy; an unhealthy target needs the same number of successful retries to become healthy again.",
+					Computed:            true,
 				},
 				"http": schema.SingleNestedAttribute{
-					Computed: true,
+					MarkdownDescription: "Additional configuration for protocol http.",
+					Computed:            true,
 					Attributes: map[string]schema.Attribute{
 						"domain": schema.StringAttribute{
-							Computed: true,
+							MarkdownDescription: "Host header to send in the HTTP request.",
+							Computed:            true,
 						},
 						"path": schema.StringAttribute{
-							Computed: true,
+							MarkdownDescription: "HTTP path to use for health checks.",
+							Computed:            true,
 						},
 						"response": schema.StringAttribute{
-							Computed: true,
+							MarkdownDescription: "String that must be contained in HTTP response in order to pass the health check.",
+							Computed:            true,
 						},
 						"tls": schema.BoolAttribute{
-							Computed: true,
+							MarkdownDescription: "Use HTTPS for health check.",
+							Computed:            true,
 						},
 						"status_codes": schema.ListAttribute{
-							Computed:    true,
-							ElementType: types.StringType,
+							MarkdownDescription: "List of returned HTTP status codes in order to pass the health check. Supports the wildcards ? for exactly one character and * for multiple ones.",
+							Computed:            true,
+							ElementType:         types.StringType,
 						},
 					},
 				},
