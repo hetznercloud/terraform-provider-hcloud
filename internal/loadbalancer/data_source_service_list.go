@@ -51,9 +51,11 @@ func (d *DataSourceServiceList) Schema(_ context.Context, _ datasource.SchemaReq
 
 	resp.Schema.Attributes = map[string]schema.Attribute{
 		"load_balancer_id": schema.Int64Attribute{
-			Required: true,
+			MarkdownDescription: "ID of Load Balancer to fetch services from.",
+			Required:            true,
 		},
 		"services": schema.ListNestedAttribute{
+			MarkdownDescription: "List of the Load Balancer's services.",
 			NestedObject: schema.NestedAttributeObject{
 				Attributes: getCommonServiceDataSchema(true),
 			},

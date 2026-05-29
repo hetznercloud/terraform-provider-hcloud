@@ -17,48 +17,48 @@ Provides a list of Hetzner Cloud Load Balancer Services.
 
 ### Required
 
-- `load_balancer_id` (Number)
+- `load_balancer_id` (Number) ID of Load Balancer to fetch services from.
 
 ### Read-Only
 
-- `services` (Attributes List) (see [below for nested schema](#nestedatt--services))
+- `services` (Attributes List) List of the Load Balancer's services. (see [below for nested schema](#nestedatt--services))
 
 <a id="nestedatt--services"></a>
 ### Nested Schema for `services`
 
 Read-Only:
 
-- `destination_port` (Number)
-- `health_check` (Attributes) (see [below for nested schema](#nestedatt--services--health_check))
-- `http` (Attributes) (see [below for nested schema](#nestedatt--services--http))
-- `id` (String)
-- `listen_port` (Number)
-- `load_balancer_id` (Number)
-- `protocol` (String)
-- `proxyprotocol` (Boolean)
+- `destination_port` (Number) Port the Load Balancer will balance to.
+- `health_check` (Attributes) Service health check. (see [below for nested schema](#nestedatt--services--health_check))
+- `http` (Attributes) Configuration for http(s) protocol. (see [below for nested schema](#nestedatt--services--http))
+- `id` (String) ID of the Load Balancer Service. Format: `<load_balancer_id>__<listen_port>`
+- `listen_port` (Number) Port the Load Balancer listens on.
+- `load_balancer_id` (Number) ID of the Load Balancer this Service belongs to.
+- `protocol` (String) Protocol of the Load Balancer. One of `tcp`, `http`, `https`.
+- `proxyprotocol` (Boolean) Whether Proxyprotocol is enabled or not.
 
 <a id="nestedatt--services--health_check"></a>
 ### Nested Schema for `services.health_check`
 
 Read-Only:
 
-- `http` (Attributes) (see [below for nested schema](#nestedatt--services--health_check--http))
-- `interval` (Number)
-- `port` (Number)
-- `protocol` (String)
-- `retries` (Number)
-- `timeout` (Number)
+- `http` (Attributes) Additional configuration for protocol http. (see [below for nested schema](#nestedatt--services--health_check--http))
+- `interval` (Number) Time interval in seconds health checks are performed.
+- `port` (Number) Port the health check will be performed on.
+- `protocol` (String) Type of the health check. One of `tcp`, `http`.
+- `retries` (Number) Unsuccessful retries needed until a target is considered unhealthy; an unhealthy target needs the same number of successful retries to become healthy again.
+- `timeout` (Number) Time in seconds after an attempt is considered a timeout.
 
 <a id="nestedatt--services--health_check--http"></a>
 ### Nested Schema for `services.health_check.http`
 
 Read-Only:
 
-- `domain` (String)
-- `path` (String)
-- `response` (String)
-- `status_codes` (List of String)
-- `tls` (Boolean)
+- `domain` (String) Host header to send in the HTTP request.
+- `path` (String) HTTP path to use for health checks.
+- `response` (String) String that must be contained in HTTP response in order to pass the health check.
+- `status_codes` (List of String) List of returned HTTP status codes in order to pass the health check. Supports the wildcards ? for exactly one character and * for multiple ones.
+- `tls` (Boolean) Use HTTPS for health check.
 
 
 
@@ -67,9 +67,9 @@ Read-Only:
 
 Read-Only:
 
-- `certificate_ids` (List of Number)
-- `cookie_lifetime` (Number)
-- `cookie_name` (String)
-- `redirect_http` (Boolean)
-- `sticky_sessions` (Boolean)
-- `timeout_idle` (Number)
+- `certificate_ids` (List of Number) IDs of the Certificates to use for TLS/SSL termination by the Load Balancer; empty for TLS/SSL passthrough.
+- `cookie_lifetime` (Number) Lifetime of the cookie used for sticky sessions (in seconds).
+- `cookie_name` (String) Name of the cookie used for sticky sessions.
+- `redirect_http` (Boolean) Redirect HTTP requests to HTTPS.
+- `sticky_sessions` (Boolean) Whether to use sticky sessions.
+- `timeout_idle` (Number) Idle timeout in seconds for the client and server side.
