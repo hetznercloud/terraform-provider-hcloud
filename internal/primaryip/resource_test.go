@@ -534,6 +534,7 @@ func TestAccPrimaryIPResource_DatacenterToLocationForceNew(t *testing.T) {
 		Type:         "ipv6",
 		Datacenter:   teste2e.TestDataCenter,
 		AssigneeType: "server", // Attribute was still required in previous versions
+		AutoDelete:   hcloud.Ptr(false),
 	}
 	res1.SetRName("main")
 
@@ -583,7 +584,8 @@ func TestAccPrimaryIPResource_UpgradePluginFramework(t *testing.T) {
 		Location:     teste2e.TestLocationName,
 		AssigneeType: "server",
 		// Labels will default {} after the upgrade, this is a workaround to make the tests pass
-		Labels: map[string]string{"key": "value"},
+		Labels:     map[string]string{"key": "value"},
+		AutoDelete: hcloud.Ptr(false),
 	}
 	res.SetRName("main")
 

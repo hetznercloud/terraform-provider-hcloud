@@ -291,9 +291,10 @@ func TestAccRDNSResource_PrimaryIP_UpgradePluginFramework(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	resPrimaryIP := &primaryip.RData{
-		Name:     randutil.GenerateID(),
-		Type:     "ipv6",
-		Location: teste2e.TestLocationName,
+		Name:       randutil.GenerateID(),
+		Type:       "ipv6",
+		Location:   teste2e.TestLocationName,
+		AutoDelete: hcloud.Ptr(false),
 	}
 	resPrimaryIP.SetRName("ipv6")
 
