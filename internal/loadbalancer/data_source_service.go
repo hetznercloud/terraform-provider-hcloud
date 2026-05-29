@@ -53,7 +53,7 @@ func getCommonServiceDataSchema(readOnly bool) map[string]schema.Attribute {
 				"cookie_lifetime": schema.Int32Attribute{
 					Computed: true,
 				},
-				"certificates": schema.ListAttribute{
+				"certificate_ids": schema.ListAttribute{
 					Computed:    true,
 					ElementType: types.Int64Type,
 				},

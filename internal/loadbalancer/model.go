@@ -57,7 +57,7 @@ func (m *serviceModel) tfAttributesTypesHTTP() map[string]attr.Type {
 		"sticky_sessions": types.BoolType,
 		"cookie_name":     types.StringType,
 		"cookie_lifetime": types.Int32Type,
-		"certificates":    types.ListType{ElemType: types.Int64Type},
+		"certificate_ids": types.ListType{ElemType: types.Int64Type},
 		"redirect_http":   types.BoolType,
 		"timeout_idle":    types.Int32Type,
 	}
@@ -118,7 +118,7 @@ func (m *serviceModel) FromAPI(_ context.Context, hc *hcloud.LoadBalancerService
 		"sticky_sessions": types.BoolValue(hc.HTTP.StickySessions),
 		"cookie_name":     types.StringValue(hc.HTTP.CookieName),
 		"cookie_lifetime": types.Int32Value(util.CastInt32(hc.HTTP.CookieLifetime.Seconds())),
-		"certificates":    types.ListValueMust(types.Int64Type, httpCertIDs),
+		"certificate_ids": types.ListValueMust(types.Int64Type, httpCertIDs),
 		"redirect_http":   types.BoolValue(hc.HTTP.RedirectHTTP),
 		"timeout_idle":    types.Int32Value(util.CastInt32(hc.HTTP.TimeoutIdle.Seconds())),
 	})
