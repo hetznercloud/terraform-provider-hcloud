@@ -21,7 +21,6 @@ Provides a list of Hetzner Cloud Load Balancer Services.
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
 - `services` (Attributes List) (see [below for nested schema](#nestedatt--services))
 
 <a id="nestedatt--services"></a>

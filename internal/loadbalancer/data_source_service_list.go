@@ -10,8 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/datasourceutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
@@ -52,9 +50,6 @@ func (d *DataSourceServiceList) Schema(_ context.Context, _ datasource.SchemaReq
 	resp.Schema.MarkdownDescription = "Provides a list of Hetzner Cloud Load Balancer Services."
 
 	resp.Schema.Attributes = map[string]schema.Attribute{
-		"id": schema.StringAttribute{
-			Computed: true,
-		},
 		"load_balancer_id": schema.Int64Attribute{
 			Required: true,
 		},
@@ -68,21 +63,17 @@ func (d *DataSourceServiceList) Schema(_ context.Context, _ datasource.SchemaReq
 }
 
 type dataSourceServiceListModel struct {
-	ID             types.String `tfsdk:"id"`
-	LoadBalancerID types.Int64  `tfsdk:"load_balancer_id"`
-	Services       types.List   `tfsdk:"services"`
+	LoadBalancerID types.Int64 `tfsdk:"load_balancer_id"`
+	Services       types.List  `tfsdk:"services"`
 }
 
 func populateDataSourceServiceListModel(ctx context.Context, data *dataSourceServiceListModel, lb *hcloud.LoadBalancer, services []*hcloud.LoadBalancerService) diag.Diagnostics {
 	var diags diag.Diagnostics
 	var newDiags diag.Diagnostics
 
-	tfIDs := []string{util.FormatID(lb.ID)}
 	tfItems := make([]attr.Value, 0, len(services))
 
 	for _, item := range services {
-		tfIDs = append(tfIDs, util.FormatID(item.ListenPort))
-
 		var value serviceModel
 		diags.Append(value.FromAPI(ctx, item)...)
 
@@ -92,7 +83,6 @@ func populateDataSourceServiceListModel(ctx context.Context, data *dataSourceSer
 		tfItems = append(tfItems, tfItem)
 	}
 
-	data.ID = types.StringValue(datasourceutil.ListID(tfIDs))
 	data.LoadBalancerID = types.Int64Value(lb.ID)
 	data.Services, newDiags = types.ListValue((&serviceModel{}).tfType(), tfItems)
 	diags.Append(newDiags...)
