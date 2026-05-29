@@ -3,12 +3,10 @@ package loadbalancer
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
@@ -22,7 +20,6 @@ const DataSourceServiceListType = "hcloud_load_balancer_services"
 
 var _ datasource.DataSource = (*DataSourceServiceList)(nil)
 var _ datasource.DataSourceWithConfigure = (*DataSourceServiceList)(nil)
-var _ datasource.DataSourceWithConfigValidators = (*DataSourceServiceList)(nil)
 
 type DataSourceServiceList struct {
 	client *hcloud.Client
@@ -30,15 +27,6 @@ type DataSourceServiceList struct {
 
 func NewDataSourceServiceList() datasource.DataSource {
 	return &DataSourceServiceList{}
-}
-
-// ConfigValidators returns a list of ConfigValidators. Each ConfigValidator's Validate method will be called when validating the data source.
-func (d *DataSourceServiceList) ConfigValidators(_ context.Context) []datasource.ConfigValidator {
-	return []datasource.ConfigValidator{
-		datasourcevalidator.ExactlyOneOf(
-			path.MatchRoot("load_balancer_id"),
-		),
-	}
 }
 
 // Metadata should return the full name of the data source.
