@@ -52,38 +52,6 @@ type serviceModel struct {
 	HealthCheck     types.Object `tfsdk:"health_check"`
 }
 
-func (m *serviceModel) tfAttributesTypesHTTP() map[string]attr.Type {
-	return map[string]attr.Type{
-		"sticky_sessions": types.BoolType,
-		"cookie_name":     types.StringType,
-		"cookie_lifetime": types.Int32Type,
-		"certificate_ids": types.ListType{ElemType: types.Int64Type},
-		"redirect_http":   types.BoolType,
-		"timeout_idle":    types.Int32Type,
-	}
-}
-
-func (m *serviceModel) tfAttributesTypesHealthCheckHTTP() map[string]attr.Type {
-	return map[string]attr.Type{
-		"domain":       types.StringType,
-		"path":         types.StringType,
-		"response":     types.StringType,
-		"tls":          types.BoolType,
-		"status_codes": types.ListType{ElemType: types.StringType},
-	}
-}
-
-func (m *serviceModel) tfAttributesTypesHealthCheck() map[string]attr.Type {
-	return map[string]attr.Type{
-		"protocol": types.StringType,
-		"port":     types.Int32Type,
-		"interval": types.Int32Type,
-		"timeout":  types.Int32Type,
-		"retries":  types.Int32Type,
-		"http":     types.ObjectType{AttrTypes: m.tfAttributesTypesHealthCheckHTTP()},
-	}
-}
-
 func (m *serviceModel) tfAttributesTypes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"id":               types.StringType,
@@ -92,8 +60,8 @@ func (m *serviceModel) tfAttributesTypes() map[string]attr.Type {
 		"listen_port":      types.Int32Type,
 		"destination_port": types.Int32Type,
 		"proxyprotocol":    types.BoolType,
-		"http":             types.ObjectType{AttrTypes: m.tfAttributesTypesHTTP()},
-		"health_check":     types.ObjectType{AttrTypes: m.tfAttributesTypesHealthCheck()},
+		"http":             (&serviceModelHTTP{}).tfType(),
+		"health_check":     (&serviceModelHealthCheck{}).tfType(),
 	}
 }
 
@@ -104,53 +72,181 @@ func (m *serviceModel) tfType() attr.Type {
 var _ util.ModelFromAPI[*hcloud.LoadBalancerService] = &serviceModel{}
 var _ util.ModelToTerraform[types.Object] = &serviceModel{}
 
-func (m *serviceModel) FromAPI(_ context.Context, hc *hcloud.LoadBalancerService) diag.Diagnostics {
-	var httpCertIDs []attr.Value
-	for _, cert := range hc.HTTP.Certificates {
-		httpCertIDs = append(httpCertIDs, types.Int64Value(cert.ID))
-	}
+func (m *serviceModel) FromAPI(ctx context.Context, hc *hcloud.LoadBalancerService) diag.Diagnostics {
+	var diags, newDiags diag.Diagnostics
 
 	m.ListenPort = types.Int32Value(util.CastInt32(hc.ListenPort))
 	m.DestinationPort = types.Int32Value(util.CastInt32(hc.DestinationPort))
 	m.Proxyprotocol = types.BoolValue(hc.Proxyprotocol)
 	m.Protocol = types.StringValue(string(hc.Protocol))
-	m.HTTP = types.ObjectValueMust(m.tfAttributesTypesHTTP(), map[string]attr.Value{
-		"sticky_sessions": types.BoolValue(hc.HTTP.StickySessions),
-		"cookie_name":     types.StringValue(hc.HTTP.CookieName),
-		"cookie_lifetime": types.Int32Value(util.CastInt32(hc.HTTP.CookieLifetime.Seconds())),
-		"certificate_ids": types.ListValueMust(types.Int64Type, httpCertIDs),
-		"redirect_http":   types.BoolValue(hc.HTTP.RedirectHTTP),
-		"timeout_idle":    types.Int32Value(util.CastInt32(hc.HTTP.TimeoutIdle.Seconds())),
-	})
 
-	healthCheck := map[string]attr.Value{
-		"protocol": types.StringValue(string(hc.HealthCheck.Protocol)),
-		"port":     types.Int32Value(util.CastInt32(hc.HealthCheck.Port)),
-		"interval": types.Int32Value(util.CastInt32(hc.HealthCheck.Interval.Seconds())),
-		"timeout":  types.Int32Value(util.CastInt32(hc.HealthCheck.Timeout.Seconds())),
-		"retries":  types.Int32Value(util.CastInt32(hc.HealthCheck.Retries)),
+	{
+		value := serviceModelHTTP{}
+		diags.Append(value.FromAPI(ctx, &hc.HTTP)...)
+
+		m.HTTP, newDiags = value.ToTerraform(ctx)
+		diags.Append(newDiags...)
 	}
 
-	if hc.HealthCheck.HTTP != nil {
-		var statusCodes []attr.Value
-		for _, code := range hc.HealthCheck.HTTP.StatusCodes {
-			statusCodes = append(statusCodes, types.StringValue(code))
-		}
+	{
+		value := serviceModelHealthCheck{}
+		diags.Append(value.FromAPI(ctx, &hc.HealthCheck)...)
 
-		healthCheck["http"] = types.ObjectValueMust(m.tfAttributesTypesHealthCheckHTTP(), map[string]attr.Value{
-			"domain":       types.StringValue(hc.HealthCheck.HTTP.Domain),
-			"path":         types.StringValue(hc.HealthCheck.HTTP.Path),
-			"response":     types.StringValue(hc.HealthCheck.HTTP.Response),
-			"tls":          types.BoolValue(hc.HealthCheck.HTTP.TLS),
-			"status_codes": types.ListValueMust(types.StringType, statusCodes),
-		})
+		m.HealthCheck, newDiags = value.ToTerraform(ctx)
+		diags.Append(newDiags...)
 	}
-
-	m.HealthCheck = types.ObjectValueMust(m.tfAttributesTypesHealthCheck(), healthCheck)
 
 	return nil
 }
 
 func (m *serviceModel) ToTerraform(ctx context.Context) (types.Object, diag.Diagnostics) {
+	return types.ObjectValueFrom(ctx, m.tfAttributesTypes(), m)
+}
+
+type serviceModelHTTP struct {
+	StickySessions types.Bool   `tfsdk:"sticky_sessions"`
+	CookieName     types.String `tfsdk:"cookie_name"`
+	CookieLifetime types.Int32  `tfsdk:"cookie_lifetime"`
+	CertificateIDs types.List   `tfsdk:"certificate_ids"`
+	RedirectHTTP   types.Bool   `tfsdk:"redirect_http"`
+	TimeoutIdle    types.Int32  `tfsdk:"timeout_idle"`
+}
+
+func (m *serviceModelHTTP) tfAttributesTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"sticky_sessions": types.BoolType,
+		"cookie_name":     types.StringType,
+		"cookie_lifetime": types.Int32Type,
+		"certificate_ids": types.ListType{ElemType: types.Int64Type},
+		"redirect_http":   types.BoolType,
+		"timeout_idle":    types.Int32Type,
+	}
+}
+
+func (m *serviceModelHTTP) tfType() attr.Type {
+	return basetypes.ObjectType{AttrTypes: m.tfAttributesTypes()}
+}
+
+var _ util.ModelFromAPI[*hcloud.LoadBalancerServiceHTTP] = &serviceModelHTTP{}
+var _ util.ModelToTerraform[types.Object] = &serviceModelHTTP{}
+
+func (m *serviceModelHTTP) FromAPI(_ context.Context, hc *hcloud.LoadBalancerServiceHTTP) diag.Diagnostics {
+	var diags, newDiags diag.Diagnostics
+
+	var httpCertIDs []attr.Value
+	for _, cert := range hc.Certificates {
+		httpCertIDs = append(httpCertIDs, types.Int64Value(cert.ID))
+	}
+
+	m.StickySessions = types.BoolValue(hc.StickySessions)
+	m.CookieName = types.StringValue(hc.CookieName)
+	m.CookieLifetime = types.Int32Value(util.CastInt32(hc.CookieLifetime.Seconds()))
+	m.CertificateIDs, newDiags = types.ListValue(types.Int64Type, httpCertIDs)
+	diags = append(diags, newDiags...)
+	m.RedirectHTTP = types.BoolValue(hc.RedirectHTTP)
+	m.TimeoutIdle = types.Int32Value(util.CastInt32(hc.TimeoutIdle.Seconds()))
+
+	return diags
+}
+
+func (m *serviceModelHTTP) ToTerraform(ctx context.Context) (types.Object, diag.Diagnostics) {
+	return types.ObjectValueFrom(ctx, m.tfAttributesTypes(), m)
+}
+
+type serviceModelHealthCheck struct {
+	Protocol types.String `tfsdk:"protocol"`
+	Port     types.Int32  `tfsdk:"port"`
+	Interval types.Int32  `tfsdk:"interval"`
+	Timeout  types.Int32  `tfsdk:"timeout"`
+	Retries  types.Int32  `tfsdk:"retries"`
+	HTTP     types.Object `tfsdk:"http"`
+}
+
+func (m *serviceModelHealthCheck) tfAttributesTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"protocol": types.StringType,
+		"port":     types.Int32Type,
+		"interval": types.Int32Type,
+		"timeout":  types.Int32Type,
+		"retries":  types.Int32Type,
+		"http":     (&serviceModelHealthCheckHTTP{}).tfType(),
+	}
+}
+
+func (m *serviceModelHealthCheck) tfType() attr.Type {
+	return basetypes.ObjectType{AttrTypes: m.tfAttributesTypes()}
+}
+
+var _ util.ModelFromAPI[*hcloud.LoadBalancerServiceHealthCheck] = &serviceModelHealthCheck{}
+var _ util.ModelToTerraform[types.Object] = &serviceModelHealthCheck{}
+
+func (m *serviceModelHealthCheck) FromAPI(ctx context.Context, hc *hcloud.LoadBalancerServiceHealthCheck) diag.Diagnostics {
+	var diags, newDiags diag.Diagnostics
+
+	m.Protocol = types.StringValue(string(hc.Protocol))
+	m.Port = types.Int32Value(util.CastInt32(hc.Port))
+	m.Interval = types.Int32Value(util.CastInt32(hc.Interval.Seconds()))
+	m.Timeout = types.Int32Value(util.CastInt32(hc.Timeout.Seconds()))
+	m.Retries = types.Int32Value(util.CastInt32(hc.Retries))
+
+	if hc.HTTP != nil {
+		value := serviceModelHealthCheckHTTP{}
+		diags.Append(value.FromAPI(ctx, hc.HTTP)...)
+
+		m.HTTP, newDiags = value.ToTerraform(ctx)
+		diags.Append(newDiags...)
+	}
+
+	return diags
+}
+
+func (m *serviceModelHealthCheck) ToTerraform(ctx context.Context) (types.Object, diag.Diagnostics) {
+	return types.ObjectValueFrom(ctx, m.tfAttributesTypes(), m)
+}
+
+type serviceModelHealthCheckHTTP struct {
+	Domain      types.String `tfsdk:"domain"`
+	Path        types.String `tfsdk:"path"`
+	Response    types.String `tfsdk:"response"`
+	TLS         types.Bool   `tfsdk:"tls"`
+	StatusCodes types.List   `tfsdk:"status_codes"`
+}
+
+func (m *serviceModelHealthCheckHTTP) tfAttributesTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"domain":       types.StringType,
+		"path":         types.StringType,
+		"response":     types.StringType,
+		"tls":          types.BoolType,
+		"status_codes": types.ListType{ElemType: types.StringType},
+	}
+}
+
+func (m *serviceModelHealthCheckHTTP) tfType() attr.Type {
+	return basetypes.ObjectType{AttrTypes: m.tfAttributesTypes()}
+}
+
+var _ util.ModelFromAPI[*hcloud.LoadBalancerServiceHealthCheckHTTP] = &serviceModelHealthCheckHTTP{}
+var _ util.ModelToTerraform[types.Object] = &serviceModelHealthCheckHTTP{}
+
+func (m *serviceModelHealthCheckHTTP) FromAPI(_ context.Context, hc *hcloud.LoadBalancerServiceHealthCheckHTTP) diag.Diagnostics {
+	var diags, newDiags diag.Diagnostics
+
+	var statusCodes []attr.Value
+	for _, code := range hc.StatusCodes {
+		statusCodes = append(statusCodes, types.StringValue(code))
+	}
+
+	m.Domain = types.StringValue(hc.Domain)
+	m.Path = types.StringValue(hc.Path)
+	m.Response = types.StringValue(hc.Response)
+	m.TLS = types.BoolValue(hc.TLS)
+	m.StatusCodes, newDiags = types.ListValue(types.StringType, statusCodes)
+	diags = append(diags, newDiags...)
+
+	return diags
+}
+
+func (m *serviceModelHealthCheckHTTP) ToTerraform(ctx context.Context) (types.Object, diag.Diagnostics) {
 	return types.ObjectValueFrom(ctx, m.tfAttributesTypes(), m)
 }
