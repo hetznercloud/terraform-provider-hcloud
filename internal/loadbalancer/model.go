@@ -75,8 +75,8 @@ var _ util.ModelToTerraform[types.Object] = &serviceModel{}
 func (m *serviceModel) FromAPI(ctx context.Context, hc *hcloud.LoadBalancerService) diag.Diagnostics {
 	var diags, newDiags diag.Diagnostics
 
-	m.ListenPort = types.Int32Value(util.CastInt32(hc.ListenPort))
-	m.DestinationPort = types.Int32Value(util.CastInt32(hc.DestinationPort))
+	m.ListenPort = types.Int32Value(int32(hc.ListenPort))           //nolint:gosec
+	m.DestinationPort = types.Int32Value(int32(hc.DestinationPort)) //nolint:gosec
 	m.Proxyprotocol = types.BoolValue(hc.Proxyprotocol)
 	m.Protocol = types.StringValue(string(hc.Protocol))
 
@@ -140,11 +140,11 @@ func (m *serviceModelHTTP) FromAPI(_ context.Context, hc *hcloud.LoadBalancerSer
 
 	m.StickySessions = types.BoolValue(hc.StickySessions)
 	m.CookieName = types.StringValue(hc.CookieName)
-	m.CookieLifetime = types.Int32Value(util.CastInt32(hc.CookieLifetime.Seconds()))
+	m.CookieLifetime = types.Int32Value(int32(hc.CookieLifetime.Seconds()))
 	m.CertificateIDs, newDiags = types.ListValue(types.Int64Type, httpCertIDs)
 	diags = append(diags, newDiags...)
 	m.RedirectHTTP = types.BoolValue(hc.RedirectHTTP)
-	m.TimeoutIdle = types.Int32Value(util.CastInt32(hc.TimeoutIdle.Seconds()))
+	m.TimeoutIdle = types.Int32Value(int32(hc.TimeoutIdle.Seconds()))
 
 	return diags
 }
@@ -184,10 +184,10 @@ func (m *serviceModelHealthCheck) FromAPI(ctx context.Context, hc *hcloud.LoadBa
 	var diags, newDiags diag.Diagnostics
 
 	m.Protocol = types.StringValue(string(hc.Protocol))
-	m.Port = types.Int32Value(util.CastInt32(hc.Port))
-	m.Interval = types.Int32Value(util.CastInt32(hc.Interval.Seconds()))
-	m.Timeout = types.Int32Value(util.CastInt32(hc.Timeout.Seconds()))
-	m.Retries = types.Int32Value(util.CastInt32(hc.Retries))
+	m.Port = types.Int32Value(int32(hc.Port)) //nolint:gosec
+	m.Interval = types.Int32Value(int32(hc.Interval.Seconds()))
+	m.Timeout = types.Int32Value(int32(hc.Timeout.Seconds()))
+	m.Retries = types.Int32Value(int32(hc.Retries)) //nolint:gosec
 
 	if hc.HTTP != nil {
 		value := serviceModelHealthCheckHTTP{}
