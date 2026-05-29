@@ -71,7 +71,7 @@ resource "hcloud_server" "{{ .RName }}" {
 EOF
   {{ end }}
 
-  {{ if .FirewallIDs }}
+  {{ if ne .FirewallIDs nil }}
   firewall_ids = [
   {{- range $k,$v := .FirewallIDs }}
      {{ $v }},
