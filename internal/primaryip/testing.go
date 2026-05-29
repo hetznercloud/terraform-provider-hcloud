@@ -79,7 +79,7 @@ type RData struct {
 	AssigneeType     string
 	AssigneeID       string
 	Labels           map[string]string
-	AutoDelete       bool
+	AutoDelete       *bool
 	DeleteProtection bool
 
 	Raw string
@@ -103,34 +103,30 @@ func NewBlueprint(t *testing.T) *Blueprint {
 	b := &Blueprint{}
 
 	b.PrimaryIPv4A = &RData{
-		Name:       "a-ipv4",
-		Type:       "ipv4",
-		Location:   teste2e.TestLocationName,
-		AutoDelete: false,
+		Name:     "a-ipv4",
+		Type:     "ipv4",
+		Location: teste2e.TestLocationName,
 	}
 	b.PrimaryIPv4A.SetRName("primary_ipv4_a")
 
 	b.PrimaryIPv4B = &RData{
-		Name:       "b-ipv4",
-		Type:       "ipv4",
-		Location:   teste2e.TestLocationName,
-		AutoDelete: false,
+		Name:     "b-ipv4",
+		Type:     "ipv4",
+		Location: teste2e.TestLocationName,
 	}
 	b.PrimaryIPv4B.SetRName("primary_ipv4_b")
 
 	b.PrimaryIPv6C = &RData{
-		Name:       "c-ipv6",
-		Type:       "ipv6",
-		Location:   teste2e.TestLocationName,
-		AutoDelete: false,
+		Name:     "c-ipv6",
+		Type:     "ipv6",
+		Location: teste2e.TestLocationName,
 	}
 	b.PrimaryIPv6C.SetRName("primary_ipv6_c")
 
 	b.PrimaryIPv6D = &RData{
-		Name:       "d-ipv6",
-		Type:       "ipv6",
-		Location:   teste2e.TestLocationName,
-		AutoDelete: false,
+		Name:     "d-ipv6",
+		Type:     "ipv6",
+		Location: teste2e.TestLocationName,
 	}
 	b.PrimaryIPv6D.SetRName("primary_ipv6_d")
 

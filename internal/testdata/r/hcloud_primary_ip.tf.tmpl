@@ -21,7 +21,9 @@ resource "hcloud_primary_ip" "{{ .RName }}" {
   labels = {{ .Labels | toPrettyJson }}
   {{- end }}
 
+  {{- if ne .AutoDelete nil }}
   auto_delete       = {{ .AutoDelete }}
+  {{- end }}
   {{- if .DeleteProtection }}
   delete_protection = {{ .DeleteProtection }}
   {{ end }}
