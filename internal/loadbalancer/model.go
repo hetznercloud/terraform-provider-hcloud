@@ -110,25 +110,25 @@ func (m *serviceModel) FromAPI(_ context.Context, hc *hcloud.LoadBalancerService
 		httpCertIDs = append(httpCertIDs, types.Int64Value(cert.ID))
 	}
 
-	m.ListenPort = types.Int32Value(int32(hc.ListenPort))
-	m.DestinationPort = types.Int32Value(int32(hc.DestinationPort))
+	m.ListenPort = types.Int32Value(util.CastInt32(hc.ListenPort))
+	m.DestinationPort = types.Int32Value(util.CastInt32(hc.DestinationPort))
 	m.Proxyprotocol = types.BoolValue(hc.Proxyprotocol)
 	m.Protocol = types.StringValue(string(hc.Protocol))
 	m.HTTP = types.ObjectValueMust(m.tfAttributesTypesHTTP(), map[string]attr.Value{
 		"sticky_sessions": types.BoolValue(hc.HTTP.StickySessions),
 		"cookie_name":     types.StringValue(hc.HTTP.CookieName),
-		"cookie_lifetime": types.Int32Value(int32(hc.HTTP.CookieLifetime.Seconds())),
+		"cookie_lifetime": types.Int32Value(util.CastInt32(hc.HTTP.CookieLifetime.Seconds())),
 		"certificates":    types.ListValueMust(types.Int64Type, httpCertIDs),
 		"redirect_http":   types.BoolValue(hc.HTTP.RedirectHTTP),
-		"timeout_idle":    types.Int32Value(int32(hc.HTTP.TimeoutIdle.Seconds())),
+		"timeout_idle":    types.Int32Value(util.CastInt32(hc.HTTP.TimeoutIdle.Seconds())),
 	})
 
 	healthCheck := map[string]attr.Value{
 		"protocol": types.StringValue(string(hc.HealthCheck.Protocol)),
-		"port":     types.Int32Value(int32(hc.HealthCheck.Port)),
-		"interval": types.Int32Value(int32(hc.HealthCheck.Interval.Seconds())),
-		"timeout":  types.Int32Value(int32(hc.HealthCheck.Timeout.Seconds())),
-		"retries":  types.Int32Value(int32(hc.HealthCheck.Retries)),
+		"port":     types.Int32Value(util.CastInt32(hc.HealthCheck.Port)),
+		"interval": types.Int32Value(util.CastInt32(hc.HealthCheck.Interval.Seconds())),
+		"timeout":  types.Int32Value(util.CastInt32(hc.HealthCheck.Timeout.Seconds())),
+		"retries":  types.Int32Value(util.CastInt32(hc.HealthCheck.Retries)),
 	}
 
 	if hc.HealthCheck.HTTP != nil {
