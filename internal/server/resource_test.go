@@ -873,7 +873,7 @@ func TestAccServerResource_DirectAttachToNetworkID(t *testing.T) {
 					"testdata/r/hcloud_server", res,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(nws.SubnetA1.TFID(), network.ByID(t, &hcNetwork)),
+					testsupport.CheckResourceExists(nws.NetworkA.TFID(), network.ByID(t, &hcNetwork)),
 					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &hcServer)),
 					testsupport.LiftTCF(hasServerNetwork(t, &hcServer, &hcNetwork, "10.0.1.10")),
 					resource.TestCheckResourceAttr(res.TFID(), "network.#", "1"),
