@@ -110,9 +110,9 @@ func Resource() *schema.Resource {
 				Default:  false,
 			},
 			"allow_deprecated_images": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
+				Deprecated: "Unused attribute, consider removing it from your configuration.",
+				Type:       schema.TypeBool,
+				Optional:   true,
 			},
 			"backup_window": {
 				Type:       schema.TypeString,
@@ -322,19 +322,20 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m any) (d
 		return
 	}
 
-	if message, _ := deprecationutil.ImageMessage(image); message != "" {
-		deprecationDiag := diag.Diagnostic{
-			Severity: diag.Warning,
-			Summary:  message,
-		}
-		if d.Get("allow_deprecated_images").(bool) {
-			diags = append(diags, deprecationDiag)
-		} else {
-			deprecationDiag.Severity = diag.Error
-			deprecationDiag.Detail = "To continue using deprecated images, specify the allow_deprecated_images option."
-			diags = append(diags, deprecationDiag)
+	if message, unavailable := deprecationutil.ImageMessage(image); message != "" {
+		if unavailable {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  "Image Unavailable",
+				Detail:   message + ".",
+			})
 			return
 		}
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "Image Deprecated",
+			Detail:   message + ".",
+		})
 	}
 
 	opts := hcloud.ServerCreateOpts{
