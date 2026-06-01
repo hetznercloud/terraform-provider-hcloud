@@ -152,6 +152,26 @@ func TestNotFoundDiagnostics(t *testing.T) {
 			actual:   NotFoundDiagnostic("ssh_key", "name", "my-ssh-key"),
 			expected: diag.NewErrorDiagnostic("Resource not found", "Resource (ssh_key) was not found: name=my-ssh-key"),
 		},
+		{
+			name:     "ssh key with 1 arg",
+			actual:   NotFoundDiagnostic("ssh_key", "arg1"),
+			expected: diag.NewErrorDiagnostic("Resource not found", "Resource (ssh_key) was not found: arg1"),
+		},
+		{
+			name:     "ssh key with 2 args",
+			actual:   NotFoundDiagnostic("ssh_key", "arg1", "arg2"),
+			expected: diag.NewErrorDiagnostic("Resource not found", "Resource (ssh_key) was not found: arg1=arg2"),
+		},
+		{
+			name:     "ssh key with 3 args",
+			actual:   NotFoundDiagnostic("ssh_key", "arg1", "arg2", "arg3"),
+			expected: diag.NewErrorDiagnostic("Resource not found", "Resource (ssh_key) was not found: arg1 arg2=arg3"),
+		},
+		{
+			name:     "ssh key with 4 args",
+			actual:   NotFoundDiagnostic("ssh_key", "arg1", "arg2", "arg3", "arg4"),
+			expected: diag.NewErrorDiagnostic("Resource not found", "Resource (ssh_key) was not found: arg1=arg2 arg3=arg4"),
+		},
 	} {
 		t.Run(testCase.name, func(t *testing.T) {
 			assert.Equal(t, testCase.expected, testCase.actual)

@@ -78,9 +78,26 @@ func APIErrorIsNotFound(err error) bool {
 	return false
 }
 
-func NotFoundDiagnostic(resourceName string, key string, value any) diag.Diagnostic {
-	return diag.NewErrorDiagnostic(
-		"Resource not found",
-		fmt.Sprintf("Resource (%s) was not found: %s=%s", resourceName, key, fmt.Sprint(value)),
-	)
+func NotFoundDiagnostic(resourceName string, values ...any) diag.Diagnostic {
+	b := &strings.Builder{}
+
+	fmt.Fprintf(b, "Resource (%s) was not found", resourceName)
+
+	if len(values) > 0 {
+		fmt.Fprint(b, ":")
+		// len(values) == 1: value
+		// len(values) == 2: key=value
+		// len(values) == 3: value key=value
+		// len(values) == 4: key=value key=value
+		offset := 0
+		if len(values)%2 != 0 {
+			offset = 1
+			fmt.Fprintf(b, " %v", values[0])
+		}
+		for i := offset; i < len(values); i += 2 {
+			fmt.Fprintf(b, " %s=%v", values[i], values[i+1])
+		}
+	}
+
+	return diag.NewErrorDiagnostic("Resource not found", b.String())
 }
