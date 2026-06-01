@@ -187,7 +187,7 @@ The following arguments are supported:
 - `placement_group_id` - (Optional, string) Placement Group ID the server added to on creation.
 - `delete_protection` - (Optional, bool) Enable or disable delete protection (Needs to be the same as `rebuild_protection`). See ["Delete Protection"](../index.html.markdown#delete-protection) in the Provider Docs for details.
 - `rebuild_protection` - (Optional, bool) Enable or disable rebuild protection (Needs to be the same as `delete_protection`).
-- `allow_deprecated_images` - (Optional, bool) Enable the use of deprecated images (default: false). **Note** Deprecated images will be removed after three months. Using them is then no longer possible.
+- `allow_deprecated_images` - (Optional, bool) Unused attribute, consider removing it from your configuration.
 - `shutdown_before_deletion` - (bool) Whether to try shutting the server down gracefully before deleting it.
 
 `network` support the following fields:

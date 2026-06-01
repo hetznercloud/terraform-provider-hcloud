@@ -85,7 +85,7 @@ func TestAccServerResource(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"ssh_keys", "user_data", "keep_disk", "ignore_remote_firewall_ids", "allow_deprecated_images", "shutdown_before_deletion",
+					"ssh_keys", "user_data", "keep_disk", "ignore_remote_firewall_ids", "shutdown_before_deletion",
 				},
 			},
 			{
