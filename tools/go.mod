@@ -4,7 +4,7 @@ go 1.25.8
 
 toolchain go1.26.3
 
-require github.com/hashicorp/terraform-plugin-docs v0.25.0
+tool github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
 
 require (
 	github.com/BurntSushi/toml v1.2.1 // indirect
@@ -31,6 +31,7 @@ require (
 	github.com/hashicorp/hc-install v0.9.4 // indirect
 	github.com/hashicorp/terraform-exec v0.25.0 // indirect
 	github.com/hashicorp/terraform-json v0.27.3-0.20260213134036-298b8f6b673a // indirect
+	github.com/hashicorp/terraform-plugin-docs v0.25.0 // indirect
 	github.com/huandu/xstrings v1.3.3 // indirect
 	github.com/imdario/mergo v0.3.15 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
