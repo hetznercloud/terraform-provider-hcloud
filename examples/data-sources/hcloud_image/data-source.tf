@@ -1,5 +1,5 @@
 data "hcloud_image" "by_id" {
-  id = "114690387"
+  id = 114690387
 }
 
 data "hcloud_image" "by_name_x86" {
@@ -14,6 +14,7 @@ data "hcloud_image" "by_name_arm" {
 
 data "hcloud_image" "by_label" {
   with_selector = "key=value"
+  most_recent   = true
 }
 
 resource "hcloud_server" "main" {
