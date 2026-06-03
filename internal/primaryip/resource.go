@@ -349,9 +349,8 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 	}
 
 	// Action: Assignee ID
-	if !plan.AssigneeID.IsUnknown() &&
-		!plan.AssigneeID.Equal(data.AssigneeID) ||
-		!plan.AssigneeType.Equal(data.AssigneeType) {
+	if (!plan.AssigneeID.IsUnknown() && !plan.AssigneeID.Equal(data.AssigneeID)) ||
+		(!plan.AssigneeType.IsUnknown() && !plan.AssigneeType.Equal(data.AssigneeType)) {
 
 		// The outer condition guarantees the assignee changed. Unassign the old
 		// assignee first (if any), then assign the new one (if any).
