@@ -18,7 +18,7 @@ func TestModel(t *testing.T) {
 			Type:       hcloud.ZoneRRSetTypeA,
 			Labels:     map[string]string{"key": "value"},
 			Protection: hcloud.ZoneRRSetProtection{Change: false},
-			TTL:        hcloud.Ptr(10800),
+			TTL:        new(10800),
 			Records: []hcloud.ZoneRRSetRecord{
 				{Value: "201.45.3.45"},
 				{Value: "201.45.3.46", Comment: "some web server"},

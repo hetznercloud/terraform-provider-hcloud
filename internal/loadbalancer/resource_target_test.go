@@ -134,7 +134,7 @@ func TestAccLoadBalancerTargetResource_ServerTarget_UsePrivateIP(t *testing.T) {
 		Name:                  "target-test-lb-network",
 		LoadBalancerID:        resLoadBalancer.TFID() + ".id",
 		NetworkID:             resNetwork.TFID() + ".id",
-		EnablePublicInterface: hcloud.Ptr(true),
+		EnablePublicInterface: new(true),
 	}
 	resLoadBalancerNetwork.SetRName("test")
 
@@ -301,7 +301,7 @@ func TestAccLoadBalancerTargetResource_LabelSelectorTarget_UsePrivateIP(t *testi
 		Name:                  "target-test-lb-network",
 		LoadBalancerID:        resLoadBalancer.TFID() + ".id",
 		NetworkID:             resNetwork.TFID() + ".id",
-		EnablePublicInterface: hcloud.Ptr(true),
+		EnablePublicInterface: new(true),
 		DependsOn: []string{
 			resNetworkSubNet.TFID(),
 		},

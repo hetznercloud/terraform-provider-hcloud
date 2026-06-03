@@ -206,11 +206,11 @@ func toHcloudRule(tfRawRule any) (hcloud.FirewallRule, bool) {
 	}
 	rawPort := tfRule["port"].(string)
 	if rawPort != "" {
-		rule.Port = hcloud.Ptr(rawPort)
+		rule.Port = new(rawPort)
 	}
 	rawDescription := tfRule["description"].(string)
 	if rawDescription != "" {
-		rule.Description = hcloud.Ptr(rawDescription)
+		rule.Description = new(rawDescription)
 	}
 	for _, sourceIP := range tfRule["source_ips"].(*schema.Set).List() {
 		// We ignore the error here, because it was already validated before

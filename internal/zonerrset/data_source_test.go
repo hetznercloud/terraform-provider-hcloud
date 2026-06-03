@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/hcloud-go/v2/hcloud/exp/kit/randutil"
 	"github.com/hetznercloud/hcloud-go/v2/hcloud/exp/labelutil"
 	"github.com/hetznercloud/hcloud-go/v2/hcloud/schema"
@@ -38,7 +37,7 @@ func TestAccZoneRRSetDataSource(t *testing.T) {
 			Name:   "www",
 			Type:   "A",
 			Labels: map[string]string{"key": randutil.GenerateID()},
-			TTL:    hcloud.Ptr(10800),
+			TTL:    new(10800),
 			Records: []schema.ZoneRRSetRecord{
 				{Value: "201.42.91.35"},
 				{Value: "201.42.91.36", Comment: "some web server"},

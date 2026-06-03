@@ -37,7 +37,7 @@ func TestAccPrimaryIPResource(t *testing.T) {
 	res3 := testtemplate.DeepCopy(t, res1)
 	res3.Name = res1.Name + "-changed"
 	res3.Labels = map[string]string{"key": "changed"}
-	res3.AutoDelete = hcloud.Ptr(true)
+	res3.AutoDelete = new(true)
 	res3.DeleteProtection = false
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -336,7 +336,7 @@ func TestAccPrimaryIPResource_Reassign(t *testing.T) {
 		Type:         "ipv4",
 		AssigneeID:   res1ServerA.TFID() + ".id",
 		AssigneeType: "server",
-		AutoDelete:   hcloud.Ptr(false),
+		AutoDelete:   new(false),
 	}
 	res2.SetRName("main")
 
@@ -534,7 +534,7 @@ func TestAccPrimaryIPResource_DatacenterToLocationForceNew(t *testing.T) {
 		Type:         "ipv6",
 		Datacenter:   teste2e.TestDataCenter,
 		AssigneeType: "server", // Attribute was still required in previous versions
-		AutoDelete:   hcloud.Ptr(false),
+		AutoDelete:   new(false),
 	}
 	res1.SetRName("main")
 
@@ -585,7 +585,7 @@ func TestAccPrimaryIPResource_UpgradePluginFramework(t *testing.T) {
 		AssigneeType: "server",
 		// Labels will default {} after the upgrade, this is a workaround to make the tests pass
 		Labels:     map[string]string{"key": "value"},
-		AutoDelete: hcloud.Ptr(false),
+		AutoDelete: new(false),
 	}
 	res.SetRName("main")
 

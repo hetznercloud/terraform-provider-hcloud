@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/hcloud-go/v2/hcloud/exp/kit/randutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/primaryip"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
@@ -111,7 +110,7 @@ func TestAccPrimaryIPDataSource_UpgradePluginFramework(t *testing.T) {
 		Location:     teste2e.TestLocationName,
 		Labels:       map[string]string{"key": randutil.GenerateID()},
 		AssigneeType: "server", // Attribute was still required in previous versions
-		AutoDelete:   hcloud.Ptr(false),
+		AutoDelete:   new(false),
 	}
 	res.SetRName("main")
 

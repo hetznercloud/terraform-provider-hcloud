@@ -97,7 +97,7 @@ func TestAccLoadBalancerNetworkResource_NetworkID(t *testing.T) {
 		LoadBalancerID:        b.loadBalancer1.TFID() + ".id",
 		NetworkID:             b.network.TFID() + ".id",
 		IP:                    "10.0.1.5",
-		EnablePublicInterface: hcloud.Ptr(false),
+		EnablePublicInterface: new(false),
 		DependsOn:             []string{b.subnet1.TFID()},
 	}
 	res1.SetRName("attachment")
@@ -107,7 +107,7 @@ func TestAccLoadBalancerNetworkResource_NetworkID(t *testing.T) {
 		LoadBalancerID:        res1.LoadBalancerID,
 		NetworkID:             res1.NetworkID,
 		IP:                    res1.IP,
-		EnablePublicInterface: hcloud.Ptr(true),
+		EnablePublicInterface: new(true),
 		DependsOn:             res1.DependsOn,
 	}
 	res2.SetRName("attachment")

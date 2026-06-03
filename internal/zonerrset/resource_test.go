@@ -38,7 +38,7 @@ func TestAccZoneRRSetResource(t *testing.T) {
 			Name:   "www",
 			Type:   "A",
 			Labels: map[string]string{"key": "value"},
-			TTL:    hcloud.Ptr(10800),
+			TTL:    new(10800),
 			Records: []schema.ZoneRRSetRecord{
 				{Value: "201.42.91.35"},
 				{Value: "201.42.91.36", Comment: "some web server"},
@@ -53,7 +53,7 @@ func TestAccZoneRRSetResource(t *testing.T) {
 			Name:   res1.Name,
 			Type:   res1.Type,
 			Labels: map[string]string{"key": "changed"},
-			TTL:    hcloud.Ptr(600),
+			TTL:    new(600),
 			Records: []schema.ZoneRRSetRecord{
 				{Value: "42.42.91.35"},
 				{Value: "42.42.91.36", Comment: "some web server"},
