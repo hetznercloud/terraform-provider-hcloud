@@ -1,6 +1,6 @@
 module tools
 
-go 1.25.8
+go 1.26.4
 
 toolchain go1.26.3
 

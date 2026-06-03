@@ -189,7 +189,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		Mode: hcloud.ZoneMode(data.Mode.ValueString()),
 	}
 	if !data.TTL.IsUnknown() && !data.TTL.IsNull() {
-		opts.TTL = hcloud.Ptr(int(data.TTL.ValueInt32()))
+		opts.TTL = new(int(data.TTL.ValueInt32()))
 	}
 
 	resp.Diagnostics.Append(hcloudutil.TerraformLabelsToHCloud(ctx, data.Labels, &opts.Labels)...)

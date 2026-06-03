@@ -84,10 +84,10 @@ func resourceFloatingIPCreate(ctx context.Context, d *schema.ResourceData, m any
 
 	opts := hcloud.FloatingIPCreateOpts{
 		Type:        hcloud.FloatingIPType(d.Get("type").(string)),
-		Description: hcloud.Ptr(d.Get("description").(string)),
+		Description: new(d.Get("description").(string)),
 	}
 	if name, ok := d.GetOk("name"); ok {
-		opts.Name = hcloud.Ptr(name.(string))
+		opts.Name = new(name.(string))
 	}
 	if serverID, ok := d.GetOk("server_id"); ok {
 		opts.Server = &hcloud.Server{ID: util.CastInt64(serverID)}

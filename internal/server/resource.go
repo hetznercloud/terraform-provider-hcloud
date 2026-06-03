@@ -436,7 +436,7 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m any) (d
 		opts.PublicNet = &createPublicNet
 		// if the server has no public net, it has to be created without starting it
 		if err := onServerCreateWithoutPublicNet(&opts, d, func(opts *hcloud.ServerCreateOpts) error {
-			opts.StartAfterCreate = hcloud.Ptr(false)
+			opts.StartAfterCreate = new(false)
 			return nil
 		}); err != nil {
 			diags = append(diags, err...)

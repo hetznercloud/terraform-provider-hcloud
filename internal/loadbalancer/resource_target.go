@@ -151,7 +151,7 @@ func resourceLoadBalancerCreateServerTarget(
 	}
 	if v, ok := d.GetOk("use_private_ip"); ok {
 		usePrivateIP = v.(bool)
-		opts.UsePrivateIP = hcloud.Ptr(usePrivateIP)
+		opts.UsePrivateIP = new(usePrivateIP)
 	}
 
 	err = control.Retry(control.DefaultRetries, func() error {
@@ -205,7 +205,7 @@ func resourceLoadBalancerCreateLabelSelectorTarget(
 	}
 
 	if v, ok := d.GetOk("use_private_ip"); ok {
-		opts.UsePrivateIP = hcloud.Ptr(v.(bool))
+		opts.UsePrivateIP = new(v.(bool))
 	}
 
 	tgt = hcloud.LoadBalancerTarget{

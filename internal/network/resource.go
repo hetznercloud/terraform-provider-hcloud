@@ -165,7 +165,7 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m any) d
 
 	if d.HasChange("expose_routes_to_vswitch") {
 		_, _, err := client.Network.Update(ctx, network, hcloud.NetworkUpdateOpts{
-			ExposeRoutesToVSwitch: hcloud.Ptr(d.Get("expose_routes_to_vswitch").(bool)),
+			ExposeRoutesToVSwitch: new(d.Get("expose_routes_to_vswitch").(bool)),
 		})
 		if err != nil {
 			if resourceNetworkIsNotFound(err, d) {
