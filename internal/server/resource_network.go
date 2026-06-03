@@ -15,7 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -111,7 +110,6 @@ Manage the attachment of a Server in a Network in the Hetzner Cloud.
 			ElementType:         iptypes.IPAddressType{},
 			Optional:            true,
 			Computed:            true,
-			Default:             setdefault.StaticValue(types.SetValueMust(iptypes.IPAddressType{}, nil)),
 			Validators: []validator.Set{
 				setvalidator.ValueStringsAre(validateutil.IP()),
 			},
