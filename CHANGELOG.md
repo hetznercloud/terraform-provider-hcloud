@@ -1,5 +1,16 @@
 # Changelog
 
+## [v1.65.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.65.0)
+
+### Features
+
+- **primary-ip**: make `auto_delete` attribute optional (#1429)
+- **server**: remove `allow_deprecated_images` from `hcloud_server` (#1435)
+
+### Bug Fixes
+
+- **primary-ip**: do not update assignee on unknown assignee_type (#1440)
+
 ## [v1.64.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.64.0)
 
 ### Features
