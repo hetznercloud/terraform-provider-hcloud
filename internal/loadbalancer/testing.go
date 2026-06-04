@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
@@ -179,4 +180,31 @@ type RDataNetwork struct {
 // TFID returns the resource identifier.
 func (d *RDataNetwork) TFID() string {
 	return fmt.Sprintf("%s.%s", NetworkResourceType, d.RName())
+}
+
+type Blueprint struct {
+	LoadBalancerA *RData
+	LoadBalancerB *RData
+}
+
+func NewBlueprint(t *testing.T) *Blueprint {
+	t.Helper()
+
+	b := &Blueprint{}
+
+	b.LoadBalancerA = &RData{
+		Name:        "a",
+		Type:        teste2e.TestLoadBalancerType,
+		NetworkZone: "eu-central",
+	}
+	b.LoadBalancerA.SetRName("a")
+
+	b.LoadBalancerB = &RData{
+		Name:        "b",
+		Type:        teste2e.TestLoadBalancerType,
+		NetworkZone: "eu-central",
+	}
+	b.LoadBalancerB.SetRName("b")
+
+	return b
 }

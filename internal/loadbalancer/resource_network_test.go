@@ -3,7 +3,6 @@ package loadbalancer_test
 import (
 	"fmt"
 	"regexp"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -19,69 +18,6 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-type LoadBalancerNetworkBlueprint struct {
-	prefixes []string
-
-	network *network.RData
-	subnet1 *network.RDataSubnet
-	subnet2 *network.RDataSubnet
-
-	loadBalancer1 *loadbalancer.RData
-	loadBalancer2 *loadbalancer.RData
-}
-
-func (b *LoadBalancerNetworkBlueprint) HCName(name string) string {
-	return strings.Join(append(b.prefixes, name), "-")
-}
-
-func (b *LoadBalancerNetworkBlueprint) TFName(name string) string {
-	return strings.Join(append(b.prefixes, name), "_")
-}
-
-func makeLoadBalancerNetworkBlueprint(t *testing.T, prefixes ...string) *LoadBalancerNetworkBlueprint {
-	t.Helper()
-
-	b := &LoadBalancerNetworkBlueprint{prefixes: prefixes}
-
-	b.network = &network.RData{
-		Name:    b.HCName("network"),
-		IPRange: "10.0.0.0/16",
-	}
-	b.network.SetRName(b.TFName("network"))
-
-	b.subnet1 = &network.RDataSubnet{
-		NetworkID:   b.network.TFID() + ".id",
-		NetworkZone: "eu-central",
-		IPRange:     "10.0.1.0/24",
-		Type:        "cloud",
-	}
-	b.subnet1.SetRName(b.TFName("subnet1"))
-
-	b.subnet2 = &network.RDataSubnet{
-		NetworkID:   b.network.TFID() + ".id",
-		NetworkZone: "eu-central",
-		IPRange:     "10.0.2.0/24",
-		Type:        "cloud",
-	}
-	b.subnet2.SetRName(b.TFName("subnet2"))
-
-	b.loadBalancer1 = &loadbalancer.RData{
-		Name:        b.HCName("loadbalancer1"),
-		Type:        teste2e.TestLoadBalancerType,
-		NetworkZone: "eu-central",
-	}
-	b.loadBalancer1.SetRName(b.TFName("loadbalancer1"))
-
-	b.loadBalancer2 = &loadbalancer.RData{
-		Name:        b.HCName("loadbalancer2"),
-		Type:        teste2e.TestLoadBalancerType,
-		NetworkZone: "eu-central",
-	}
-	b.loadBalancer2.SetRName(b.TFName("loadbalancer2"))
-
-	return b
-}
-
 func TestAccLoadBalancerNetworkResource_NetworkID(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
@@ -90,15 +26,16 @@ func TestAccLoadBalancerNetworkResource_NetworkID(t *testing.T) {
 		hcLoadBalancer hcloud.LoadBalancer
 	)
 
-	b := makeLoadBalancerNetworkBlueprint(t)
+	ntws := network.NewBlueprint(t)
+	lbls := loadbalancer.NewBlueprint(t)
 
 	res1 := &loadbalancer.RDataNetwork{
 		Name:                  "attachment",
-		LoadBalancerID:        b.loadBalancer1.TFID() + ".id",
-		NetworkID:             b.network.TFID() + ".id",
+		LoadBalancerID:        lbls.LoadBalancerA.TFID() + ".id",
+		NetworkID:             ntws.NetworkA.TFID() + ".id",
 		IP:                    "10.0.1.5",
 		EnablePublicInterface: new(false),
-		DependsOn:             []string{b.subnet1.TFID()},
+		DependsOn:             []string{ntws.SubnetA1.TFID()},
 	}
 	res1.SetRName("attachment")
 
@@ -127,14 +64,15 @@ func TestAccLoadBalancerNetworkResource_NetworkID(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_network", b.network,
-					"testdata/r/hcloud_network_subnet", b.subnet1,
-					"testdata/r/hcloud_load_balancer", b.loadBalancer1,
+					"testdata/r/hcloud_network", ntws.NetworkA,
+					"testdata/r/hcloud_network_subnet", ntws.SubnetA1,
+					"testdata/r/hcloud_network_subnet", ntws.SubnetA2,
+					"testdata/r/hcloud_load_balancer", lbls.LoadBalancerA,
 					"testdata/r/hcloud_load_balancer_network", res1,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(b.network.TFID(), network.ByID(t, &hcNetwork)),
-					testsupport.CheckResourceExists(b.loadBalancer1.TFID(), loadbalancer.ByID(t, &hcLoadBalancer)),
+					testsupport.CheckResourceExists(ntws.NetworkA.TFID(), network.ByID(t, &hcNetwork)),
+					testsupport.CheckResourceExists(lbls.LoadBalancerA.TFID(), loadbalancer.ByID(t, &hcLoadBalancer)),
 					testsupport.LiftTCF(hasLoadBalancerNetwork(t, &hcLoadBalancer, &hcNetwork, "10.0.1.5")),
 					resource.TestCheckResourceAttr(res1.TFID(), "ip", "10.0.1.5"),
 					resource.TestCheckResourceAttr(res1.TFID(), "enable_public_interface", "false"),
@@ -150,9 +88,10 @@ func TestAccLoadBalancerNetworkResource_NetworkID(t *testing.T) {
 			},
 			{
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_network", b.network,
-					"testdata/r/hcloud_network_subnet", b.subnet1,
-					"testdata/r/hcloud_load_balancer", b.loadBalancer1,
+					"testdata/r/hcloud_network", ntws.NetworkA,
+					"testdata/r/hcloud_network_subnet", ntws.SubnetA1,
+					"testdata/r/hcloud_network_subnet", ntws.SubnetA2,
+					"testdata/r/hcloud_load_balancer", lbls.LoadBalancerA,
 					"testdata/r/hcloud_load_balancer_network", res2,
 				),
 				Check: resource.ComposeTestCheckFunc(
@@ -162,9 +101,10 @@ func TestAccLoadBalancerNetworkResource_NetworkID(t *testing.T) {
 			},
 			{
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_network", b.network,
-					"testdata/r/hcloud_network_subnet", b.subnet1,
-					"testdata/r/hcloud_load_balancer", b.loadBalancer1,
+					"testdata/r/hcloud_network", ntws.NetworkA,
+					"testdata/r/hcloud_network_subnet", ntws.SubnetA1,
+					"testdata/r/hcloud_network_subnet", ntws.SubnetA2,
+					"testdata/r/hcloud_load_balancer", lbls.LoadBalancerA,
 					"testdata/r/hcloud_load_balancer_network", res3,
 				),
 				Check: resource.ComposeTestCheckFunc(
@@ -184,12 +124,13 @@ func TestAccLoadBalancerNetworkResource_SubnetID(t *testing.T) {
 		hcLoadBalancer hcloud.LoadBalancer
 	)
 
-	b := makeLoadBalancerNetworkBlueprint(t)
+	ntws := network.NewBlueprint(t)
+	lbls := loadbalancer.NewBlueprint(t)
 
 	res1 := &loadbalancer.RDataNetwork{
 		Name:           "attachment",
-		LoadBalancerID: b.loadBalancer1.TFID() + ".id",
-		SubNetID:       b.subnet1.TFID() + ".id",
+		LoadBalancerID: lbls.LoadBalancerA.TFID() + ".id",
+		SubNetID:       ntws.SubnetA1.TFID() + ".id",
 	}
 	res1.SetRName("attachment")
 
@@ -208,28 +149,30 @@ func TestAccLoadBalancerNetworkResource_SubnetID(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_network", b.network,
-					"testdata/r/hcloud_network_subnet", b.subnet1,
-					"testdata/r/hcloud_load_balancer", b.loadBalancer1,
+					"testdata/r/hcloud_network", ntws.NetworkA,
+					"testdata/r/hcloud_network_subnet", ntws.SubnetA1,
+					"testdata/r/hcloud_network_subnet", ntws.SubnetA2,
+					"testdata/r/hcloud_load_balancer", lbls.LoadBalancerA,
 					"testdata/r/hcloud_load_balancer_network", res1,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(b.network.TFID(), network.ByID(t, &hcNetwork)),
-					testsupport.CheckResourceExists(b.loadBalancer1.TFID(), loadbalancer.ByID(t, &hcLoadBalancer)),
+					testsupport.CheckResourceExists(ntws.NetworkA.TFID(), network.ByID(t, &hcNetwork)),
+					testsupport.CheckResourceExists(lbls.LoadBalancerA.TFID(), loadbalancer.ByID(t, &hcLoadBalancer)),
 					testsupport.LiftTCF(hasLoadBalancerNetwork(t, &hcLoadBalancer, &hcNetwork, "10.0.1.1")),
 					resource.TestCheckResourceAttr(res1.TFID(), "ip", "10.0.1.1"),
 				),
 			},
 			{
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_network", b.network,
-					"testdata/r/hcloud_network_subnet", b.subnet1,
-					"testdata/r/hcloud_load_balancer", b.loadBalancer1,
+					"testdata/r/hcloud_network", ntws.NetworkA,
+					"testdata/r/hcloud_network_subnet", ntws.SubnetA1,
+					"testdata/r/hcloud_network_subnet", ntws.SubnetA2,
+					"testdata/r/hcloud_load_balancer", lbls.LoadBalancerA,
 					"testdata/r/hcloud_load_balancer_network", res2,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(b.network.TFID(), network.ByID(t, &hcNetwork)),
-					testsupport.CheckResourceExists(b.loadBalancer1.TFID(), loadbalancer.ByID(t, &hcLoadBalancer)),
+					testsupport.CheckResourceExists(ntws.NetworkA.TFID(), network.ByID(t, &hcNetwork)),
+					testsupport.CheckResourceExists(lbls.LoadBalancerA.TFID(), loadbalancer.ByID(t, &hcLoadBalancer)),
 					testsupport.LiftTCF(hasLoadBalancerNetwork(t, &hcLoadBalancer, &hcNetwork, "10.0.1.5")),
 					resource.TestCheckResourceAttr(res2.TFID(), "ip", "10.0.1.5"),
 				),
@@ -241,20 +184,20 @@ func TestAccLoadBalancerNetworkResource_SubnetID(t *testing.T) {
 func TestAccLoadBalancerNetworkResource_CannotAttachToTwoNetworks(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
-	b1 := makeLoadBalancerNetworkBlueprint(t, "b1")
-	b2 := makeLoadBalancerNetworkBlueprint(t, "b2")
+	ntws := network.NewBlueprint(t)
+	lbls := loadbalancer.NewBlueprint(t)
 
 	res1 := &loadbalancer.RDataNetwork{
 		Name:           "attachment1",
-		LoadBalancerID: b1.loadBalancer1.TFID() + ".id",
-		SubNetID:       b1.subnet1.TFID() + ".id",
+		LoadBalancerID: lbls.LoadBalancerA.TFID() + ".id",
+		SubNetID:       ntws.SubnetA1.TFID() + ".id",
 	}
 	res1.SetRName(res1.Name)
 
 	res2 := &loadbalancer.RDataNetwork{
 		Name:           "attachment2",
-		LoadBalancerID: b1.loadBalancer1.TFID() + ".id",
-		SubNetID:       b2.subnet1.TFID() + ".id",
+		LoadBalancerID: lbls.LoadBalancerA.TFID() + ".id",
+		SubNetID:       ntws.SubnetB1.TFID() + ".id",
 	}
 	res2.SetRName(res2.Name)
 
@@ -265,11 +208,11 @@ func TestAccLoadBalancerNetworkResource_CannotAttachToTwoNetworks(t *testing.T) 
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_network", b1.network,
-					"testdata/r/hcloud_network", b2.network,
-					"testdata/r/hcloud_network_subnet", b1.subnet1,
-					"testdata/r/hcloud_network_subnet", b2.subnet1,
-					"testdata/r/hcloud_load_balancer", b1.loadBalancer1,
+					"testdata/r/hcloud_network", ntws.NetworkA,
+					"testdata/r/hcloud_network", ntws.NetworkB,
+					"testdata/r/hcloud_network_subnet", ntws.SubnetA1,
+					"testdata/r/hcloud_network_subnet", ntws.SubnetB1,
+					"testdata/r/hcloud_load_balancer", lbls.LoadBalancerA,
 					"testdata/r/hcloud_load_balancer_network", res1,
 					"testdata/r/hcloud_load_balancer_network", res2,
 				),

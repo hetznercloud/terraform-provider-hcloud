@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
@@ -136,4 +137,33 @@ type AData struct {
 // TFID returns the resource identifier.
 func (d *AData) TFID() string {
 	return fmt.Sprintf("action.hcloud_server_%s.%s", d.Type, d.RName())
+}
+
+type Blueprint struct {
+	ServerA *RData
+	ServerB *RData
+}
+
+func NewBlueprint(t *testing.T) *Blueprint {
+	t.Helper()
+
+	b := &Blueprint{}
+
+	b.ServerA = &RData{
+		Name:         "a",
+		Type:         teste2e.TestServerType,
+		LocationName: teste2e.TestLocationName,
+		Image:        teste2e.TestImage,
+	}
+	b.ServerA.SetRName("a")
+
+	b.ServerB = &RData{
+		Name:         "b",
+		Type:         teste2e.TestServerType,
+		LocationName: teste2e.TestLocationName,
+		Image:        teste2e.TestImage,
+	}
+	b.ServerB.SetRName("b")
+
+	return b
 }
