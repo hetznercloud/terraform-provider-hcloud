@@ -21,61 +21,6 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-type ServerNetworkBlueprint struct {
-	network *network.RData
-	subnet1 *network.RDataSubnet
-	subnet2 *network.RDataSubnet
-
-	server1 *server.RData
-	server2 *server.RData
-}
-
-func makeServerNetworkBlueprint(t *testing.T) *ServerNetworkBlueprint {
-	t.Helper()
-
-	b := &ServerNetworkBlueprint{}
-
-	b.network = &network.RData{
-		Name:    "network",
-		IPRange: "10.0.0.0/16",
-	}
-	b.network.SetRName("network")
-
-	b.subnet1 = &network.RDataSubnet{
-		NetworkID:   b.network.TFID() + ".id",
-		NetworkZone: "eu-central",
-		IPRange:     "10.0.1.0/24",
-		Type:        "cloud",
-	}
-	b.subnet1.SetRName("subnet1")
-
-	b.subnet2 = &network.RDataSubnet{
-		NetworkID:   b.network.TFID() + ".id",
-		NetworkZone: "eu-central",
-		IPRange:     "10.0.2.0/24",
-		Type:        "cloud",
-	}
-	b.subnet2.SetRName("subnet2")
-
-	b.server1 = &server.RData{
-		Name:         "server1",
-		Type:         teste2e.TestServerType,
-		LocationName: teste2e.TestLocationName,
-		Image:        teste2e.TestImage,
-	}
-	b.server1.SetRName("server1")
-
-	b.server2 = &server.RData{
-		Name:         "server2",
-		Type:         teste2e.TestServerType,
-		LocationName: teste2e.TestLocationName,
-		Image:        teste2e.TestImage,
-	}
-	b.server2.SetRName("server2")
-
-	return b
-}
-
 func TestAccServerNetworkResource_NetworkID(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
@@ -84,15 +29,16 @@ func TestAccServerNetworkResource_NetworkID(t *testing.T) {
 		hcServer  hcloud.Server
 	)
 
-	b := makeServerNetworkBlueprint(t)
+	ntws := network.NewBlueprint(t)
+	srvs := server.NewBlueprint(t)
 
 	res1 := &server.RDataNetwork{
 		Name:      "attachment",
-		ServerID:  b.server1.TFID() + ".id",
-		NetworkID: b.network.TFID() + ".id",
+		ServerID:  srvs.ServerA.TFID() + ".id",
+		NetworkID: ntws.NetworkA.TFID() + ".id",
 		IP:        "10.0.1.5",
 		AliasIPs:  []string{"10.0.1.6", "10.0.1.7"},
-		DependsOn: []string{b.subnet1.TFID()},
+		DependsOn: []string{ntws.SubnetA1.TFID()},
 	}
 	res1.SetRName("attachment")
 
@@ -124,15 +70,15 @@ func TestAccServerNetworkResource_NetworkID(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_network", b.network,
-					"testdata/r/hcloud_network_subnet", b.subnet1,
-					"testdata/r/hcloud_network_subnet", b.subnet2,
-					"testdata/r/hcloud_server", b.server1,
+					"testdata/r/hcloud_network", ntws.NetworkA,
+					"testdata/r/hcloud_network_subnet", ntws.SubnetA1,
+					"testdata/r/hcloud_network_subnet", ntws.SubnetA2,
+					"testdata/r/hcloud_server", srvs.ServerA,
 					"testdata/r/hcloud_server_network", res1,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(b.server1.TFID(), server.ByID(t, &hcServer)),
-					testsupport.CheckResourceExists(b.network.TFID(), network.ByID(t, &hcNetwork)),
+					testsupport.CheckResourceExists(srvs.ServerA.TFID(), server.ByID(t, &hcServer)),
+					testsupport.CheckResourceExists(ntws.NetworkA.TFID(), network.ByID(t, &hcNetwork)),
 					testsupport.LiftTCF(hasServerNetwork(t, &hcServer, &hcNetwork, "10.0.1.5", "10.0.1.6", "10.0.1.7")),
 				),
 				ConfigStateChecks: []statecheck.StateCheck{
@@ -155,15 +101,15 @@ func TestAccServerNetworkResource_NetworkID(t *testing.T) {
 			},
 			{
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_network", b.network,
-					"testdata/r/hcloud_network_subnet", b.subnet1,
-					"testdata/r/hcloud_network_subnet", b.subnet2,
-					"testdata/r/hcloud_server", b.server1,
+					"testdata/r/hcloud_network", ntws.NetworkA,
+					"testdata/r/hcloud_network_subnet", ntws.SubnetA1,
+					"testdata/r/hcloud_network_subnet", ntws.SubnetA2,
+					"testdata/r/hcloud_server", srvs.ServerA,
 					"testdata/r/hcloud_server_network", res2,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(b.server1.TFID(), server.ByID(t, &hcServer)),
-					testsupport.CheckResourceExists(b.network.TFID(), network.ByID(t, &hcNetwork)),
+					testsupport.CheckResourceExists(srvs.ServerA.TFID(), server.ByID(t, &hcServer)),
+					testsupport.CheckResourceExists(ntws.NetworkA.TFID(), network.ByID(t, &hcNetwork)),
 					testsupport.LiftTCF(hasServerNetwork(t, &hcServer, &hcNetwork, "10.0.1.5")),
 				),
 				ConfigStateChecks: []statecheck.StateCheck{
@@ -183,15 +129,15 @@ func TestAccServerNetworkResource_NetworkID(t *testing.T) {
 			},
 			{
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_network", b.network,
-					"testdata/r/hcloud_network_subnet", b.subnet1,
-					"testdata/r/hcloud_network_subnet", b.subnet2,
-					"testdata/r/hcloud_server", b.server1,
+					"testdata/r/hcloud_network", ntws.NetworkA,
+					"testdata/r/hcloud_network_subnet", ntws.SubnetA1,
+					"testdata/r/hcloud_network_subnet", ntws.SubnetA2,
+					"testdata/r/hcloud_server", srvs.ServerA,
 					"testdata/r/hcloud_server_network", res3,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(b.server1.TFID(), server.ByID(t, &hcServer)),
-					testsupport.CheckResourceExists(b.network.TFID(), network.ByID(t, &hcNetwork)),
+					testsupport.CheckResourceExists(srvs.ServerA.TFID(), server.ByID(t, &hcServer)),
+					testsupport.CheckResourceExists(ntws.NetworkA.TFID(), network.ByID(t, &hcNetwork)),
 					testsupport.LiftTCF(hasServerNetwork(t, &hcServer, &hcNetwork, "10.0.1.5", "10.0.1.8")),
 				),
 				ConfigStateChecks: []statecheck.StateCheck{
@@ -231,12 +177,13 @@ func TestAccServerNetworkResource_SubnetID(t *testing.T) {
 		hcServer  hcloud.Server
 	)
 
-	b := makeServerNetworkBlueprint(t)
+	ntws := network.NewBlueprint(t)
+	srvs := server.NewBlueprint(t)
 
 	res1 := &server.RDataNetwork{
 		Name:     "attachment",
-		ServerID: b.server1.TFID() + ".id",
-		SubNetID: b.subnet2.TFID() + ".id",
+		ServerID: srvs.ServerA.TFID() + ".id",
+		SubNetID: ntws.SubnetA2.TFID() + ".id",
 	}
 	res1.SetRName("attachment")
 
@@ -255,15 +202,15 @@ func TestAccServerNetworkResource_SubnetID(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_network", b.network,
-					"testdata/r/hcloud_network_subnet", b.subnet1,
-					"testdata/r/hcloud_network_subnet", b.subnet2,
-					"testdata/r/hcloud_server", b.server1,
+					"testdata/r/hcloud_network", ntws.NetworkA,
+					"testdata/r/hcloud_network_subnet", ntws.SubnetA1,
+					"testdata/r/hcloud_network_subnet", ntws.SubnetA2,
+					"testdata/r/hcloud_server", srvs.ServerA,
 					"testdata/r/hcloud_server_network", res1,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(b.server1.TFID(), server.ByID(t, &hcServer)),
-					testsupport.CheckResourceExists(b.network.TFID(), network.ByID(t, &hcNetwork)),
+					testsupport.CheckResourceExists(srvs.ServerA.TFID(), server.ByID(t, &hcServer)),
+					testsupport.CheckResourceExists(ntws.NetworkA.TFID(), network.ByID(t, &hcNetwork)),
 					testsupport.LiftTCF(hasServerNetwork(t, &hcServer, &hcNetwork, "10.0.2.1")),
 				),
 				ConfigStateChecks: []statecheck.StateCheck{
@@ -277,15 +224,15 @@ func TestAccServerNetworkResource_SubnetID(t *testing.T) {
 			},
 			{
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_network", b.network,
-					"testdata/r/hcloud_network_subnet", b.subnet1,
-					"testdata/r/hcloud_network_subnet", b.subnet2,
-					"testdata/r/hcloud_server", b.server1,
+					"testdata/r/hcloud_network", ntws.NetworkA,
+					"testdata/r/hcloud_network_subnet", ntws.SubnetA1,
+					"testdata/r/hcloud_network_subnet", ntws.SubnetA2,
+					"testdata/r/hcloud_server", srvs.ServerA,
 					"testdata/r/hcloud_server_network", res2,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(b.server1.TFID(), server.ByID(t, &hcServer)),
-					testsupport.CheckResourceExists(b.network.TFID(), network.ByID(t, &hcNetwork)),
+					testsupport.CheckResourceExists(srvs.ServerA.TFID(), server.ByID(t, &hcServer)),
+					testsupport.CheckResourceExists(ntws.NetworkA.TFID(), network.ByID(t, &hcNetwork)),
 					testsupport.LiftTCF(hasServerNetwork(t, &hcServer, &hcNetwork, "10.0.2.1")),
 				),
 				ConfigStateChecks: []statecheck.StateCheck{
