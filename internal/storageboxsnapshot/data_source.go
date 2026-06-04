@@ -224,7 +224,11 @@ func (d *DataSource) Read(ctx context.Context, req datasource.ReadRequest, resp 
 		}
 
 		var newDiag diag.Diagnostic
-		result, newDiag = datasourceutil.GetOneResultForLabelSelector("storage box snapshot", all, opts.LabelSelector)
+		result, newDiag = hcloudutil.GetOne(all,
+			hcloudutil.WithResourceName("storage box snapshot"),
+			hcloudutil.WithUsing("label selector", opts.LabelSelector),
+			hcloudutil.WithListOpts(opts),
+		)
 		if newDiag != nil {
 			resp.Diagnostics.Append(newDiag)
 			return
