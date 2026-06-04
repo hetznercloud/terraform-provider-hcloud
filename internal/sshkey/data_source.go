@@ -190,14 +190,18 @@ func (d *dataSource) Read(ctx context.Context, req datasource.ReadRequest, resp 
 			opts.LabelSelector = data.Selector.ValueString()
 		}
 
-		allKeys, err := d.client.SSHKey.AllWithOpts(ctx, opts)
+		all, err := d.client.SSHKey.AllWithOpts(ctx, opts)
 		if err != nil {
 			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
 			return
 		}
 
 		var newDiag diag.Diagnostic
-		result, newDiag = datasourceutil.GetOneResultForLabelSelector("ssh key", allKeys, opts.LabelSelector)
+		result, newDiag = hcloudutil.GetOne(all,
+			hcloudutil.WithResourceName("ssh key"),
+			hcloudutil.WithUsing("label selector", opts.LabelSelector),
+			hcloudutil.WithListOpts(opts),
+		)
 		if newDiag != nil {
 			resp.Diagnostics.Append(newDiag)
 			return
