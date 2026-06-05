@@ -109,7 +109,7 @@ func (d *DataSourceServiceList) Read(ctx context.Context, req datasource.ReadReq
 		return
 	}
 	if lb == nil {
-		resp.Diagnostics.Append(hcloudutil.NotFoundDiagnostic("load_balancer", "id", data.LoadBalancerID.String()))
+		resp.Diagnostics.Append(hcloudutil.NotFoundDiagnostic("load balancer", "id", data.LoadBalancerID.String()))
 		return
 	}
 
