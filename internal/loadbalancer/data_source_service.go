@@ -4,11 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
@@ -22,13 +20,12 @@ func getCommonServiceDataSchema(readOnly bool) map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"id": schema.StringAttribute{
 			MarkdownDescription: "ID of the Load Balancer Service. Format: `<load_balancer_id>__<listen_port>`",
-			Optional:            !readOnly,
 			Computed:            true,
 		},
 		"load_balancer_id": schema.Int64Attribute{
 			MarkdownDescription: "ID of the Load Balancer this Service belongs to.",
-			Optional:            !readOnly,
-			Computed:            true,
+			Required:            !readOnly,
+			Computed:            readOnly,
 		},
 		"protocol": schema.StringAttribute{
 			MarkdownDescription: "Protocol of the Load Balancer. One of `tcp`, `http`, `https`.",
@@ -36,8 +33,8 @@ func getCommonServiceDataSchema(readOnly bool) map[string]schema.Attribute {
 		},
 		"listen_port": schema.Int32Attribute{
 			MarkdownDescription: "Port the Load Balancer listens on.",
-			Optional:            !readOnly,
-			Computed:            true,
+			Required:            !readOnly,
+			Computed:            readOnly,
 		},
 		"destination_port": schema.Int32Attribute{
 			MarkdownDescription: "Port the Load Balancer will balance to.",
@@ -150,7 +147,6 @@ func populateDataSourceServiceModel(ctx context.Context, data *dataSourceService
 
 var _ datasource.DataSource = (*DataSourceService)(nil)
 var _ datasource.DataSourceWithConfigure = (*DataSourceService)(nil)
-var _ datasource.DataSourceWithConfigValidators = (*DataSourceService)(nil)
 
 type DataSourceService struct {
 	client *hcloud.Client
@@ -158,25 +154,6 @@ type DataSourceService struct {
 
 func NewDataSourceService() datasource.DataSource {
 	return &DataSourceService{}
-}
-
-// ConfigValidators returns a list of ConfigValidators. Each ConfigValidator's Validate method will be called when validating the data source.
-func (d *DataSourceService) ConfigValidators(_ context.Context) []datasource.ConfigValidator {
-	return []datasource.ConfigValidator{
-		datasourcevalidator.AtLeastOneOf(
-			path.MatchRoot("id"),
-			path.MatchRoot("load_balancer_id"),
-			path.MatchRoot("listen_port"),
-		),
-		datasourcevalidator.RequiredTogether(
-			path.MatchRoot("load_balancer_id"),
-			path.MatchRoot("listen_port"),
-		),
-		datasourcevalidator.Conflicting(
-			path.MatchRoot("id"),
-			path.MatchRoot("load_balancer_id"),
-		),
-	}
 }
 
 // Metadata should return the full name of the data source.
