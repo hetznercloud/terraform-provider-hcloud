@@ -235,7 +235,7 @@ func (d *DataSourceService) Read(ctx context.Context, req datasource.ReadRequest
 			return
 		}
 		if lb == nil {
-			resp.Diagnostics.Append(hcloudutil.NotFoundDiagnostic("load_balancer", "id", data.LoadBalancerID.String()))
+			resp.Diagnostics.Append(hcloudutil.NotFoundDiagnostic("load balancer", "id", data.LoadBalancerID.String()))
 			return
 		}
 
@@ -247,7 +247,7 @@ func (d *DataSourceService) Read(ctx context.Context, req datasource.ReadRequest
 			}
 		}
 		if svc == nil {
-			resp.Diagnostics.Append(hcloudutil.NotFoundDiagnostic("load_balancer_service", "listen_port", data.ListenPort.String()))
+			resp.Diagnostics.Append(hcloudutil.NotFoundDiagnostic("load balancer service", "listen_port", data.ListenPort.String()))
 			return
 		}
 	}
