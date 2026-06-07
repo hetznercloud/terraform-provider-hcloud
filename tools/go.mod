@@ -2,8 +2,6 @@ module tools
 
 go 1.26.4
 
-toolchain go1.26.3
-
 tool github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
 
 require (

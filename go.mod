@@ -2,8 +2,6 @@ module github.com/hetznercloud/terraform-provider-hcloud
 
 go 1.26.4
 
-toolchain go1.26.3
-
 require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/google/go-cmp v0.7.0
