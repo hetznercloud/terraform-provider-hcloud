@@ -21,7 +21,7 @@ jobs:
 
       - run: go test -v -timeout=30s -parallel=8 -coverprofile=coverage.txt -coverpkg=./... ./...
 
-      - uses: codecov/codecov-action@e79a6962e0d4c0c17b229090214935d2e33f8354 # v6
+      - uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v6
         if: >
           !startsWith(github.head_ref, 'renovate/') &&
           !startsWith(github.head_ref, 'release-please--')
@@ -98,7 +98,7 @@ jobs:
           TEST_DATACENTER: ${{ vars.TEST_DATACENTER }}
           TEST_LOCATION: ${{ vars.TEST_LOCATION }}
 
-      - uses: codecov/codecov-action@e79a6962e0d4c0c17b229090214935d2e33f8354 # v6
+      - uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v6
         if: >
           !startsWith(github.head_ref, 'renovate/') &&
           !startsWith(github.head_ref, 'releaser-pleaser--')
