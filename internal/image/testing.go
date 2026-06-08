@@ -32,6 +32,7 @@ type DDataList struct {
 
 	LabelSelector     string
 	Architecture      hcloud.Architecture
+	Status            hcloud.ImageStatus
 	IncludeDeprecated bool
 }
 

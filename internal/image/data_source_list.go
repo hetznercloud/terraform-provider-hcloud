@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud/exp/kit/sliceutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/datasourceutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
@@ -71,9 +72,10 @@ See the [Image API documentation](https://docs.hetzner.cloud/reference/cloud#ima
 			Optional:            true,
 			ElementType:         types.StringType,
 		},
-		"with_architecture": schema.StringAttribute{
-			MarkdownDescription: "Filter results by architecture, for example `x86` (default) or `arm`.",
+		"with_architecture": schema.SetAttribute{
+			MarkdownDescription: "Filter results by architecture, for example `x86` or `arm`.",
 			Optional:            true,
+			ElementType:         types.StringType,
 		},
 		"most_recent": schema.BoolAttribute{
 			MarkdownDescription: "Sort results by created date.",
@@ -92,7 +94,7 @@ type dataSourceListModel struct {
 
 	WithSelector      types.String `tfsdk:"with_selector"`
 	WithStatus        types.Set    `tfsdk:"with_status"`
-	WithArchitecture  types.String `tfsdk:"with_architecture"`
+	WithArchitecture  types.Set    `tfsdk:"with_architecture"`
 	MostRecent        types.Bool   `tfsdk:"most_recent"`
 	IncludeDeprecated types.Bool   `tfsdk:"include_deprecated"`
 }
@@ -140,18 +142,21 @@ func (d *DataSourceList) Read(ctx context.Context, req datasource.ReadRequest, r
 	}
 
 	if !data.WithStatus.IsNull() {
-		resp.Diagnostics.Append(data.WithStatus.ElementsAs(ctx, &opts.Status, false)...)
-		return
+		values := make([]string, 0, len(data.WithStatus.Elements()))
+		resp.Diagnostics.Append(data.WithStatus.ElementsAs(ctx, &values, false)...)
+
+		opts.Status = sliceutil.Transform(values, func(o string) hcloud.ImageStatus {
+			return hcloud.ImageStatus(o)
+		})
 	}
 
 	if !data.WithArchitecture.IsNull() {
-		opts.Architecture = []hcloud.Architecture{
-			hcloud.Architecture(data.WithArchitecture.ValueString()),
-		}
-	} else {
-		opts.Architecture = []hcloud.Architecture{
-			hcloud.ArchitectureX86,
-		}
+		values := make([]string, 0, len(data.WithArchitecture.Elements()))
+		resp.Diagnostics.Append(data.WithArchitecture.ElementsAs(ctx, &values, false)...)
+
+		opts.Architecture = sliceutil.Transform(values, func(o string) hcloud.Architecture {
+			return hcloud.Architecture(o)
+		})
 	}
 
 	if !data.IncludeDeprecated.IsNull() {
@@ -160,6 +165,10 @@ func (d *DataSourceList) Read(ctx context.Context, req datasource.ReadRequest, r
 
 	if !data.MostRecent.IsNull() && data.MostRecent.ValueBool() {
 		opts.Sort = []string{"created:desc"}
+	}
+
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
 	result, err = d.client.Image.AllWithOpts(ctx, opts)

@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud/exp/kit/sliceutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/datasourceutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
@@ -193,6 +194,7 @@ func (d *DataSource) Read(ctx context.Context, req datasource.ReadRequest, resp 
 		opts.Name = data.Name.ValueString()
 
 		resp.Diagnostics.Append(prepareImageListOpts(ctx, &opts, data)...)
+
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -230,6 +232,7 @@ func (d *DataSource) Read(ctx context.Context, req datasource.ReadRequest, resp 
 		}
 
 		resp.Diagnostics.Append(prepareImageListOpts(ctx, &opts, data)...)
+
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -272,7 +275,12 @@ func prepareImageListOpts(ctx context.Context, opts *hcloud.ImageListOpts, data 
 	var diags diag.Diagnostics
 
 	if !data.WithStatus.IsNull() {
-		diags.Append(data.WithStatus.ElementsAs(ctx, &opts.Status, false)...)
+		values := make([]string, 0, len(data.WithStatus.Elements()))
+		diags.Append(data.WithStatus.ElementsAs(ctx, &values, false)...)
+
+		opts.Status = sliceutil.Transform(values, func(o string) hcloud.ImageStatus {
+			return hcloud.ImageStatus(o)
+		})
 	}
 
 	if !data.WithArchitecture.IsNull() {

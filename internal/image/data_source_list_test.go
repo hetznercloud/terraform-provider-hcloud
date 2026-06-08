@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/image"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testmux"
@@ -22,6 +23,7 @@ func TestAccImageDataSourceList(t *testing.T) {
 
 	byArchitecture := &image.DDataList{
 		Architecture: "arm",
+		Status:       hcloud.ImageStatusAvailable,
 	}
 	byArchitecture.SetRName("architecture")
 
@@ -43,6 +45,49 @@ func TestAccImageDataSourceList(t *testing.T) {
 					statecheck.ExpectKnownValue(byArchitecture.TFID(), tfjsonpath.New("images").AtSliceIndex(0).AtMapKey("name"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(byArchitecture.TFID(), tfjsonpath.New("images").AtSliceIndex(0).AtMapKey("architecture"), knownvalue.StringExact("arm")),
 				},
+			},
+		},
+	})
+}
+
+func TestAccImageDataSourceList_UpgradePluginFramework(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
+	all := &image.DDataList{}
+	all.SetRName("all")
+
+	byArchitecture := &image.DDataList{
+		Architecture: "arm",
+		Status:       hcloud.ImageStatusAvailable,
+	}
+	byArchitecture.SetRName("architecture")
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: teste2e.PreCheck(t),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"hcloud": {
+						VersionConstraint: "1.64.0",
+						Source:            "hetznercloud/hcloud",
+					},
+				},
+				Config: tmplMan.Render(t,
+					"testdata/d/hcloud_images", all,
+					"testdata/d/hcloud_images", byArchitecture,
+					"testdata/r/terraform_data_resource", all,
+					"testdata/r/terraform_data_resource", byArchitecture,
+				),
+			},
+			{
+				ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
+				Config: tmplMan.Render(t,
+					"testdata/d/hcloud_images", all,
+					"testdata/d/hcloud_images", byArchitecture,
+					"testdata/r/terraform_data_resource", all,
+					"testdata/r/terraform_data_resource", byArchitecture,
+				),
+				PlanOnly: true,
 			},
 		},
 	})

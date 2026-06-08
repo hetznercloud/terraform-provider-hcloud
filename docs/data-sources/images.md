@@ -35,7 +35,7 @@ data "hcloud_images" "by_label" {
 
 - `include_deprecated` (Boolean) Include deprecated images.
 - `most_recent` (Boolean) Sort results by created date.
-- `with_architecture` (String) Filter results by architecture, for example `x86` (default) or `arm`.
+- `with_architecture` (Set of String) Filter results by architecture, for example `x86` or `arm`.
 - `with_selector` (String) Filter results using a [Label Selector](https://docs.hetzner.cloud/reference/hetzner#label-selector).
 - `with_status` (Set of String) Filter results by statuses, for example `creating` or `available`.
 
