@@ -55,6 +55,28 @@ Status code: 400
 			},
 		},
 		{
+			name: "hcloud invalid input error without details",
+			errRaw: map[string]any{
+				"error": map[string]any{
+					"code":    "invalid_input",
+					"message": "something is fishy",
+					"details": nil,
+				},
+			},
+			errStatusCode: http.StatusBadRequest,
+			diagnostics: []diag.Diagnostic{
+				diag.NewErrorDiagnostic(
+					"Invalid field in API request",
+					`An invalid field was encountered during an API request. The field might not map 1:1 to your terraform resource.
+
+something is fishy (invalid_input)
+
+Error code: invalid_input
+Status code: 400
+`),
+			},
+		},
+		{
 			name: "hcloud error",
 			err: hcloud.Error{
 				Code:    hcloud.ErrorCodeRateLimitExceeded,
