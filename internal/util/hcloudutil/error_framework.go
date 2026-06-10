@@ -23,6 +23,23 @@ func APIErrorDiagnostics(err error) diag.Diagnostics {
 
 		if hcloud.IsError(hcloudErr, hcloud.ErrorCodeInvalidInput) {
 			invalidInput := hcloudErr.Details.(hcloud.ErrorDetailsInvalidInput)
+
+			// Gracefully handle when invalid input details are not returned
+			// by the API (should never happen).
+			if len(invalidInput.Fields) == 0 {
+				diagnostics.AddError(
+					"Invalid field in API request",
+					fmt.Sprintf(
+						"An invalid field was encountered during an API request. "+
+							"The field might not map 1:1 to your terraform resource.\n\n"+
+							"%s\n\n"+
+							"Error code: %s\n"+
+							"%s",
+						err.Error(), hcloudErr.Code, statusCodeMessage,
+					))
+				return diagnostics
+			}
+
 			for _, field := range invalidInput.Fields {
 				messages := make([]string, 0, len(field.Messages))
 				for _, message := range field.Messages {
