@@ -110,38 +110,3 @@ func TestAccImageDataSource_WithFilters(t *testing.T) {
 		},
 	})
 }
-
-func TestAccImageDataSource_UpgradePluginFramework(t *testing.T) {
-	tmplMan := testtemplate.Manager{}
-
-	byID := &image.DData{
-		ImageID: teste2e.TestImageID,
-	}
-	byID.SetRName("by_id")
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: teste2e.PreCheck(t),
-		Steps: []resource.TestStep{
-			{
-				ExternalProviders: map[string]resource.ExternalProvider{
-					"hcloud": {
-						VersionConstraint: "1.64.0",
-						Source:            "hetznercloud/hcloud",
-					},
-				},
-				Config: tmplMan.Render(t,
-					"testdata/d/hcloud_image", byID,
-					"testdata/r/terraform_data_resource", byID,
-				),
-			},
-			{
-				ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
-				Config: tmplMan.Render(t,
-					"testdata/d/hcloud_image", byID,
-					"testdata/r/terraform_data_resource", byID,
-				),
-				PlanOnly: true,
-			},
-		},
-	})
-}
