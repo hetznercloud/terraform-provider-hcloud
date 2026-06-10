@@ -13,6 +13,7 @@ func TestGetOne(t *testing.T) {
 	testCases := []struct {
 		name     string
 		items    []*string
+		opts     []DetailsOption
 		wantItem *string
 		wantDiag diag.Diagnostic
 	}{
@@ -22,7 +23,32 @@ func TestGetOne(t *testing.T) {
 			wantItem: nil,
 			wantDiag: diag.NewErrorDiagnostic(
 				"Resource not found",
-				"Resource (item) was not found using label selector: key=value\n\nsort=id:asc\nstatus=running\n",
+				"Resource (item) was not found using label selector: key=value\n\nQuery parameters: sort=id:asc status=running",
+			),
+		},
+		{
+			name:  "zero item with one parent",
+			items: []*string{},
+			opts: []DetailsOption{
+				WithParentResource("zone", "example.com"),
+			},
+			wantItem: nil,
+			wantDiag: diag.NewErrorDiagnostic(
+				"Resource not found",
+				"Resource (item) was not found using label selector: key=value\n\nParent resources: zone=example.com\nQuery parameters: sort=id:asc status=running",
+			),
+		},
+		{
+			name:  "zero item with two parents",
+			items: []*string{},
+			opts: []DetailsOption{
+				WithParentResource("zone", "example.com"),
+				WithParentResource("zone rrset", "www/A"),
+			},
+			wantItem: nil,
+			wantDiag: diag.NewErrorDiagnostic(
+				"Resource not found",
+				"Resource (item) was not found using label selector: key=value\n\nParent resources: zone=example.com zone rrset=www/A\nQuery parameters: sort=id:asc status=running",
 			),
 		},
 		{
@@ -37,7 +63,7 @@ func TestGetOne(t *testing.T) {
 			wantItem: nil,
 			wantDiag: diag.NewErrorDiagnostic(
 				"Found more than one resource",
-				"Found more than one resource (item) using label selector: key=value\n\nsort=id:asc\nstatus=running\n",
+				"Found more than one resource (item) using label selector: key=value\n\nQuery parameters: sort=id:asc status=running",
 			),
 		},
 	}
@@ -50,9 +76,11 @@ func TestGetOne(t *testing.T) {
 			}
 
 			item, newDiag := GetOne(tt.items,
-				WithResourceName("item"),
-				WithUsing("label selector", "key=value"),
-				WithListOpts(opts),
+				append(tt.opts,
+					WithResourceName("item"),
+					WithUsing("label selector", "key=value"),
+					WithListOpts(opts),
+				)...,
 			)
 			require.Equal(t, tt.wantItem, item)
 			require.Equal(t, tt.wantDiag, newDiag)
@@ -73,7 +101,7 @@ func TestGetFirst(t *testing.T) {
 			wantItem: nil,
 			wantDiag: diag.NewErrorDiagnostic(
 				"Resource not found",
-				"Resource (item) was not found using label selector: key=value\n\nsort=id:asc\nstatus=running\n",
+				"Resource (item) was not found using label selector: key=value\n\nQuery parameters: sort=id:asc status=running",
 			),
 		},
 		{
