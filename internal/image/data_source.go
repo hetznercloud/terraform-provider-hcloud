@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud/exp/deprecationutil"
 	"github.com/hetznercloud/hcloud-go/v2/hcloud/exp/kit/sliceutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/datasourceutil"
@@ -260,6 +261,14 @@ func (d *DataSource) Read(ctx context.Context, req datasource.ReadRequest, resp 
 		if newDiag != nil {
 			resp.Diagnostics.Append(newDiag)
 			return
+		}
+	}
+
+	if message, unavailable := deprecationutil.ImageMessage(result); message != "" {
+		if unavailable {
+			resp.Diagnostics.AddWarning("Image unavailable", message+".")
+		} else {
+			resp.Diagnostics.AddWarning("Image deprecated", message+".")
 		}
 	}
 
