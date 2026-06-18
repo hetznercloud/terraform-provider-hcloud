@@ -160,7 +160,7 @@ After this date, requests to the datacenters API endpoints will return ''HTTP 41
 
 Please use the ''hcloud_location'' data source instead.
 
-See the [changelog](https://docs.hetzner.cloud/changelog#2026-06-02-datacenters-deprecated) for more details.
+See https://docs.hetzner.cloud/changelog#2026-06-02-datacenters-deprecated for more details.
 `)
 	resp.Schema.MarkdownDescription = util.MarkdownDescription(`
 Provides details about a specific Hetzner Cloud Datacenter.
@@ -270,7 +270,7 @@ After this date, requests to the datacenters API endpoints will return ''HTTP 41
 
 Please use the ''hcloud_locations'' data source instead.
 
-See the [changelog](https://docs.hetzner.cloud/changelog#2026-06-02-datacenters-deprecated) for more details.
+See https://docs.hetzner.cloud/changelog#2026-06-02-datacenters-deprecated for more details.
 `)
 
 	resp.Schema.MarkdownDescription = util.MarkdownDescription(`
