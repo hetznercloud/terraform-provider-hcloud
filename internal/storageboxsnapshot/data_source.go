@@ -225,6 +225,7 @@ func (d *DataSource) Read(ctx context.Context, req datasource.ReadRequest, resp 
 
 		var newDiag diag.Diagnostic
 		result, newDiag = hcloudutil.GetOne(all,
+			hcloudutil.WithParentResource("storage box", storageBox.ID),
 			hcloudutil.WithResourceName("storage box snapshot"),
 			hcloudutil.WithUsing("label selector", opts.LabelSelector),
 			hcloudutil.WithListOpts(opts),

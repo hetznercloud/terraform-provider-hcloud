@@ -1,5 +1,24 @@
 # Changelog
 
+## [v1.66.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.66.0)
+
+### Datacenter data sources are deprecated
+
+The `hcloud_datacenter` and `hcloud_datacenters` data sources are deprecated and will be removed after 1 Oct. 2026. After this date, requests to the datacenters API endpoints will return `HTTP 410 Gone`.
+
+Please use the `hcloud_location` and `hcloud_locations` data sources instead.
+
+See the [changelog](https://docs.hetzner.cloud/changelog#2026-06-02-datacenters-deprecated) for more details.
+
+### Features
+
+- **image**: warn when using a deprecated image (#1456)
+- deprecate `hcloud_datacenter(s)` data sources (#1463)
+
+### Bug Fixes
+
+- handle invalid input errors without details (#1453)
+
 ## [v1.65.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.65.0)
 
 ### Features

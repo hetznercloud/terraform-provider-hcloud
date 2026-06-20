@@ -16,10 +16,11 @@ type WithValues interface {
 }
 
 type Details struct {
-	resourceName string
-	params       url.Values
-	usingName    string
-	usingValue   any
+	resourceName    string
+	parentResources [][2]string
+	params          url.Values
+	usingName       string
+	usingValue      any
 }
 
 type DetailsOption func(o *Details)
@@ -36,6 +37,13 @@ func NewDetails(opts ...DetailsOption) *Details {
 func WithResourceName(name string) DetailsOption {
 	return func(o *Details) {
 		o.resourceName = name
+	}
+}
+
+// WithParentResource appends a parent resource to the details.
+func WithParentResource(name string, value any) DetailsOption {
+	return func(o *Details) {
+		o.parentResources = append(o.parentResources, [2]string{name, fmt.Sprint(value)})
 	}
 }
 
@@ -56,12 +64,29 @@ func WithListOpts(opts WithValues) DetailsOption {
 }
 
 func (d *Details) writeUsing(w io.Writer) {
-	if d.usingName != "" {
-		fmt.Fprintf(w, " using %s", d.usingName)
-		if d.usingValue == nil {
-			fmt.Fprintf(w, ".")
-		} else {
-			fmt.Fprintf(w, ": %v", d.usingValue)
+	if d.usingName == "" {
+		return
+	}
+
+	fmt.Fprintf(w, " using %s", d.usingName)
+	if d.usingValue == nil {
+		fmt.Fprintf(w, ".")
+	} else {
+		fmt.Fprintf(w, ": %v", d.usingValue)
+	}
+}
+
+func (d *Details) writeParentResources(w io.Writer) {
+	if len(d.parentResources) == 0 {
+		return
+	}
+
+	fmt.Fprint(w, "\nParent resources: ")
+
+	for i := range d.parentResources {
+		fmt.Fprintf(w, "%s=%s", d.parentResources[i][0], d.parentResources[i][1])
+		if len(d.parentResources) > i+1 {
+			fmt.Fprintf(w, " ")
 		}
 	}
 }
@@ -71,12 +96,15 @@ func (d *Details) writeParams(w io.Writer) {
 		return
 	}
 
-	fmt.Fprint(w, "\n\n")
-	for _, key := range slices.Sorted(maps.Keys(d.params)) {
+	fmt.Fprint(w, "\nQuery parameters: ")
+	for i, key := range slices.Sorted(maps.Keys(d.params)) {
 		if len(d.params[key]) == 1 {
-			fmt.Fprintf(w, "%s=%s\n", key, d.params[key][0])
+			fmt.Fprintf(w, "%s=%s", key, d.params[key][0])
 		} else {
-			fmt.Fprintf(w, "%s=%v\n", key, d.params[key])
+			fmt.Fprintf(w, "%s=%v", key, d.params[key])
+		}
+		if len(d.params) > i+1 {
+			fmt.Fprintf(w, " ")
 		}
 	}
 }
@@ -85,6 +113,9 @@ func (d *Details) NotFound() string {
 	b := &strings.Builder{}
 	fmt.Fprintf(b, "Resource (%s) was not found", d.resourceName)
 	d.writeUsing(b)
+	fmt.Fprint(b, "\n")
+
+	d.writeParentResources(b)
 	d.writeParams(b)
 	return b.String()
 }
@@ -93,6 +124,9 @@ func (d *Details) MoreThanOne() string {
 	b := &strings.Builder{}
 	fmt.Fprintf(b, "Found more than one resource (%s)", d.resourceName)
 	d.writeUsing(b)
+	fmt.Fprint(b, "\n")
+
+	d.writeParentResources(b)
 	d.writeParams(b)
 	return b.String()
 }
