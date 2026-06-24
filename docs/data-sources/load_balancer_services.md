@@ -35,7 +35,7 @@ Read-Only:
 - `listen_port` (Number) Port the Load Balancer listens on.
 - `load_balancer_id` (Number) ID of the Load Balancer this Service belongs to.
 - `protocol` (String) Protocol of the Load Balancer. One of `tcp`, `http`, `https`.
-- `proxyprotocol` (Boolean) Whether Proxyprotocol is enabled or not.
+- `proxyprotocol` (Boolean) Whether the PROXY protocol is enabled.
 
 <a id="nestedatt--services--health_check"></a>
 ### Nested Schema for `services.health_check`

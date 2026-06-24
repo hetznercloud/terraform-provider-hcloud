@@ -40,7 +40,7 @@ func getCommonServiceDataSchema(readOnly bool) map[string]schema.Attribute {
 			Computed:            true,
 		},
 		"proxyprotocol": schema.BoolAttribute{
-			MarkdownDescription: "Whether Proxyprotocol is enabled or not.",
+			MarkdownDescription: "Whether the PROXY protocol is enabled.",
 			Computed:            true,
 		},
 		"http": schema.SingleNestedAttribute{
