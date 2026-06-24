@@ -27,7 +27,7 @@ Provides details about a Hetzner Cloud Load Balancer Service.
 - `http` (Attributes) Configuration for http(s) protocol. (see [below for nested schema](#nestedatt--http))
 - `id` (String) ID of the Load Balancer Service. Format: `<load_balancer_id>__<listen_port>`
 - `protocol` (String) Protocol of the Load Balancer. One of `tcp`, `http`, `https`.
-- `proxyprotocol` (Boolean) Whether Proxyprotocol is enabled or not.
+- `proxyprotocol` (Boolean) Whether the PROXY protocol is enabled.
 
 <a id="nestedatt--health_check"></a>
 ### Nested Schema for `health_check`
