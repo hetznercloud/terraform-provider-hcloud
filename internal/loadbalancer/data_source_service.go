@@ -155,14 +155,10 @@ func NewDataSourceService() datasource.DataSource {
 	return &DataSourceService{}
 }
 
-// Metadata should return the full name of the data source.
 func (d *DataSourceService) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = DataSourceServiceType
 }
 
-// Configure enables provider-level data or clients to be set in the
-// provider-defined DataSource type. It is separately executed for each
-// ReadDataSource RPC.
 func (d *DataSourceService) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	var newDiags diag.Diagnostics
 
@@ -173,15 +169,11 @@ func (d *DataSourceService) Configure(_ context.Context, req datasource.Configur
 	}
 }
 
-// Schema should return the schema for this data source.
 func (d *DataSourceService) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema.MarkdownDescription = "Provides details about a Hetzner Cloud Load Balancer Service."
 	resp.Schema.Attributes = getCommonServiceDataSchema(false)
 }
 
-// Read is called when the provider must read data source values in
-// order to update state. Config values should be read from the
-// ReadRequest and new state values set on the ReadResponse.
 func (d *DataSourceService) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var data dataSourceServiceModel
 
