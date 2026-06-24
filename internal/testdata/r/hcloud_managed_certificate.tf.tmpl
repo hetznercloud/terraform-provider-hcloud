@@ -1,7 +1,11 @@
 {{- /* vim: set ft=terraform: */ -}}
 
 resource "hcloud_managed_certificate" "{{ .RName }}" {
-  name        = "{{ .Name }}--{{ .RInt }}"
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  name         = "{{ .Name }}--{{ .RInt }}"
   domain_names = [{{ .DomainNames | quoteEach | join ", " }}]
   {{- if .Labels }}
   labels = {{ .Labels | toPrettyJson }}

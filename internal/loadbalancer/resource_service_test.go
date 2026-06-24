@@ -297,9 +297,10 @@ func TestAccLoadBalancerServiceResource_HTTPS(t *testing.T) {
 	})
 }
 
-func TestAccLoadBalancerServiceResource_HTTPS_UpdateUnchangedCertificates(t *testing.T) {
+func TestAccLoadBalancerServiceResource_HTTPS_Certificates(t *testing.T) {
 	certRes1 := certificate.NewUploadedRData(t, "cert-res1", "TFAccTests1")
 	certRes2 := certificate.NewUploadedRData(t, "cert-res2", "TFAccTests2")
+	certRes3 := certificate.NewUploadedRData(t, "cert-res3", "TFAccTests3")
 	lbRes := &loadbalancer.RData{
 		Name:         "load-balancer-certificates-unchanged",
 		LocationName: teste2e.TestLocationName,
@@ -317,6 +318,9 @@ func TestAccLoadBalancerServiceResource_HTTPS_UpdateUnchangedCertificates(t *tes
 		},
 	}
 
+	svcRes2 := testtemplate.DeepCopy(t, svcRes)
+	svcRes2.HTTP.Certificates = []string{certRes1.TFID() + ".id", certRes3.TFID() + ".id"}
+
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
@@ -330,6 +334,14 @@ func TestAccLoadBalancerServiceResource_HTTPS_UpdateUnchangedCertificates(t *tes
 					"testdata/r/hcloud_uploaded_certificate", certRes2,
 					"testdata/r/hcloud_load_balancer", lbRes,
 					"testdata/r/hcloud_load_balancer_service", svcRes,
+				),
+			},
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_uploaded_certificate", certRes1,
+					"testdata/r/hcloud_uploaded_certificate", certRes3,
+					"testdata/r/hcloud_load_balancer", lbRes,
+					"testdata/r/hcloud_load_balancer_service", svcRes2,
 				),
 			},
 		},
