@@ -13,7 +13,6 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
-// DataSourceServiceListType is the type name to receive a list of Hetzner Cloud Load Balancer Service resources.
 const DataSourceServiceListType = "hcloud_load_balancer_services"
 
 var _ datasource.DataSource = (*DataSourceServiceList)(nil)
@@ -27,14 +26,10 @@ func NewDataSourceServiceList() datasource.DataSource {
 	return &DataSourceServiceList{}
 }
 
-// Metadata should return the full name of the data source.
 func (d *DataSourceServiceList) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = DataSourceServiceListType
 }
 
-// Configure enables provider-level data or clients to be set in the
-// provider-defined DataSource type. It is separately executed for each
-// ReadDataSource RPC.
 func (d *DataSourceServiceList) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	var newDiags diag.Diagnostics
 
@@ -45,7 +40,6 @@ func (d *DataSourceServiceList) Configure(_ context.Context, req datasource.Conf
 	}
 }
 
-// Schema should return the schema for this data source.
 func (d *DataSourceServiceList) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema.MarkdownDescription = "Provides a list of Hetzner Cloud Load Balancer Services."
 
@@ -92,9 +86,6 @@ func populateDataSourceServiceListModel(ctx context.Context, data *dataSourceSer
 	return diags
 }
 
-// Read is called when the provider must read data source values in
-// order to update state. Config values should be read from the
-// ReadRequest and new state values set on the ReadResponse.
 func (d *DataSourceServiceList) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var data dataSourceServiceListModel
 
