@@ -75,6 +75,9 @@ func TestAccCertificateResource_Uploaded_ChangeCertRequiresNewResource(t *testin
 	}
 	resOtherCert := &certificate.RDataUploaded{Name: res.Name, PrivateKey: rKey, Certificate: rCert}
 	resOtherCert.SetRName(res.Name)
+	// Prevents name collision with create before destroy lifecycle
+	resOtherCert.Name = "basic-cert-v2"
+
 	tmplMan := testtemplate.Manager{}
 	// Not parallel because number of certificates per domain is limited
 	resource.Test(t, resource.TestCase{
@@ -88,8 +91,7 @@ func TestAccCertificateResource_Uploaded_ChangeCertRequiresNewResource(t *testin
 				Config: tmplMan.Render(t, "testdata/r/hcloud_uploaded_certificate", res),
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckResourceExists(res.TFID(), certificate.ByID(t, &cert)),
-					resource.TestCheckResourceAttr(res.TFID(), "name",
-						fmt.Sprintf("basic-cert--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(res.TFID(), "name", fmt.Sprintf("basic-cert--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(res.TFID(), "private_key", res.PrivateKey),
 					resource.TestCheckResourceAttr(res.TFID(), "certificate", res.Certificate),
 				),
@@ -101,10 +103,8 @@ func TestAccCertificateResource_Uploaded_ChangeCertRequiresNewResource(t *testin
 					"testdata/r/hcloud_uploaded_certificate", resOtherCert,
 				),
 				Check: resource.ComposeAggregateTestCheckFunc(
-
 					testsupport.CheckResourceExists(res.TFID(), certificate.ByID(t, &newCert)),
-					resource.TestCheckResourceAttr(resOtherCert.TFID(), "name",
-						fmt.Sprintf("basic-cert--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(resOtherCert.TFID(), "name", fmt.Sprintf("basic-cert-v2--%d", tmplMan.RandInt)),
 					resource.TestCheckResourceAttr(resOtherCert.TFID(), "private_key", rKey),
 					resource.TestCheckResourceAttr(resOtherCert.TFID(), "certificate", rCert),
 					testsupport.LiftTCF(isAnotherCert(&newCert, &cert)),
