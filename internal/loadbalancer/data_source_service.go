@@ -13,7 +13,6 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
-// DataSourceServiceType is the type name of the Hetzner Cloud Load Balancer Service resource.
 const DataSourceServiceType = "hcloud_load_balancer_service"
 
 func getCommonServiceDataSchema(readOnly bool) map[string]schema.Attribute {
@@ -27,14 +26,14 @@ func getCommonServiceDataSchema(readOnly bool) map[string]schema.Attribute {
 			Required:            !readOnly,
 			Computed:            readOnly,
 		},
-		"protocol": schema.StringAttribute{
-			MarkdownDescription: "Protocol of the Load Balancer. One of `tcp`, `http`, `https`.",
-			Computed:            true,
-		},
 		"listen_port": schema.Int32Attribute{
 			MarkdownDescription: "Port the Load Balancer listens on.",
 			Required:            !readOnly,
 			Computed:            readOnly,
+		},
+		"protocol": schema.StringAttribute{
+			MarkdownDescription: "Protocol of the Load Balancer. One of `tcp`, `http`, `https`.",
+			Computed:            true,
 		},
 		"destination_port": schema.Int32Attribute{
 			MarkdownDescription: "Port the Load Balancer will balance to.",
