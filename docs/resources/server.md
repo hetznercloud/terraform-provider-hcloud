@@ -187,12 +187,12 @@ The following arguments are supported:
 - `placement_group_id` - (Optional, string) Placement Group ID the server added to on creation.
 - `delete_protection` - (Optional, bool) Enable or disable delete protection (Needs to be the same as `rebuild_protection`). See ["Delete Protection"](../index.html.markdown#delete-protection) in the Provider Docs for details.
 - `rebuild_protection` - (Optional, bool) Enable or disable rebuild protection (Needs to be the same as `delete_protection`).
-- `allow_deprecated_images` - (Optional, bool) Enable the use of deprecated images (default: false). **Note** Deprecated images will be removed after three months. Using them is then no longer possible.
+- `allow_deprecated_images` - (Optional, bool) Unused attribute, consider removing it from your configuration.
 - `shutdown_before_deletion` - (bool) Whether to try shutting the server down gracefully before deleting it.
 
 `network` support the following fields:
 
-**Note:** Exactly one of `network_id` or `subnet_id` must be specified.
+**Note:** At least one of `network_id` or `subnet_id` must be specified. If both are specified, they must match.
 
 - `network_id` - (Optional, int) ID of the network to attach the server to. Using `subnet_id` is preferred. When used alone without `subnet_id`, the server will be attached to the last subnet (ordered by `ip_range`), which may be unpredictable.
 - `subnet_id` - (Optional, string) ID of the network subnet to attach the server to.
@@ -236,7 +236,7 @@ The following attributes are exported:
 
 a single entry in `network` support the following fields:
 
-**Note:** Exactly one of `network_id` or `subnet_id` must be specified.
+**Note:** At least one of `network_id` or `subnet_id` must be specified. If both are specified, they must match.
 
 - `network_id` - (Optional, int) ID of the network to attach the server to. Using `subnet_id` is preferred. When used alone without `subnet_id`, the server will be attached to the last subnet (ordered by `ip_range`), which may be unpredictable.
 - `subnet_id` - (Optional, string) ID of the network subnet to attach the server to.

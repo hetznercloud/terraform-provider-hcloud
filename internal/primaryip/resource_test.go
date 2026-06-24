@@ -15,6 +15,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/primaryip"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/testmux"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
@@ -28,7 +29,6 @@ func TestAccPrimaryIPResource(t *testing.T) {
 		Name:             "primary-ip",
 		Type:             "ipv6",
 		Location:         teste2e.TestLocationName,
-		AutoDelete:       false,
 		DeleteProtection: true,
 		Labels:           map[string]string{"key": "value"},
 	}
@@ -37,12 +37,12 @@ func TestAccPrimaryIPResource(t *testing.T) {
 	res3 := testtemplate.DeepCopy(t, res1)
 	res3.Name = res1.Name + "-changed"
 	res3.Labels = map[string]string{"key": "changed"}
-	res3.AutoDelete = true
+	res3.AutoDelete = new(true)
 	res3.DeleteProtection = false
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &hcPrimaryIP)),
 		Steps: []resource.TestStep{
 			{
@@ -117,7 +117,7 @@ func TestAccPrimaryIPResource_ConfigValidation(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &hcPrimaryIP)),
 		Steps: []resource.TestStep{
 			{
@@ -143,26 +143,23 @@ func TestAccPrimaryIPResource_WithServer(t *testing.T) {
 
 	// Step 1
 	res1A := &primaryip.RData{
-		Name:       "a",
-		Type:       "ipv4",
-		Location:   teste2e.TestLocationName,
-		AutoDelete: false,
+		Name:     "a",
+		Type:     "ipv4",
+		Location: teste2e.TestLocationName,
 	}
 	res1A.SetRName("a")
 
 	res1B := &primaryip.RData{
-		Name:       "b",
-		Type:       "ipv6",
-		Location:   teste2e.TestLocationName,
-		AutoDelete: false,
+		Name:     "b",
+		Type:     "ipv6",
+		Location: teste2e.TestLocationName,
 	}
 	res1B.SetRName("b")
 
 	res1C := &primaryip.RData{
-		Name:       "c",
-		Type:       "ipv4",
-		Location:   teste2e.TestLocationName,
-		AutoDelete: false,
+		Name:     "c",
+		Type:     "ipv4",
+		Location: teste2e.TestLocationName,
 	}
 	res1C.SetRName("c")
 
@@ -193,7 +190,7 @@ func TestAccPrimaryIPResource_WithServer(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &hcServer)),
 			testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &hcPrimaryIPA)),
@@ -306,6 +303,87 @@ func TestAccPrimaryIPResource_WithServer(t *testing.T) {
 	})
 }
 
+// Regression tests for https://github.com/hetznercloud/terraform-provider-hcloud/issues/1439
+func TestAccPrimaryIPResource_AssigneeIDRegression(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
+	var (
+		hcServer    hcloud.Server
+		hcPrimaryIP hcloud.PrimaryIP
+	)
+
+	// Step 1
+	res1 := &primaryip.RData{
+		Name:     "primary-ip-regression",
+		Type:     "ipv6",
+		Location: teste2e.TestLocationName,
+	}
+	res1.SetRName("primary_ip")
+
+	res1Server := &server.RData{
+		Name:         "primary-ip-regression",
+		Type:         teste2e.TestServerType,
+		Image:        teste2e.TestImage,
+		LocationName: teste2e.TestLocationName,
+		PublicNet: map[string]any{
+			"ipv4_enabled": false,
+			"ipv6_enabled": true,
+			"ipv6":         res1.TFID() + ".id",
+		},
+	}
+	res1Server.SetRName("primary_ip")
+
+	// Step 2
+	res2 := testtemplate.DeepCopy(t, res1)
+	// Change unrelated to the bug; used to trigger a diff.
+	res2.Name += "-changed"
+
+	res2Server := testtemplate.DeepCopy(t, res1Server)
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
+		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
+			testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &hcServer)),
+			testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &hcPrimaryIP)),
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_primary_ip", res1,
+					"testdata/r/hcloud_server", res1Server,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(res1.TFID(), primaryip.ByID(t, &hcPrimaryIP)),
+					testsupport.CheckResourceExists(res1Server.TFID(), server.ByID(t, &hcServer)),
+				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					// Because the primary ips were created before the server, the
+					// assignee_id is not refreshed after being attached to the server.
+					statecheck.ExpectKnownValue(res1.TFID(), tfjsonpath.New("assignee_id"), knownvalue.Int64Exact(0)),
+					statecheck.ExpectKnownValue(res1.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("server")),
+				},
+			},
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_primary_ip", res2,
+					"testdata/r/hcloud_server", res2Server,
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(res1.TFID(), plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(res1Server.TFID(), plancheck.ResourceActionNoop),
+					},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(res1.TFID(), tfjsonpath.New("assignee_id"), testsupport.Int64ExactFromFunc(func() int64 { return hcServer.ID })),
+					statecheck.ExpectKnownValue(res1.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("server")),
+				},
+			},
+		},
+	})
+}
+
 func TestAccPrimaryIPResource_Reassign(t *testing.T) {
 	var (
 		hcServerA   hcloud.Server
@@ -339,7 +417,7 @@ func TestAccPrimaryIPResource_Reassign(t *testing.T) {
 		Type:         "ipv4",
 		AssigneeID:   res1ServerA.TFID() + ".id",
 		AssigneeType: "server",
-		AutoDelete:   false,
+		AutoDelete:   new(false),
 	}
 	res2.SetRName("main")
 
@@ -353,7 +431,7 @@ func TestAccPrimaryIPResource_Reassign(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy: resource.ComposeAggregateTestCheckFunc(
 			testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &hcServerA)),
 			testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &hcServerB)),
@@ -444,7 +522,7 @@ func TestAccPrimaryIPResource_DeleteProtection(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, &hcPrimaryIP)),
 		Steps: []resource.TestStep{
 			{
@@ -502,7 +580,7 @@ func TestAccPrimaryIPResource_DatacenterToLocation(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				// Create primary IP in Datacenter.
@@ -537,6 +615,7 @@ func TestAccPrimaryIPResource_DatacenterToLocationForceNew(t *testing.T) {
 		Type:         "ipv6",
 		Datacenter:   teste2e.TestDataCenter,
 		AssigneeType: "server", // Attribute was still required in previous versions
+		AutoDelete:   new(false),
 	}
 	res1.SetRName("main")
 
@@ -562,7 +641,7 @@ func TestAccPrimaryIPResource_DatacenterToLocationForceNew(t *testing.T) {
 				},
 			},
 			{
-				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+				ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 				// Change config to Location.
 				Config: tmplMan.Render(t, "testdata/r/hcloud_primary_ip", res2),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -586,7 +665,8 @@ func TestAccPrimaryIPResource_UpgradePluginFramework(t *testing.T) {
 		Location:     teste2e.TestLocationName,
 		AssigneeType: "server",
 		// Labels will default {} after the upgrade, this is a workaround to make the tests pass
-		Labels: map[string]string{"key": "value"},
+		Labels:     map[string]string{"key": "value"},
+		AutoDelete: new(false),
 	}
 	res.SetRName("main")
 
@@ -605,7 +685,7 @@ func TestAccPrimaryIPResource_UpgradePluginFramework(t *testing.T) {
 				),
 			},
 			{
-				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+				ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_primary_ip", res,
 				),

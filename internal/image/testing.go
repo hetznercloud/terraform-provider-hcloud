@@ -17,6 +17,7 @@ type DData struct {
 	LabelSelector     string
 	Architecture      hcloud.Architecture
 	IncludeDeprecated bool
+	MostRecent        *bool
 }
 
 // TFID returns the data source identifier.
@@ -31,6 +32,7 @@ type DDataList struct {
 
 	LabelSelector     string
 	Architecture      hcloud.Architecture
+	Status            hcloud.ImageStatus
 	IncludeDeprecated bool
 }
 

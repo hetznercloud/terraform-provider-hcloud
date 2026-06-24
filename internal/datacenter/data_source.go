@@ -154,11 +154,24 @@ func (d *dataSource) Configure(_ context.Context, req datasource.ConfigureReques
 
 // Schema should return the schema for this data source.
 func (d *dataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema.MarkdownDescription = `
+	resp.Schema.DeprecationMessage = util.MarkdownDescription(`
+The ''hcloud_datacenter'' data source is deprecated, and will be removed after 1 Oct. 2026.
+After this date, requests to the datacenters API endpoints will return ''HTTP 410 Gone''.
+
+Please use the ''hcloud_location'' data source instead.
+
+See https://docs.hetzner.cloud/changelog#2026-06-02-datacenters-deprecated for more details.
+`)
+	resp.Schema.MarkdownDescription = util.MarkdownDescription(`
 Provides details about a specific Hetzner Cloud Datacenter.
 
 Use this resource to get detailed information about a specific Datacenter.
-`
+
+!> The ''hcloud_datacenter'' data source is deprecated, and will be removed after 1 Oct. 2026.
+After this date, requests to the datacenters API endpoints will return ''HTTP 410 Gone''.
+Please use the ''hcloud_location'' data source instead.
+See the [changelog](https://docs.hetzner.cloud/changelog#2026-06-02-datacenters-deprecated) for more details.
+`)
 	resp.Schema.Attributes = getCommonDataSchema(false)
 }
 
@@ -251,11 +264,25 @@ func (d *dataSourceList) Configure(_ context.Context, req datasource.ConfigureRe
 
 // Schema should return the schema for this data source.
 func (d *dataSourceList) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema.MarkdownDescription = `
+	resp.Schema.DeprecationMessage = util.MarkdownDescription(`
+The ''hcloud_datacenters'' data source is deprecated, and will be removed after 1 Oct. 2026.
+After this date, requests to the datacenters API endpoints will return ''HTTP 410 Gone''.
+
+Please use the ''hcloud_locations'' data source instead.
+
+See https://docs.hetzner.cloud/changelog#2026-06-02-datacenters-deprecated for more details.
+`)
+
+	resp.Schema.MarkdownDescription = util.MarkdownDescription(`
 Provides a list of available Hetzner Cloud Datacenters.
 
 This resource may be useful to create highly available infrastructure, distributed across several Datacenters.
-`
+
+!> The ''hcloud_datacenters'' data source is deprecated, and will be removed after 1 Oct. 2026.
+After this date, requests to the datacenters API endpoints will return ''HTTP 410 Gone''.
+Please use the ''hcloud_locations'' data source instead.
+See the [changelog](https://docs.hetzner.cloud/changelog#2026-06-02-datacenters-deprecated) for more details.
+`)
 
 	resp.Schema.Attributes = map[string]schema.Attribute{
 		"id": schema.StringAttribute{

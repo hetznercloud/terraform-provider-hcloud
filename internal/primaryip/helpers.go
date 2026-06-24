@@ -50,7 +50,7 @@ func CreateRandomPrimaryIP(ctx context.Context, c *hcloud.Client, server *hcloud
 		Name:         "primary_ip-" + strconv.Itoa(randomNumberBetween(1000000, 9999999)),
 		AssigneeID:   &server.ID,
 		AssigneeType: "server",
-		AutoDelete:   hcloud.Ptr(true),
+		AutoDelete:   new(true),
 		Type:         ipType,
 	})
 	if err != nil {

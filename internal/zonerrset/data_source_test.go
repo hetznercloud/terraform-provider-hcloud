@@ -9,11 +9,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/hcloud-go/v2/hcloud/exp/kit/randutil"
 	"github.com/hetznercloud/hcloud-go/v2/hcloud/exp/labelutil"
 	"github.com/hetznercloud/hcloud-go/v2/hcloud/schema"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/testmux"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/zone"
@@ -37,7 +37,7 @@ func TestAccZoneRRSetDataSource(t *testing.T) {
 			Name:   "www",
 			Type:   "A",
 			Labels: map[string]string{"key": randutil.GenerateID()},
-			TTL:    hcloud.Ptr(10800),
+			TTL:    new(10800),
 			Records: []schema.ZoneRRSetRecord{
 				{Value: "201.42.91.35"},
 				{Value: "201.42.91.36", Comment: "some web server"},
@@ -65,7 +65,7 @@ func TestAccZoneRRSetDataSource(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckAPIResourceAllAbsent(zone.ResourceType, zone.GetAPIResource()),
 		Steps: []resource.TestStep{
 			{

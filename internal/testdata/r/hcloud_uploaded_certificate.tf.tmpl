@@ -1,6 +1,10 @@
 {{- /* vim: set ft=terraform: */ -}}
 
 resource "hcloud_uploaded_certificate" "{{ .RName }}" {
+  lifecycle {
+    create_before_destroy = true
+  }
+
   name        = "{{ .Name }}--{{ .RInt }}"
   private_key =<<EOT
 {{ .PrivateKey | trim }}

@@ -110,9 +110,9 @@ func Resource() *schema.Resource {
 				Default:  false,
 			},
 			"allow_deprecated_images": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
+				Deprecated: "Unused attribute, consider removing it from your configuration.",
+				Type:       schema.TypeBool,
+				Optional:   true,
 			},
 			"backup_window": {
 				Type:       schema.TypeString,
@@ -322,19 +322,20 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m any) (d
 		return
 	}
 
-	if message, _ := deprecationutil.ImageMessage(image); message != "" {
-		deprecationDiag := diag.Diagnostic{
-			Severity: diag.Warning,
-			Summary:  message,
-		}
-		if d.Get("allow_deprecated_images").(bool) {
-			diags = append(diags, deprecationDiag)
-		} else {
-			deprecationDiag.Severity = diag.Error
-			deprecationDiag.Detail = "To continue using deprecated images, specify the allow_deprecated_images option."
-			diags = append(diags, deprecationDiag)
+	if message, unavailable := deprecationutil.ImageMessage(image); message != "" {
+		if unavailable {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  "Image Unavailable",
+				Detail:   message + ".",
+			})
 			return
 		}
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "Image Deprecated",
+			Detail:   message + ".",
+		})
 	}
 
 	opts := hcloud.ServerCreateOpts{
@@ -435,7 +436,7 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m any) (d
 		opts.PublicNet = &createPublicNet
 		// if the server has no public net, it has to be created without starting it
 		if err := onServerCreateWithoutPublicNet(&opts, d, func(opts *hcloud.ServerCreateOpts) error {
-			opts.StartAfterCreate = hcloud.Ptr(false)
+			opts.StartAfterCreate = new(false)
 			return nil
 		}); err != nil {
 			diags = append(diags, err...)
@@ -767,23 +768,36 @@ func updatePublicNet(ctx context.Context, o any, n any, c *hcloud.Client, server
 		return hcloudutil.ErrorToDiag(err)
 	}
 
-	// if public net block is removed, auto generate primary ips & remove existing
+	// This block handles the case where the full `public_net` block was removed.
+	// In this case, we want to unassign any primary IPs that were explicitly assigned to the server previously,
+	// and generate new random primary ips to replace them.
 	if diffToAdd.Len() == 0 {
-		if err := publicNetRemovedDecision(ctx,
-			c,
-			server,
-			server.PublicNet.IPv4.ID,
-			ipv4IDToRemove,
-			hcloud.PrimaryIPTypeIPv4); err != nil {
-			return err
+		publicNetBlockHadExplicitIPv4IDConfigured := ipv4IDToRemove != 0
+		if server.PublicNet.IPv4.ID != 0 && publicNetBlockHadExplicitIPv4IDConfigured {
+			if server.PublicNet.IPv4.ID != ipv4IDToRemove {
+				return diag.Errorf("Assigned IPv4 changed between plan and apply, please check and generate a new plan")
+			}
+
+			if err := primaryip.UnassignPrimaryIP(ctx, c, server.PublicNet.IPv4.ID); err != nil {
+				return err
+			}
+			if err := primaryip.CreateRandomPrimaryIP(ctx, c, server, hcloud.PrimaryIPTypeIPv4); err != nil {
+				return err
+			}
 		}
-		if err := publicNetRemovedDecision(ctx,
-			c,
-			server,
-			server.PublicNet.IPv6.ID,
-			ipv6IDToRemove,
-			hcloud.PrimaryIPTypeIPv6); err != nil {
-			return err
+
+		publicNetBlockHadExplicitIPv6IDConfigured := ipv6IDToRemove != 0
+		if server.PublicNet.IPv6.ID != 0 && publicNetBlockHadExplicitIPv6IDConfigured {
+			if server.PublicNet.IPv6.ID != ipv6IDToRemove {
+				return diag.Errorf("Assigned IPv6 changed between plan and apply, please check and generate a new plan")
+			}
+
+			if err := primaryip.UnassignPrimaryIP(ctx, c, server.PublicNet.IPv6.ID); err != nil {
+				return err
+			}
+			if err := primaryip.CreateRandomPrimaryIP(ctx, c, server, hcloud.PrimaryIPTypeIPv6); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -1471,44 +1485,19 @@ func powerOnServer(ctx context.Context, c *hcloud.Client, server *hcloud.Server)
 	return nil
 }
 
-func publicNetRemovedDecision(ctx context.Context,
-	c *hcloud.Client,
-	server *hcloud.Server,
-	serverIPID int64,
-	ipIDToRemove int64,
-	ipType hcloud.PrimaryIPType) diag.Diagnostics {
-	if server.PublicNet.IPv4.ID != 0 && ipIDToRemove != 0 {
-		if err := primaryip.UnassignPrimaryIP(ctx, c, serverIPID); err != nil {
-			return err
-		}
-		if err := primaryip.CreateRandomPrimaryIP(ctx, c, server, ipType); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func resourceServerCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ any) error {
 	return validateUniqueNetworkIDs(d)
 }
 
 func validateUniqueNetworkIDs(d *schema.ResourceDiff) error {
-	rawConfig := d.GetRawConfig()
-	rawNetworks := rawConfig.GetAttr("network")
-
-	if !rawNetworks.IsNull() {
+	// Validate that at least one of network_id or subnet_id is specified.
+	if rawNetworks := d.GetRawConfig().GetAttr("network"); !rawNetworks.IsNull() {
 		for it := rawNetworks.ElementIterator(); it.Next(); {
 			_, networkVal := it.Element()
 
-			rawNetworkID := networkVal.GetAttr("network_id")
-			rawSubnetID := networkVal.GetAttr("subnet_id")
+			hasNetworkID := !networkVal.GetAttr("network_id").IsNull()
+			hasSubnetID := !networkVal.GetAttr("subnet_id").IsNull()
 
-			hasNetworkID := !rawNetworkID.IsNull()
-			hasSubnetID := !rawSubnetID.IsNull()
-
-			if hasNetworkID && hasSubnetID {
-				return fmt.Errorf("cannot specify both network_id and subnet_id, specify only one of them (subnet_id is recommended)")
-			}
 			if !hasNetworkID && !hasSubnetID {
 				return fmt.Errorf("must specify either network_id or subnet_id")
 			}
@@ -1531,6 +1520,7 @@ func validateUniqueNetworkIDs(d *schema.ResourceDiff) error {
 			}
 
 			var networkID int64
+			configNetworkID := util.CastInt64(network["network_id"])
 			subnetIDStr, _ := network["subnet_id"].(string)
 
 			// When subnet_id is specified, extract network_id and validate IP range
@@ -1538,6 +1528,11 @@ func validateUniqueNetworkIDs(d *schema.ResourceDiff) error {
 				subnetNetwork, subnetIPRange, err := ParseSubnetID(subnetIDStr)
 				if err != nil {
 					continue
+				}
+
+				// If the user specified both network_id and subnet_id, they must match.
+				if configNetworkID != 0 && subnetNetwork.ID != configNetworkID {
+					return fmt.Errorf("subnet_id (%s) does not belong to the specified network_id (%d)", subnetIDStr, configNetworkID)
 				}
 
 				// Extract network_id from parsed subnet

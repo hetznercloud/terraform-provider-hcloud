@@ -21,10 +21,12 @@ import (
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/datacenter"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/image"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancer"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancertype"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/location"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/primaryip"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/rdns"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/servertype"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
@@ -208,6 +210,8 @@ func (p *PluginProvider) DataSources(_ context.Context) []func() datasource.Data
 	return []func() datasource.DataSource{
 		datacenter.NewDataSource,
 		datacenter.NewDataSourceList,
+		image.NewDataSource,
+		image.NewDataSourceList,
 		loadbalancer.NewDataSourceService,
 		loadbalancer.NewDataSourceServiceList,
 		loadbalancertype.NewDataSource,
@@ -244,6 +248,7 @@ func (p *PluginProvider) Resources(_ context.Context) []func() resource.Resource
 	return []func() resource.Resource{
 		loadbalancer.NewNetworkResource,
 		primaryip.NewResource,
+		rdns.NewResource,
 		server.NewNetworkResource,
 		sshkey.NewResource,
 		storagebox.NewResource,

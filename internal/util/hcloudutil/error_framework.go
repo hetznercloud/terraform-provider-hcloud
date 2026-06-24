@@ -23,6 +23,23 @@ func APIErrorDiagnostics(err error) diag.Diagnostics {
 
 		if hcloud.IsError(hcloudErr, hcloud.ErrorCodeInvalidInput) {
 			invalidInput := hcloudErr.Details.(hcloud.ErrorDetailsInvalidInput)
+
+			// Gracefully handle when invalid input details are not returned
+			// by the API (should never happen).
+			if len(invalidInput.Fields) == 0 {
+				diagnostics.AddError(
+					"Invalid field in API request",
+					fmt.Sprintf(
+						"An invalid field was encountered during an API request. "+
+							"The field might not map 1:1 to your terraform resource.\n\n"+
+							"%s\n\n"+
+							"Error code: %s\n"+
+							"%s",
+						err.Error(), hcloudErr.Code, statusCodeMessage,
+					))
+				return diagnostics
+			}
+
 			for _, field := range invalidInput.Fields {
 				messages := make([]string, 0, len(field.Messages))
 				for _, message := range field.Messages {
@@ -78,9 +95,26 @@ func APIErrorIsNotFound(err error) bool {
 	return false
 }
 
-func NotFoundDiagnostic(resourceName string, key string, value any) diag.Diagnostic {
-	return diag.NewErrorDiagnostic(
-		"Resource not found",
-		fmt.Sprintf("Resource (%s) was not found: %s=%s", resourceName, key, fmt.Sprint(value)),
-	)
+func NotFoundDiagnostic(resourceName string, values ...any) diag.Diagnostic {
+	b := &strings.Builder{}
+
+	fmt.Fprintf(b, "Resource (%s) was not found", resourceName)
+
+	if len(values) > 0 {
+		fmt.Fprint(b, ":")
+		// len(values) == 1: value
+		// len(values) == 2: key=value
+		// len(values) == 3: value key=value
+		// len(values) == 4: key=value key=value
+		offset := 0
+		if len(values)%2 != 0 {
+			offset = 1
+			fmt.Fprintf(b, " %v", values[0])
+		}
+		for i := offset; i < len(values); i += 2 {
+			fmt.Fprintf(b, " %s=%v", values[i], values[i+1])
+		}
+	}
+
+	return diag.NewErrorDiagnostic("Resource not found", b.String())
 }

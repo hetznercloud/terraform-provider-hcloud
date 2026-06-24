@@ -156,7 +156,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		Type: hcloud.ZoneRRSetType(data.Type.ValueString()),
 	}
 	if !data.TTL.IsUnknown() && !data.TTL.IsNull() {
-		opts.TTL = hcloud.Ptr(int(data.TTL.ValueInt32()))
+		opts.TTL = new(int(data.TTL.ValueInt32()))
 	}
 	if !data.Labels.IsUnknown() && !data.Labels.IsNull() {
 		hcloudutil.TerraformLabelsToHCloud(ctx, data.Labels, &opts.Labels)
@@ -312,7 +312,7 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 	if !plan.TTL.IsUnknown() && !plan.TTL.Equal(data.TTL) {
 		opts := hcloud.ZoneRRSetChangeTTLOpts{}
 		if !plan.TTL.IsNull() {
-			opts.TTL = hcloud.Ptr(int(plan.TTL.ValueInt32()))
+			opts.TTL = new(int(plan.TTL.ValueInt32()))
 		}
 
 		action, _, err := r.client.Zone.ChangeRRSetTTL(ctx, rrset, opts)

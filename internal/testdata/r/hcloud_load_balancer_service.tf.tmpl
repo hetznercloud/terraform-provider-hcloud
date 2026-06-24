@@ -1,6 +1,6 @@
 {{- /* vim: set ft=terraform: */ -}}
 
-resource "hcloud_load_balancer_service" "{{ .Name }}" {
+resource "hcloud_load_balancer_service" "{{ .RName }}" {
   {{/* Required properties */ -}}
   load_balancer_id = {{ .LoadBalancerID }}
   protocol         = "{{ .Protocol }}"

@@ -12,6 +12,7 @@ import (
 	"github.com/hetznercloud/hcloud-go/v2/hcloud/exp/kit/randutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/primaryip"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/testmux"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
@@ -38,7 +39,7 @@ func TestAccPrimaryIPDataSourceList(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(primaryip.ResourceType, primaryip.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
@@ -76,6 +77,7 @@ func TestAccPrimaryIPDataSourceList_UpgradePluginFramework(t *testing.T) {
 		Location:     teste2e.TestLocationName,
 		AssigneeType: "server",
 		Labels:       map[string]string{"key": randutil.GenerateID()},
+		AutoDelete:   new(false),
 	}
 	res.SetRName("main")
 
@@ -113,7 +115,7 @@ func TestAccPrimaryIPDataSourceList_UpgradePluginFramework(t *testing.T) {
 				),
 			},
 			{
-				ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+				ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_primary_ip", res,
 					"testdata/d/hcloud_primary_ips", byLabel,

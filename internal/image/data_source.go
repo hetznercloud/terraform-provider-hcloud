@@ -2,308 +2,313 @@ package image
 
 import (
 	"context"
-	"log"
-	"sort"
-	"time"
+	"maps"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud/exp/deprecationutil"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud/exp/kit/sliceutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/datasourceutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/merge"
 )
 
-const (
-	// DataSourceType is the type name of the Hetzner Cloud image resource.
-	DataSourceType = "hcloud_image"
-
-	// DataSourceListType is the type name to receive a list of Hetzner Cloud image resources.
-	DataSourceListType = "hcloud_images"
-)
-
-// getCommonDataSchema returns a new common schema used by all image data sources.
-func getCommonDataSchema() map[string]*schema.Schema {
-	return map[string]*schema.Schema{
-		"id": {
-			Type:     schema.TypeInt,
-			Optional: true,
-			Computed: true,
+func getCommonDataSourceSchema(readOnly bool) map[string]schema.Attribute {
+	return map[string]schema.Attribute{
+		"id": schema.Int64Attribute{
+			MarkdownDescription: "ID of the Image.",
+			Optional:            !readOnly,
+			Computed:            readOnly,
 		},
-		"type": {
-			Type:     schema.TypeString,
-			Computed: true,
+		"type": schema.StringAttribute{
+			MarkdownDescription: "Type of the Image, for example `system`, `backup` or `snapshot`.",
+			Computed:            true,
 		},
-		"name": {
-			Type:     schema.TypeString,
-			Optional: true,
-			Computed: true,
+		"name": schema.StringAttribute{
+			MarkdownDescription: "Name of the Image, only present when the type is `system`.",
+			Optional:            !readOnly,
+			Computed:            readOnly,
 		},
-		"description": {
-			Type:     schema.TypeString,
-			Computed: true,
+		"description": schema.StringAttribute{
+			MarkdownDescription: "Description of the Image.",
+			Computed:            true,
 		},
-		"created": {
-			Type:     schema.TypeString,
-			Computed: true,
+		"labels": datasourceutil.LabelsSchema(),
+		"created": schema.StringAttribute{
+			MarkdownDescription: "Point in time when the Image was created (in RFC3339 format).",
+			Computed:            true,
 		},
-		"os_flavor": {
-			Type:     schema.TypeString,
-			Computed: true,
+		"os_flavor": schema.StringAttribute{
+			MarkdownDescription: "Flavor of the operating system contained in the Image.",
+			Computed:            true,
 		},
-		"os_version": {
-			Type:     schema.TypeString,
-			Computed: true,
+		"os_version": schema.StringAttribute{
+			MarkdownDescription: "Version of the operating system contained in the Image.",
+			Computed:            true,
 		},
-		"architecture": {
-			Type:     schema.TypeString,
-			Computed: true,
+		"architecture": schema.StringAttribute{
+			MarkdownDescription: "CPU architecture compatible with the Image.",
+			Computed:            true,
 		},
-		"rapid_deploy": {
-			Type:     schema.TypeBool,
-			Computed: true,
+		"rapid_deploy": schema.BoolAttribute{
+			MarkdownDescription: "Whether the Image is optimized for a rapid deployment.",
+			Computed:            true,
 		},
-		"deprecated": {
-			Type:     schema.TypeString,
-			Computed: true,
-		},
-		"labels": {
-			Type:     schema.TypeMap,
-			Computed: true,
-		},
-		"selector": {
-			Type:          schema.TypeString,
-			Optional:      true,
-			Deprecated:    "Please use the with_selector property instead.",
-			ConflictsWith: []string{"with_selector"},
+		"deprecated": schema.StringAttribute{
+			MarkdownDescription: "Point in time when the Image was marked as deprecated (in RFC3339 format).",
+			Computed:            true,
 		},
 	}
 }
 
-// DataSource creates a Terraform schema for the hcloud_image data source.
-func DataSource() *schema.Resource {
-	return &schema.Resource{
-		ReadContext: dataSourceHcloudImageRead,
-		Schema: merge.Maps(
-			getCommonDataSchema(),
-			map[string]*schema.Schema{
-				"most_recent": {
-					Type:     schema.TypeBool,
-					Optional: true,
-				},
-				"with_selector": {
-					Type:          schema.TypeString,
-					Optional:      true,
-					ConflictsWith: []string{"selector", "name"},
-				},
-				"with_status": {
-					Type: schema.TypeList,
-					Elem: &schema.Schema{
-						Type: schema.TypeString,
-					},
-					Optional: true,
-				},
-				"with_architecture": {
-					Type:     schema.TypeString,
-					Default:  hcloud.ArchitectureX86,
-					Optional: true,
-				},
-				"include_deprecated": {
-					Type:     schema.TypeBool,
-					Default:  false,
-					Optional: true,
-				},
-			},
+const DataSourceType = "hcloud_image"
+
+var _ datasource.DataSource = (*DataSource)(nil)
+var _ datasource.DataSourceWithConfigure = (*DataSource)(nil)
+var _ datasource.DataSourceWithConfigValidators = (*DataSource)(nil)
+
+type DataSource struct {
+	client *hcloud.Client
+}
+
+func NewDataSource() datasource.DataSource {
+	return &DataSource{}
+}
+
+func (d *DataSource) Metadata(_ context.Context, _ datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = DataSourceType
+}
+
+func (d *DataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+	var newDiags diag.Diagnostics
+
+	d.client, newDiags = hcloudutil.ConfigureClient(req.ProviderData)
+	resp.Diagnostics.Append(newDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+}
+
+func (d *DataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema.MarkdownDescription = `
+Provides details about a Hetzner Cloud Image.
+
+It is recommended to always provide the image architecture (using ''with_architecture'').
+
+See the [Image API documentation](https://docs.hetzner.cloud/reference/cloud#images) for more details.
+`
+
+	resp.Schema.Attributes = getCommonDataSourceSchema(false)
+	maps.Copy(resp.Schema.Attributes, map[string]schema.Attribute{
+		"selector": schema.StringAttribute{
+			MarkdownDescription: "Filter results using a [Label Selector](https://docs.hetzner.cloud/reference/cloud#label-selector).",
+			Optional:            true,
+			DeprecationMessage:  "Please use the with_selector property instead.",
+		},
+		"with_selector": schema.StringAttribute{
+			MarkdownDescription: "Filter results using a [Label Selector](https://docs.hetzner.cloud/reference/hetzner#label-selector).",
+			Optional:            true,
+		},
+		"with_status": schema.SetAttribute{
+			MarkdownDescription: "Filter results by statuses, for example `creating` or `available`.",
+			Optional:            true,
+			ElementType:         types.StringType,
+		},
+		"with_architecture": schema.StringAttribute{
+			MarkdownDescription: "Filter results by architecture, for example `x86` (default) or `arm`.",
+			Optional:            true,
+		},
+		"most_recent": schema.BoolAttribute{
+			MarkdownDescription: "Sort results by created date, and return the most recent result.",
+			Optional:            true,
+		},
+		"include_deprecated": schema.BoolAttribute{
+			MarkdownDescription: "Include deprecated images.",
+			Optional:            true,
+		},
+	})
+}
+
+type dataSourceModel struct {
+	model
+
+	Selector          types.String `tfsdk:"selector"`
+	WithSelector      types.String `tfsdk:"with_selector"`
+	WithStatus        types.Set    `tfsdk:"with_status"`
+	WithArchitecture  types.String `tfsdk:"with_architecture"`
+	MostRecent        types.Bool   `tfsdk:"most_recent"`
+	IncludeDeprecated types.Bool   `tfsdk:"include_deprecated"`
+}
+
+var _ util.ModelFromAPI[*hcloud.Image] = &dataSourceModel{}
+
+func (m *dataSourceModel) FromAPI(ctx context.Context, in *hcloud.Image) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	diags.Append(m.model.FromAPI(ctx, in)...)
+
+	return diags
+}
+
+func (d *DataSource) ConfigValidators(_ context.Context) []datasource.ConfigValidator {
+	return []datasource.ConfigValidator{
+		datasourcevalidator.ExactlyOneOf(
+			path.MatchRoot("id"),
+			path.MatchRoot("name"),
+			path.MatchRoot("selector"),
+			path.MatchRoot("with_selector"),
 		),
 	}
 }
 
-func DataSourceList() *schema.Resource {
-	return &schema.Resource{
-		ReadContext: dataSourceHcloudImageListRead,
-		Schema: map[string]*schema.Schema{
-			"images": {
-				Type:     schema.TypeList,
-				Computed: true,
-				Elem: &schema.Resource{
-					Schema: getCommonDataSchema(),
-				},
-			},
-			"most_recent": {
-				Type:     schema.TypeBool,
-				Optional: true,
-			},
-			"with_selector": {
-				Type:     schema.TypeString,
-				Optional: true,
-			},
-			"with_status": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional: true,
-			},
-			"with_architecture": {
-				Type: schema.TypeSet,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Optional: true,
-			},
-			"include_deprecated": {
-				Type:     schema.TypeBool,
-				Default:  false,
-				Optional: true,
-			},
-		},
-	}
-}
+func (d *DataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data dataSourceModel
 
-func dataSourceHcloudImageRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	client := m.(*hcloud.Client)
-	if id, ok := d.GetOk("id"); ok {
-		i, _, err := client.Image.GetByID(ctx, util.CastInt64(id))
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var result *hcloud.Image
+	var err error
+	var newDiag diag.Diagnostic
+
+	switch {
+	case !data.ID.IsNull():
+		result, _, err = d.client.Image.GetByID(ctx, data.ID.ValueInt64())
 		if err != nil {
-			return hcloudutil.ErrorToDiag(err)
+			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+			return
 		}
-		if i == nil {
-			return diag.Errorf("no image found with id %d", id)
+		if result == nil {
+			resp.Diagnostics.Append(hcloudutil.NotFoundDiagnostic("image", "id", data.ID.String()))
+			return
 		}
-		setImageSchema(d, i)
-		return nil
-	}
+	case !data.Name.IsNull():
+		opts := hcloud.ImageListOpts{}
+		opts.Name = data.Name.ValueString()
 
-	opts := hcloud.ImageListOpts{}
+		resp.Diagnostics.Append(prepareImageListOpts(ctx, &opts, data)...)
 
-	name := d.Get("name").(string)
-	if name != "" {
-		opts.Name = name
-	}
-
-	var selector string
-	if v := d.Get("with_selector").(string); v != "" {
-		selector = v
-	} else if v := d.Get("selector").(string); v != "" {
-		selector = v
-	}
-	if selector != "" {
-		opts.LabelSelector = selector
-	}
-
-	// Resources can be selected either by name or selector
-	if name != "" && selector != "" {
-		diag.Errorf("you can only use one of name and with_selector")
-	}
-	if name == "" && selector == "" {
-		diag.Errorf("please specify an id, a name or a selector to lookup the image")
-	}
-
-	statuses := make([]hcloud.ImageStatus, 0)
-	for _, status := range d.Get("with_status").([]any) {
-		statuses = append(statuses, hcloud.ImageStatus(status.(string)))
-	}
-	opts.Status = statuses
-
-	log.Printf("Arches: %+v", d.Get("with_architecture"))
-
-	architecture := hcloud.Architecture(d.Get("with_architecture").(string))
-	if architecture != "" {
-		opts.Architecture = []hcloud.Architecture{architecture}
-	}
-
-	if d.Get("include_deprecated").(bool) {
-		opts.IncludeDeprecated = true
-	}
-
-	allImages, err := client.Image.AllWithOpts(ctx, opts)
-	if err != nil {
-		return hcloudutil.ErrorToDiag(err)
-	}
-	if len(allImages) == 0 {
-		return diag.Errorf("no image found matching the selection")
-	}
-	if len(allImages) > 1 {
-		if _, ok := d.GetOk("most_recent"); !ok {
-			return diag.Errorf("more than one image found")
+		if resp.Diagnostics.HasError() {
+			return
 		}
-		sortImageListByCreated(allImages)
-		log.Printf("[INFO] %d images found, using %d as the most recent one", len(allImages), allImages[0].ID)
+
+		all, _, err := d.client.Image.List(ctx, opts)
+		if err != nil {
+			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+			return
+		}
+
+		if !data.MostRecent.IsNull() && data.MostRecent.ValueBool() {
+			// Sorting happens server side.
+			result, newDiag = hcloudutil.GetFirst(all,
+				hcloudutil.WithResourceName("image"),
+				hcloudutil.WithUsing("name", opts.Name),
+				hcloudutil.WithListOpts(opts),
+			)
+		} else {
+			result, newDiag = hcloudutil.GetOne(all,
+				hcloudutil.WithResourceName("image"),
+				hcloudutil.WithUsing("name", opts.Name),
+				hcloudutil.WithListOpts(opts),
+			)
+		}
+		if newDiag != nil {
+			resp.Diagnostics.Append(newDiag)
+			return
+		}
+	case !data.WithSelector.IsNull() || !data.Selector.IsNull():
+		opts := hcloud.ImageListOpts{}
+		if !data.WithSelector.IsNull() {
+			opts.LabelSelector = data.WithSelector.ValueString()
+		} else if !data.Selector.IsNull() {
+			opts.LabelSelector = data.Selector.ValueString()
+		}
+
+		resp.Diagnostics.Append(prepareImageListOpts(ctx, &opts, data)...)
+
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		all, _, err := d.client.Image.List(ctx, opts)
+		if err != nil {
+			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+			return
+		}
+
+		if !data.MostRecent.IsNull() && data.MostRecent.ValueBool() {
+			// Sorting happens server side.
+			result, newDiag = hcloudutil.GetFirst(all,
+				hcloudutil.WithResourceName("image"),
+				hcloudutil.WithUsing("label selector", opts.LabelSelector),
+				hcloudutil.WithListOpts(opts),
+			)
+		} else {
+			result, newDiag = hcloudutil.GetOne(all,
+				hcloudutil.WithResourceName("image"),
+				hcloudutil.WithUsing("label selector", opts.LabelSelector),
+				hcloudutil.WithListOpts(opts),
+			)
+		}
+		if newDiag != nil {
+			resp.Diagnostics.Append(newDiag)
+			return
+		}
 	}
-	setImageSchema(d, allImages[0])
-	return nil
+
+	if message, unavailable := deprecationutil.ImageMessage(result); message != "" {
+		if unavailable {
+			resp.Diagnostics.AddWarning("Image unavailable", message+".")
+		} else {
+			resp.Diagnostics.AddWarning("Image deprecated", message+".")
+		}
+	}
+
+	resp.Diagnostics.Append(data.FromAPI(ctx, result)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func dataSourceHcloudImageListRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	client := m.(*hcloud.Client)
+func prepareImageListOpts(ctx context.Context, opts *hcloud.ImageListOpts, data dataSourceModel) diag.Diagnostics {
+	var diags diag.Diagnostics
 
-	selector := d.Get("with_selector").(string)
+	if !data.WithStatus.IsNull() {
+		values := make([]string, 0, len(data.WithStatus.Elements()))
+		diags.Append(data.WithStatus.ElementsAs(ctx, &values, false)...)
 
-	statuses := make([]hcloud.ImageStatus, 0)
-	for _, status := range d.Get("with_status").([]any) {
-		statuses = append(statuses, hcloud.ImageStatus(status.(string)))
+		opts.Status = sliceutil.Transform(values, func(o string) hcloud.ImageStatus {
+			return hcloud.ImageStatus(o)
+		})
 	}
 
-	architectures := make([]hcloud.Architecture, 0)
-	for _, arch := range d.Get("with_architecture").(*schema.Set).List() {
-		architectures = append(architectures, hcloud.Architecture(arch.(string)))
+	if !data.WithArchitecture.IsNull() {
+		opts.Architecture = []hcloud.Architecture{
+			hcloud.Architecture(data.WithArchitecture.ValueString()),
+		}
+	} else {
+		opts.Architecture = []hcloud.Architecture{
+			hcloud.ArchitectureX86,
+		}
 	}
 
-	opts := hcloud.ImageListOpts{
-		ListOpts:     hcloud.ListOpts{LabelSelector: selector},
-		Status:       statuses,
-		Architecture: architectures,
-	}
-	allImages, err := client.Image.AllWithOpts(ctx, opts)
-	if err != nil {
-		return hcloudutil.ErrorToDiag(err)
+	if !data.IncludeDeprecated.IsNull() {
+		opts.IncludeDeprecated = data.IncludeDeprecated.ValueBool()
 	}
 
-	if _, ok := d.GetOk("most_recent"); ok {
-		sortImageListByCreated(allImages)
+	if !data.MostRecent.IsNull() && data.MostRecent.ValueBool() {
+		opts.Sort = []string{"created:desc"}
 	}
 
-	ids := make([]string, len(allImages))
-	tfImages := make([]map[string]any, len(allImages))
-	for i, image := range allImages {
-		ids[i] = util.FormatID(image.ID)
-		tfImages[i] = getImageAttributes(image)
-	}
-	d.Set("images", tfImages)
-	d.SetId(datasourceutil.ListID(ids))
-
-	return nil
-}
-
-func sortImageListByCreated(imageList []*hcloud.Image) {
-	sort.Slice(imageList, func(i, j int) bool {
-		return imageList[i].Created.After(imageList[j].Created)
-	})
-}
-
-func setImageSchema(d *schema.ResourceData, i *hcloud.Image) {
-	util.SetSchemaFromAttributes(d, getImageAttributes(i))
-}
-
-func getImageAttributes(i *hcloud.Image) map[string]any {
-	res := map[string]any{
-		"id":           i.ID,
-		"type":         i.Type,
-		"name":         i.Name,
-		"created":      i.Created.Format(time.RFC3339),
-		"description":  i.Description,
-		"os_flavor":    i.OSFlavor,
-		"os_version":   i.OSVersion,
-		"architecture": i.Architecture,
-		"rapid_deploy": i.RapidDeploy,
-		"labels":       i.Labels,
-	}
-
-	if !i.Deprecated.IsZero() {
-		res["deprecated"] = i.Deprecated.Format(time.RFC3339)
-	}
-
-	return res
+	return diags
 }

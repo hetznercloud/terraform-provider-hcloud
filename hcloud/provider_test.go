@@ -8,11 +8,9 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/certificate"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/firewall"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/floatingip"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/image"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancer"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/network"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/placementgroup"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/rdns"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/snapshot"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/volume"
@@ -40,7 +38,6 @@ func TestProvider_Resources(t *testing.T) {
 		network.ResourceType,
 		network.RouteResourceType,
 		network.SubnetResourceType,
-		rdns.ResourceType,
 		server.ResourceType,
 		snapshot.ResourceType,
 		volume.AttachmentResourceType,
@@ -65,8 +62,6 @@ func TestProvider_DataSources(t *testing.T) {
 		firewall.DataSourceListType,
 		floatingip.DataSourceType,
 		floatingip.DataSourceListType,
-		image.DataSourceType,
-		image.DataSourceListType,
 		loadbalancer.DataSourceType,
 		loadbalancer.DataSourceListType,
 		network.DataSourceType,

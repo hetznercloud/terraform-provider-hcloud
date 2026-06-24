@@ -17,8 +17,8 @@ func TestModel(t *testing.T) {
 		ID:                     1333,
 		Name:                   "bx11",
 		Description:            "BX11",
-		SnapshotLimit:          hcloud.Ptr(10),
-		AutomaticSnapshotLimit: hcloud.Ptr(11),
+		SnapshotLimit:          new(10),
+		AutomaticSnapshotLimit: new(11),
 		SubaccountsLimit:       100,
 		Size:                   1 * 1024 * 1024 * 1024 * 1024,
 		DeprecatableResource: hcloud.DeprecatableResource{
@@ -49,8 +49,8 @@ func Test_intPtrToInt64Ptr(t *testing.T) {
 		arg  *int
 		want *int64
 	}{
-		{arg: hcloud.Ptr(0), want: hcloud.Ptr(int64(0))},
-		{arg: hcloud.Ptr(1337), want: hcloud.Ptr(int64(1337))},
+		{arg: new(0), want: new(int64(0))},
+		{arg: new(1337), want: new(int64(1337))},
 		{arg: nil, want: nil},
 	}
 	for i, tt := range tests {

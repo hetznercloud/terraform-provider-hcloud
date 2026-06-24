@@ -567,7 +567,7 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 	// Disable delete protection before deleting.
 	if !data.DeleteProtection.IsUnknown() && !data.DeleteProtection.IsNull() && data.DeleteProtection.ValueBool() {
 		action, _, err := r.client.StorageBox.ChangeProtection(ctx, storageBox, hcloud.StorageBoxChangeProtectionOpts{
-			Delete: hcloud.Ptr(false),
+			Delete: new(false),
 		})
 		if err != nil {
 			if hcloudutil.APIErrorIsNotFound(err) {

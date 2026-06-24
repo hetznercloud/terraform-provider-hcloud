@@ -1,7 +1,6 @@
 package server_test
 
 import (
-	"context"
 	"crypto/sha1" // nolint: gosec
 	"encoding/base64"
 	"fmt"
@@ -25,6 +24,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/testmux"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
@@ -33,103 +33,98 @@ import (
 func TestAccServerResource(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
-	var s hcloud.Server
+	var hcServer hcloud.Server
 
-	sk := sshkey.NewRData(t, "server-basic")
+	resSSHKey := sshkey.NewRData(t, "server-basic")
 
-	res := &server.RData{
+	res1 := &server.RData{
 		Name:                   "server-basic",
 		Type:                   teste2e.TestServerType,
 		Image:                  teste2e.TestImage,
-		SSHKeys:                []string{sk.TFID() + ".id"},
+		SSHKeys:                []string{resSSHKey.TFID() + ".id"},
 		ShutdownBeforeDeletion: true,
 	}
-	res.SetRName("server-basic")
+	res1.SetRName("server-basic")
 
-	resRenamed := &server.RData{
-		Name:                   res.Name + "-renamed",
-		Type:                   res.Type,
-		Image:                  res.Image,
-		SSHKeys:                res.SSHKeys,
-		ShutdownBeforeDeletion: res.ShutdownBeforeDeletion,
-		Labels:                 map[string]string{"foo": "bar"},
-		Backups:                true,
-	}
-	resRenamed.SetRName(res.Name)
+	res2 := testtemplate.DeepCopy(t, res1)
+	res2.Name += "-renamed"
+	res2.Labels = map[string]string{"foo": "bar"}
+	res2.Backups = true
+	res2.ShutdownBeforeDeletion = false
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
-		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckAPIResourceAllAbsent(server.ResourceType, server.GetAPIResource()),
 		Steps: []resource.TestStep{
 			{
 				// Create a new Server using the required values only.
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_server", res,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_server", res1,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s)),
-					resource.TestCheckResourceAttr(res.TFID(), "name", fmt.Sprintf("server-basic--%d", tmplMan.RandInt)),
-					resource.TestCheckResourceAttr(res.TFID(), "server_type", res.Type),
-					resource.TestCheckResourceAttr(res.TFID(), "image", res.Image),
-					resource.TestCheckResourceAttrSet(res.TFID(), "location"),
-					resource.TestCheckResourceAttrSet(res.TFID(), "datacenter"),
-					resource.TestCheckResourceAttrPair(sk.TFID(), "id", res.TFID(), "ssh_keys.0"),
-					resource.TestCheckResourceAttrSet(res.TFID(), "ipv4_address"),
-					resource.TestCheckResourceAttrSet(res.TFID(), "ipv6_address"),
-					resource.TestCheckResourceAttrSet(res.TFID(), "ipv6_network"),
-					resource.TestCheckResourceAttr(res.TFID(), "status", string(hcloud.ServerStatusRunning)),
-					resource.TestCheckResourceAttrSet(res.TFID(), "primary_disk_size"),
-					resource.TestCheckResourceAttr(res.TFID(), "placement_group_id", "0"),
+					testsupport.CheckResourceExists(res1.TFID(), server.ByID(t, &hcServer)),
+					resource.TestCheckResourceAttr(res1.TFID(), "name", fmt.Sprintf("server-basic--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(res1.TFID(), "server_type", res1.Type),
+					resource.TestCheckResourceAttr(res1.TFID(), "image", res1.Image),
+					resource.TestCheckResourceAttrSet(res1.TFID(), "location"),
+					resource.TestCheckResourceAttrSet(res1.TFID(), "datacenter"),
+					resource.TestCheckResourceAttrPair(resSSHKey.TFID(), "id", res1.TFID(), "ssh_keys.0"),
+					resource.TestCheckResourceAttrSet(res1.TFID(), "ipv4_address"),
+					resource.TestCheckResourceAttrSet(res1.TFID(), "ipv6_address"),
+					resource.TestCheckResourceAttrSet(res1.TFID(), "ipv6_network"),
+					resource.TestCheckResourceAttr(res1.TFID(), "status", string(hcloud.ServerStatusRunning)),
+					resource.TestCheckResourceAttrSet(res1.TFID(), "primary_disk_size"),
+					resource.TestCheckResourceAttr(res1.TFID(), "placement_group_id", "0"),
 				),
 			},
 			{
 				// Try to import the newly created Server
-				ResourceName:      res.TFID(),
+				ResourceName:      res1.TFID(),
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"ssh_keys", "user_data", "keep_disk", "ignore_remote_firewall_ids", "allow_deprecated_images", "shutdown_before_deletion",
+					"ssh_keys", "user_data", "keep_disk", "ignore_remote_firewall_ids", "shutdown_before_deletion",
 				},
 			},
 			{
 				// Update the Server created in the previous step by
 				// setting all optional fields and renaming the Server.
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_server", resRenamed,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_server", res2,
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(resRenamed.TFID(), plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(res2.TFID(), plancheck.ResourceActionUpdate),
 					},
 				},
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resRenamed.TFID(), "name", fmt.Sprintf("server-basic-renamed--%d", tmplMan.RandInt)),
-					resource.TestCheckResourceAttr(resRenamed.TFID(), "server_type", resRenamed.Type),
-					resource.TestCheckResourceAttr(resRenamed.TFID(), "image", resRenamed.Image),
-					resource.TestCheckResourceAttr(resRenamed.TFID(), "labels.foo", "bar"),
-					resource.TestCheckResourceAttr(resRenamed.TFID(), "backups", "true"),
+					resource.TestCheckResourceAttr(res2.TFID(), "name", fmt.Sprintf("server-basic-renamed--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(res2.TFID(), "server_type", res2.Type),
+					resource.TestCheckResourceAttr(res2.TFID(), "image", res2.Image),
+					resource.TestCheckResourceAttr(res2.TFID(), "labels.foo", "bar"),
+					resource.TestCheckResourceAttr(res2.TFID(), "backups", "true"),
 				),
 			},
 			{
 				// Revert the server to the original state to test the other direction for various options
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_server", res,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_server", res1,
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(res.TFID(), plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(res1.TFID(), plancheck.ResourceActionUpdate),
 					},
 				},
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resRenamed.TFID(), "name", fmt.Sprintf("server-basic--%d", tmplMan.RandInt)),
-					resource.TestCheckResourceAttr(resRenamed.TFID(), "server_type", res.Type),
-					resource.TestCheckResourceAttr(resRenamed.TFID(), "image", res.Image),
-					resource.TestCheckNoResourceAttr(resRenamed.TFID(), "labels.foo"),
-					resource.TestCheckResourceAttr(resRenamed.TFID(), "backups", "false"),
+					resource.TestCheckResourceAttr(res2.TFID(), "name", fmt.Sprintf("server-basic--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(res2.TFID(), "server_type", res1.Type),
+					resource.TestCheckResourceAttr(res2.TFID(), "image", res1.Image),
+					resource.TestCheckNoResourceAttr(res2.TFID(), "labels.foo"),
+					resource.TestCheckResourceAttr(res2.TFID(), "backups", "false"),
 				),
 			},
 		},
@@ -137,7 +132,7 @@ func TestAccServerResource(t *testing.T) {
 }
 
 func TestAccServerResource_UnavailableServerType(t *testing.T) {
-	var s hcloud.Server
+	tmplMan := testtemplate.Manager{}
 
 	res := &server.RData{
 		Name:  "unavailable-server-type",
@@ -146,11 +141,10 @@ func TestAccServerResource_UnavailableServerType(t *testing.T) {
 	}
 	res.SetRName(res.Name)
 
-	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
-		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckAPIResourceAllAbsent(server.ResourceType, server.GetAPIResource()),
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
@@ -163,37 +157,41 @@ func TestAccServerResource_UnavailableServerType(t *testing.T) {
 }
 
 func TestAccServerResource_ImageID(t *testing.T) {
-	var s hcloud.Server
+	tmplMan := testtemplate.Manager{}
 
-	sk := sshkey.NewRData(t, "server-image-id")
-	img := &image.DData{
+	var hsServer hcloud.Server
+
+	resSSHKey := sshkey.NewRData(t, "server-image-id")
+
+	resImage := &image.DData{
 		ImageName:    teste2e.TestImage,
 		Architecture: hcloud.ArchitectureX86,
 	}
-	img.SetRName("server-image-id")
+	resImage.SetRName("server-image-id")
+
 	res := &server.RData{
 		Name:    "server-image-id",
 		Type:    teste2e.TestServerType,
-		Image:   fmt.Sprintf("${%s.id}", img.TFID()),
-		SSHKeys: []string{sk.TFID() + ".id"},
+		Image:   fmt.Sprintf("${%s.id}", resImage.TFID()),
+		SSHKeys: []string{resSSHKey.TFID() + ".id"},
 	}
 	res.SetRName("server-image-id")
-	tmplMan := testtemplate.Manager{}
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
-		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckAPIResourceAllAbsent(server.ResourceType, server.GetAPIResource()),
 		Steps: []resource.TestStep{
 			{
 				// Create a new Server using the required values
 				// only.
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/d/hcloud_image", img,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/d/hcloud_image", resImage,
 					"testdata/r/hcloud_server", res,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s)),
+					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &hsServer)),
 				),
 			},
 		},
@@ -203,62 +201,57 @@ func TestAccServerResource_ImageID(t *testing.T) {
 func TestAccServerResource_Resize(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
-	var s hcloud.Server
+	var hcServer hcloud.Server
 
-	sk := sshkey.NewRData(t, "server-resize")
+	resSSHKey := sshkey.NewRData(t, "server-resize")
 
-	res := &server.RData{
+	res1 := &server.RData{
 		Name:    "server-resize",
 		Type:    teste2e.TestServerType,
 		Image:   teste2e.TestImage,
-		SSHKeys: []string{sk.TFID() + ".id"},
+		SSHKeys: []string{resSSHKey.TFID() + ".id"},
 	}
-	res.SetRName("server-resize")
+	res1.SetRName("server-resize")
 
-	resResized := &server.RData{
-		Name:     res.Name,
-		Type:     teste2e.TestServerTypeUpgrade,
-		KeepDisk: true,
-		Image:    res.Image,
-		SSHKeys:  res.SSHKeys,
-	}
-	resResized.SetRName(res.Name)
+	res2 := testtemplate.DeepCopy(t, res1)
+	res2.Type = teste2e.TestServerTypeUpgrade
+	res2.KeepDisk = true
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
-		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckAPIResourceAllAbsent(server.ResourceType, server.GetAPIResource()),
 		Steps: []resource.TestStep{
 			{
 				// Create a new Server using the required values
 				// only.
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_server", res,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_server", res1,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s)),
-					resource.TestCheckResourceAttr(res.TFID(), "name", fmt.Sprintf("server-resize--%d", tmplMan.RandInt)),
-					resource.TestCheckResourceAttr(res.TFID(), "server_type", res.Type),
-					resource.TestCheckResourceAttr(res.TFID(), "image", res.Image),
+					testsupport.CheckResourceExists(res1.TFID(), server.ByID(t, &hcServer)),
+					resource.TestCheckResourceAttr(res1.TFID(), "name", fmt.Sprintf("server-resize--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(res1.TFID(), "server_type", res1.Type),
+					resource.TestCheckResourceAttr(res1.TFID(), "image", res1.Image),
 				),
 			},
 			{
 				// Update the Server created in the previous step by
 				// setting all optional fields.
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_server", resResized,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_server", res2,
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(resResized.TFID(), plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(res2.TFID(), plancheck.ResourceActionUpdate),
 					},
 				},
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resResized.TFID(), "name", fmt.Sprintf("server-resize--%d", tmplMan.RandInt)),
-					resource.TestCheckResourceAttr(resResized.TFID(), "server_type", resResized.Type),
-					resource.TestCheckResourceAttr(resResized.TFID(), "image", resResized.Image),
+					resource.TestCheckResourceAttr(res2.TFID(), "name", fmt.Sprintf("server-resize--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(res2.TFID(), "server_type", res2.Type),
+					resource.TestCheckResourceAttr(res2.TFID(), "image", res2.Image),
 				),
 			},
 		},
@@ -287,8 +280,8 @@ func TestAccServerResource_ChangeUserData(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
-		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &hcServer1)),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckAPIResourceAllAbsent(server.ResourceType, server.GetAPIResource()),
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
@@ -328,65 +321,58 @@ func TestAccServerResource_ChangeUserData(t *testing.T) {
 func TestAccServerResource_ISO(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
-	var s hcloud.Server
+	var hcServer hcloud.Server
 
-	sk := sshkey.NewRData(t, "server-iso")
+	resSSHKey := sshkey.NewRData(t, "server-iso")
 
-	res := &server.RData{
+	res1 := &server.RData{
 		Name:     "server-iso",
 		Type:     teste2e.TestServerType,
 		Image:    teste2e.TestImage,
 		UserData: "stuff",
 		ISO:      "8637", // Windows Server 2022 English
-		SSHKeys:  []string{sk.TFID() + ".id"},
+		SSHKeys:  []string{resSSHKey.TFID() + ".id"},
 	}
-	res.SetRName("server-iso")
+	res1.SetRName("server-iso")
 
-	resUpdatedISO := &server.RData{
-		Name:     res.Name,
-		Type:     res.Type,
-		Image:    res.Image,
-		UserData: res.UserData,
-		ISO:      "8638", // Windows Server 2022 German
-		SSHKeys:  res.SSHKeys,
-	}
-	resUpdatedISO.SetRName(res.RName())
+	// Update ISO
+	res2 := testtemplate.DeepCopy(t, res1)
+	res2.ISO = "8638" // Windows Server 2022 German
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
-		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckAPIResourceAllAbsent(server.ResourceType, server.GetAPIResource()),
 		Steps: []resource.TestStep{
 			{
 				// Create a new Server using the required values
 				// only.
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_server", res,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_server", res1,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s)),
-					resource.TestCheckResourceAttr(res.TFID(), "name",
-						fmt.Sprintf("server-iso--%d", tmplMan.RandInt)),
-					resource.TestCheckResourceAttr(res.TFID(), "server_type", res.Type),
-					resource.TestCheckResourceAttr(res.TFID(), "image", res.Image),
-					resource.TestCheckResourceAttr(res.TFID(), "iso", res.ISO),
+					testsupport.CheckResourceExists(res1.TFID(), server.ByID(t, &hcServer)),
+					resource.TestCheckResourceAttr(res1.TFID(), "name", fmt.Sprintf("server-iso--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(res1.TFID(), "server_type", res1.Type),
+					resource.TestCheckResourceAttr(res1.TFID(), "image", res1.Image),
+					resource.TestCheckResourceAttr(res1.TFID(), "iso", res1.ISO),
 				),
 			},
 			{
 				// Update ISO
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_server", resUpdatedISO,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_server", res2,
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(res.TFID(), plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(res1.TFID(), plancheck.ResourceActionUpdate),
 					},
 				},
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s)),
-					resource.TestCheckResourceAttr(res.TFID(), "iso", resUpdatedISO.ISO),
+					testsupport.CheckResourceExists(res1.TFID(), server.ByID(t, &hcServer)),
+					resource.TestCheckResourceAttr(res1.TFID(), "iso", res2.ISO),
 				),
 			},
 		},
@@ -396,47 +382,41 @@ func TestAccServerResource_ISO(t *testing.T) {
 func TestAccServerResource_Rescue(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
-	var s hcloud.Server
+	var hcServer hcloud.Server
 
-	sk := sshkey.NewRData(t, "server-rescue")
+	resSSHKey := sshkey.NewRData(t, "server-rescue")
 
 	res := &server.RData{
 		Name:    "server-rescue",
 		Type:    teste2e.TestServerType,
 		Image:   teste2e.TestImage,
-		SSHKeys: []string{sk.TFID() + ".id"},
+		SSHKeys: []string{resSSHKey.TFID() + ".id"},
 	}
 	res.SetRName("server-rescue")
 
-	resRescue := &server.RData{
-		Name:    res.Name,
-		Type:    res.Type,
-		Image:   res.Image,
-		SSHKeys: res.SSHKeys,
-		Rescue:  string(hcloud.ServerRescueTypeLinux64),
-	}
-	resRescue.SetRName(res.RName())
+	resRescue := testtemplate.DeepCopy(t, res)
+	resRescue.Rescue = string(hcloud.ServerRescueTypeLinux64)
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
-		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckAPIResourceAllAbsent(server.ResourceType, server.GetAPIResource()),
 		Steps: []resource.TestStep{
 			{
 				// Create a new Server with rescue.
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
 					"testdata/r/hcloud_server", resRescue,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(resRescue.TFID(), server.ByID(t, &s)),
+					testsupport.CheckResourceExists(resRescue.TFID(), server.ByID(t, &hcServer)),
 					resource.TestCheckResourceAttr(resRescue.TFID(), "rescue", resRescue.Rescue),
 				),
 			},
 			{
 				// Disable server rescue.
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
 					"testdata/r/hcloud_server", res,
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -445,14 +425,14 @@ func TestAccServerResource_Rescue(t *testing.T) {
 					},
 				},
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s)),
+					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &hcServer)),
 					resource.TestCheckResourceAttr(res.TFID(), "rescue", ""),
 				),
 			},
 			{
 				// Enable rescue on existing server.
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
 					"testdata/r/hcloud_server", resRescue,
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -461,7 +441,7 @@ func TestAccServerResource_Rescue(t *testing.T) {
 					},
 				},
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s)),
+					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &hcServer)),
 					resource.TestCheckResourceAttr(res.TFID(), "rescue", resRescue.Rescue),
 				),
 			},
@@ -473,226 +453,190 @@ func TestAccServerResource_DirectAttachToNetwork(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	var (
-		nw  hcloud.Network
-		nw2 hcloud.Network
-		s   hcloud.Server
-
-		// Helper functions to modify the test data. Those functions modify
-		// the passed in server on purpose. Calling them once to change the
-		// respective value is enough.
-		updateIP = func(d *server.RData, networkID string, ip string) *server.RData {
-			for i := range d.Networks {
-				if d.Networks[i].NetworkID == networkID {
-					d.Networks[i].IP = ip
-				}
-			}
-			return d
-		}
-		updateAliasIPs = func(d *server.RData, networkID string, ips ...string) *server.RData {
-			for i := range d.Networks {
-				if d.Networks[i].NetworkID == networkID {
-					d.Networks[i].AliasIPs = ips
-				}
-			}
-			return d
-		}
-
-		addNetwork = func(d *server.RData, network server.RDataInlineNetwork) *server.RData {
-			d.Networks = append(d.Networks, network)
-			return d
-		}
+		hcNetworkA hcloud.Network
+		hcNetworkB hcloud.Network
+		hcServer   hcloud.Server
 	)
 
-	sk := sshkey.NewRData(t, "server-direct-attach-network")
+	resSSHKey := sshkey.NewRData(t, "server-direct-attach-network")
 
-	// Network 1
-	nwRes := &network.RData{
-		Name:    "test-network-1",
-		IPRange: "10.0.0.0/16",
-	}
-	nwRes.SetRName("test-network-1")
-	snwRes := &network.RDataSubnet{
-		Type:        "cloud",
-		NetworkID:   nwRes.TFID() + ".id",
-		NetworkZone: "eu-central",
-		IPRange:     "10.0.1.0/24",
-	}
-	snwRes.SetRName("test-network-subnet-1")
+	nws := network.NewBlueprint(t)
 
-	// Network 2
-	nw2Res := &network.RData{
-		Name:    "test-network-2",
-		IPRange: "10.1.0.0/16",
-	}
-	nw2Res.SetRName("test-network-2")
-	snw2Res := &network.RDataSubnet{
-		Type:        "cloud",
-		NetworkID:   nw2Res.TFID() + ".id",
-		NetworkZone: "eu-central",
-		IPRange:     "10.1.1.0/24",
-	}
-	snw2Res.SetRName("test-network-subnet-2")
-
-	sRes := &server.RData{
+	// Resource from which copies for every steps are made.
+	res := &server.RData{
 		Name:         "server-direct-attach",
 		Type:         teste2e.TestServerType,
 		LocationName: teste2e.TestLocationName,
 		Image:        teste2e.TestImage,
-		SSHKeys:      []string{sk.TFID() + ".id"},
+		SSHKeys:      []string{resSSHKey.TFID() + ".id"},
 	}
-	sRes.SetRName(sRes.Name)
+	res.SetRName(res.Name)
 
-	sResWithNet := &server.RData{
-		Name:         sRes.Name,
-		Type:         sRes.Type,
-		LocationName: sRes.LocationName,
-		Image:        sRes.Image,
-		SSHKeys:      sRes.SSHKeys,
-		Networks: []server.RDataInlineNetwork{{
-			NetworkID: nwRes.TFID() + ".id",
+	// Create a new server and directly attach it to a network.
+	res1 := testtemplate.DeepCopy(t, res)
+	res1.Networks = []server.RDataInlineNetwork{{
+		NetworkID: nws.NetworkA.TFID() + ".id",
+		IP:        "10.0.1.5",
+		AliasIPs:  []string{"10.0.1.6", "10.0.1.7"},
+	}}
+	res1.DependsOn = []string{nws.SubnetA1.TFID()}
+
+	// Fail when using the same network twice
+	res2 := testtemplate.DeepCopy(t, res)
+	res2.Networks = []server.RDataInlineNetwork{
+		{
+			NetworkID: nws.NetworkA.TFID() + ".id",
 			IP:        "10.0.1.5",
 			AliasIPs:  []string{"10.0.1.6", "10.0.1.7"},
-		}},
-		DependsOn: []string{snwRes.TFID()},
-	}
-	sResWithNet.SetRName(sResWithNet.Name)
-
-	sResWithTwoNets := &server.RData{
-		Name:         sRes.Name,
-		Type:         sRes.Type,
-		LocationName: sRes.LocationName,
-		Image:        sRes.Image,
-		SSHKeys:      sRes.SSHKeys,
-		Networks: []server.RDataInlineNetwork{
-			{
-				NetworkID: nwRes.TFID() + ".id",
-				IP:        "10.0.1.5",
-				AliasIPs:  []string{"10.0.1.6", "10.0.1.7"},
-			},
-			{
-				NetworkID: nw2Res.TFID() + ".id",
-				IP:        "10.1.1.5",
-				AliasIPs:  []string{"10.1.1.6", "10.1.1.7"},
-			},
 		},
-		DependsOn: []string{snwRes.TFID(), snw2Res.TFID()},
+		{
+			NetworkID: nws.NetworkA.TFID() + ".id",
+			IP:        "10.0.1.8",
+		},
 	}
-	sResWithTwoNets.SetRName(sResWithTwoNets.Name)
+	res2.DependsOn = []string{nws.SubnetA1.TFID()}
+
+	// Change the IP of the server
+	res3 := testtemplate.DeepCopy(t, res)
+	res3.Networks = []server.RDataInlineNetwork{{
+		NetworkID: nws.NetworkA.TFID() + ".id",
+		IP:        "10.0.1.4",
+		AliasIPs:  []string{"10.0.1.6", "10.0.1.7"},
+	}}
+	res3.DependsOn = []string{nws.SubnetA1.TFID()}
+
+	// Change the Alias IPs of the server
+	res4 := testtemplate.DeepCopy(t, res)
+	res4.Networks = []server.RDataInlineNetwork{{
+		NetworkID: nws.NetworkA.TFID() + ".id",
+		IP:        "10.0.1.4",
+		AliasIPs:  []string{"10.0.1.5", "10.0.1.7"},
+	}}
+	res4.DependsOn = []string{nws.SubnetA1.TFID()}
+
+	// Detach the server from the network.
+	res5 := testtemplate.DeepCopy(t, res)
+
+	// Remove all networks
+	res6 := testtemplate.DeepCopy(t, res)
+
+	// Attach to two new networks at the same time
+	res7 := testtemplate.DeepCopy(t, res)
+	res7.Networks = []server.RDataInlineNetwork{
+		{
+			NetworkID: nws.NetworkA.TFID() + ".id",
+			IP:        "10.0.1.5",
+			AliasIPs:  []string{"10.0.1.6", "10.0.1.7"},
+		},
+		{
+			NetworkID: nws.NetworkB.TFID() + ".id",
+			IP:        "172.16.1.5",
+			AliasIPs:  []string{"172.16.1.6", "172.16.1.7"},
+		},
+	}
+	res7.DependsOn = []string{nws.SubnetA1.TFID(), nws.SubnetB1.TFID()}
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
-		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, nil)),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckAPIResourceAllAbsent(server.ResourceType, server.GetAPIResource()),
 		Steps: []resource.TestStep{
 			{
-				// Create a new server and directly attach it to a network.
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_network", nwRes,
-					"testdata/r/hcloud_network_subnet", snwRes,
-					"testdata/r/hcloud_server", sResWithNet,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_network", nws.NetworkA,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA1,
+					"testdata/r/hcloud_server", res1,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(nwRes.TFID(), network.ByID(t, &nw)),
-					testsupport.CheckResourceExists(sResWithNet.TFID(), server.ByID(t, &s)),
-					testsupport.LiftTCF(hasServerNetwork(t, &s, &nw, "10.0.1.5", "10.0.1.6", "10.0.1.7")),
-					resource.TestCheckResourceAttr(sResWithNet.TFID(), "network.#", "1"),
-					resource.TestCheckResourceAttr(sResWithNet.TFID(), "network.0.ip", "10.0.1.5"),
-					resource.TestCheckResourceAttr(sResWithNet.TFID(), "network.0.alias_ips.#", "2"),
+					testsupport.CheckResourceExists(nws.NetworkA.TFID(), network.ByID(t, &hcNetworkA)),
+					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &hcServer)),
+					testsupport.LiftTCF(hasServerNetwork(t, &hcServer, &hcNetworkA, "10.0.1.5", "10.0.1.6", "10.0.1.7")),
+					resource.TestCheckResourceAttr(res.TFID(), "network.#", "1"),
+					resource.TestCheckResourceAttr(res.TFID(), "network.0.ip", "10.0.1.5"),
+					resource.TestCheckResourceAttr(res.TFID(), "network.0.alias_ips.#", "2"),
 				),
 			},
 			{
-				// Change the IP of the server
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_network", nwRes,
-					"testdata/r/hcloud_network_subnet", snwRes,
-					"testdata/r/hcloud_server", updateIP(sResWithNet, nwRes.TFID()+".id", "10.0.1.4"),
-				),
-				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(nwRes.TFID(), network.ByID(t, &nw)),
-					testsupport.CheckResourceExists(sResWithNet.TFID(), server.ByID(t, &s)),
-					testsupport.LiftTCF(hasServerNetwork(t, &s, &nw, "10.0.1.4", "10.0.1.6", "10.0.1.7")),
-				),
-			},
-			{
-				// Change the AliasIPs of the server
-				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_network", nwRes,
-					"testdata/r/hcloud_network_subnet", snwRes,
-					"testdata/r/hcloud_server", updateAliasIPs(sResWithNet, nwRes.TFID()+".id", "10.0.1.5", "10.0.1.7"),
-				),
-				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(nwRes.TFID(), network.ByID(t, &nw)),
-					testsupport.CheckResourceExists(sResWithNet.TFID(), server.ByID(t, &s)),
-					testsupport.LiftTCF(hasServerNetwork(t, &s, &nw, "10.0.1.4", "10.0.1.5", "10.0.1.7")),
-				),
-			},
-			{
-				// Detach the server from the network.
-				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_network", nwRes,
-					"testdata/r/hcloud_network_subnet", snwRes,
-					"testdata/r/hcloud_server", sRes,
-				),
-				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(sRes.TFID(), server.ByID(t, &s)),
-					testsupport.LiftTCF(func() error {
-						t.Log("Checking if server has no private network")
-						assert.Empty(t, s.PrivateNet)
-						return nil
-					}),
-				),
-			},
-			{
-				// Fail when using conflicting networks
-				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_network", nwRes,
-					"testdata/r/hcloud_network_subnet", snwRes,
-					"testdata/r/hcloud_server", addNetwork(sResWithNet, server.RDataInlineNetwork{
-						NetworkID: nwRes.TFID() + ".id",
-						IP:        "10.0.1.8",
-					}),
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_network", nws.NetworkA,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA1,
+					"testdata/r/hcloud_server", res2,
 				),
 				ExpectError: regexp.MustCompile(`server is only allowed to be attached to each network once: \d+`),
 			},
-
 			{
-				// Remove networks and test to attach to two new networks at the same time
-				// Fail when using conflicting networks
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_server", sRes,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_network", nws.NetworkA,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA1,
+					"testdata/r/hcloud_server", res3,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(sRes.TFID(), server.ByID(t, &s)),
+					testsupport.CheckResourceExists(nws.NetworkA.TFID(), network.ByID(t, &hcNetworkA)),
+					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &hcServer)),
+					testsupport.LiftTCF(hasServerNetwork(t, &hcServer, &hcNetworkA, "10.0.1.4", "10.0.1.6", "10.0.1.7")),
+				),
+			},
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_network", nws.NetworkA,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA1,
+					"testdata/r/hcloud_server", res4,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(nws.NetworkA.TFID(), network.ByID(t, &hcNetworkA)),
+					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &hcServer)),
+					testsupport.LiftTCF(hasServerNetwork(t, &hcServer, &hcNetworkA, "10.0.1.4", "10.0.1.5", "10.0.1.7")),
+				),
+			},
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_network", nws.NetworkA,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA1,
+					"testdata/r/hcloud_server", res5,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &hcServer)),
 					testsupport.LiftTCF(func() error {
-						t.Log("Checking if server has no private network")
-						assert.Empty(t, s.PrivateNet)
+						assert.Empty(t, hcServer.PrivateNet)
 						return nil
 					}),
 				),
 			},
-
 			{
-				// Continuation of above test
+				// Remove networks for next step
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_network", nwRes,
-					"testdata/r/hcloud_network_subnet", snwRes,
-					"testdata/r/hcloud_network", nw2Res,
-					"testdata/r/hcloud_network_subnet", snw2Res,
-					"testdata/r/hcloud_server", sResWithTwoNets,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_server", res6,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(sRes.TFID(), server.ByID(t, &s)),
-					testsupport.CheckResourceExists(nwRes.TFID(), network.ByID(t, &nw)),
-					testsupport.CheckResourceExists(nw2Res.TFID(), network.ByID(t, &nw2)),
-					testsupport.LiftTCF(hasServerNetwork(t, &s, &nw, "10.0.1.5", "10.0.1.6", "10.0.1.7")),
-					testsupport.LiftTCF(hasServerNetwork(t, &s, &nw2, "10.1.1.5", "10.1.1.6", "10.1.1.7")),
+					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &hcServer)),
+					testsupport.LiftTCF(func() error {
+						assert.Empty(t, hcServer.PrivateNet)
+						return nil
+					}),
+				),
+			},
+			{
+				// Attach to two new networks at the same time
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_network", nws.NetworkA,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA1,
+					"testdata/r/hcloud_network", nws.NetworkB,
+					"testdata/r/hcloud_network_subnet", nws.SubnetB1,
+					"testdata/r/hcloud_server", res7,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &hcServer)),
+					testsupport.CheckResourceExists(nws.NetworkA.TFID(), network.ByID(t, &hcNetworkA)),
+					testsupport.CheckResourceExists(nws.NetworkB.TFID(), network.ByID(t, &hcNetworkB)),
+					testsupport.LiftTCF(hasServerNetwork(t, &hcServer, &hcNetworkA, "10.0.1.5", "10.0.1.6", "10.0.1.7")),
+					testsupport.LiftTCF(hasServerNetwork(t, &hcServer, &hcNetworkB, "172.16.1.5", "172.16.1.6", "172.16.1.7")),
 				),
 			},
 		},
@@ -703,214 +647,185 @@ func TestAccServerResource_DirectAttachToNetworkSubnetID(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	var (
-		nw hcloud.Network
-		s  hcloud.Server
+		hcNetwork hcloud.Network
+		hcServer  hcloud.Server
 	)
 
-	sk := sshkey.NewRData(t, "server-direct-attach-subnet")
+	nws := network.NewBlueprint(t)
 
-	// Network with two subnets
-	nwRes := &network.RData{
-		Name:    "test-network-subnet",
-		IPRange: "10.0.0.0/16",
-	}
-	nwRes.SetRName("test-network-subnet")
+	resSSHKey := sshkey.NewRData(t, "server-direct-attach-subnet")
 
-	// Subnet #1
-	snw1Res := &network.RDataSubnet{
-		Type:        "cloud",
-		NetworkID:   nwRes.TFID() + ".id",
-		NetworkZone: "eu-central",
-		IPRange:     "10.0.1.0/24",
-	}
-	snw1Res.SetRName("test-subnet-1")
-
-	// Subnet #2
-	snw2Res := &network.RDataSubnet{
-		Type:        "cloud",
-		NetworkID:   nwRes.TFID() + ".id",
-		NetworkZone: "eu-central",
-		IPRange:     "10.0.2.0/24",
-	}
-	snw2Res.SetRName("test-subnet-2")
-
-	// Server with subnet_id (will get first IP in subnet: 10.0.2.1)
-	sRes := &server.RData{
+	res := &server.RData{
 		Name:         "server-subnet",
 		Type:         teste2e.TestServerType,
 		LocationName: teste2e.TestLocationName,
 		Image:        teste2e.TestImage,
-		SSHKeys:      []string{sk.TFID() + ".id"},
-		Networks: []server.RDataInlineNetwork{{
-			SubnetID: snw2Res.TFID() + ".id",
-		}},
-		DependsOn: []string{snw1Res.TFID(), snw2Res.TFID()},
-	}
-	sRes.SetRName(sRes.Name)
+		SSHKeys:      []string{resSSHKey.TFID() + ".id"},
 
-	// Server with subnet_id and explicit IP
-	sResWithIP := &server.RData{
-		Name:         sRes.Name,
-		Type:         sRes.Type,
-		LocationName: sRes.LocationName,
-		Image:        sRes.Image,
-		SSHKeys:      sRes.SSHKeys,
-		Networks: []server.RDataInlineNetwork{{
-			SubnetID: snw2Res.TFID() + ".id",
-			IP:       "10.0.2.10",
-		}},
-		DependsOn: []string{snw1Res.TFID(), snw2Res.TFID()},
+		DependsOn: []string{nws.SubnetA1.TFID(), nws.SubnetA2.TFID()},
 	}
-	sResWithIP.SetRName(sRes.Name)
+	res.SetRName(res.Name)
+
+	// Step 1: Server with subnet_id
+	res1 := testtemplate.DeepCopy(t, res)
+	res1.Networks = []server.RDataInlineNetwork{{
+		SubnetID: nws.SubnetA1.TFID() + ".id",
+	}}
+
+	// Step 2: Server with both network_id and subnet_id
+	res2 := testtemplate.DeepCopy(t, res)
+	res2.Networks = []server.RDataInlineNetwork{{
+		NetworkID: nws.NetworkA.TFID() + ".id",
+		SubnetID:  nws.SubnetA1.TFID() + ".id",
+	}}
+
+	// Step 3: Fail when network_id and subnet_id mismatch
+	res3 := testtemplate.DeepCopy(t, res)
+	res3.Networks = []server.RDataInlineNetwork{{
+		NetworkID: "12345",
+		SubnetID:  nws.SubnetA1.TFID() + ".id",
+	}}
+
+	// Step 4: Fail when trying to attach to the same network twice using subnet_id
+	res4 := testtemplate.DeepCopy(t, res)
+	res4.Networks = []server.RDataInlineNetwork{
+		{
+			SubnetID: nws.SubnetA1.TFID() + ".id",
+		},
+		{
+			SubnetID: nws.SubnetA2.TFID() + ".id",
+			IP:       "10.0.2.1",
+		},
+	}
+
+	// Step 5: Fail when IP is outside subnet range
+	res5 := testtemplate.DeepCopy(t, res)
+	res5.Networks = []server.RDataInlineNetwork{{
+		SubnetID: nws.SubnetA2.TFID() + ".id",
+		IP:       "10.0.1.1", // Outside 10.0.2.0/24 range
+	}}
+
+	// Step 6: Fail when neither network_id nor subnet_id is specified
+	res6 := testtemplate.DeepCopy(t, res)
+	res6.Networks = []server.RDataInlineNetwork{{
+		IP: "10.0.1.1",
+	}}
+
+	// Step 7: Server with subnet_id and explicit IP
+	res7 := testtemplate.DeepCopy(t, res)
+	res7.Networks = []server.RDataInlineNetwork{{
+		SubnetID: nws.SubnetA1.TFID() + ".id",
+		IP:       "10.0.1.10",
+	}}
+
+	// Step 8: Server with new subnet_id and explicit IP
+	res8 := testtemplate.DeepCopy(t, res)
+	res8.Networks = []server.RDataInlineNetwork{{
+		SubnetID: nws.SubnetA2.TFID() + ".id",
+		IP:       "10.0.2.20",
+	}}
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
-		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, nil)),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckAPIResourceAllAbsent(server.ResourceType, server.GetAPIResource()),
 		Steps: []resource.TestStep{
 			{
-				// Create a new server and directly attach it to a network using subnet_id.
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_network", nwRes,
-					"testdata/r/hcloud_network_subnet", snw1Res,
-					"testdata/r/hcloud_network_subnet", snw2Res,
-					"testdata/r/hcloud_server", sRes,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_network", nws.NetworkA,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA1,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA2,
+					"testdata/r/hcloud_server", res1,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(nwRes.TFID(), network.ByID(t, &nw)),
-					testsupport.CheckResourceExists(sRes.TFID(), server.ByID(t, &s)),
-					testsupport.LiftTCF(hasServerNetwork(t, &s, &nw, "10.0.2.1")),
-					resource.TestCheckResourceAttr(sRes.TFID(), "network.#", "1"),
-					resource.TestCheckResourceAttr(sRes.TFID(), "network.0.ip", "10.0.2.1"),
+					testsupport.CheckResourceExists(nws.NetworkA.TFID(), network.ByID(t, &hcNetwork)),
+					testsupport.CheckResourceExists(res1.TFID(), server.ByID(t, &hcServer)),
+					testsupport.LiftTCF(hasServerNetwork(t, &hcServer, &hcNetwork, "10.0.1.1")),
+					resource.TestCheckResourceAttr(res1.TFID(), "network.#", "1"),
+					resource.TestCheckResourceAttr(res1.TFID(), "network.0.ip", "10.0.1.1"),
 				),
 			},
 			{
-				// Fail when both network_id and subnet_id are specified
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_network", nwRes,
-					"testdata/r/hcloud_network_subnet", snw1Res,
-					"testdata/r/hcloud_network_subnet", snw2Res,
-					"testdata/r/hcloud_server", &server.RData{
-						Name:         sRes.Name,
-						Type:         sRes.Type,
-						LocationName: sRes.LocationName,
-						Image:        sRes.Image,
-						SSHKeys:      sRes.SSHKeys,
-						Networks: []server.RDataInlineNetwork{
-							{
-								NetworkID: nwRes.TFID() + ".id",
-								SubnetID:  snw1Res.TFID() + ".id",
-							},
-						},
-						DependsOn: []string{snw1Res.TFID(), snw2Res.TFID()},
-					},
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_network", nws.NetworkA,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA1,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA2,
+					"testdata/r/hcloud_server", res2,
 				),
-				ExpectError: regexp.MustCompile(`cannot specify both network_id and subnet_id`),
 			},
 			{
-				// Fail when trying to attach to the same network twice using subnet_id
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_network", nwRes,
-					"testdata/r/hcloud_network_subnet", snw1Res,
-					"testdata/r/hcloud_network_subnet", snw2Res,
-					"testdata/r/hcloud_server", &server.RData{
-						Name:         sRes.Name,
-						Type:         sRes.Type,
-						LocationName: sRes.LocationName,
-						Image:        sRes.Image,
-						SSHKeys:      sRes.SSHKeys,
-						Networks: []server.RDataInlineNetwork{
-							{
-								SubnetID: snw2Res.TFID() + ".id",
-							},
-							{
-								SubnetID: snw1Res.TFID() + ".id",
-								IP:       "10.0.1.5",
-							},
-						},
-						DependsOn: []string{snw1Res.TFID(), snw2Res.TFID()},
-					},
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_network", nws.NetworkA,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA1,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA2,
+					"testdata/r/hcloud_server", res3,
+				),
+				ExpectError: regexp.MustCompile(`subnet_id \(\d+-10\.0\.1\.0\/24\) does not belong to the specified network_id \(12345\)`),
+			},
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_network", nws.NetworkA,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA1,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA2,
+					"testdata/r/hcloud_server", res4,
 				),
 				ExpectError: regexp.MustCompile(`server is only allowed to be attached to each network once: \d+`),
 			},
 			{
-				// Fail when IP is outside subnet range
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_network", nwRes,
-					"testdata/r/hcloud_network_subnet", snw1Res,
-					"testdata/r/hcloud_network_subnet", snw2Res,
-					"testdata/r/hcloud_server", &server.RData{
-						Name:         sRes.Name,
-						Type:         sRes.Type,
-						LocationName: sRes.LocationName,
-						Image:        sRes.Image,
-						SSHKeys:      sRes.SSHKeys,
-						Networks: []server.RDataInlineNetwork{
-							{
-								SubnetID: snw2Res.TFID() + ".id",
-								IP:       "10.0.1.5", // Outside 10.0.2.0/24 range
-							},
-						},
-						DependsOn: []string{snw1Res.TFID(), snw2Res.TFID()},
-					},
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_network", nws.NetworkA,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA1,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA2,
+					"testdata/r/hcloud_server", res5,
 				),
-				ExpectError: regexp.MustCompile(`server IP \(10\.0\.1\.5\) is outside subnet IP range \(10\.0\.2\.0/24\)`),
+				ExpectError: regexp.MustCompile(`server IP \(10\.0\.1\.1\) is outside subnet IP range \(10\.0\.2\.0/24\)`),
 			},
 			{
-				// Update server to attach with specific IP in the same subnet
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_network", nwRes,
-					"testdata/r/hcloud_network_subnet", snw1Res,
-					"testdata/r/hcloud_network_subnet", snw2Res,
-					"testdata/r/hcloud_server", sResWithIP,
-				),
-				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(nwRes.TFID(), network.ByID(t, &nw)),
-					testsupport.CheckResourceExists(sRes.TFID(), server.ByID(t, &s)),
-					testsupport.LiftTCF(hasServerNetwork(t, &s, &nw, "10.0.2.10")),
-					resource.TestCheckResourceAttr(sRes.TFID(), "network.#", "1"),
-					resource.TestCheckResourceAttr(sRes.TFID(), "network.0.ip", "10.0.2.10"),
-				),
-			},
-			{
-				// Fail when neither network_id nor subnet_id is specified
-				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_network", nwRes,
-					"testdata/r/hcloud_network_subnet", snw1Res,
-					"testdata/r/hcloud_network_subnet", snw2Res,
-					"testdata/r/hcloud_server", &server.RData{
-						Name:         sRes.Name,
-						Type:         sRes.Type,
-						LocationName: sRes.LocationName,
-						Image:        sRes.Image,
-						SSHKeys:      sRes.SSHKeys,
-						Networks: []server.RDataInlineNetwork{
-							{
-								IP: "10.0.2.5",
-							},
-						},
-						DependsOn: []string{snw1Res.TFID(), snw2Res.TFID()},
-					},
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_network", nws.NetworkA,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA1,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA2,
+					"testdata/r/hcloud_server", res6,
 				),
 				ExpectError: regexp.MustCompile(`must specify either network_id or subnet_id`),
 			},
 			{
-				// Apply a valid config after the error test to allow proper cleanup
+				// Update server to attach with specific IP in the same subnet
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_network", nwRes,
-					"testdata/r/hcloud_network_subnet", snw1Res,
-					"testdata/r/hcloud_network_subnet", snw2Res,
-					"testdata/r/hcloud_server", sRes,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_network", nws.NetworkA,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA1,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA2,
+					"testdata/r/hcloud_server", res7,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(sRes.TFID(), server.ByID(t, &s)),
+					testsupport.CheckResourceExists(nws.NetworkA.TFID(), network.ByID(t, &hcNetwork)),
+					testsupport.CheckResourceExists(res1.TFID(), server.ByID(t, &hcServer)),
+					testsupport.LiftTCF(hasServerNetwork(t, &hcServer, &hcNetwork, "10.0.1.10")),
+					resource.TestCheckResourceAttr(res1.TFID(), "network.#", "1"),
+					resource.TestCheckResourceAttr(res1.TFID(), "network.0.ip", "10.0.1.10"),
+				),
+			},
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_network", nws.NetworkA,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA1,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA2,
+					"testdata/r/hcloud_server", res8,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(nws.NetworkA.TFID(), network.ByID(t, &hcNetwork)),
+					testsupport.CheckResourceExists(res8.TFID(), server.ByID(t, &hcServer)),
+					testsupport.LiftTCF(hasServerNetwork(t, &hcServer, &hcNetwork, "10.0.2.20")),
+					resource.TestCheckResourceAttr(res8.TFID(), "network.#", "1"),
+					resource.TestCheckResourceAttr(res8.TFID(), "network.0.ip", "10.0.2.20"),
 				),
 			},
 		},
@@ -921,363 +836,300 @@ func TestAccServerResource_DirectAttachToNetworkID(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	var (
-		nw hcloud.Network
-		s  hcloud.Server
+		hcNetwork hcloud.Network
+		hcServer  hcloud.Server
 	)
 
-	sk := sshkey.NewRData(t, "server-network-id-compat")
+	nws := network.NewBlueprint(t)
 
-	nwRes := &network.RData{
-		Name:    "test-network-compat",
-		IPRange: "10.0.0.0/16",
-	}
-	nwRes.SetRName("test-network-compat")
-
-	snwRes := &network.RDataSubnet{
-		Type:        "cloud",
-		NetworkID:   nwRes.TFID() + ".id",
-		NetworkZone: "eu-central",
-		IPRange:     "10.0.1.0/24",
-	}
-	snwRes.SetRName("test-subnet-compat")
+	resSSHKey := sshkey.NewRData(t, "server-network-id-compat")
 
 	// Server using network_id only
-	sRes := &server.RData{
+	res := &server.RData{
 		Name:         "server-network-id",
 		Type:         teste2e.TestServerType,
 		LocationName: teste2e.TestLocationName,
 		Image:        teste2e.TestImage,
-		SSHKeys:      []string{sk.TFID() + ".id"},
+		SSHKeys:      []string{resSSHKey.TFID() + ".id"},
 		Networks: []server.RDataInlineNetwork{{
-			NetworkID: nwRes.TFID() + ".id",
+			NetworkID: nws.NetworkA.TFID() + ".id",
 			IP:        "10.0.1.10",
 		}},
-		DependsOn: []string{snwRes.TFID()},
+		DependsOn: []string{nws.SubnetA1.TFID()},
 	}
-	sRes.SetRName("server-network-id")
+	res.SetRName("server-network-id")
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
-		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, nil)),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckAPIResourceAllAbsent(server.ResourceType, server.GetAPIResource()),
 		Steps: []resource.TestStep{
 			{
 				// Create server using network_id only
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_network", nwRes,
-					"testdata/r/hcloud_network_subnet", snwRes,
-					"testdata/r/hcloud_server", sRes,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_network", nws.NetworkA,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA1,
+					"testdata/r/hcloud_server", res,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(nwRes.TFID(), network.ByID(t, &nw)),
-					testsupport.CheckResourceExists(sRes.TFID(), server.ByID(t, &s)),
-					testsupport.LiftTCF(hasServerNetwork(t, &s, &nw, "10.0.1.10")),
-					resource.TestCheckResourceAttr(sRes.TFID(), "network.#", "1"),
-					resource.TestCheckResourceAttr(sRes.TFID(), "network.0.ip", "10.0.1.10"),
-					resource.TestCheckResourceAttrSet(sRes.TFID(), "network.0.network_id"),
+					testsupport.CheckResourceExists(nws.NetworkA.TFID(), network.ByID(t, &hcNetwork)),
+					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &hcServer)),
+					testsupport.LiftTCF(hasServerNetwork(t, &hcServer, &hcNetwork, "10.0.1.10")),
+					resource.TestCheckResourceAttr(res.TFID(), "network.#", "1"),
+					resource.TestCheckResourceAttr(res.TFID(), "network.0.ip", "10.0.1.10"),
+					resource.TestCheckResourceAttrSet(res.TFID(), "network.0.network_id"),
 				),
 			},
 		},
 	})
 }
 
-func TestAccServerResource_PrimaryIPNetworkTests(t *testing.T) {
+func TestAccServerResource_PrimaryIPs(t *testing.T) {
+	// This test focus on the server primary ips.
+
+	tmplMan := testtemplate.Manager{}
+
 	var (
-		nw hcloud.Network
-		s  hcloud.Server
-		p  hcloud.PrimaryIP
+		hcServer    hcloud.Server
+		hcPrimaryIP hcloud.PrimaryIP
 	)
 
-	sk := sshkey.NewRData(t, "server-iso")
-	nwRes := &network.RData{
-		Name:    "test-network",
-		IPRange: "10.0.0.0/16",
-	}
-	nwRes.SetRName("test-network")
-	snwRes := &network.RDataSubnet{
-		Type:        "cloud",
-		NetworkID:   nwRes.TFID() + ".id",
-		NetworkZone: "eu-central",
-		IPRange:     "10.0.1.0/24",
-	}
-	snwRes.SetRName("test-network-subnet")
+	ips := primaryip.NewBlueprint(t)
+	nws := network.NewBlueprint(t)
 
-	primaryIPv4Res := &primaryip.RData{
-		Name:       "primaryip-v4-test",
-		Type:       "ipv4",
-		Location:   teste2e.TestLocationName,
-		AutoDelete: false,
-	}
-	primaryIPv4Res.SetRName("primary-ip-v4")
+	resSSHKey := sshkey.NewRData(t, "server")
 
-	primaryIPv6Res := &primaryip.RData{
-		Name:       "primaryip-v6-test",
-		Type:       "ipv6",
-		Location:   teste2e.TestLocationName,
-		AutoDelete: false,
-	}
-	primaryIPv6Res.SetRName("primary-ip-v6")
-
-	sResWithNetAndPublicNet := &server.RData{
-		Name:         "server-primaryIP-network-test",
+	// Create server with unmanaged primary ips and network
+	res1 := &server.RData{
+		Name:         "primary-ips-test",
 		Type:         teste2e.TestServerType,
 		LocationName: teste2e.TestLocationName,
 		Image:        teste2e.TestImage,
-		SSHKeys:      []string{sk.TFID() + ".id"},
+		SSHKeys:      []string{resSSHKey.TFID() + ".id"},
 		Networks: []server.RDataInlineNetwork{{
-			NetworkID: nwRes.TFID() + ".id",
+			NetworkID: nws.NetworkA.TFID() + ".id",
 			IP:        "10.0.1.5",
-			AliasIPs:  []string{"10.0.1.6", "10.0.1.7"},
 		}},
 		PublicNet: map[string]any{
 			"ipv4_enabled": true,
 			"ipv6_enabled": true,
 		},
-		DependsOn: []string{snwRes.TFID()},
+		DependsOn: []string{nws.SubnetA1.TFID()},
 	}
-	sResWithNetAndPublicNet.SetRName(sResWithNetAndPublicNet.Name)
+	res1.SetRName(res1.Name)
 
-	sResWithoutPublicNet := &server.RData{
-		Name:         sResWithNetAndPublicNet.Name,
-		Type:         sResWithNetAndPublicNet.Type,
-		LocationName: sResWithNetAndPublicNet.LocationName,
-		Image:        sResWithNetAndPublicNet.Image,
-		SSHKeys:      sResWithNetAndPublicNet.SSHKeys,
-		Networks:     sResWithNetAndPublicNet.Networks,
-		PublicNet: map[string]any{
-			"ipv4_enabled": false,
-			"ipv6_enabled": false,
-		},
-		DependsOn: sResWithNetAndPublicNet.DependsOn,
-	}
-	sResWithoutPublicNet.SetRName(sResWithoutPublicNet.Name)
-
-	sResWithPrimaryIP := &server.RData{
-		Name:         sResWithoutPublicNet.Name,
-		Type:         sResWithoutPublicNet.Type,
-		LocationName: sResWithoutPublicNet.LocationName,
-		Image:        sResWithoutPublicNet.Image,
-		SSHKeys:      sResWithoutPublicNet.SSHKeys,
-		Networks:     sResWithoutPublicNet.Networks,
-		PublicNet: map[string]any{
-			"ipv4_enabled": true,
-			"ipv4":         primaryIPv4Res.TFID() + ".id",
-			"ipv6_enabled": false,
-		},
-		DependsOn: sResWithoutPublicNet.DependsOn,
+	// - Remove unmanaged primary ipv4
+	// - Remove unmanaged primary ipv6
+	res2 := testtemplate.DeepCopy(t, res1)
+	res2.PublicNet = map[string]any{
+		"ipv4_enabled": false,
+		"ipv6_enabled": false,
 	}
 
-	sResWithPrimaryIP.SetRName(sResWithPrimaryIP.Name)
-
-	sResWithTwoPrimaryIPs := &server.RData{
-		Name:         sResWithPrimaryIP.Name,
-		Type:         sResWithPrimaryIP.Type,
-		LocationName: sResWithPrimaryIP.LocationName,
-		Image:        sResWithPrimaryIP.Image,
-		SSHKeys:      sResWithPrimaryIP.SSHKeys,
-		Networks:     sResWithPrimaryIP.Networks,
-		PublicNet: map[string]any{
-			"ipv4_enabled": true,
-			"ipv4":         primaryIPv4Res.TFID() + ".id",
-			"ipv6_enabled": true,
-		},
-		DependsOn: sResWithoutPublicNet.DependsOn,
+	// - Add managed primary ipv4
+	res3 := testtemplate.DeepCopy(t, res2)
+	res3.PublicNet = map[string]any{
+		"ipv4_enabled": true,
+		"ipv4":         ips.PrimaryIPv4A.TFID() + ".id",
+		"ipv6_enabled": false,
 	}
 
-	sResWithTwoPrimaryIPs.SetRName(sResWithTwoPrimaryIPs.Name)
-
-	sResWithNoPublicNet := &server.RData{
-		Name:         sResWithTwoPrimaryIPs.Name,
-		Type:         sResWithTwoPrimaryIPs.Type,
-		LocationName: sResWithTwoPrimaryIPs.LocationName,
-		Image:        sResWithTwoPrimaryIPs.Image,
-		SSHKeys:      sResWithTwoPrimaryIPs.SSHKeys,
-		Networks:     sResWithTwoPrimaryIPs.Networks,
-		DependsOn:    sResWithTwoPrimaryIPs.DependsOn,
+	// - Add unmanaged primary ipv6
+	res4 := testtemplate.DeepCopy(t, res3)
+	res4.PublicNet = map[string]any{
+		"ipv4_enabled": true,
+		"ipv4":         ips.PrimaryIPv4A.TFID() + ".id",
+		"ipv6_enabled": true,
 	}
 
-	sResWithNoPublicNet.SetRName(sResWithNoPublicNet.Name)
+	// Remove public net config, and rely on the defaults:
+	// - Remove managed primary ipv4
+	// - Add unmanaged primary ipv4
+	res5 := testtemplate.DeepCopy(t, res4)
+	res5.PublicNet = nil
 
-	sResWithOnlyIPv6 := &server.RData{
-		Name:         sResWithNoPublicNet.Name,
-		Type:         sResWithNoPublicNet.Type,
-		LocationName: sResWithNoPublicNet.LocationName,
-		Image:        sResWithNoPublicNet.Image,
-		SSHKeys:      sResWithNoPublicNet.SSHKeys,
-		Networks:     sResWithNoPublicNet.Networks,
-		PublicNet: map[string]any{
-			"ipv4_enabled": false,
-			"ipv6_enabled": true,
-			"ipv6":         primaryIPv6Res.TFID() + ".id",
-		},
-		DependsOn: sResWithNoPublicNet.DependsOn,
+	// - Remove unmanaged primary ipv4
+	// - Remove unmanaged primary ipv6
+	// - Add managed primary ipv6
+	res6 := testtemplate.DeepCopy(t, res5)
+	res6.PublicNet = map[string]any{
+		"ipv4_enabled": false,
+		"ipv6_enabled": true,
+		"ipv6":         ips.PrimaryIPv6C.TFID() + ".id",
 	}
 
-	sResWithOnlyIPv6.SetRName(sResWithOnlyIPv6.Name)
-
-	sResWithOnlyIPv6AutoGenerated := &server.RData{
-		Name:         sResWithOnlyIPv6.Name,
-		Type:         sResWithOnlyIPv6.Type,
-		LocationName: sResWithOnlyIPv6.LocationName,
-		Image:        sResWithOnlyIPv6.Image,
-		SSHKeys:      sResWithOnlyIPv6.SSHKeys,
-		Networks:     sResWithOnlyIPv6.Networks,
-		PublicNet: map[string]any{
-			"ipv4_enabled": false,
-			"ipv6_enabled": true,
-		},
-		DependsOn: sResWithOnlyIPv6.DependsOn,
+	// - Remove managed primary ipv6
+	// - Add unmanaged primary ipv6
+	res7 := testtemplate.DeepCopy(t, res6)
+	res7.PublicNet = map[string]any{
+		"ipv4_enabled": false,
+		"ipv6_enabled": true,
 	}
 
-	sResWithOnlyIPv6AutoGenerated.SetRName(sResWithOnlyIPv6AutoGenerated.Name)
-
-	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
-		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, nil)),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckAPIResourceAllAbsent(server.ResourceType, server.GetAPIResource()),
 		Steps: []resource.TestStep{
 			{
-				// Create a new server with unmanaged primary IPs + network
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_network", nwRes,
-					"testdata/r/hcloud_network_subnet", snwRes,
-					"testdata/r/hcloud_server", sResWithNetAndPublicNet,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_network", nws.NetworkA,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA1,
+					"testdata/r/hcloud_server", res1,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(nwRes.TFID(), network.ByID(t, &nw)),
-					testsupport.CheckResourceExists(sResWithNetAndPublicNet.TFID(), server.ByID(t, &s)),
-					testsupport.LiftTCF(hasServerNetwork(t, &s, &nw, "10.0.1.5", "10.0.1.6", "10.0.1.7")),
-					resource.TestCheckResourceAttr(sResWithNetAndPublicNet.TFID(), "network.#", "1"),
-					resource.TestCheckResourceAttr(sResWithNetAndPublicNet.TFID(), "network.0.ip", "10.0.1.5"),
-					resource.TestCheckResourceAttr(sResWithNetAndPublicNet.TFID(), "network.0.alias_ips.#", "2"),
+					testsupport.CheckResourceExists(res1.TFID(), server.ByID(t, &hcServer)),
+					resource.TestCheckResourceAttr(res1.TFID(), "network.#", "1"),
+
 					testsupport.LiftTCF(func() error {
-						assert.NotEqual(t, int64(0), s.PublicNet.IPv4.ID)
-						assert.NotEqual(t, int64(0), s.PublicNet.IPv6.ID)
+						assert.NotEqual(t, int64(0), hcServer.PublicNet.IPv4.ID)
+						assert.NotEqual(t, int64(0), hcServer.PublicNet.IPv6.ID)
 						return nil
 					}),
 				),
 			},
 			{
-				// Primary IPs getting removed
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_network", nwRes,
-					"testdata/r/hcloud_network_subnet", snwRes,
-					"testdata/r/hcloud_server", sResWithoutPublicNet,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_network", nws.NetworkA,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA1,
+					"testdata/r/hcloud_server", res2,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(res2.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(nwRes.TFID(), network.ByID(t, &nw)),
-					testsupport.CheckResourceExists(sResWithoutPublicNet.TFID(), server.ByID(t, &s)),
-					testsupport.LiftTCF(hasServerNetwork(t, &s, &nw, "10.0.1.5", "10.0.1.6", "10.0.1.7")),
-					resource.TestCheckResourceAttr(sResWithoutPublicNet.TFID(), "network.#", "1"),
-					resource.TestCheckResourceAttr(sResWithoutPublicNet.TFID(), "network.0.ip", "10.0.1.5"),
-					resource.TestCheckResourceAttr(sResWithoutPublicNet.TFID(), "network.0.alias_ips.#", "2"),
+					testsupport.CheckResourceExists(res2.TFID(), server.ByID(t, &hcServer)),
 					testsupport.LiftTCF(func() error {
-						assert.Nil(t, s.PublicNet.IPv4.IP)
-						assert.Nil(t, s.PublicNet.IPv6.IP)
+						assert.Nil(t, hcServer.PublicNet.IPv4.IP)
+						assert.Nil(t, hcServer.PublicNet.IPv6.IP)
 						return nil
 					}),
 				),
 			},
 			{
-				// Add ipv4 via ID
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_network", nwRes,
-					"testdata/r/hcloud_network_subnet", snwRes,
-					"testdata/r/hcloud_primary_ip", primaryIPv4Res,
-					"testdata/r/hcloud_server", sResWithPrimaryIP,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_network", nws.NetworkA,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA1,
+					"testdata/r/hcloud_primary_ip", ips.PrimaryIPv4A,
+					"testdata/r/hcloud_server", res3,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(res3.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(primaryIPv4Res.TFID(), primaryip.ByID(t, &p)),
-					testsupport.CheckResourceExists(sResWithPrimaryIP.TFID(), server.ByID(t, &s)),
+					testsupport.CheckResourceExists(res3.TFID(), server.ByID(t, &hcServer)),
+					testsupport.CheckResourceExists(ips.PrimaryIPv4A.TFID(), primaryip.ByID(t, &hcPrimaryIP)),
 					testsupport.LiftTCF(func() error {
-						assert.Equal(t, p.AssigneeID, s.ID)
-						assert.Equal(t, p.ID, s.PublicNet.IPv4.ID)
-						assert.Equal(t, int64(0), s.PublicNet.IPv6.ID)
+						assert.Equal(t, hcPrimaryIP.AssigneeID, hcServer.ID)
+						assert.Equal(t, hcPrimaryIP.ID, hcServer.PublicNet.IPv4.ID)
+						assert.Equal(t, int64(0), hcServer.PublicNet.IPv6.ID)
 						return nil
 					}),
 				),
 			},
 			{
-				// Add ipv6 but auto generated (only ipv6_enabled = true, without an ID)
-				// now ipv4 is a TF resource and ipv6 is auto generated
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_network", nwRes,
-					"testdata/r/hcloud_network_subnet", snwRes,
-					"testdata/r/hcloud_primary_ip", primaryIPv4Res,
-					"testdata/r/hcloud_server", sResWithTwoPrimaryIPs,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_network", nws.NetworkA,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA1,
+					"testdata/r/hcloud_primary_ip", ips.PrimaryIPv4A,
+					"testdata/r/hcloud_server", res4,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(res4.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(primaryIPv4Res.TFID(), primaryip.ByID(t, &p)),
-					testsupport.CheckResourceExists(sResWithPrimaryIP.TFID(), server.ByID(t, &s)),
+					testsupport.CheckResourceExists(res4.TFID(), server.ByID(t, &hcServer)),
+					testsupport.CheckResourceExists(ips.PrimaryIPv4A.TFID(), primaryip.ByID(t, &hcPrimaryIP)),
 					testsupport.LiftTCF(func() error {
-						assert.Equal(t, p.AssigneeID, s.ID)
-						assert.Equal(t, s.PublicNet.IPv4.ID, p.ID)
-						assert.NotEqual(t, int64(0), s.PublicNet.IPv6.ID)
+						assert.Equal(t, hcPrimaryIP.AssigneeID, hcServer.ID)
+						assert.Equal(t, hcPrimaryIP.ID, hcServer.PublicNet.IPv4.ID)
+						assert.NotEqual(t, int64(0), hcServer.PublicNet.IPv6.ID)
 						return nil
 					}),
 				),
 			},
 			{
-				// Remove public net, so attached ipv4 gets unattached + an ipv4 should be auto generated
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_network", nwRes,
-					"testdata/r/hcloud_network_subnet", snwRes,
-					"testdata/r/hcloud_primary_ip", primaryIPv4Res,
-					"testdata/r/hcloud_server", sResWithNoPublicNet,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_network", nws.NetworkA,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA1,
+					"testdata/r/hcloud_primary_ip", ips.PrimaryIPv4A,
+					"testdata/r/hcloud_server", res5,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(res5.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(primaryIPv4Res.TFID(), primaryip.ByID(t, &p)),
-					testsupport.CheckResourceExists(sResWithPrimaryIP.TFID(), server.ByID(t, &s)),
+					testsupport.CheckResourceExists(res5.TFID(), server.ByID(t, &hcServer)),
+					testsupport.CheckResourceExists(ips.PrimaryIPv4A.TFID(), primaryip.ByID(t, &hcPrimaryIP)),
 					testsupport.LiftTCF(func() error {
-						assert.NotEqual(t, p.ID, s.PublicNet.IPv4.ID)
-						assert.NotEqual(t, int64(0), s.PublicNet.IPv4.ID)
-						assert.NotEqual(t, int64(0), s.PublicNet.IPv6.ID)
+						assert.NotEqual(t, hcPrimaryIP.ID, hcServer.PublicNet.IPv4.ID)
+						assert.NotEqual(t, int64(0), hcServer.PublicNet.IPv4.ID)
+						assert.NotEqual(t, int64(0), hcServer.PublicNet.IPv6.ID)
 						return nil
 					}),
 				),
 			},
 			{
-				// should remove auto generated ipv4 / 6 + attach managed ipv6
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_network", nwRes,
-					"testdata/r/hcloud_network_subnet", snwRes,
-					"testdata/r/hcloud_primary_ip", primaryIPv6Res,
-					"testdata/r/hcloud_server", sResWithOnlyIPv6,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_network", nws.NetworkA,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA1,
+					"testdata/r/hcloud_primary_ip", ips.PrimaryIPv6C,
+					"testdata/r/hcloud_server", res6,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(res6.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(primaryIPv6Res.TFID(), primaryip.ByID(t, &p)),
-					testsupport.CheckResourceExists(sResWithOnlyIPv6.TFID(), server.ByID(t, &s)),
+					testsupport.CheckResourceExists(res6.TFID(), server.ByID(t, &hcServer)),
+					testsupport.CheckResourceExists(ips.PrimaryIPv6C.TFID(), primaryip.ByID(t, &hcPrimaryIP)),
 					testsupport.LiftTCF(func() error {
-						assert.Equal(t, p.ID, s.PublicNet.IPv6.ID)
-						assert.Equal(t, int64(0), s.PublicNet.IPv4.ID)
+						assert.Equal(t, hcPrimaryIP.ID, hcServer.PublicNet.IPv6.ID)
+						assert.Equal(t, int64(0), hcServer.PublicNet.IPv4.ID)
 						return nil
 					}),
 				),
 			},
 			{
-				// should remove attached ipv6 and auto generate an ipv6
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_network", nwRes,
-					"testdata/r/hcloud_network_subnet", snwRes,
-					"testdata/r/hcloud_primary_ip", primaryIPv6Res,
-					"testdata/r/hcloud_server", sResWithOnlyIPv6AutoGenerated,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_network", nws.NetworkA,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA1,
+					"testdata/r/hcloud_primary_ip", ips.PrimaryIPv6C,
+					"testdata/r/hcloud_server", res7,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						// TODO: The resource should be updated.
+						plancheck.ExpectResourceAction(res7.TFID(), plancheck.ResourceActionNoop),
+					},
+				},
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(primaryIPv6Res.TFID(), primaryip.ByID(t, &p)),
-					testsupport.CheckResourceExists(sResWithOnlyIPv6AutoGenerated.TFID(), server.ByID(t, &s)),
+					testsupport.CheckResourceExists(res7.TFID(), server.ByID(t, &hcServer)),
+					testsupport.CheckResourceExists(ips.PrimaryIPv6C.TFID(), primaryip.ByID(t, &hcPrimaryIP)),
 					testsupport.LiftTCF(func() error {
-						assert.NotEqual(t, p.ID, s.PublicNet.IPv4.ID)
-						assert.Equal(t, int64(0), s.PublicNet.IPv4.ID)
-						assert.NotEqual(t, int64(0), s.PublicNet.IPv6.ID)
+						assert.NotEqual(t, hcPrimaryIP.ID, hcServer.PublicNet.IPv4.ID)
+						// TODO: The managed primary ipv6 should have been removed and
+						// replaced with an unmanaged one.
+						assert.Equal(t, hcPrimaryIP.ID, hcServer.PublicNet.IPv6.ID)
+						assert.Equal(t, int64(0), hcServer.PublicNet.IPv4.ID)
+						assert.NotEqual(t, int64(0), hcServer.PublicNet.IPv6.ID)
 						return nil
 					}),
 				),
@@ -1287,29 +1139,22 @@ func TestAccServerResource_PrimaryIPNetworkTests(t *testing.T) {
 }
 
 func TestAccServerResource_PrivateNetworkBastion(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
 	name := "server-private-network-bastion"
 
-	sshKeyRes := sshkey.NewRData(t, name)
+	resSSHKey := sshkey.NewRData(t, name)
 
-	networkRes := &network.RData{Name: name, IPRange: "10.0.0.0/16"}
-	networkRes.SetRName("network")
-
-	subnetRes := &network.RDataSubnet{
-		Type:        "cloud",
-		NetworkID:   networkRes.TFID() + ".id",
-		NetworkZone: "eu-central",
-		IPRange:     "10.0.1.0/24",
-	}
-	subnetRes.SetRName("network")
+	nws := network.NewBlueprint(t)
 
 	bastionRes := &server.RData{
 		Name:         name + "-bastion",
 		Type:         teste2e.TestServerType,
 		LocationName: teste2e.TestLocationName,
 		Image:        teste2e.TestImage,
-		SSHKeys:      []string{sshKeyRes.TFID() + ".id"},
+		SSHKeys:      []string{resSSHKey.TFID() + ".id"},
 		Networks: []server.RDataInlineNetwork{{
-			NetworkID: networkRes.TFID() + ".id",
+			NetworkID: nws.NetworkA.TFID() + ".id",
 		}},
 		PublicNet: map[string]any{
 			"ipv4_enabled": true,
@@ -1324,7 +1169,7 @@ users:
 runcmd:
   - echo "hello from bastion!"
 `,
-		DependsOn: []string{subnetRes.TFID()},
+		DependsOn: []string{nws.SubnetA1.TFID()},
 	}
 	bastionRes.SetRName("bastion")
 
@@ -1333,9 +1178,9 @@ runcmd:
 		Type:         teste2e.TestServerType,
 		LocationName: teste2e.TestLocationName,
 		Image:        teste2e.TestImage,
-		SSHKeys:      []string{sshKeyRes.TFID() + ".id"},
+		SSHKeys:      []string{resSSHKey.TFID() + ".id"},
 		Networks: []server.RDataInlineNetwork{{
-			NetworkID: networkRes.TFID() + ".id",
+			NetworkID: nws.NetworkA.TFID() + ".id",
 		}},
 		PublicNet: map[string]any{
 			"ipv4_enabled": false,
@@ -1350,20 +1195,20 @@ users:
 runcmd:
   - echo "hello from host!"
 `,
-		DependsOn: []string{subnetRes.TFID()},
+		DependsOn: []string{nws.SubnetA1.TFID()},
 	}
 	hostRes.SetRName("host")
 
-	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckAPIResourceAllAbsent(server.ResourceType, server.GetAPIResource()),
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sshKeyRes,
-					"testdata/r/hcloud_network", networkRes,
-					"testdata/r/hcloud_network_subnet", subnetRes,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_network", nws.NetworkA,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA1,
 					"testdata/r/hcloud_server", bastionRes,
 					"testdata/r/hcloud_server", hostRes,
 					"testdata/r/any",
@@ -1388,7 +1233,7 @@ resource "terraform_data" "wait" {
     inline = ["cloud-init status --wait --long || test $? -eq 2"]
   }
 }
-`, sshKeyRes.PrivateKey),
+`, resSSHKey.PrivateKey),
 				),
 			},
 		},
@@ -1396,16 +1241,19 @@ resource "terraform_data" "wait" {
 }
 
 func TestAccServerResource_Firewalls(t *testing.T) {
-	var s hcloud.Server
+	tmplMan := testtemplate.Manager{}
 
-	fw := firewall.NewRData(t, "server-test", []firewall.RDataRule{
+	var hcServer hcloud.Server
+
+	resFirewallA := firewall.NewRData(t, "server-test-a", []firewall.RDataRule{
 		{
 			Direction: "in",
 			Protocol:  "icmp",
 			SourceIPs: []string{"0.0.0.0/0", "::/0"},
 		},
 	}, nil)
-	fw2 := firewall.NewRData(t, "server-test-2", []firewall.RDataRule{
+
+	resFirewallB := firewall.NewRData(t, "server-test-b", []firewall.RDataRule{
 		{
 			Direction: "in",
 			Protocol:  "tcp",
@@ -1413,46 +1261,45 @@ func TestAccServerResource_Firewalls(t *testing.T) {
 			Port:      "1-65535",
 		},
 	}, nil)
-	res := &server.RData{
+
+	res1 := &server.RData{
 		Name:        "server-firewall",
 		Type:        teste2e.TestServerType,
 		Image:       teste2e.TestImage,
-		FirewallIDs: []string{fw.TFID() + ".id"},
+		FirewallIDs: []string{resFirewallA.TFID() + ".id"},
 	}
-	res.SetRName("server-firewall")
-	res2 := &server.RData{
-		Name:        "server-firewall",
-		Type:        teste2e.TestServerType,
-		Image:       teste2e.TestImage,
-		FirewallIDs: []string{fw2.TFID() + ".id"},
-	}
-	res2.SetRName(res.RName())
-	tmplMan := testtemplate.Manager{}
+	res1.SetRName("server-firewall")
+
+	res2 := testtemplate.DeepCopy(t, res1)
+	res2.FirewallIDs = []string{resFirewallB.TFID() + ".id"}
+
+	res3 := testtemplate.DeepCopy(t, res2)
+	res3.FirewallIDs = []string{}
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
-		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckAPIResourceAllAbsent(server.ResourceType, server.GetAPIResource()),
 		Steps: []resource.TestStep{
 			{
 				// Create a new Server using the required values
 				// only.
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_firewall", fw,
-					"testdata/r/hcloud_server", res,
+					"testdata/r/hcloud_firewall", resFirewallA,
+					"testdata/r/hcloud_server", res1,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s)),
-					resource.TestCheckResourceAttr(res.TFID(), "name",
-						fmt.Sprintf("server-firewall--%d", tmplMan.RandInt)),
-					resource.TestCheckResourceAttr(res.TFID(), "server_type", res.Type),
-					resource.TestCheckResourceAttr(res.TFID(), "image", res.Image),
-					resource.TestCheckResourceAttr(res.TFID(), "firewall_ids.#", "1"),
+					testsupport.CheckResourceExists(res1.TFID(), server.ByID(t, &hcServer)),
+					resource.TestCheckResourceAttr(res1.TFID(), "name", fmt.Sprintf("server-firewall--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(res1.TFID(), "server_type", res1.Type),
+					resource.TestCheckResourceAttr(res1.TFID(), "image", res1.Image),
+					resource.TestCheckResourceAttr(res1.TFID(), "firewall_ids.#", "1"),
 				),
 			},
 			{
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_firewall", fw,
-					"testdata/r/hcloud_firewall", fw2,
+					"testdata/r/hcloud_firewall", resFirewallA,
+					"testdata/r/hcloud_firewall", resFirewallB,
 					"testdata/r/hcloud_server", res2,
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -1461,12 +1308,30 @@ func TestAccServerResource_Firewalls(t *testing.T) {
 					},
 				},
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &s)),
-					resource.TestCheckResourceAttr(res.TFID(), "name",
-						fmt.Sprintf("server-firewall--%d", tmplMan.RandInt)),
-					resource.TestCheckResourceAttr(res.TFID(), "server_type", res.Type),
-					resource.TestCheckResourceAttr(res.TFID(), "image", res.Image),
-					resource.TestCheckResourceAttr(res.TFID(), "firewall_ids.#", "1"),
+					testsupport.CheckResourceExists(res1.TFID(), server.ByID(t, &hcServer)),
+					resource.TestCheckResourceAttr(res1.TFID(), "name", fmt.Sprintf("server-firewall--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(res1.TFID(), "server_type", res1.Type),
+					resource.TestCheckResourceAttr(res1.TFID(), "image", res1.Image),
+					resource.TestCheckResourceAttr(res1.TFID(), "firewall_ids.#", "1"),
+				),
+			},
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_firewall", resFirewallA,
+					"testdata/r/hcloud_firewall", resFirewallB,
+					"testdata/r/hcloud_server", res3,
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(res2.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(res1.TFID(), server.ByID(t, &hcServer)),
+					resource.TestCheckResourceAttr(res1.TFID(), "name", fmt.Sprintf("server-firewall--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(res1.TFID(), "server_type", res1.Type),
+					resource.TestCheckResourceAttr(res1.TFID(), "image", res1.Image),
+					resource.TestCheckResourceAttr(res1.TFID(), "firewall_ids.#", "0"),
 				),
 			},
 		},
@@ -1477,69 +1342,64 @@ func TestAccServerResource_PlacementGroup(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	var (
-		pg  hcloud.PlacementGroup
-		srv hcloud.Server
+		hcPlacementGroup hcloud.PlacementGroup
+		hcServer         hcloud.Server
 	)
 
-	pgRes := placementgroup.NewRData(t, "server-test", "spread")
+	resPlacementGroup := placementgroup.NewRData(t, "server-test", "spread")
 
-	srvRes := &server.RData{
-		Name:             "server-placement-group",
-		Type:             teste2e.TestServerType,
-		Image:            teste2e.TestImage,
-		PlacementGroupID: pgRes.TFID() + ".id",
+	resWithoutPG := &server.RData{
+		Name:  "server-placement-group",
+		Type:  teste2e.TestServerType,
+		Image: teste2e.TestImage,
 	}
-	srvRes.SetRName("server-placement-group")
+	resWithoutPG.SetRName("server-placement-group")
 
-	srvResNoPG := &server.RData{
-		Name:  srvRes.Name,
-		Type:  srvRes.Type,
-		Image: srvRes.Image,
-	}
-	srvResNoPG.SetRName("server-placement-group")
+	resWithPG := testtemplate.DeepCopy(t, resWithoutPG)
+	resWithPG.PlacementGroupID = resPlacementGroup.TFID() + ".id"
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
-		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &srv)),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckAPIResourceAllAbsent(server.ResourceType, server.GetAPIResource()),
 		Steps: []resource.TestStep{
 			{
 				// Create a new Server using the required values
 				// only.
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_placement_group", pgRes,
-					"testdata/r/hcloud_server", srvRes,
+					"testdata/r/hcloud_placement_group", resPlacementGroup,
+					"testdata/r/hcloud_server", resWithPG,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(srvRes.TFID(), server.ByID(t, &srv)),
-					testsupport.CheckResourceExists(pgRes.TFID(), placementgroup.ByID(t, &pg)),
-					resource.TestCheckResourceAttr(srvRes.TFID(), "name", fmt.Sprintf("server-placement-group--%d", tmplMan.RandInt)),
-					resource.TestCheckResourceAttr(srvRes.TFID(), "server_type", srvRes.Type),
-					resource.TestCheckResourceAttr(srvRes.TFID(), "image", srvRes.Image),
-					testsupport.CheckResourceAttrFunc(srvRes.TFID(), "placement_group_id", func() string {
-						return util.FormatID(pg.ID)
+					testsupport.CheckResourceExists(resWithPG.TFID(), server.ByID(t, &hcServer)),
+					testsupport.CheckResourceExists(resPlacementGroup.TFID(), placementgroup.ByID(t, &hcPlacementGroup)),
+					resource.TestCheckResourceAttr(resWithPG.TFID(), "name", fmt.Sprintf("server-placement-group--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(resWithPG.TFID(), "server_type", resWithPG.Type),
+					resource.TestCheckResourceAttr(resWithPG.TFID(), "image", resWithPG.Image),
+					testsupport.CheckResourceAttrFunc(resWithPG.TFID(), "placement_group_id", func() string {
+						return util.FormatID(hcPlacementGroup.ID)
 					}),
 				),
 			},
 			{
 				// Try to remove PG of running server -> error
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_placement_group", pgRes,
-					"testdata/r/hcloud_server", srvResNoPG,
+					"testdata/r/hcloud_placement_group", resPlacementGroup,
+					"testdata/r/hcloud_server", resWithoutPG,
 				),
 				ExpectError: regexp.MustCompile("removing a running server from a placement group is currently not supported in the provider.*"),
 			},
 			{
 				// Remove Placement Group
 				PreConfig: func() {
-					ctx := context.TODO()
+					ctx := t.Context()
 					// Removing PG is not support only in TF, we need to shut down the server manually beforehand
 					client, err := testsupport.CreateClient()
 					if err != nil {
 						t.Errorf("PreConfig: failed to create client: %v", err)
 						return
 					}
-					action, _, err := client.Server.Poweroff(ctx, &srv)
+					action, _, err := client.Server.Poweroff(ctx, &hcServer)
 					if err != nil {
 						t.Errorf("PreConfig: failed to power off server: %v", err)
 						return
@@ -1551,34 +1411,34 @@ func TestAccServerResource_PlacementGroup(t *testing.T) {
 					}
 				},
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_placement_group", pgRes,
-					"testdata/r/hcloud_server", srvResNoPG,
+					"testdata/r/hcloud_placement_group", resPlacementGroup,
+					"testdata/r/hcloud_server", resWithoutPG,
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(srvResNoPG.TFID(), plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(resWithoutPG.TFID(), plancheck.ResourceActionUpdate),
 					},
 				},
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(srvResNoPG.TFID(), "status", "off"),
-					resource.TestCheckResourceAttr(srvResNoPG.TFID(), "placement_group_id", "0"),
+					resource.TestCheckResourceAttr(resWithoutPG.TFID(), "status", "off"),
+					resource.TestCheckResourceAttr(resWithoutPG.TFID(), "placement_group_id", "0"),
 				),
 			},
 			{
 				// Add Placement Group back
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_placement_group", pgRes,
-					"testdata/r/hcloud_server", srvRes,
+					"testdata/r/hcloud_placement_group", resPlacementGroup,
+					"testdata/r/hcloud_server", resWithPG,
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(srvRes.TFID(), plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(resWithPG.TFID(), plancheck.ResourceActionUpdate),
 					},
 				},
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(srvResNoPG.TFID(), "status", "running"),
-					testsupport.CheckResourceAttrFunc(srvRes.TFID(), "placement_group_id", func() string {
-						return util.FormatID(pg.ID)
+					resource.TestCheckResourceAttr(resWithoutPG.TFID(), "status", "running"),
+					testsupport.CheckResourceAttrFunc(resWithPG.TFID(), "placement_group_id", func() string {
+						return util.FormatID(hcPlacementGroup.ID)
 					}),
 				),
 			},
@@ -1590,53 +1450,50 @@ func TestAccServerResource_Protection(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	var (
-		srv hcloud.Server
-
-		updateProtection = func(d *server.RData, protection bool) *server.RData {
-			d.DeleteProtection = protection
-			d.RebuildProtection = protection
-			return d
-		}
+		hcServer hcloud.Server
 	)
 
-	srvRes := &server.RData{
+	res1 := &server.RData{
 		Name:              "server-protection",
 		Type:              teste2e.TestServerType,
 		Image:             teste2e.TestImage,
 		DeleteProtection:  true,
 		RebuildProtection: true,
 	}
-	srvRes.SetRName("server-protection")
+	res1.SetRName("server-protection")
+
+	res2 := testtemplate.DeepCopy(t, res1)
+	res2.DeleteProtection = false
+	res2.RebuildProtection = false
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
-		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &srv)),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckAPIResourceAllAbsent(server.ResourceType, server.GetAPIResource()),
 		Steps: []resource.TestStep{
 			{
 				// Create a new Server using the required values
 				// only.
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_server", srvRes,
+					"testdata/r/hcloud_server", res1,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(srvRes.TFID(), server.ByID(t, &srv)),
-					resource.TestCheckResourceAttr(srvRes.TFID(), "name",
-						fmt.Sprintf("server-protection--%d", tmplMan.RandInt)),
-					resource.TestCheckResourceAttr(srvRes.TFID(), "server_type", srvRes.Type),
-					resource.TestCheckResourceAttr(srvRes.TFID(), "image", srvRes.Image),
-					resource.TestCheckResourceAttr(srvRes.TFID(), "delete_protection", fmt.Sprintf("%t", srvRes.DeleteProtection)),
-					resource.TestCheckResourceAttr(srvRes.TFID(), "rebuild_protection", fmt.Sprintf("%t", srvRes.RebuildProtection)),
+					testsupport.CheckResourceExists(res1.TFID(), server.ByID(t, &hcServer)),
+					resource.TestCheckResourceAttr(res1.TFID(), "name", fmt.Sprintf("server-protection--%d", tmplMan.RandInt)),
+					resource.TestCheckResourceAttr(res1.TFID(), "server_type", res1.Type),
+					resource.TestCheckResourceAttr(res1.TFID(), "image", res1.Image),
+					resource.TestCheckResourceAttr(res1.TFID(), "delete_protection", "true"),
+					resource.TestCheckResourceAttr(res1.TFID(), "rebuild_protection", "true"),
 				),
 			},
 			{
 				// Update delete protection
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_server", updateProtection(srvRes, false),
+					"testdata/r/hcloud_server", res2,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(srvRes.TFID(), "delete_protection", fmt.Sprintf("%t", srvRes.DeleteProtection)),
-					resource.TestCheckResourceAttr(srvRes.TFID(), "rebuild_protection", fmt.Sprintf("%t", srvRes.RebuildProtection)),
+					resource.TestCheckResourceAttr(res1.TFID(), "delete_protection", "false"),
+					resource.TestCheckResourceAttr(res1.TFID(), "rebuild_protection", "false"),
 				),
 			},
 		},
@@ -1644,29 +1501,27 @@ func TestAccServerResource_Protection(t *testing.T) {
 }
 
 func TestAccServerResource_EmptySSHKey(t *testing.T) {
+	// Regression test for https://github.com/hetznercloud/terraform-provider-hcloud/issues/727
+
 	tmplMan := testtemplate.Manager{}
 
-	// Regression Test for https://github.com/hetznercloud/terraform-provider-hcloud/issues/727
-	var srv hcloud.Server
-
-	srvRes := &server.RData{
+	res := &server.RData{
 		Name:    "server-empty-ssh-key",
 		Type:    teste2e.TestServerType,
 		Image:   teste2e.TestImage,
 		SSHKeys: []string{"\"\""},
 	}
-	srvRes.SetRName("server-empty-ssh-key")
+	res.SetRName("server-empty-ssh-key")
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
-		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &srv)),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckAPIResourceAllAbsent(server.ResourceType, server.GetAPIResource()),
 		Steps: []resource.TestStep{
 			{
-				// Create a new Server using the required values
-				// only.
+				// Create a new Server using the required values only.
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_server", srvRes,
+					"testdata/r/hcloud_server", res,
 				),
 				ExpectError: regexp.MustCompile("Invalid ssh key passed"),
 			},
@@ -1678,41 +1533,43 @@ func TestAccServerResource_DatacenterToLocation(t *testing.T) {
 	// Test for the "datacenter" deprecation, to make sure that its possible to move to "location" attribute
 	// See https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters
 
-	resDC := &server.RData{
+	tmplMan := testtemplate.Manager{}
+
+	res1 := &server.RData{
 		Name:       "server-dc-to-location",
 		Type:       teste2e.TestServerType,
 		Image:      teste2e.TestImage,
 		Datacenter: teste2e.TestDataCenter,
 	}
-	resDC.SetRName("dc_to_location")
+	res1.SetRName("dc_to_location")
 
-	resLocation := testtemplate.DeepCopy(t, resDC)
-	resLocation.Datacenter = ""
-	resLocation.LocationName = teste2e.TestLocationName
-
-	tmplMan := testtemplate.Manager{}
+	res2 := testtemplate.DeepCopy(t, res1)
+	res2.Datacenter = ""
+	res2.LocationName = teste2e.TestLocationName
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		Steps: []resource.TestStep{
 			{
 				// Create server in Datacenter.
-				Config: tmplMan.Render(t, "testdata/r/hcloud_server", resDC),
+				Config: tmplMan.Render(t, "testdata/r/hcloud_server", res1),
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(resDC.TFID(), tfjsonpath.New("datacenter"), knownvalue.StringExact(teste2e.TestDataCenter)),
-					statecheck.ExpectKnownValue(resDC.TFID(), tfjsonpath.New("location"), knownvalue.StringExact(teste2e.TestLocationName)),
+					statecheck.ExpectKnownValue(res1.TFID(), tfjsonpath.New("datacenter"), knownvalue.StringExact(teste2e.TestDataCenter)),
+					statecheck.ExpectKnownValue(res1.TFID(), tfjsonpath.New("location"), knownvalue.StringExact(teste2e.TestLocationName)),
 				},
 			},
 			{
 				// Change config to Location.
-				Config: tmplMan.Render(t, "testdata/r/hcloud_server", resLocation),
+				Config: tmplMan.Render(t, "testdata/r/hcloud_server", res2),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
 				},
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(resLocation.TFID(), tfjsonpath.New("datacenter"), knownvalue.StringExact(teste2e.TestDataCenter)),
-					statecheck.ExpectKnownValue(resLocation.TFID(), tfjsonpath.New("location"), knownvalue.StringExact(teste2e.TestLocationName)),
+					statecheck.ExpectKnownValue(res2.TFID(), tfjsonpath.New("datacenter"), knownvalue.StringExact(teste2e.TestDataCenter)),
+					statecheck.ExpectKnownValue(res2.TFID(), tfjsonpath.New("location"), knownvalue.StringExact(teste2e.TestLocationName)),
 				},
 			},
 		},
@@ -1723,141 +1580,125 @@ func TestAccServerResource_MigrateNetworkIDToSubnetID(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	var (
-		nw hcloud.Network
-		s  hcloud.Server
+		hcNetwork hcloud.Network
+		hcServer  hcloud.Server
 	)
 
-	sk := sshkey.NewRData(t, "server-migrate-subnet")
+	nws := network.NewBlueprint(t)
 
-	nwRes := &network.RData{
-		Name:    "test-network-migrate",
-		IPRange: "10.0.0.0/16",
-	}
-	nwRes.SetRName("test-network-migrate")
+	resSSHKey := sshkey.NewRData(t, "migrate-to-subnet")
 
-	snwRes := &network.RDataSubnet{
-		Type:        "cloud",
-		NetworkID:   nwRes.TFID() + ".id",
-		NetworkZone: "eu-central",
-		IPRange:     "10.0.1.0/24",
-	}
-	snwRes.SetRName("test-subnet-migrate")
-
-	// Step 1: Create using network_id
-	sResWithNetworkID := &server.RData{
-		Name:         "server-migrate",
+	res := &server.RData{
+		Name:         "migrate-to-subnet",
 		Type:         teste2e.TestServerType,
 		LocationName: teste2e.TestLocationName,
 		Image:        teste2e.TestImage,
-		SSHKeys:      []string{sk.TFID() + ".id"},
-		Networks: []server.RDataInlineNetwork{{
-			NetworkID: nwRes.TFID() + ".id",
-			IP:        "10.0.1.5",
-		}},
-		DependsOn: []string{snwRes.TFID()},
+		SSHKeys:      []string{resSSHKey.TFID() + ".id"},
 	}
+	res.SetRName(res.Name)
+
+	// Step 1: Create using network_id
+	res1 := testtemplate.DeepCopy(t, res)
+	res1.Networks = []server.RDataInlineNetwork{{
+		NetworkID: nws.NetworkA.TFID() + ".id",
+		IP:        "10.0.1.5",
+	}}
+	res1.DependsOn = []string{nws.SubnetA1.TFID()}
 
 	// Step 2: Switch to subnet_id, keep same IP
-	sResWithSubnetID := &server.RData{
-		Name:         sResWithNetworkID.Name,
-		Type:         sResWithNetworkID.Type,
-		LocationName: sResWithNetworkID.LocationName,
-		Image:        sResWithNetworkID.Image,
-		SSHKeys:      sResWithNetworkID.SSHKeys,
-		Networks: []server.RDataInlineNetwork{{
-			SubnetID: snwRes.TFID() + ".id",
-			IP:       "10.0.1.5",
-		}},
-		DependsOn: []string{snwRes.TFID()},
-	}
+	res2 := testtemplate.DeepCopy(t, res)
+	res2.Networks = []server.RDataInlineNetwork{{
+		SubnetID: nws.SubnetA1.TFID() + ".id",
+		IP:       "10.0.1.5",
+	}}
 
 	// Step 3: Remove IP field, server should keep the same IP
-	sResWithSubnetIDNoIP := &server.RData{
-		Name:         sResWithNetworkID.Name,
-		Type:         sResWithNetworkID.Type,
-		LocationName: sResWithNetworkID.LocationName,
-		Image:        sResWithNetworkID.Image,
-		SSHKeys:      sResWithNetworkID.SSHKeys,
-		Networks: []server.RDataInlineNetwork{{
-			SubnetID: snwRes.TFID() + ".id",
-		}},
-		DependsOn: []string{snwRes.TFID()},
-	}
+	res3 := testtemplate.DeepCopy(t, res)
+	res3.Networks = []server.RDataInlineNetwork{{
+		SubnetID: nws.SubnetA1.TFID() + ".id",
+	}}
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
-		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, nil)),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckAPIResourceAllAbsent(server.ResourceType, server.GetAPIResource()),
 		Steps: []resource.TestStep{
 			{
 				// Create with network_id
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_network", nwRes,
-					"testdata/r/hcloud_network_subnet", snwRes,
-					"testdata/r/hcloud_server", sResWithNetworkID,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_network", nws.NetworkA,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA1,
+					"testdata/r/hcloud_server", res1,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(nwRes.TFID(), network.ByID(t, &nw)),
-					testsupport.CheckResourceExists(sResWithNetworkID.TFID(), server.ByID(t, &s)),
-					testsupport.LiftTCF(hasServerNetwork(t, &s, &nw, "10.0.1.5")),
-					resource.TestCheckResourceAttr(sResWithNetworkID.TFID(), "network.#", "1"),
-					resource.TestCheckResourceAttr(sResWithNetworkID.TFID(), "network.0.ip", "10.0.1.5"),
-					resource.TestCheckResourceAttrSet(sResWithNetworkID.TFID(), "network.0.network_id"),
+					testsupport.CheckResourceExists(nws.NetworkA.TFID(), network.ByID(t, &hcNetwork)),
+					testsupport.CheckResourceExists(res1.TFID(), server.ByID(t, &hcServer)),
+					testsupport.LiftTCF(hasServerNetwork(t, &hcServer, &hcNetwork, "10.0.1.5")),
+					resource.TestCheckResourceAttr(res1.TFID(), "network.#", "1"),
+					resource.TestCheckResourceAttr(res1.TFID(), "network.0.ip", "10.0.1.5"),
+					resource.TestCheckResourceAttrSet(res1.TFID(), "network.0.network_id"),
 				),
 			},
 			{
 				// Migrate to subnet_id, server should update, not replace
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_network", nwRes,
-					"testdata/r/hcloud_network_subnet", snwRes,
-					"testdata/r/hcloud_server", sResWithSubnetID,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_network", nws.NetworkA,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA1,
+					"testdata/r/hcloud_server", res2,
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(
-							sResWithSubnetID.TFID(),
-							plancheck.ResourceActionUpdate,
-						),
+						plancheck.ExpectResourceAction(res2.TFID(), plancheck.ResourceActionUpdate),
 					},
 				},
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(sResWithSubnetID.TFID(), server.ByID(t, &s)),
-					testsupport.LiftTCF(hasServerNetwork(t, &s, &nw, "10.0.1.5")),
-					resource.TestCheckResourceAttr(sResWithSubnetID.TFID(), "network.#", "1"),
-					resource.TestCheckResourceAttr(sResWithSubnetID.TFID(), "network.0.ip", "10.0.1.5"),
+					testsupport.CheckResourceExists(res2.TFID(), server.ByID(t, &hcServer)),
+					testsupport.LiftTCF(hasServerNetwork(t, &hcServer, &hcNetwork, "10.0.1.5")),
+					resource.TestCheckResourceAttr(res2.TFID(), "network.#", "1"),
+					resource.TestCheckResourceAttr(res2.TFID(), "network.0.ip", "10.0.1.5"),
 				),
 			},
 			{
 				// Remove IP field, server should keep the same IP (no re-attach)
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_network", nwRes,
-					"testdata/r/hcloud_network_subnet", snwRes,
-					"testdata/r/hcloud_server", sResWithSubnetIDNoIP,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_network", nws.NetworkA,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA1,
+					"testdata/r/hcloud_server", res3,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(res3.TFID(), plancheck.ResourceActionNoop),
+					},
+				},
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(sResWithSubnetIDNoIP.TFID(), server.ByID(t, &s)),
-					testsupport.LiftTCF(hasServerNetwork(t, &s, &nw, "10.0.1.5")),
-					resource.TestCheckResourceAttr(sResWithSubnetIDNoIP.TFID(), "network.#", "1"),
-					resource.TestCheckResourceAttr(sResWithSubnetIDNoIP.TFID(), "network.0.ip", "10.0.1.5"),
+					testsupport.CheckResourceExists(res3.TFID(), server.ByID(t, &hcServer)),
+					testsupport.LiftTCF(hasServerNetwork(t, &hcServer, &hcNetwork, "10.0.1.5")),
+					resource.TestCheckResourceAttr(res3.TFID(), "network.#", "1"),
+					resource.TestCheckResourceAttr(res3.TFID(), "network.0.ip", "10.0.1.5"),
 				),
 			},
 			{
 				// Rollback to network_id with same IP, should not trigger changes
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_network", nwRes,
-					"testdata/r/hcloud_network_subnet", snwRes,
-					"testdata/r/hcloud_server", sResWithNetworkID,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_network", nws.NetworkA,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA1,
+					"testdata/r/hcloud_server", res1,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(res1.TFID(), plancheck.ResourceActionNoop),
+					},
+				},
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(sResWithNetworkID.TFID(), server.ByID(t, &s)),
-					testsupport.LiftTCF(hasServerNetwork(t, &s, &nw, "10.0.1.5")),
-					resource.TestCheckResourceAttr(sResWithNetworkID.TFID(), "network.#", "1"),
-					resource.TestCheckResourceAttr(sResWithNetworkID.TFID(), "network.0.ip", "10.0.1.5"),
-					resource.TestCheckResourceAttrSet(sResWithNetworkID.TFID(), "network.0.network_id"),
+					testsupport.CheckResourceExists(res1.TFID(), server.ByID(t, &hcServer)),
+					testsupport.LiftTCF(hasServerNetwork(t, &hcServer, &hcNetwork, "10.0.1.5")),
+					resource.TestCheckResourceAttr(res1.TFID(), "network.#", "1"),
+					resource.TestCheckResourceAttr(res1.TFID(), "network.0.ip", "10.0.1.5"),
+					resource.TestCheckResourceAttrSet(res1.TFID(), "network.0.network_id"),
 				),
 			},
 		},
@@ -1868,100 +1709,84 @@ func TestAccServerResource_SwitchSubnet(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	var (
-		nw hcloud.Network
-		s  hcloud.Server
+		hcNetwork hcloud.Network
+		hcServer  hcloud.Server
 	)
 
-	sk := sshkey.NewRData(t, "server-switch-subnet")
+	resSSHKey := sshkey.NewRData(t, "switch-subnet")
 
-	nwRes := &network.RData{
-		Name:    "test-network-switch",
-		IPRange: "10.0.0.0/16",
-	}
-	nwRes.SetRName("test-network-switch")
+	nws := network.NewBlueprint(t)
 
-	snw1Res := &network.RDataSubnet{
-		Type:        "cloud",
-		NetworkID:   nwRes.TFID() + ".id",
-		NetworkZone: "eu-central",
-		IPRange:     "10.0.1.0/24",
-	}
-	snw1Res.SetRName("test-subnet-switch-1")
-
-	snw2Res := &network.RDataSubnet{
-		Type:        "cloud",
-		NetworkID:   nwRes.TFID() + ".id",
-		NetworkZone: "eu-central",
-		IPRange:     "10.0.2.0/24",
-	}
-	snw2Res.SetRName("test-subnet-switch-2")
-
-	// Attach to subnet1
-	sResSubnet1 := &server.RData{
-		Name:         "server-switch",
+	res := &server.RData{
+		Name:         "switch-subnet",
 		Type:         teste2e.TestServerType,
 		LocationName: teste2e.TestLocationName,
 		Image:        teste2e.TestImage,
-		SSHKeys:      []string{sk.TFID() + ".id"},
-		Networks: []server.RDataInlineNetwork{{
-			SubnetID: snw1Res.TFID() + ".id",
-			IP:       "10.0.1.5",
-		}},
-		DependsOn: []string{snw1Res.TFID(), snw2Res.TFID()},
+		SSHKeys:      []string{resSSHKey.TFID() + ".id"},
 	}
-	sResSubnet1.SetRName("server-switch")
+	res.SetRName(res.Name)
+
+	// Attach to subnet1
+	res1 := testtemplate.DeepCopy(t, res)
+	res1.Networks = []server.RDataInlineNetwork{{
+		SubnetID: nws.SubnetA1.TFID() + ".id",
+		IP:       "10.0.1.5",
+	}}
 
 	// Switch to subnet2
-	sResSubnet2 := &server.RData{
-		Name:         sResSubnet1.Name,
-		Type:         sResSubnet1.Type,
-		LocationName: sResSubnet1.LocationName,
-		Image:        sResSubnet1.Image,
-		SSHKeys:      sResSubnet1.SSHKeys,
-		Networks: []server.RDataInlineNetwork{{
-			SubnetID: snw2Res.TFID() + ".id",
-			IP:       "10.0.2.5",
-		}},
-		DependsOn: []string{snw1Res.TFID(), snw2Res.TFID()},
-	}
-	sResSubnet2.SetRName("server-switch")
+	res2 := testtemplate.DeepCopy(t, res)
+	res2.Networks = []server.RDataInlineNetwork{{
+		SubnetID: nws.SubnetA2.TFID() + ".id",
+		IP:       "10.0.2.5",
+	}}
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
-		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, nil)),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckAPIResourceAllAbsent(server.ResourceType, server.GetAPIResource()),
 		Steps: []resource.TestStep{
 			{
 				// Create with subnet1
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_network", nwRes,
-					"testdata/r/hcloud_network_subnet", snw1Res,
-					"testdata/r/hcloud_network_subnet", snw2Res,
-					"testdata/r/hcloud_server", sResSubnet1,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_network", nws.NetworkA,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA1,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA2,
+					"testdata/r/hcloud_server", res1,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(res1.TFID(), plancheck.ResourceActionCreate),
+					},
+				},
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(nwRes.TFID(), network.ByID(t, &nw)),
-					testsupport.CheckResourceExists(sResSubnet1.TFID(), server.ByID(t, &s)),
-					testsupport.LiftTCF(hasServerNetwork(t, &s, &nw, "10.0.1.5")),
-					resource.TestCheckResourceAttr(sResSubnet1.TFID(), "network.#", "1"),
-					resource.TestCheckResourceAttr(sResSubnet1.TFID(), "network.0.ip", "10.0.1.5"),
+					testsupport.CheckResourceExists(nws.NetworkA.TFID(), network.ByID(t, &hcNetwork)),
+					testsupport.CheckResourceExists(res1.TFID(), server.ByID(t, &hcServer)),
+					testsupport.LiftTCF(hasServerNetwork(t, &hcServer, &hcNetwork, "10.0.1.5")),
+					resource.TestCheckResourceAttr(res1.TFID(), "network.#", "1"),
+					resource.TestCheckResourceAttr(res1.TFID(), "network.0.ip", "10.0.1.5"),
 				),
 			},
 			{
 				// Switch to subnet2, IP changes so the server detaches and re-attaches
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_network", nwRes,
-					"testdata/r/hcloud_network_subnet", snw1Res,
-					"testdata/r/hcloud_network_subnet", snw2Res,
-					"testdata/r/hcloud_server", sResSubnet2,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_network", nws.NetworkA,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA1,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA2,
+					"testdata/r/hcloud_server", res2,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(res2.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(sResSubnet2.TFID(), server.ByID(t, &s)),
-					testsupport.LiftTCF(hasServerNetwork(t, &s, &nw, "10.0.2.5")),
-					resource.TestCheckResourceAttr(sResSubnet2.TFID(), "network.#", "1"),
-					resource.TestCheckResourceAttr(sResSubnet2.TFID(), "network.0.ip", "10.0.2.5"),
+					testsupport.CheckResourceExists(nws.NetworkA.TFID(), network.ByID(t, &hcNetwork)),
+					testsupport.CheckResourceExists(res2.TFID(), server.ByID(t, &hcServer)),
+					testsupport.LiftTCF(hasServerNetwork(t, &hcServer, &hcNetwork, "10.0.2.5")),
+					resource.TestCheckResourceAttr(res2.TFID(), "network.#", "1"),
+					resource.TestCheckResourceAttr(res2.TFID(), "network.0.ip", "10.0.2.5"),
 				),
 			},
 		},
@@ -1972,122 +1797,90 @@ func TestAccServerResource_MixedNetworkAndSubnetID(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	var (
-		nw1 hcloud.Network
-		nw2 hcloud.Network
-		s   hcloud.Server
+		hcNetworkA hcloud.Network
+		hcNetworkB hcloud.Network
+		hcServer   hcloud.Server
 	)
 
-	sk := sshkey.NewRData(t, "server-mixed-attach")
+	nws := network.NewBlueprint(t)
 
-	// Network 1
-	nw1Res := &network.RData{
-		Name:    "test-network-mixed-1",
-		IPRange: "10.0.0.0/16",
-	}
-	nw1Res.SetRName("test-network-mixed-1")
-	snw1Res := &network.RDataSubnet{
-		Type:        "cloud",
-		NetworkID:   nw1Res.TFID() + ".id",
-		NetworkZone: "eu-central",
-		IPRange:     "10.0.1.0/24",
-	}
-	snw1Res.SetRName("test-subnet-mixed-1")
+	resSSHKey := sshkey.NewRData(t, "server-mixed-attach")
 
-	// Network 2
-	nw2Res := &network.RData{
-		Name:    "test-network-mixed-2",
-		IPRange: "10.1.0.0/16",
-	}
-	nw2Res.SetRName("test-network-mixed-2")
-	snw2Res := &network.RDataSubnet{
-		Type:        "cloud",
-		NetworkID:   nw2Res.TFID() + ".id",
-		NetworkZone: "eu-central",
-		IPRange:     "10.1.1.0/24",
-	}
-	snw2Res.SetRName("test-subnet-mixed-2")
-
-	// Server: network1 via network_id, network2 via subnet_id
-	sRes := &server.RData{
-		Name:         "server-mixed",
+	res := &server.RData{
+		Name:         "server-mixed-networks",
 		Type:         teste2e.TestServerType,
 		LocationName: teste2e.TestLocationName,
 		Image:        teste2e.TestImage,
-		SSHKeys:      []string{sk.TFID() + ".id"},
-		Networks: []server.RDataInlineNetwork{
-			{
-				NetworkID: nw1Res.TFID() + ".id",
-				IP:        "10.0.1.5",
-			},
-			{
-				SubnetID: snw2Res.TFID() + ".id",
-				IP:       "10.1.1.5",
-			},
-		},
-		DependsOn: []string{snw1Res.TFID(), snw2Res.TFID()},
+		SSHKeys:      []string{resSSHKey.TFID() + ".id"},
 	}
-	sRes.SetRName("server-mixed")
+	res.SetRName("server-mixed-networks")
+
+	// Server: network1 via network_id, network2 via subnet_id
+	res1 := testtemplate.DeepCopy(t, res)
+	res1.Networks = []server.RDataInlineNetwork{
+		{
+			NetworkID: nws.NetworkA.TFID() + ".id",
+			IP:        "10.0.1.5",
+		},
+		{
+			SubnetID: nws.SubnetB1.TFID() + ".id",
+			IP:       "172.16.1.5",
+		},
+	}
+	res1.DependsOn = []string{nws.SubnetA1.TFID(), nws.SubnetB1.TFID()}
 
 	// Detach network1, keep network2 via subnet_id
-	sResOnlySubnet := &server.RData{
-		Name:         sRes.Name,
-		Type:         sRes.Type,
-		LocationName: sRes.LocationName,
-		Image:        sRes.Image,
-		SSHKeys:      sRes.SSHKeys,
-		Networks: []server.RDataInlineNetwork{
-			{
-				SubnetID: snw2Res.TFID() + ".id",
-				IP:       "10.1.1.5",
-			},
+	res2 := testtemplate.DeepCopy(t, res)
+	res2.Networks = []server.RDataInlineNetwork{
+		{
+			SubnetID: nws.SubnetB1.TFID() + ".id",
+			IP:       "172.16.1.5",
 		},
-		DependsOn: []string{snw1Res.TFID(), snw2Res.TFID()},
 	}
-	sResOnlySubnet.SetRName("server-mixed")
+	res2.DependsOn = []string{nws.SubnetA1.TFID(), nws.SubnetB1.TFID()}
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
-		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, nil)),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckAPIResourceAllAbsent(server.ResourceType, server.GetAPIResource()),
 		Steps: []resource.TestStep{
 			{
 				// Create with mixed attachment types
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_network", nw1Res,
-					"testdata/r/hcloud_network_subnet", snw1Res,
-					"testdata/r/hcloud_network", nw2Res,
-					"testdata/r/hcloud_network_subnet", snw2Res,
-					"testdata/r/hcloud_server", sRes,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_network", nws.NetworkA,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA1,
+					"testdata/r/hcloud_network", nws.NetworkB,
+					"testdata/r/hcloud_network_subnet", nws.SubnetB1,
+					"testdata/r/hcloud_server", res1,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(nw1Res.TFID(), network.ByID(t, &nw1)),
-					testsupport.CheckResourceExists(nw2Res.TFID(), network.ByID(t, &nw2)),
-					testsupport.CheckResourceExists(sRes.TFID(), server.ByID(t, &s)),
-					testsupport.LiftTCF(hasServerNetwork(t, &s, &nw1, "10.0.1.5")),
-					testsupport.LiftTCF(hasServerNetwork(t, &s, &nw2, "10.1.1.5")),
-					resource.TestCheckResourceAttr(sRes.TFID(), "network.#", "2"),
+					testsupport.CheckResourceExists(nws.NetworkA.TFID(), network.ByID(t, &hcNetworkA)),
+					testsupport.CheckResourceExists(nws.NetworkB.TFID(), network.ByID(t, &hcNetworkB)),
+					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &hcServer)),
+					testsupport.LiftTCF(hasServerNetwork(t, &hcServer, &hcNetworkA, "10.0.1.5")),
+					testsupport.LiftTCF(hasServerNetwork(t, &hcServer, &hcNetworkB, "172.16.1.5")),
+					resource.TestCheckResourceAttr(res.TFID(), "network.#", "2"),
 				),
 			},
 			{
 				// Detach from network1, keep network2 via subnet_id
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", sk,
-					"testdata/r/hcloud_network", nw1Res,
-					"testdata/r/hcloud_network_subnet", snw1Res,
-					"testdata/r/hcloud_network", nw2Res,
-					"testdata/r/hcloud_network_subnet", snw2Res,
-					"testdata/r/hcloud_server", sResOnlySubnet,
+					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/hcloud_network", nws.NetworkA,
+					"testdata/r/hcloud_network_subnet", nws.SubnetA1,
+					"testdata/r/hcloud_network", nws.NetworkB,
+					"testdata/r/hcloud_network_subnet", nws.SubnetB1,
+					"testdata/r/hcloud_server", res2,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(sResOnlySubnet.TFID(), server.ByID(t, &s)),
-					testsupport.LiftTCF(hasServerNetwork(t, &s, &nw2, "10.1.1.5")),
+					testsupport.CheckResourceExists(res.TFID(), server.ByID(t, &hcServer)),
+					testsupport.LiftTCF(hasServerNetwork(t, &hcServer, &hcNetworkB, "172.16.1.5")),
 					testsupport.LiftTCF(func() error {
-						t.Log("Checking server is detached from network1")
-						assert.Nil(t, s.PrivateNetFor(&nw1))
+						assert.Nil(t, hcServer.PrivateNetFor(&hcNetworkA))
 						return nil
 					}),
-					resource.TestCheckResourceAttr(sResOnlySubnet.TFID(), "network.#", "1"),
+					resource.TestCheckResourceAttr(res.TFID(), "network.#", "1"),
 				),
 			},
 		},

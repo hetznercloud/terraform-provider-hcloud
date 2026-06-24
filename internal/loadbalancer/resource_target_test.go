@@ -13,6 +13,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/testmux"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
@@ -34,46 +35,48 @@ func TestAccLoadBalancerTargetResource_ServerTarget(t *testing.T) {
 		SSHKeys: []string{resSSHKey.TFID() + ".id"},
 	}
 	resServer.SetRName("lb-server-target")
+
+	resLoadBalancer := &loadbalancer.RData{
+		Name:        "target-test-lb",
+		Type:        teste2e.TestLoadBalancerType,
+		NetworkZone: "eu-central",
+	}
+	resLoadBalancer.SetRName(resLoadBalancer.Name)
+
+	res1 := &loadbalancer.RDataTarget{
+		Name:           "lb-test-target",
+		Type:           "server",
+		LoadBalancerID: resLoadBalancer.TFID() + ".id",
+		ServerID:       resServer.TFID() + ".id",
+	}
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_ssh_key", resSSHKey,
 					"testdata/r/hcloud_server", resServer,
-					"testdata/r/hcloud_load_balancer", &loadbalancer.RData{
-						Name:        "target-test-lb",
-						Type:        teste2e.TestLoadBalancerType,
-						NetworkZone: "eu-central",
-					},
-					"testdata/r/hcloud_load_balancer_target", &loadbalancer.RDataTarget{
-						Name:           "lb-test-target",
-						Type:           "server",
-						LoadBalancerID: "hcloud_load_balancer.target-test-lb.id",
-						ServerID:       resServer.TFID() + ".id",
-					},
+					"testdata/r/hcloud_load_balancer", resLoadBalancer,
+					"testdata/r/hcloud_load_balancer_target", res1,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(
-						loadbalancer.ResourceType+".target-test-lb", loadbalancer.ByID(t, &lb)),
+					testsupport.CheckResourceExists(resLoadBalancer.TFID(), loadbalancer.ByID(t, &lb)),
 					testsupport.CheckResourceExists(resServer.TFID(), server.ByID(t, &srv)),
-					resource.TestCheckResourceAttr(
-						loadbalancer.TargetResourceType+".lb-test-target", "type", "server"),
-					testsupport.CheckResourceAttrFunc(
-						loadbalancer.TargetResourceType+".lb-test-target", "load_balancer_id", func() string {
-							return util.FormatID(lb.ID)
-						}),
-					testsupport.CheckResourceAttrFunc(
-						loadbalancer.TargetResourceType+".lb-test-target", "server_id", func() string {
-							return util.FormatID(srv.ID)
-						}),
+					resource.TestCheckResourceAttr(res1.TFID(), "type", "server"),
+					testsupport.CheckResourceAttrFunc(res1.TFID(), "load_balancer_id", func() string {
+						return util.FormatID(lb.ID)
+					}),
+					testsupport.CheckResourceAttrFunc(res1.TFID(), "server_id", func() string {
+						return util.FormatID(srv.ID)
+					}),
 					testsupport.LiftTCF(hasServerTarget(&lb, &srv)),
 				),
 			},
 			{
-				ResourceName:      loadbalancer.TargetResourceType + ".lb-test-target",
+				ResourceName:      res1.TFID(),
 				ImportState:       true,
 				ImportStateIdFunc: loadBalancerTargetImportStateIDFunc("target-test-lb", hcloud.LoadBalancerTargetTypeServer, "lb-server-target"),
 				ImportStateVerify: true,
@@ -90,77 +93,91 @@ func TestAccLoadBalancerTargetResource_ServerTarget_UsePrivateIP(t *testing.T) {
 
 	tmplMan := testtemplate.Manager{}
 
-	resSSHKey := sshkey.NewRData(t, "lb-server-target-pi")
+	resSSHKey := sshkey.NewRData(t, "test")
 	resServer := &server.RData{
 		Name:    "lb-server-target-pi",
 		Type:    teste2e.TestServerType,
 		Image:   teste2e.TestImage,
 		SSHKeys: []string{resSSHKey.TFID() + ".id"},
 	}
-	resServer.SetRName("lb-server-target")
+	resServer.SetRName("test")
 
 	resNetwork := &network.RData{
 		Name:    "lb-target-test-network",
 		IPRange: "10.0.0.0/16",
 	}
-	resNetwork.SetRName("lb-target-test-network")
+	resNetwork.SetRName("test")
+
+	resNetworkSubnet := &network.RDataSubnet{
+		NetworkID:   resNetwork.TFID() + ".id",
+		Type:        "cloud",
+		NetworkZone: "eu-central",
+		IPRange:     "10.0.1.0/24",
+	}
+	resNetworkSubnet.SetRName("test")
+
+	resServerNetwork := &server.RDataNetwork{
+		Name:      "lb-server-network",
+		ServerID:  resServer.TFID() + ".id",
+		NetworkID: resNetwork.TFID() + ".id",
+	}
+	resServerNetwork.SetRName("test")
+
+	resLoadBalancer := &loadbalancer.RData{
+		Name:        "target-test-lb",
+		Type:        teste2e.TestLoadBalancerType,
+		NetworkZone: "eu-central",
+	}
+	resLoadBalancer.SetRName("test")
+
+	resLoadBalancerNetwork := &loadbalancer.RDataNetwork{
+		Name:                  "target-test-lb-network",
+		LoadBalancerID:        resLoadBalancer.TFID() + ".id",
+		NetworkID:             resNetwork.TFID() + ".id",
+		EnablePublicInterface: new(true),
+	}
+	resLoadBalancerNetwork.SetRName("test")
+
+	res1 := &loadbalancer.RDataTarget{
+		Name:           "target-test-lb",
+		Type:           "server",
+		LoadBalancerID: resLoadBalancer.TFID() + ".id",
+		ServerID:       resServer.TFID() + ".id",
+		UsePrivateIP:   true,
+		DependsOn: []string{
+			resServerNetwork.TFID(),
+			resLoadBalancerNetwork.TFID(),
+		},
+	}
+	res1.SetRName("target-test-lb")
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_network", resNetwork,
-					"testdata/r/hcloud_network_subnet", &network.RDataSubnet{
-						NetworkID:   "hcloud_network.lb-target-test-network.id",
-						Type:        "cloud",
-						NetworkZone: "eu-central",
-						IPRange:     "10.0.1.0/24",
-					},
+					"testdata/r/hcloud_network_subnet", resNetworkSubnet,
 					"testdata/r/hcloud_ssh_key", resSSHKey,
 					"testdata/r/hcloud_server", resServer,
-					"testdata/r/hcloud_server_network", &server.RDataNetwork{
-						Name:      "lb-server-network",
-						ServerID:  resServer.TFID() + ".id",
-						NetworkID: "hcloud_network.lb-target-test-network.id",
-					},
-					"testdata/r/hcloud_load_balancer", &loadbalancer.RData{
-						Name:        "target-test-lb",
-						Type:        teste2e.TestLoadBalancerType,
-						NetworkZone: "eu-central",
-					},
-					"testdata/r/hcloud_load_balancer_network", &loadbalancer.RDataNetwork{
-						Name:                  "target-test-lb-network",
-						LoadBalancerID:        "hcloud_load_balancer.target-test-lb.id",
-						NetworkID:             "hcloud_network.lb-target-test-network.id",
-						EnablePublicInterface: hcloud.Ptr(true),
-					},
-					"testdata/r/hcloud_load_balancer_target", &loadbalancer.RDataTarget{
-						Name:           "lb-test-target",
-						Type:           "server",
-						LoadBalancerID: "hcloud_load_balancer.target-test-lb.id",
-						ServerID:       resServer.TFID() + ".id",
-						UsePrivateIP:   true,
-						DependsOn: []string{
-							"hcloud_server_network.lb-server-network",
-							"hcloud_load_balancer_network.target-test-lb-network",
-						},
-					},
+					"testdata/r/hcloud_server_network", resServerNetwork,
+					"testdata/r/hcloud_load_balancer", resLoadBalancer,
+					"testdata/r/hcloud_load_balancer_network", resLoadBalancerNetwork,
+					"testdata/r/hcloud_load_balancer_target", res1,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(
-						loadbalancer.ResourceType+".target-test-lb", loadbalancer.ByID(t, &lb)),
+					testsupport.CheckResourceExists(resLoadBalancer.TFID(), loadbalancer.ByID(t, &lb)),
 					testsupport.CheckResourceExists(resServer.TFID(), server.ByID(t, &srv)),
-					resource.TestCheckResourceAttr(
-						loadbalancer.TargetResourceType+".lb-test-target", "use_private_ip", "true"),
+					resource.TestCheckResourceAttr(res1.TFID(), "use_private_ip", "true"),
 					testsupport.LiftTCF(hasServerTarget(&lb, &srv)),
 				),
 			},
 			{
-				ResourceName:      loadbalancer.TargetResourceType + ".lb-test-target",
+				ResourceName:      res1.TFID(),
 				ImportState:       true,
-				ImportStateIdFunc: loadBalancerTargetImportStateIDFunc("target-test-lb", hcloud.LoadBalancerTargetTypeServer, "lb-server-target"),
+				ImportStateIdFunc: loadBalancerTargetImportStateIDFunc(resLoadBalancer.RName(), hcloud.LoadBalancerTargetTypeServer, resServer.RName()),
 				ImportStateVerify: true,
 			},
 		},
@@ -174,7 +191,9 @@ func TestAccLoadBalancerTargetResource_LabelSelectorTarget(t *testing.T) {
 	)
 
 	tmplMan := testtemplate.Manager{}
+
 	selector := fmt.Sprintf("tf-test=tf-test-%d", tmplMan.RandInt)
+
 	resSSHKey := sshkey.NewRData(t, "lb-label-target")
 	resServer := &server.RData{
 		Name:  "lb-server-target",
@@ -186,42 +205,45 @@ func TestAccLoadBalancerTargetResource_LabelSelectorTarget(t *testing.T) {
 		SSHKeys: []string{resSSHKey.TFID() + ".id"},
 	}
 	resServer.SetRName("lb-server-target")
+
+	resLoadBalancer := &loadbalancer.RData{
+		Name:        "target-test-lb",
+		Type:        teste2e.TestLoadBalancerType,
+		NetworkZone: "eu-central",
+	}
+	resLoadBalancer.SetRName("test")
+
+	res1 := &loadbalancer.RDataTarget{
+		Name:           "lb-test-target",
+		Type:           "label_selector",
+		LoadBalancerID: resLoadBalancer.TFID() + ".id",
+		LabelSelector:  selector,
+	}
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_ssh_key", resSSHKey,
 					"testdata/r/hcloud_server", resServer,
-					"testdata/r/hcloud_load_balancer", &loadbalancer.RData{
-						Name:        "target-test-lb",
-						Type:        teste2e.TestLoadBalancerType,
-						NetworkZone: "eu-central",
-					},
-					"testdata/r/hcloud_load_balancer_target", &loadbalancer.RDataTarget{
-						Name:           "lb-test-target",
-						Type:           "label_selector",
-						LoadBalancerID: "hcloud_load_balancer.target-test-lb.id",
-						LabelSelector:  selector,
-					},
+					"testdata/r/hcloud_load_balancer", resLoadBalancer,
+					"testdata/r/hcloud_load_balancer_target", res1,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(
-						loadbalancer.ResourceType+".target-test-lb", loadbalancer.ByID(t, &lb)),
+					testsupport.CheckResourceExists(resLoadBalancer.TFID(), loadbalancer.ByID(t, &lb)),
 					testsupport.CheckResourceExists(resServer.TFID(), server.ByID(t, &srv)),
-					resource.TestCheckResourceAttr(
-						loadbalancer.TargetResourceType+".lb-test-target", "type", "label_selector"),
-					resource.TestCheckResourceAttr(
-						loadbalancer.TargetResourceType+".lb-test-target", "label_selector", selector),
+					resource.TestCheckResourceAttr(res1.TFID(), "type", "label_selector"),
+					resource.TestCheckResourceAttr(res1.TFID(), "label_selector", selector),
 					testsupport.LiftTCF(hasLabelSelectorTarget(&lb, selector)),
 				),
 			},
 			{
-				ResourceName:      loadbalancer.TargetResourceType + ".lb-test-target",
+				ResourceName:      res1.TFID(),
 				ImportState:       true,
-				ImportStateIdFunc: loadBalancerTargetImportStateIDFunc("target-test-lb", hcloud.LoadBalancerTargetTypeLabelSelector, selector),
+				ImportStateIdFunc: loadBalancerTargetImportStateIDFunc(resLoadBalancer.RName(), hcloud.LoadBalancerTargetTypeLabelSelector, selector),
 				ImportStateVerify: true,
 			},
 		},
@@ -235,7 +257,21 @@ func TestAccLoadBalancerTargetResource_LabelSelectorTarget_UsePrivateIP(t *testi
 	)
 	tmplMan := testtemplate.Manager{}
 
-	resSSHKey := sshkey.NewRData(t, "lb-label-target")
+	resNetwork := &network.RData{
+		Name:    "lb-target-test-network",
+		IPRange: "10.0.0.0/16",
+	}
+	resNetwork.SetRName("test")
+
+	resNetworkSubNet := &network.RDataSubnet{
+		NetworkID:   resNetwork.TFID() + ".id",
+		Type:        "cloud",
+		NetworkZone: "eu-central",
+		IPRange:     "10.0.1.0/24",
+	}
+	resNetworkSubNet.SetRName("test")
+
+	resSSHKey := sshkey.NewRData(t, "test")
 	resServer := &server.RData{
 		Name:  "lb-server-target",
 		Type:  teste2e.TestServerType,
@@ -245,83 +281,77 @@ func TestAccLoadBalancerTargetResource_LabelSelectorTarget_UsePrivateIP(t *testi
 		},
 		SSHKeys: []string{resSSHKey.TFID() + ".id"},
 	}
-	resServer.SetRName("lb-server-target")
+	resServer.SetRName("test")
 
-	resNetwork := &network.RData{
-		Name:    "lb-target-test-network",
-		IPRange: "10.0.0.0/16",
+	resServerNetwork := &server.RDataNetwork{
+		Name:      "lb-server-network",
+		ServerID:  resServer.TFID() + ".id",
+		NetworkID: resNetwork.TFID() + ".id",
 	}
-	resNetwork.SetRName("lb-target-test-network")
+	resServerNetwork.SetRName("test")
 
-	resSubNet := &network.RDataSubnet{
-		NetworkID:   "hcloud_network.lb-target-test-network.id",
-		Type:        "cloud",
+	resLoadBalancer := &loadbalancer.RData{
+		Name:        "target-test-lb",
+		Type:        teste2e.TestLoadBalancerType,
 		NetworkZone: "eu-central",
-		IPRange:     "10.0.1.0/24",
 	}
-	resSubNet.SetRName("lb-target-test-sub-network")
+	resLoadBalancer.SetRName("test")
+
+	resLoadBalancerNetwork := &loadbalancer.RDataNetwork{
+		Name:                  "target-test-lb-network",
+		LoadBalancerID:        resLoadBalancer.TFID() + ".id",
+		NetworkID:             resNetwork.TFID() + ".id",
+		EnablePublicInterface: new(true),
+		DependsOn: []string{
+			resNetworkSubNet.TFID(),
+		},
+	}
+	resLoadBalancerNetwork.SetRName("test")
 
 	selector := fmt.Sprintf("tf-test=tf-test-%d", tmplMan.RandInt)
+
+	res1 := &loadbalancer.RDataTarget{
+		Name:           "lb-test-target",
+		Type:           "label_selector",
+		LoadBalancerID: resLoadBalancer.TFID() + ".id",
+		LabelSelector:  selector,
+		UsePrivateIP:   true,
+		DependsOn: []string{
+			resServerNetwork.TFID(),
+			resLoadBalancerNetwork.TFID(),
+		},
+	}
+	res1.SetRName("test")
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_network", resNetwork,
-					"testdata/r/hcloud_network_subnet", resSubNet,
+					"testdata/r/hcloud_network_subnet", resNetworkSubNet,
 					"testdata/r/hcloud_ssh_key", resSSHKey,
 					"testdata/r/hcloud_server", resServer,
-					"testdata/r/hcloud_server_network", &server.RDataNetwork{
-						Name:      "lb-server-network",
-						ServerID:  resServer.TFID() + ".id",
-						NetworkID: "hcloud_network.lb-target-test-network.id",
-					},
-					"testdata/r/hcloud_load_balancer", &loadbalancer.RData{
-						Name:        "target-test-lb",
-						Type:        teste2e.TestLoadBalancerType,
-						NetworkZone: "eu-central",
-					},
-					"testdata/r/hcloud_load_balancer_network", &loadbalancer.RDataNetwork{
-						Name:                  "target-test-lb-network",
-						LoadBalancerID:        "hcloud_load_balancer.target-test-lb.id",
-						NetworkID:             "hcloud_network.lb-target-test-network.id",
-						EnablePublicInterface: hcloud.Ptr(true),
-						DependsOn: []string{
-							resSubNet.TFID(),
-						},
-					},
-					"testdata/r/hcloud_load_balancer_target", &loadbalancer.RDataTarget{
-						Name:           "lb-test-target",
-						Type:           "label_selector",
-						LoadBalancerID: "hcloud_load_balancer.target-test-lb.id",
-						LabelSelector:  selector,
-						UsePrivateIP:   true,
-						DependsOn: []string{
-							"hcloud_server_network.lb-server-network",
-							"hcloud_load_balancer_network.target-test-lb-network",
-						},
-					},
+					"testdata/r/hcloud_server_network", resServerNetwork,
+					"testdata/r/hcloud_load_balancer", resLoadBalancer,
+					"testdata/r/hcloud_load_balancer_network", resLoadBalancerNetwork,
+					"testdata/r/hcloud_load_balancer_target", res1,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(
-						loadbalancer.ResourceType+".target-test-lb", loadbalancer.ByID(t, &lb)),
-					testsupport.CheckResourceExists(
-						server.ResourceType+".lb-server-target", server.ByID(t, &srv)),
-					resource.TestCheckResourceAttr(
-						loadbalancer.TargetResourceType+".lb-test-target", "type", "label_selector"),
-					resource.TestCheckResourceAttr(
-						loadbalancer.TargetResourceType+".lb-test-target", "label_selector", selector),
-					resource.TestCheckResourceAttr(
-						loadbalancer.TargetResourceType+".lb-test-target", "use_private_ip", "true"),
+					testsupport.CheckResourceExists(resLoadBalancer.TFID(), loadbalancer.ByID(t, &lb)),
+					testsupport.CheckResourceExists(resServer.TFID(), server.ByID(t, &srv)),
+					resource.TestCheckResourceAttr(res1.TFID(), "type", "label_selector"),
+					resource.TestCheckResourceAttr(res1.TFID(), "label_selector", selector),
+					resource.TestCheckResourceAttr(res1.TFID(), "use_private_ip", "true"),
 					testsupport.LiftTCF(hasLabelSelectorTarget(&lb, selector)),
 				),
 			},
 			{
-				ResourceName:      loadbalancer.TargetResourceType + ".lb-test-target",
+				ResourceName:      res1.TFID(),
 				ImportState:       true,
-				ImportStateIdFunc: loadBalancerTargetImportStateIDFunc("target-test-lb", hcloud.LoadBalancerTargetTypeLabelSelector, selector),
+				ImportStateIdFunc: loadBalancerTargetImportStateIDFunc(resLoadBalancer.RName(), hcloud.LoadBalancerTargetTypeLabelSelector, selector),
 				ImportStateVerify: true,
 			},
 		},
@@ -336,40 +366,44 @@ func TestAccLoadBalancerTargetResource_IPTarget(t *testing.T) {
 	)
 
 	ip := "213.239.214.25"
+
+	resLoadBalancer := &loadbalancer.RData{
+		Name:        "target-test-lb",
+		Type:        teste2e.TestLoadBalancerType,
+		NetworkZone: "eu-central",
+	}
+	resLoadBalancer.SetRName("test")
+
+	res1 := &loadbalancer.RDataTarget{
+		Name:           "lb-test-target",
+		LoadBalancerID: resLoadBalancer.TFID() + ".id",
+		Type:           "ip",
+		IP:             ip,
+	}
+	res1.SetRName("test")
+
 	tmplMan := testtemplate.Manager{}
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: teste2e.ProtoV6ProviderFactories(),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
 		CheckDestroy:             testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, nil)),
 		Steps: []resource.TestStep{
 			{
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_load_balancer", &loadbalancer.RData{
-						Name:        "target-test-lb",
-						Type:        teste2e.TestLoadBalancerType,
-						NetworkZone: "eu-central",
-					},
-					"testdata/r/hcloud_load_balancer_target", &loadbalancer.RDataTarget{
-						Name:           "lb-test-target",
-						LoadBalancerID: "hcloud_load_balancer.target-test-lb.id",
-						Type:           "ip",
-						IP:             ip,
-					},
+					"testdata/r/hcloud_load_balancer", resLoadBalancer,
+					"testdata/r/hcloud_load_balancer_target", res1,
 				),
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(
-						loadbalancer.ResourceType+".target-test-lb", loadbalancer.ByID(t, &lb)),
-					resource.TestCheckResourceAttr(
-						loadbalancer.TargetResourceType+".lb-test-target", "type", "ip"),
-					resource.TestCheckResourceAttr(
-						loadbalancer.TargetResourceType+".lb-test-target", "ip", ip),
+					testsupport.CheckResourceExists(resLoadBalancer.TFID(), loadbalancer.ByID(t, &lb)),
+					resource.TestCheckResourceAttr(res1.TFID(), "type", "ip"),
+					resource.TestCheckResourceAttr(res1.TFID(), "ip", ip),
 					testsupport.LiftTCF(hasIPTarget(&lb, ip)),
 				),
 			},
 			{
-				ResourceName:      loadbalancer.TargetResourceType + ".lb-test-target",
+				ResourceName:      res1.TFID(),
 				ImportState:       true,
-				ImportStateIdFunc: loadBalancerTargetImportStateIDFunc("target-test-lb", hcloud.LoadBalancerTargetTypeIP, ip),
+				ImportStateIdFunc: loadBalancerTargetImportStateIDFunc(resLoadBalancer.RName(), hcloud.LoadBalancerTargetTypeIP, ip),
 				ImportStateVerify: true,
 			},
 		},

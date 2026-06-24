@@ -15,11 +15,9 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/certificate"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/firewall"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/floatingip"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/image"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancer"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/network"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/placementgroup"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/rdns"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/snapshot"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
@@ -90,7 +88,6 @@ func Provider() *schema.Provider {
 			network.ResourceType:              network.Resource(),
 			network.RouteResourceType:         network.RouteResource(),
 			network.SubnetResourceType:        network.SubnetResource(),
-			rdns.ResourceType:                 rdns.Resource(),
 			server.ResourceType:               server.Resource(),
 			snapshot.ResourceType:             snapshot.Resource(),
 			volume.AttachmentResourceType:     volume.AttachmentResource(),
@@ -104,8 +101,6 @@ func Provider() *schema.Provider {
 			firewall.DataSourceListType:       firewall.DataSourceList(),
 			floatingip.DataSourceType:         floatingip.DataSource(),
 			floatingip.DataSourceListType:     floatingip.DataSourceList(),
-			image.DataSourceType:              image.DataSource(),
-			image.DataSourceListType:          image.DataSourceList(),
 			loadbalancer.DataSourceType:       loadbalancer.DataSource(),
 			loadbalancer.DataSourceListType:   loadbalancer.DataSourceList(),
 			network.DataSourceType:            network.DataSource(),

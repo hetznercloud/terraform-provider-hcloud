@@ -6,4 +6,5 @@ data "hcloud_image" "{{ .RName }}" {
   {{ if .LabelSelector -}}    with_selector = "{{ .LabelSelector }}"{{ end }}
   {{ if .Architecture -}}    with_architecture = "{{ .Architecture }}"{{ end }}
   {{ if .IncludeDeprecated -}}    include_deprecated = {{ .IncludeDeprecated }}{{ end }}
+  {{ if ne .MostRecent nil -}}    most_recent = {{ .MostRecent }}{{ end }}
 }

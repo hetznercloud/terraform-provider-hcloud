@@ -1,5 +1,51 @@
 # Changelog
 
+## [v1.66.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.66.0)
+
+### Datacenter data sources are deprecated
+
+The `hcloud_datacenter` and `hcloud_datacenters` data sources are deprecated and will be removed after 1 Oct. 2026. After this date, requests to the datacenters API endpoints will return `HTTP 410 Gone`.
+
+Please use the `hcloud_location` and `hcloud_locations` data sources instead.
+
+See the [changelog](https://docs.hetzner.cloud/changelog#2026-06-02-datacenters-deprecated) for more details.
+
+### Features
+
+- **image**: warn when using a deprecated image (#1456)
+- deprecate `hcloud_datacenter(s)` data sources (#1463)
+
+### Bug Fixes
+
+- handle invalid input errors without details (#1453)
+
+## [v1.65.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.65.0)
+
+### Features
+
+- **primary-ip**: make `auto_delete` attribute optional (#1429)
+- **server**: remove `allow_deprecated_images` from `hcloud_server` (#1435)
+
+### Bug Fixes
+
+- **primary-ip**: do not update assignee on unknown assignee_type (#1440)
+
+## [v1.64.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.64.0)
+
+### Features
+
+- **load-balancer**: support `timeout_idle` http service attribute (#1398)
+- drop support for terraform v1.13 (#1418)
+- add support for terraform v1.15 (#1418)
+- drop support for opentofu v1.9 (#1420)
+- add support for opentofu v1.12 (#1420)
+
+### Bug Fixes
+
+- **rdns**: gracefully handle not found errors (#1419)
+- **server**: handle ipv6 when removing public net block (#1427)
+- **server**: allow both `network_id` and `subnet_id` to be defined (#1430)
+
 ## [v1.63.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.63.0)
 
 ### Features

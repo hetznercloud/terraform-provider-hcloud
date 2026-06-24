@@ -206,11 +206,11 @@ func (m *modelSnapshotPlan) ToAPI(_ context.Context) (hc *hcloud.StorageBoxSnaps
 	hc.Hour = int(m.Hour.ValueInt32())
 
 	if !m.DayOfWeek.IsNull() {
-		hc.DayOfWeek = hcloud.Ptr(time.Weekday(int(m.DayOfWeek.ValueInt32())))
+		hc.DayOfWeek = new(time.Weekday(int(m.DayOfWeek.ValueInt32())))
 	}
 
 	if !m.DayOfMonth.IsNull() {
-		hc.DayOfMonth = hcloud.Ptr(int(m.DayOfMonth.ValueInt32()))
+		hc.DayOfMonth = new(int(m.DayOfMonth.ValueInt32()))
 	}
 
 	return

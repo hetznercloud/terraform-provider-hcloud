@@ -55,6 +55,28 @@ Status code: 400
 			},
 		},
 		{
+			name: "hcloud invalid input error without details",
+			errRaw: map[string]any{
+				"error": map[string]any{
+					"code":    "invalid_input",
+					"message": "something is fishy",
+					"details": nil,
+				},
+			},
+			errStatusCode: http.StatusBadRequest,
+			diagnostics: []diag.Diagnostic{
+				diag.NewErrorDiagnostic(
+					"Invalid field in API request",
+					`An invalid field was encountered during an API request. The field might not map 1:1 to your terraform resource.
+
+something is fishy (invalid_input)
+
+Error code: invalid_input
+Status code: 400
+`),
+			},
+		},
+		{
 			name: "hcloud error",
 			err: hcloud.Error{
 				Code:    hcloud.ErrorCodeRateLimitExceeded,
@@ -151,6 +173,26 @@ func TestNotFoundDiagnostics(t *testing.T) {
 			name:     "ssh key with name",
 			actual:   NotFoundDiagnostic("ssh_key", "name", "my-ssh-key"),
 			expected: diag.NewErrorDiagnostic("Resource not found", "Resource (ssh_key) was not found: name=my-ssh-key"),
+		},
+		{
+			name:     "ssh key with 1 arg",
+			actual:   NotFoundDiagnostic("ssh_key", "arg1"),
+			expected: diag.NewErrorDiagnostic("Resource not found", "Resource (ssh_key) was not found: arg1"),
+		},
+		{
+			name:     "ssh key with 2 args",
+			actual:   NotFoundDiagnostic("ssh_key", "arg1", "arg2"),
+			expected: diag.NewErrorDiagnostic("Resource not found", "Resource (ssh_key) was not found: arg1=arg2"),
+		},
+		{
+			name:     "ssh key with 3 args",
+			actual:   NotFoundDiagnostic("ssh_key", "arg1", "arg2", "arg3"),
+			expected: diag.NewErrorDiagnostic("Resource not found", "Resource (ssh_key) was not found: arg1 arg2=arg3"),
+		},
+		{
+			name:     "ssh key with 4 args",
+			actual:   NotFoundDiagnostic("ssh_key", "arg1", "arg2", "arg3", "arg4"),
+			expected: diag.NewErrorDiagnostic("Resource not found", "Resource (ssh_key) was not found: arg1=arg2 arg3=arg4"),
 		},
 	} {
 		t.Run(testCase.name, func(t *testing.T) {
