@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud/exp/kit/sliceutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 )
 
@@ -130,19 +131,19 @@ func (m *serviceModelHTTP) tfType() attr.Type {
 var _ util.ModelFromAPI[*hcloud.LoadBalancerServiceHTTP] = &serviceModelHTTP{}
 var _ util.ModelToTerraform[types.Object] = &serviceModelHTTP{}
 
-func (m *serviceModelHTTP) FromAPI(_ context.Context, hc *hcloud.LoadBalancerServiceHTTP) diag.Diagnostics {
+func (m *serviceModelHTTP) FromAPI(ctx context.Context, hc *hcloud.LoadBalancerServiceHTTP) diag.Diagnostics {
 	var diags, newDiags diag.Diagnostics
-
-	var httpCertIDs []attr.Value
-	for _, cert := range hc.Certificates {
-		httpCertIDs = append(httpCertIDs, types.Int64Value(cert.ID))
-	}
 
 	m.StickySessions = types.BoolValue(hc.StickySessions)
 	m.CookieName = types.StringValue(hc.CookieName)
 	m.CookieLifetime = types.Int32Value(int32(hc.CookieLifetime.Seconds()))
-	m.CertificateIDs, newDiags = types.ListValue(types.Int64Type, httpCertIDs)
+
+	m.CertificateIDs, newDiags = types.ListValueFrom(ctx, types.Int64Type, sliceutil.Transform(
+		hc.Certificates,
+		func(o *hcloud.Certificate) int64 { return o.ID },
+	))
 	diags = append(diags, newDiags...)
+
 	m.RedirectHTTP = types.BoolValue(hc.RedirectHTTP)
 	m.TimeoutIdle = types.Int32Value(int32(hc.TimeoutIdle.Seconds()))
 
@@ -229,19 +230,14 @@ func (m *serviceModelHealthCheckHTTP) tfType() attr.Type {
 var _ util.ModelFromAPI[*hcloud.LoadBalancerServiceHealthCheckHTTP] = &serviceModelHealthCheckHTTP{}
 var _ util.ModelToTerraform[types.Object] = &serviceModelHealthCheckHTTP{}
 
-func (m *serviceModelHealthCheckHTTP) FromAPI(_ context.Context, hc *hcloud.LoadBalancerServiceHealthCheckHTTP) diag.Diagnostics {
+func (m *serviceModelHealthCheckHTTP) FromAPI(ctx context.Context, hc *hcloud.LoadBalancerServiceHealthCheckHTTP) diag.Diagnostics {
 	var diags, newDiags diag.Diagnostics
-
-	var statusCodes []attr.Value
-	for _, code := range hc.StatusCodes {
-		statusCodes = append(statusCodes, types.StringValue(code))
-	}
 
 	m.Domain = types.StringValue(hc.Domain)
 	m.Path = types.StringValue(hc.Path)
 	m.Response = types.StringValue(hc.Response)
 	m.TLS = types.BoolValue(hc.TLS)
-	m.StatusCodes, newDiags = types.ListValue(types.StringType, statusCodes)
+	m.StatusCodes, newDiags = types.ListValueFrom(ctx, types.StringType, hc.StatusCodes)
 	diags = append(diags, newDiags...)
 
 	return diags
