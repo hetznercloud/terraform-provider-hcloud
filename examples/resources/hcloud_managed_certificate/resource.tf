@@ -1,9 +1,13 @@
-resource "hcloud_managed_certificate" "managed_cert" {
-  name         = "managed_cert"
-  domain_names = ["*.example.com", "example.com"]
+resource "hcloud_managed_certificate" "main" {
+  lifecycle {
+    # Important: prevents downtime during replacement, and ensures dependencies first
+    # stop using the certificate before it is deleted.
+    create_before_destroy = true
+  }
+
+  name         = "example"
+  domain_names = ["example.com", "*.example.com"]
   labels = {
-    label_1 = "value_1"
-    label_2 = "value_2"
-    # ...
+    key = "value"
   }
 }

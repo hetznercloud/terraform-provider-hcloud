@@ -1,5 +1,11 @@
-resource "hcloud_uploaded_certificate" "sample_certificate" {
-  name = "test-certificate-%d"
+resource "hcloud_uploaded_certificate" "main" {
+  lifecycle {
+    # Important: prevents downtime during replacement, and ensures dependencies first
+    # stop using the certificate before it is deleted.
+    create_before_destroy = true
+  }
+
+  name = "example"
 
   private_key = <<-EOT
     -----BEGIN RSA PRIVATE KEY-----
@@ -18,8 +24,6 @@ resource "hcloud_uploaded_certificate" "sample_certificate" {
     EOT
 
   labels = {
-    label_1 = "value_1"
-    label_2 = "value_2"
-    # ...
+    key = "value"
   }
 }
