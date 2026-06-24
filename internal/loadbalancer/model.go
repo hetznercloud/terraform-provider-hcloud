@@ -42,8 +42,8 @@ func populateNetworkResourceData(
 }
 
 type serviceModel struct {
-	ID              types.String `tfsdk:"id"`
 	LoadBalancerID  types.Int64  `tfsdk:"load_balancer_id"`
+	ID              types.String `tfsdk:"id"`
 	Protocol        types.String `tfsdk:"protocol"`
 	ListenPort      types.Int32  `tfsdk:"listen_port"`
 	DestinationPort types.Int32  `tfsdk:"destination_port"`
@@ -54,8 +54,8 @@ type serviceModel struct {
 
 func (m *serviceModel) tfAttributesTypes() map[string]attr.Type {
 	return map[string]attr.Type{
-		"id":               types.StringType,
 		"load_balancer_id": types.Int64Type,
+		"id":               types.StringType,
 		"protocol":         types.StringType,
 		"listen_port":      types.Int32Type,
 		"destination_port": types.Int32Type,
