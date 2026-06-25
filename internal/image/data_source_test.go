@@ -10,12 +10,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/stretchr/testify/require"
 
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/hcloud-go/v2/hcloud/exp/kit/randutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/image"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/snapshot"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testmux"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 )
@@ -118,6 +120,8 @@ func TestAccImageDataSource_WithFilters(t *testing.T) {
 func TestAccImageDataSource_Snapshot(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
+	var hcImage hcloud.Image
+
 	srvs := server.NewBlueprint(t)
 
 	snapshotRes := &snapshot.RData{
@@ -147,7 +151,11 @@ func TestAccImageDataSource_Snapshot(t *testing.T) {
 					"testdata/r/hcloud_snapshot", snapshotRes,
 					"testdata/d/hcloud_image", byLabel,
 				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(snapshotRes.TFID(), snapshot.ByID(t, &hcImage)),
+				),
 				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(byLabel.TFID(), tfjsonpath.New("id"), testsupport.Int64ExactFromFunc(func() int64 { return hcImage.ID })),
 					statecheck.ExpectKnownValue(byLabel.TFID(), tfjsonpath.New("name"), knownvalue.StringExact("")),
 					statecheck.ExpectKnownValue(byLabel.TFID(), tfjsonpath.New("description"), knownvalue.StringExact(snapshotRes.Description)),
 					statecheck.ExpectKnownValue(byLabel.TFID(), tfjsonpath.New("labels"), knownvalue.MapExact(map[string]knownvalue.Check{"name": knownvalue.StringExact(snapshotRes.Labels["name"])})),
