@@ -164,8 +164,8 @@ func TestAccServerResource_ImageID(t *testing.T) {
 	resSSHKey := sshkey.NewRData(t, "server-image-id")
 
 	resImage := &image.DData{
-		ImageName:    teste2e.TestImage,
-		Architecture: hcloud.ArchitectureX86,
+		Name:             teste2e.TestImage,
+		WithArchitecture: hcloud.ArchitectureX86,
 	}
 	resImage.SetRName("server-image-id")
 

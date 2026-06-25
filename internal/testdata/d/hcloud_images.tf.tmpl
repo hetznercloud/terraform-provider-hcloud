@@ -1,8 +1,12 @@
 {{- /* vim: set ft=terraform: */ -}}
 
 data "hcloud_images" "{{ .RName }}" {
-  {{ if .LabelSelector -}}      with_selector = "{{ .LabelSelector }}"{{ end }}
-  {{ if .Architecture -}}       with_architecture = ["{{ .Architecture }}"]{{ end }}
-  {{ if .Status -}}             with_status = ["{{ .Status }}"]{{ end }}
+  {{ if .WithSelector -}}       with_selector = "{{ .WithSelector }}"{{ end }}
+  {{ if .WithArchitecture -}}   with_architecture = ["{{ .WithArchitecture }}"]{{ end }}
+  {{ if .WithStatus -}}         with_status = ["{{ .WithStatus }}"]{{ end }}
   {{ if .IncludeDeprecated -}}  include_deprecated = {{ .IncludeDeprecated }}{{ end }}
+
+{{- if .Raw }}
+{{ .Raw | indent 2 }}
+{{- end }}
 }
