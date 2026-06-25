@@ -2,6 +2,7 @@ package image_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -162,6 +163,54 @@ func TestAccImageDataSource_Snapshot(t *testing.T) {
 					statecheck.ExpectKnownValue(byLabel.TFID(), tfjsonpath.New("type"), knownvalue.StringExact("snapshot")),
 					statecheck.ExpectKnownValue(byLabel.TFID(), tfjsonpath.New("architecture"), knownvalue.StringExact("x86")),
 				},
+			},
+		},
+	})
+}
+
+func TestAccImageDataSource_NotFound(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
+	byID := &image.DData{
+		ID: "12345",
+	}
+	byID.SetRName("by_id")
+
+	byName := &image.DData{
+		Name: randutil.GenerateID(),
+	}
+	byName.SetRName("by_name")
+
+	byLabel := &image.DData{
+		WithSelector: fmt.Sprintf("name=%s", randutil.GenerateID()),
+		MostRecent:   new(true),
+	}
+	byLabel.SetRName("by_label")
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t,
+					"testdata/d/hcloud_image", byID,
+				),
+				ExpectError: regexp.MustCompile(`Resource \(image\) was not found: id=12345`),
+			},
+			{
+				Config: tmplMan.Render(t,
+					"testdata/d/hcloud_image", byName,
+				),
+				ExpectError: regexp.MustCompile(`Resource \(image\) was not found using name: [0-9a-f]{8}`),
+			},
+			{
+				Config: tmplMan.Render(t,
+					"testdata/d/hcloud_image", byLabel,
+				),
+				ExpectError: regexp.MustCompile(`Resource \(image\) was not found using label selector: name=[0-9a-f]{8}
+
+Query parameters: architecture=x86 label_selector=name=[0-9a-f]{8}
+sort=created:desc`),
 			},
 		},
 	})
