@@ -45,6 +45,7 @@ var resourceDataAttrTypes = map[string]attr.Type{
 	"available_server_type_ids": types.ListType{ElemType: types.Int64Type},
 }
 
+//nolint:staticcheck
 func newResourceData(ctx context.Context, in *hcloud.Datacenter) (resourceData, diag.Diagnostics) {
 	var data resourceData
 	var diags diag.Diagnostics
@@ -196,11 +197,13 @@ func (d *dataSource) Read(ctx context.Context, req datasource.ReadRequest, resp 
 		return
 	}
 
+	//nolint:staticcheck
 	var result *hcloud.Datacenter
 	var err error
 
 	switch {
 	case !data.ID.IsNull():
+		//nolint:staticcheck
 		result, _, err = d.client.Datacenter.GetByID(ctx, data.ID.ValueInt64())
 		if err != nil {
 			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
@@ -211,6 +214,7 @@ func (d *dataSource) Read(ctx context.Context, req datasource.ReadRequest, resp 
 			return
 		}
 	case !data.Name.IsNull():
+		//nolint:staticcheck
 		result, _, err = d.client.Datacenter.GetByName(ctx, data.Name.ValueString())
 		if err != nil {
 			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
@@ -320,6 +324,7 @@ type resourceDataList struct {
 	Datacenters   types.List   `tfsdk:"datacenters"`
 }
 
+//nolint:staticcheck
 func newResourceDataList(ctx context.Context, in []*hcloud.Datacenter) (resourceDataList, diag.Diagnostics) {
 	var data resourceDataList
 	var diags diag.Diagnostics
@@ -366,9 +371,11 @@ func (d *dataSourceList) Read(ctx context.Context, req datasource.ReadRequest, r
 		return
 	}
 
+	//nolint:staticcheck
 	var result []*hcloud.Datacenter
 	var err error
 
+	//nolint:staticcheck
 	result, err = d.client.Datacenter.All(ctx)
 	if err != nil {
 		resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)

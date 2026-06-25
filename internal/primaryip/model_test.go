@@ -93,7 +93,7 @@ func TestModel(t *testing.T) {
 			Type:         hcloud.PrimaryIPTypeIPv4,
 			IP:           net.ParseIP("131.232.99.42"),
 			Network:      nil,
-			Datacenter:   &hcloud.Datacenter{Name: "fsn1-dc14"},
+			Datacenter:   &hcloud.Datacenter{Name: "fsn1-dc14"}, //nolint:staticcheck
 			Location:     &hcloud.Location{Name: "fsn1"},
 			AssigneeID:   0,
 			AssigneeType: "server",
