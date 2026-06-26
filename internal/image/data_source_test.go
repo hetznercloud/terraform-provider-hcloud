@@ -1,6 +1,8 @@
 package image_test
 
 import (
+	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -9,9 +11,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/stretchr/testify/require"
 
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud/exp/kit/randutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/image"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/snapshot"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testmux"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 )
@@ -23,11 +30,11 @@ func TestAccImageDataSource(t *testing.T) {
 	require.NoError(t, err)
 
 	byName := &image.DData{
-		ImageName: teste2e.TestImage,
+		Name: teste2e.TestImage,
 	}
 	byName.SetRName("by_name")
 	byID := &image.DData{
-		ImageID: teste2e.TestImageID,
+		ID: teste2e.TestImageID,
 	}
 	byID.SetRName("by_id")
 
@@ -74,15 +81,15 @@ func TestAccImageDataSource_WithFilters(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	byName := &image.DData{
-		ImageName:         teste2e.TestImage,
-		Architecture:      "arm",
+		Name:              teste2e.TestImage,
+		WithArchitecture:  "arm",
 		IncludeDeprecated: true,
 	}
 	byName.SetRName("by_name")
 
 	byLabel := &image.DData{
-		LabelSelector:     "!key",
-		Architecture:      "arm",
+		WithSelector:      "!key",
+		WithArchitecture:  "arm",
 		IncludeDeprecated: true,
 		MostRecent:        new(true),
 	}
@@ -106,6 +113,104 @@ func TestAccImageDataSource_WithFilters(t *testing.T) {
 					statecheck.ExpectKnownValue(byLabel.TFID(), tfjsonpath.New("type"), knownvalue.StringExact("system")),
 					statecheck.ExpectKnownValue(byLabel.TFID(), tfjsonpath.New("architecture"), knownvalue.StringExact("arm")),
 				},
+			},
+		},
+	})
+}
+
+func TestAccImageDataSource_Snapshot(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
+	var hcImage hcloud.Image
+
+	srvs := server.NewBlueprint(t)
+
+	snapshotRes := &snapshot.RData{
+		ServerID:    srvs.ServerA.TFID() + ".id",
+		Description: srvs.ServerA.Name,
+		Labels: map[string]string{
+			"name": randutil.GenerateID(),
+		},
+	}
+	snapshotRes.SetRName("snapshot")
+
+	byLabel := &image.DData{
+		WithSelector: fmt.Sprintf("name=%s", snapshotRes.Labels["name"]),
+		MostRecent:   new(true),
+
+		Raw: fmt.Sprintf("depends_on = [%s]", snapshotRes.TFID()),
+	}
+	byLabel.SetRName("by_label")
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_server", srvs.ServerA,
+					"testdata/r/hcloud_snapshot", snapshotRes,
+					"testdata/d/hcloud_image", byLabel,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(snapshotRes.TFID(), snapshot.ByID(t, &hcImage)),
+				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(byLabel.TFID(), tfjsonpath.New("id"), testsupport.Int64ExactFromFunc(func() int64 { return hcImage.ID })),
+					statecheck.ExpectKnownValue(byLabel.TFID(), tfjsonpath.New("name"), knownvalue.StringExact("")),
+					statecheck.ExpectKnownValue(byLabel.TFID(), tfjsonpath.New("description"), knownvalue.StringExact(snapshotRes.Description)),
+					statecheck.ExpectKnownValue(byLabel.TFID(), tfjsonpath.New("labels"), knownvalue.MapExact(map[string]knownvalue.Check{"name": knownvalue.StringExact(snapshotRes.Labels["name"])})),
+					statecheck.ExpectKnownValue(byLabel.TFID(), tfjsonpath.New("type"), knownvalue.StringExact("snapshot")),
+					statecheck.ExpectKnownValue(byLabel.TFID(), tfjsonpath.New("architecture"), knownvalue.StringExact("x86")),
+				},
+			},
+		},
+	})
+}
+
+func TestAccImageDataSource_NotFound(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
+	byID := &image.DData{
+		ID: "12345",
+	}
+	byID.SetRName("by_id")
+
+	byName := &image.DData{
+		Name: randutil.GenerateID(),
+	}
+	byName.SetRName("by_name")
+
+	byLabel := &image.DData{
+		WithSelector: fmt.Sprintf("name=%s", randutil.GenerateID()),
+		MostRecent:   new(true),
+	}
+	byLabel.SetRName("by_label")
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t,
+					"testdata/d/hcloud_image", byID,
+				),
+				ExpectError: regexp.MustCompile(`Resource \(image\) was not found: id=12345`),
+			},
+			{
+				Config: tmplMan.Render(t,
+					"testdata/d/hcloud_image", byName,
+				),
+				ExpectError: regexp.MustCompile(`Resource \(image\) was not found using name: [0-9a-f]{8}`),
+			},
+			{
+				Config: tmplMan.Render(t,
+					"testdata/d/hcloud_image", byLabel,
+				),
+				ExpectError: regexp.MustCompile(`Resource \(image\) was not found using label selector: name=[0-9a-f]{8}
+
+Query parameters: architecture=x86 label_selector=name=[0-9a-f]{8}
+sort=created:desc`),
 			},
 		},
 	})

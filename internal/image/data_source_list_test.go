@@ -22,8 +22,8 @@ func TestAccImageDataSourceList(t *testing.T) {
 	all.SetRName("all")
 
 	byArchitecture := &image.DDataList{
-		Architecture: "arm",
-		Status:       hcloud.ImageStatusAvailable,
+		WithArchitecture: "arm",
+		WithStatus:       hcloud.ImageStatusAvailable,
 	}
 	byArchitecture.SetRName("architecture")
 

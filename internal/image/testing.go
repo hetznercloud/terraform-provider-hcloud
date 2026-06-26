@@ -12,12 +12,14 @@ import (
 type DData struct {
 	testtemplate.DataCommon
 
-	ImageID           string
-	ImageName         string
-	LabelSelector     string
-	Architecture      hcloud.Architecture
+	ID                string
+	Name              string
+	WithSelector      string
+	WithArchitecture  hcloud.Architecture
 	IncludeDeprecated bool
 	MostRecent        *bool
+
+	Raw string
 }
 
 // TFID returns the data source identifier.
@@ -30,10 +32,12 @@ func (d *DData) TFID() string {
 type DDataList struct {
 	testtemplate.DataCommon
 
-	LabelSelector     string
-	Architecture      hcloud.Architecture
-	Status            hcloud.ImageStatus
+	WithSelector      string
+	WithArchitecture  hcloud.Architecture
+	WithStatus        hcloud.ImageStatus
 	IncludeDeprecated bool
+
+	Raw string
 }
 
 // TFID returns the data source identifier.
