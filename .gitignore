@@ -17,3 +17,4 @@
 !renovate.json
 
 .env*
+.terraform.lock.hcl
