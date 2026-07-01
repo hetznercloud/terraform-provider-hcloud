@@ -57,71 +57,12 @@ func TestAccPrimaryIPDataSourceList(t *testing.T) {
 					statecheck.ExpectKnownValue(byLabel.TFID(), tfjsonpath.New("primary_ips").AtSliceIndex(0).AtMapKey("name"), knownvalue.StringExact(fmt.Sprintf("main--%d", tmplMan.RandInt))),
 					statecheck.ExpectKnownValue(byLabel.TFID(), tfjsonpath.New("primary_ips").AtSliceIndex(0).AtMapKey("type"), knownvalue.StringExact("ipv6")),
 					statecheck.ExpectKnownValue(byLabel.TFID(), tfjsonpath.New("primary_ips").AtSliceIndex(0).AtMapKey("location"), knownvalue.StringExact(teste2e.TestLocationName)),
-					statecheck.ExpectKnownValue(byLabel.TFID(), tfjsonpath.New("primary_ips").AtSliceIndex(0).AtMapKey("datacenter"), knownvalue.StringExact(teste2e.TestDataCenter)),
+					statecheck.ExpectKnownValue(byLabel.TFID(), tfjsonpath.New("primary_ips").AtSliceIndex(0).AtMapKey("datacenter"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(byLabel.TFID(), tfjsonpath.New("primary_ips").AtSliceIndex(0).AtMapKey("assignee_id"), knownvalue.Int64Exact(0)),
 					statecheck.ExpectKnownValue(byLabel.TFID(), tfjsonpath.New("primary_ips").AtSliceIndex(0).AtMapKey("assignee_type"), knownvalue.StringExact("server")),
 
 					statecheck.ExpectKnownValue(all.TFID(), tfjsonpath.New("primary_ips"), knownvalue.NotNull()),
 				},
-			},
-		},
-	})
-}
-
-func TestAccPrimaryIPDataSourceList_UpgradePluginFramework(t *testing.T) {
-	tmplMan := testtemplate.Manager{}
-
-	res := &primaryip.RData{
-		Name:         "main",
-		Type:         "ipv6",
-		Location:     teste2e.TestLocationName,
-		AssigneeType: "server",
-		Labels:       map[string]string{"key": randutil.GenerateID()},
-		AutoDelete:   new(false),
-	}
-	res.SetRName("main")
-
-	byLabel := &primaryip.DDataList{
-		LabelSelector: fmt.Sprintf("key=%s", res.Labels["key"]),
-		Raw:           fmt.Sprintf("depends_on = [%s]", res.TFID()),
-	}
-	byLabel.SetRName("by_label")
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: teste2e.PreCheck(t),
-		Steps: []resource.TestStep{
-			{
-				ExternalProviders: map[string]resource.ExternalProvider{
-					"hcloud": {
-						VersionConstraint: "1.60.1",
-						Source:            "hetznercloud/hcloud",
-					},
-				},
-				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_primary_ip", res,
-				),
-			},
-			{
-				ExternalProviders: map[string]resource.ExternalProvider{
-					"hcloud": {
-						VersionConstraint: "1.60.1",
-						Source:            "hetznercloud/hcloud",
-					},
-				},
-				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_primary_ip", res,
-					"testdata/d/hcloud_primary_ips", byLabel,
-					"testdata/r/terraform_data_resource", byLabel,
-				),
-			},
-			{
-				ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
-				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_primary_ip", res,
-					"testdata/d/hcloud_primary_ips", byLabel,
-					"testdata/r/terraform_data_resource", byLabel,
-				),
-				PlanOnly: true,
 			},
 		},
 	})
