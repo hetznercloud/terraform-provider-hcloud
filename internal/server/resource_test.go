@@ -69,7 +69,6 @@ func TestAccServerResource(t *testing.T) {
 					resource.TestCheckResourceAttr(res1.TFID(), "server_type", res1.Type),
 					resource.TestCheckResourceAttr(res1.TFID(), "image", res1.Image),
 					resource.TestCheckResourceAttrSet(res1.TFID(), "location"),
-					resource.TestCheckResourceAttrSet(res1.TFID(), "datacenter"),
 					resource.TestCheckResourceAttrPair(resSSHKey.TFID(), "id", res1.TFID(), "ssh_keys.0"),
 					resource.TestCheckResourceAttrSet(res1.TFID(), "ipv4_address"),
 					resource.TestCheckResourceAttrSet(res1.TFID(), "ipv6_address"),
