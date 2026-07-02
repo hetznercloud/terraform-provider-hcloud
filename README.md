@@ -88,6 +88,23 @@ $ go test -v -timeout=30m -parallel=8 ./internal/server
 # ...
 ```
 
+#### Running the acceptance tests from a fork (CI)
+
+The `Test` workflow's `e2e` job provisions a temporary Hetzner Cloud token via
+[`tps-action`](https://github.com/hetznercloud/tps-action) using GitHub OIDC, which is only
+available in this repository. To run the same acceptance tests from your own fork, configure
+one of the following (Settings → Secrets and variables → Actions):
+
+- **`HCLOUD_TOKEN`** secret — an API token from a (preferably throwaway) Hetzner Cloud
+  project. Simplest option; used directly.
+- or a **`TPS_URL`** variable pointing at your own
+  [`tps`](https://github.com/hetznercloud/tps-action) instance (keeps the OIDC / ephemeral-token
+  model), optionally with a **`TPS_TOKEN`** secret.
+
+Some tests need extra account setup: certificate tests use the **`CERT_DOMAIN`** variable (a
+domain available in your account), and server/network tests honour the **`TEST_DATACENTER`** /
+**`TEST_LOCATION`** variables.
+
 ### Running a local build
 
 Choose a terraform cli config file path:

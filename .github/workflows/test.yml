@@ -78,6 +78,16 @@ jobs:
           go-version-file: go.mod
 
       - uses: hetznercloud/tps-action@dc6d67c5768ca43b840429b6c7409cda61cf4092 # main
+        with:
+          # Resolve credentials so the acceptance tests can also run from forks, where the
+          # default OIDC identity is not trusted by the public TPS:
+          #   - if HCLOUD_TOKEN is set, use it directly (skips TPS)
+          #   - otherwise contact TPS at tps-url (override with the TPS_URL variable; defaults
+          #     to the public TPS), authenticating with TPS_TOKEN if set, else GitHub OIDC.
+          # Upstream leaves all three unset, so the current OIDC-against-default-TPS flow is unchanged.
+          token: ${{ secrets.HCLOUD_TOKEN }}
+          tps-url: ${{ vars.TPS_URL || 'https://tps.hc-integrations.de' }}
+          tps-token: ${{ secrets.TPS_TOKEN }}
 
       - if: matrix.tool == 'opentofu'
         run: |
@@ -88,8 +98,9 @@ jobs:
       - run: go test -v -timeout=30m -parallel=8 -coverprofile=coverage.txt -coverpkg=./... ./...
         env:
           # Domain must be available in the account running the tests. This domain is
-          # available in the account running the public integration tests.
-          CERT_DOMAIN: hc-integrations-test.de
+          # available in the account running the public integration tests; forks can point
+          # the certificate tests at a domain in their own account via the CERT_DOMAIN variable.
+          CERT_DOMAIN: ${{ vars.CERT_DOMAIN || 'hc-integrations-test.de' }}
 
           TF_ACC: 1
           TF_LOG: DEBUG
