@@ -43,6 +43,44 @@ resource "hcloud_load_balancer_service" "load_balancer_service" {
 }
 ```
 
+## TLS Termination and Passthrough
+
+The Hetzner Cloud API has no dedicated "TLS passthrough" option. Whether the Load
+Balancer terminates TLS or passes it through to the targets is determined by the
+service `protocol`:
+
+- **TLS termination** — set `protocol = "https"` and attach one or more
+  `certificates`. The Load Balancer terminates the TLS connection, so it can
+  inspect and modify HTTP traffic (sticky sessions, HTTP-to-HTTPS redirects, HTTP
+  health checks, etc.).
+
+  ```terraform
+  resource "hcloud_load_balancer_service" "tls_termination" {
+    load_balancer_id = hcloud_load_balancer.load_balancer.id
+    protocol         = "https"
+    listen_port      = 443
+    destination_port = 80
+
+    http {
+      certificates = [hcloud_managed_certificate.cert.id]
+    }
+  }
+  ```
+
+- **TLS passthrough** — set `protocol = "tcp"` and forward the TLS port (usually
+  `443`). The Load Balancer forwards the raw TCP stream to the targets, which
+  terminate TLS themselves. No `certificates` are configured on the Load Balancer,
+  and HTTP-level features are unavailable because the traffic stays encrypted.
+
+  ```terraform
+  resource "hcloud_load_balancer_service" "tls_passthrough" {
+    load_balancer_id = hcloud_load_balancer.load_balancer.id
+    protocol         = "tcp"
+    listen_port      = 443
+    destination_port = 443
+  }
+  ```
+
 ## Argument Reference
 
 - `load_balancer_id` - (Required, int) Id of the load balancer this service belongs to.
