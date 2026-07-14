@@ -43,7 +43,7 @@ resource "hcloud_load_balancer_service" "load_balancer_service" {
 }
 ```
 
-## TLS Termination and Passthrough
+### TLS Termination and Passthrough
 
 The Hetzner Cloud API has no dedicated "TLS passthrough" option. Whether the Load
 Balancer terminates TLS or passes it through to the targets is determined by the
