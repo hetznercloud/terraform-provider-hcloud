@@ -112,8 +112,10 @@ jobs:
           TF_LOG: DEBUG
           TF_LOG_PATH_MASK: test-%s.log
 
-          TEST_DATACENTER: ${{ vars.TEST_DATACENTER }}
-          TEST_LOCATION: ${{ vars.TEST_LOCATION }}
+          # Default to the upstream test location so a fork with these variables unset
+          # does not export an empty value (which would override the Go-level default).
+          TEST_DATACENTER: ${{ vars.TEST_DATACENTER || 'hel1-dc2' }}
+          TEST_LOCATION: ${{ vars.TEST_LOCATION || 'hel1' }}
 
       - uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7
         if: >

@@ -102,6 +102,10 @@ The run executes in your fork's context, so it uses your `HCLOUD_TOKEN` directly
 and skips TPS. Unit tests, linting, and the build still run automatically on every
 pull request.
 
+Instead of an `HCLOUD_TOKEN` secret, you can set a **`TPS_URL`** variable pointing at your
+own [`tps`](https://github.com/hetznercloud/tps-action) instance to keep the OIDC /
+ephemeral-token model, optionally with a **`TPS_TOKEN`** secret.
+
 You may save your acceptance tests environment variables in the `.env` file, for example:
 
 ```sh
@@ -115,23 +119,6 @@ $ go test -v -timeout=30m -parallel=8 ./internal/server
 === RUN   TestAccHcloudDataSourceServerTest
 # ...
 ```
-
-#### Running the acceptance tests from a fork (CI)
-
-The `Test` workflow's `e2e` job provisions a temporary Hetzner Cloud token via
-[`tps-action`](https://github.com/hetznercloud/tps-action) using GitHub OIDC, which is only
-available in this repository. To run the same acceptance tests from your own fork, configure
-one of the following (Settings → Secrets and variables → Actions):
-
-- **`HCLOUD_TOKEN`** secret — an API token from a (preferably throwaway) Hetzner Cloud
-  project. Simplest option; used directly.
-- or a **`TPS_URL`** variable pointing at your own
-  [`tps`](https://github.com/hetznercloud/tps-action) instance (keeps the OIDC / ephemeral-token
-  model), optionally with a **`TPS_TOKEN`** secret.
-
-Some tests need extra account setup: certificate tests use the **`CERT_DOMAIN`** variable (a
-domain available in your account), and server/network tests honour the **`TEST_DATACENTER`** /
-**`TEST_LOCATION`** variables.
 
 ### Running a local build
 
