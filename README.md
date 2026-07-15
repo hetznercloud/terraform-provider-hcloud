@@ -74,6 +74,34 @@ _Note:_ Acceptance tests create real resources, and often cost money to run.
 $ make testacc
 ```
 
+#### Running the acceptance tests from a fork
+
+In CI the acceptance tests obtain a temporary project from [TPS](https://github.com/hetznercloud/tps-action)
+via GitHub OIDC, which is only trusted for this repository. A pull request opened
+from a fork therefore cannot run them automatically.
+
+To validate your changes against your own Hetzner Cloud project, run the workflow
+in your fork:
+
+1. Create a **separate, throwaway** Hetzner Cloud project — the tests create and
+   destroy real resources.
+2. Configure your fork (once), using a token for that project and a domain you
+   control for the certificate tests:
+
+   ```sh
+   gh secret set HCLOUD_TOKEN --repo <your-fork> --body "<token>"
+   gh variable set CERT_DOMAIN --repo <your-fork> --body "<a-domain-you-own>"
+   # optional, to pin where resources are created:
+   gh variable set TEST_DATACENTER --repo <your-fork> --body "<datacenter>"
+   gh variable set TEST_LOCATION --repo <your-fork> --body "<location>"
+   ```
+
+3. From your fork, open **Actions → Test → Run workflow** and select your branch.
+
+The run executes in your fork's context, so it uses your `HCLOUD_TOKEN` directly
+and skips TPS. Unit tests, linting, and the build still run automatically on every
+pull request.
+
 You may save your acceptance tests environment variables in the `.env` file, for example:
 
 ```sh

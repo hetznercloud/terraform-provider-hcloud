@@ -5,6 +5,11 @@ on:
     branches: [main]
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
+  # Lets a contributor run the suite from their fork, in the fork's own context
+  # where fork secrets are available. Together with the HCLOUD_TOKEN fallback on
+  # tps-action, this is how a fork runs the acceptance tests against its own
+  # Hetzner Cloud project (see "Running acceptance tests from a fork" in the README).
+  workflow_dispatch:
 
 env:
   GOTOOLCHAIN: local
@@ -32,6 +37,7 @@ jobs:
   e2e:
     if: >
       github.event_name == 'push' ||
+      github.event_name == 'workflow_dispatch' ||
       github.event.pull_request.draft == false
     needs: [unit]
     runs-on: ubuntu-latest
