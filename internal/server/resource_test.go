@@ -130,6 +130,39 @@ func TestAccServerResource(t *testing.T) {
 	})
 }
 
+func TestAccServerResource_Drift(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
+	res := &server.RData{
+		Name:         "main",
+		Type:         teste2e.TestServerType,
+		Image:        teste2e.TestImage,
+		LocationName: teste2e.TestLocationName,
+	}
+	res.SetRName("main")
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckAPIResourceAllAbsent(server.ResourceType, server.GetAPIResource()),
+		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_server", res,
+					"testdata/r/any", `output "server" { value = hcloud_server.main }`,
+				),
+			},
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_server", res,
+					"testdata/r/any", `output "server" { value = hcloud_server.main }`,
+				),
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
 func TestAccServerResource_UnavailableServerType(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 

@@ -152,6 +152,7 @@ func Resource() *schema.Resource {
 			"labels": {
 				Type:     schema.TypeMap,
 				Optional: true,
+				Computed: true,
 				ValidateDiagFunc: func(i any, path cty.Path) diag.Diagnostics { // nolint:revive
 					if ok, err := hcloud.ValidateResourceLabels(i.(map[string]any)); !ok {
 						return diag.FromErr(err)
