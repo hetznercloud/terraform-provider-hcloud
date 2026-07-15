@@ -173,19 +173,22 @@ func (r *Resource) ValidateConfig(ctx context.Context, req resource.ValidateConf
 	// Raise errors/warnings for the assignee_type and assignee_id attributes. We cannot
 	// leverage [resourcevalidator.RequiredTogether] without introducing a breaking
 	// change, so we raise errors/warnings here.
-	if !data.AssigneeID.IsUnknown() && !data.AssigneeID.IsNull() && (data.AssigneeType.IsUnknown() || data.AssigneeType.IsNull()) {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("assignee_id"),
-			"Invalid Attribute Combination",
-			"These attributes must be configured together: [assignee_id,assignee_type]",
-		)
-	}
-	if !data.AssigneeType.IsUnknown() && !data.AssigneeType.IsNull() && (data.AssigneeID.IsUnknown() || data.AssigneeID.IsNull()) {
-		resp.Diagnostics.AddAttributeWarning(
-			path.Root("assignee_type"),
-			"Unused Attribute",
-			"This attribute is now optional and is only required together with the assignee_id attribute. Please remove it from your configuration.",
-		)
+	if !data.AssigneeID.IsUnknown() && !data.AssigneeType.IsUnknown() {
+		if !data.AssigneeID.IsNull() && data.AssigneeType.IsNull() {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("assignee_id"),
+				"Invalid Attribute Combination",
+				"These attributes must be configured together: [assignee_id,assignee_type]",
+			)
+		}
+
+		if !data.AssigneeType.IsNull() && data.AssigneeID.IsNull() {
+			resp.Diagnostics.AddAttributeWarning(
+				path.Root("assignee_type"),
+				"Unused Attribute",
+				"This attribute is now optional and is only required together with the assignee_id attribute. Please remove it from your configuration.",
+			)
+		}
 	}
 }
 
