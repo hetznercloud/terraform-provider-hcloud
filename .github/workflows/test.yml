@@ -68,7 +68,7 @@ jobs:
           terraform_wrapper: false
 
       - if: matrix.tool == 'opentofu'
-        uses: opentofu/setup-opentofu@847eaa4afeb791b06daa46e8eafa8b1b68d7cfb4 # v2
+        uses: opentofu/setup-opentofu@a1320f892987e89d278cc92dc5adc984fb93aca4 # v2
         with:
           tofu_version: ${{ matrix.version }}
           tofu_wrapper: false
@@ -77,7 +77,7 @@ jobs:
         with:
           go-version-file: go.mod
 
-      - uses: hetznercloud/tps-action@dc6d67c5768ca43b840429b6c7409cda61cf4092 # main
+      - uses: hetznercloud/tps-action@5bfcef547f41c44aa626d0474c0491a1dbda792a # main
 
       - if: matrix.tool == 'opentofu'
         run: |
