@@ -1,5 +1,14 @@
 # Changelog
 
+## [v1.66.1](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.66.1)
+
+[Compare to previous version](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.66.0...v1.66.1)
+
+### Bug Fixes
+
+- **primary_ip**: only validate assignee attributes when known (#1487) ([8fc1a69](https://github.com/hetznercloud/terraform-provider-hcloud/commit/8fc1a690182cdef2d8a7c44fefd97ead7099b189))
+- **server**: inconsistent image attribute when using data source (#1489) ([3fefa12](https://github.com/hetznercloud/terraform-provider-hcloud/commit/3fefa1241435a7760f5ee06663e3d6fa9b9ce7d4))
+
 ## [v1.66.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.66.0)
 
 ### Datacenter data sources are deprecated
