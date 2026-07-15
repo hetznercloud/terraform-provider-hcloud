@@ -165,6 +165,7 @@ func TestAccServerResource_ImageID(t *testing.T) {
 	resImage := &image.DData{
 		Name:             teste2e.TestImage,
 		WithArchitecture: hcloud.ArchitectureX86,
+		Raw:              `depends_on = [terraform_data.defer]`,
 	}
 	resImage.SetRName("server-image-id")
 
@@ -186,6 +187,7 @@ func TestAccServerResource_ImageID(t *testing.T) {
 				// only.
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_ssh_key", resSSHKey,
+					"testdata/r/any", `resource "terraform_data" "defer" { input = "test" }`,
 					"testdata/d/hcloud_image", resImage,
 					"testdata/r/hcloud_server", res,
 				),
