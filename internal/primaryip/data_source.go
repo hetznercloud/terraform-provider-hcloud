@@ -103,11 +103,22 @@ func (d *DataSource) Configure(_ context.Context, req datasource.ConfigureReques
 }
 
 func (d *DataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema.MarkdownDescription = `
+	resp.Schema.MarkdownDescription = util.MarkdownDescription(`
 Provides details about a Hetzner Cloud Primary IP.
 
 See the [Primary IPs API documentation](https://docs.hetzner.cloud/reference/cloud#tag/primary-ips) for more details.
-`
+
+## Deprecations
+
+### ''datacenter'' attribute
+
+The ''datacenter'' attribute is deprecated, use the ''location'' attribute instead.
+
+See our the [API changelog](https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters) for more details.
+
+-> Please upgrade to ''v1.58.0+'' of the provider to avoid issues once the Hetzner Cloud API no longer accepts
+and returns the ''datacenter'' attribute.
+`)
 
 	resp.Schema.Attributes = getCommonDataSourceSchema(false)
 	maps.Copy(resp.Schema.Attributes, map[string]schema.Attribute{
