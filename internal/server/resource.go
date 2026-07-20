@@ -1492,7 +1492,7 @@ func resourceServerCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ an
 
 func validateUniqueNetworkIDs(d *schema.ResourceDiff) error {
 	// Validate that at least one of network_id or subnet_id is specified.
-	if rawNetworks := d.GetRawConfig().GetAttr("network"); !rawNetworks.IsNull() {
+	if rawNetworks := d.GetRawConfig().GetAttr("network"); rawNetworks.IsWhollyKnown() && !rawNetworks.IsNull() {
 		for it := rawNetworks.ElementIterator(); it.Next(); {
 			_, networkVal := it.Element()
 
