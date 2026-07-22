@@ -77,7 +77,6 @@ func TestAccStorageBoxResource(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				// Create with only required attributes
-
 				Config: tmplMan.Render(t, "testdata/r/hcloud_storage_box", res),
 				Check: resource.ComposeTestCheckFunc(
 					testsupport.CheckAPIResourcePresent(res.TFID(), testsupport.CopyAPIResource(storageBox, storagebox.GetAPIResource())),
@@ -103,17 +102,13 @@ func TestAccStorageBoxResource(t *testing.T) {
 			},
 			{
 				// Import
-
-				Config:                  tmplMan.Render(t, "testdata/r/hcloud_storage_box", res),
-				ImportState:             true,
 				ResourceName:            res.TFID(),
-				ImportStateId:           res.Name,
+				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"password"}, // Not returned in the API
 			},
 			{
 				// Update with all optional attributes
-
 				Config: tmplMan.Render(t, "testdata/r/hcloud_storage_box", resOptional),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -187,11 +182,8 @@ func TestAccStorageBoxResource(t *testing.T) {
 			{
 				// Import resource with all fields set
 				// Regression test for https://github.com/hetznercloud/terraform-provider-hcloud/issues/1287
-
-				Config:                  tmplMan.Render(t, "testdata/r/hcloud_storage_box", resOptional),
+				ResourceName:            resWithSSHKey.TFID(),
 				ImportState:             true,
-				ResourceName:            resOptional.TFID(),
-				ImportStateId:           resOptional.Name,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"password", "ssh_keys"}, // Not returned in the API
 			},
