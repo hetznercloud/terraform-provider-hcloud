@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
@@ -72,6 +73,12 @@ func TestAccZoneRecordResource(t *testing.T) {
 					"testdata/r/hcloud_zone_record", resA1,
 					"testdata/r/hcloud_zone_record", resB1,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resA1.TFID(), plancheck.ResourceActionCreate),
+						plancheck.ExpectResourceAction(resB1.TFID(), plancheck.ResourceActionCreate),
+					},
+				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resA1.TFID(), tfjsonpath.New("name"), knownvalue.StringExact("www")),
 					statecheck.ExpectKnownValue(resA1.TFID(), tfjsonpath.New("type"), knownvalue.StringExact("A")),
@@ -90,6 +97,12 @@ func TestAccZoneRecordResource(t *testing.T) {
 					"testdata/r/hcloud_zone_record", resA2,
 					"testdata/r/hcloud_zone_record", resB2,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resA2.TFID(), plancheck.ResourceActionReplace),
+						plancheck.ExpectResourceAction(resB2.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resA2.TFID(), tfjsonpath.New("name"), knownvalue.StringExact("www")),
 					statecheck.ExpectKnownValue(resA2.TFID(), tfjsonpath.New("type"), knownvalue.StringExact("A")),
