@@ -190,6 +190,9 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 		resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
 	} else {
 		identity.FromModel(data)
+		// Workaround to support older versions of opentofu: ensures that identity is
+		// set after a read/update. The validation guards against unset identity.
+		resp.Diagnostics.Append(resp.Identity.Set(ctx, identity)...)
 	}
 
 	// Fetch API
@@ -241,6 +244,9 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 		resp.Diagnostics.Append(req.Identity.Get(ctx, &identity)...)
 	} else {
 		identity.FromModel(state)
+		// Workaround to support older versions of opentofu: ensures that identity is
+		// set after a read/update. The validation guards against unset identity.
+		resp.Diagnostics.Append(resp.Identity.Set(ctx, identity)...)
 	}
 
 	// Fetch API
