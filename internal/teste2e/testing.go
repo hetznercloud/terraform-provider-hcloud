@@ -39,6 +39,12 @@ var (
 
 	// TestLocationName is the default location where we execute our tests.
 	TestLocationName = getEnv("TEST_LOCATION", "hel1")
+
+	// TestCertificateDomain is the domain used to create managed certificates during
+	// tests. Tests using this value should skip if empty.
+	//
+	// The domain specified here must be available in the account running the tests.
+	TestCertificateDomain = getEnv("TEST_CERTIFICATE_DOMAIN", "")
 )
 
 // PreCheck checks if all conditions for an acceptance test are
