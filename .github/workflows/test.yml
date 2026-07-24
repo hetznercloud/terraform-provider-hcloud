@@ -5,6 +5,7 @@ on:
     branches: [main]
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
 
 env:
   GOTOOLCHAIN: local
@@ -32,6 +33,7 @@ jobs:
   e2e:
     if: >
       github.event_name == 'push' ||
+      github.event_name == 'workflow_dispatch' ||
       github.event.pull_request.draft == false
     needs: [unit]
     runs-on: ubuntu-latest
@@ -78,6 +80,8 @@ jobs:
           go-version-file: go.mod
 
       - uses: hetznercloud/tps-action@5bfcef547f41c44aa626d0474c0491a1dbda792a # main
+        with:
+          token: ${{ secrets.HCLOUD_TOKEN }}
 
       - if: matrix.tool == 'opentofu'
         run: |
@@ -86,17 +90,13 @@ jobs:
 
       - run: go test -v -timeout=30m -parallel=8 -coverprofile=coverage.txt -coverpkg=./... ./...
         env:
-          # Domain must be available in the account running the tests. This domain is
-          # available in the account running the public integration tests.
-          CERT_DOMAIN: hc-integrations-test.de
-
           TF_ACC: 1
           TF_ACC_PROVIDER_NAMESPACE: hetznercloud
           TF_LOG: DEBUG
           TF_LOG_PATH_MASK: test-%s.log
 
-          TEST_DATACENTER: ${{ vars.TEST_DATACENTER }}
-          TEST_LOCATION: ${{ vars.TEST_LOCATION }}
+          TEST_CERTIFICATE_DOMAIN: ${{ vars.TEST_CERTIFICATE_DOMAIN || 'hc-integrations-test.de' }}
+          TEST_LOCATION: ${{ vars.TEST_LOCATION || 'hel1' }}
 
       - uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7
         if: >
