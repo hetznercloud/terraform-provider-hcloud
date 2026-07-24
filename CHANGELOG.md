@@ -1,5 +1,52 @@
 # Changelog
 
+## [v1.67.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.67.0)
+
+[Compare to previous version](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.66.1...v1.67.0)
+
+### Removed datacenter from Server and Primary IP
+
+The deprecated `datacenter` attribute was marked for removal from the Server and Primary IP resources/data sources. You must use the `location` attribute instead. Since the property was already removed from the Hetzner Cloud API, we do not consider this a breaking change (see [changelog entry](https://docs.hetzner.cloud/changelog#2026-07-01-removing-datacenters)).
+
+> [!IMPORTANT]
+> **Action required:** Please update all configuration that uses the `datacenter` attribute to use the `location` attribute instead.
+
+**Before:**
+
+```tf
+resource "hcloud_server" "main" {
+  // ...
+  datacenter = "hel1-dc1"
+}
+
+resource "hcloud_primary_ip" "main" {
+  // ...
+  datacenter = "hel1-dc1"
+}
+```
+
+**After:**
+
+```tf
+resource "hcloud_server" "main" {
+  // ...
+  location = "hel1"
+}
+
+resource "hcloud_primary_ip" "main" {
+  // ...
+  location = "hel1"
+}
+```
+
+### Features
+
+- remove `datacenter` from primary ips and servers (#1501) ([59a48f5](https://github.com/hetznercloud/terraform-provider-hcloud/commit/59a48f599e1477c3f973f06450e9108655ce15d0))
+
+### Bug Fixes
+
+- **server**: do not validate unknown network config (#1493) ([f180913](https://github.com/hetznercloud/terraform-provider-hcloud/commit/f180913124d3df58a25d68e49df671c40194473f))
+
 ## [v1.66.1](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.66.1)
 
 [Compare to previous version](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.66.0...v1.66.1)
