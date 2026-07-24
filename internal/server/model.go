@@ -13,6 +13,8 @@ import (
 	"github.com/hetznercloud/hcloud-go/v2/hcloud/exp/kit/sliceutil"
 )
 
+const datacenterDeprecationMessage = "The datacenter attribute is marked for removal, you must use the location attribute instead. See https://docs.hetzner.cloud/changelog#2026-07-01-removing-datacenters."
+
 type networkResourceData struct {
 	ID         types.String      `tfsdk:"id"`
 	ServerID   types.Int64       `tfsdk:"server_id"`

@@ -42,9 +42,8 @@ func getCommonDataSourceSchema(readOnly bool) map[string]schema.Attribute {
 		"datacenter": schema.StringAttribute{
 			MarkdownDescription: "Name of the Datacenter of the Primary IP.",
 			Computed:            true,
-			DeprecationMessage:  "The datacenter attribute is deprecated and will be removed after 1 July 2026. Please use the location attribute instead. See https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters.",
+			DeprecationMessage:  datacenterDeprecationMessage,
 		},
-
 		"assignee_id": schema.Int64Attribute{
 			MarkdownDescription: "ID of the resource the Primary IP is assigned to.",
 			Computed:            true,
@@ -53,7 +52,6 @@ func getCommonDataSourceSchema(readOnly bool) map[string]schema.Attribute {
 			MarkdownDescription: "Type of the resource the Primary IP is assigned to.",
 			Computed:            true,
 		},
-
 		"auto_delete": schema.BoolAttribute{
 			MarkdownDescription: "Whether auto delete is enabled.",
 			Computed:            true,
@@ -112,12 +110,10 @@ See the [Primary IPs API documentation](https://docs.hetzner.cloud/reference/clo
 
 ### ''datacenter'' attribute
 
-The ''datacenter'' attribute is deprecated, use the ''location'' attribute instead.
+The ''datacenter'' attribute is marked for removal since ''v1.67.0'', you must use the ''location'' attribute instead.
 
-See our the [API changelog](https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters) for more details.
-
--> Please upgrade to ''v1.58.0+'' of the provider to avoid issues once the Hetzner Cloud API no longer accepts
-and returns the ''datacenter'' attribute.
+See our [deprecation](https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters) and
+[removal](https://docs.hetzner.cloud/changelog#2026-07-01-removing-datacenters) changelog for more details.
 `)
 
 	resp.Schema.Attributes = getCommonDataSourceSchema(false)

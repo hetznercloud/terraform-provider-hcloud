@@ -36,7 +36,6 @@ func TestModel(t *testing.T) {
 		assert.Equal(t, "131.232.99.42", o.IPAddress.ValueString())
 		assert.True(t, o.IPNetwork.IsNull())
 		assert.Equal(t, "fsn1", o.Location.ValueString())
-		assert.True(t, o.Datacenter.IsNull())
 		assert.Equal(t, int64(0), o.AssigneeID.ValueInt64())
 		assert.Equal(t, "server", o.AssigneeType.ValueString())
 		assert.Equal(t, false, o.AutoDelete.ValueBool())
@@ -74,7 +73,6 @@ func TestModel(t *testing.T) {
 		assert.Equal(t, "2001:db8::", o.IPAddress.ValueString())
 		assert.Equal(t, "2001:db8::/64", o.IPNetwork.ValueString())
 		assert.Equal(t, "fsn1", o.Location.ValueString())
-		assert.True(t, o.Datacenter.IsNull())
 		assert.Equal(t, int64(0), o.AssigneeID.ValueInt64())
 		assert.Equal(t, "server", o.AssigneeType.ValueString())
 		assert.Equal(t, false, o.AutoDelete.ValueBool())
@@ -84,26 +82,5 @@ func TestModel(t *testing.T) {
 		assert.Equal(t, map[string]string{"key": "value"}, labels)
 
 		assert.Equal(t, true, o.DeleteProtection.ValueBool())
-	})
-
-	t.Run("ipv4 with datacenter", func(t *testing.T) {
-		in := &hcloud.PrimaryIP{
-			ID:           42,
-			Name:         "primary-ip",
-			Type:         hcloud.PrimaryIPTypeIPv4,
-			IP:           net.ParseIP("131.232.99.42"),
-			Network:      nil,
-			Datacenter:   &hcloud.Datacenter{Name: "fsn1-dc14"}, //nolint:staticcheck
-			Location:     &hcloud.Location{Name: "fsn1"},
-			AssigneeID:   0,
-			AssigneeType: "server",
-			AutoDelete:   false,
-			Labels:       map[string]string{"key": "value"},
-			Protection:   hcloud.PrimaryIPProtection{Delete: true},
-		}
-
-		o := &model{}
-		assert.Nil(t, o.FromAPI(ctx, in))
-		assert.Equal(t, "fsn1-dc14", o.Datacenter.ValueString())
 	})
 }
