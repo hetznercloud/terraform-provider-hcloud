@@ -57,7 +57,6 @@ func TestAccPrimaryIPDataSourceList(t *testing.T) {
 					statecheck.ExpectKnownValue(byLabel.TFID(), tfjsonpath.New("primary_ips").AtSliceIndex(0).AtMapKey("name"), knownvalue.StringExact(fmt.Sprintf("main--%d", tmplMan.RandInt))),
 					statecheck.ExpectKnownValue(byLabel.TFID(), tfjsonpath.New("primary_ips").AtSliceIndex(0).AtMapKey("type"), knownvalue.StringExact("ipv6")),
 					statecheck.ExpectKnownValue(byLabel.TFID(), tfjsonpath.New("primary_ips").AtSliceIndex(0).AtMapKey("location"), knownvalue.StringExact(teste2e.TestLocationName)),
-					statecheck.ExpectKnownValue(byLabel.TFID(), tfjsonpath.New("primary_ips").AtSliceIndex(0).AtMapKey("datacenter"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(byLabel.TFID(), tfjsonpath.New("primary_ips").AtSliceIndex(0).AtMapKey("assignee_id"), knownvalue.Int64Exact(0)),
 					statecheck.ExpectKnownValue(byLabel.TFID(), tfjsonpath.New("primary_ips").AtSliceIndex(0).AtMapKey("assignee_type"), knownvalue.StringExact("server")),
 

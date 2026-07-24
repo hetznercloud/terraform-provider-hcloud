@@ -561,3 +561,59 @@ func TestAccPrimaryIPResource_DeleteProtection(t *testing.T) {
 		},
 	})
 }
+
+func TestAccPrimaryIPResource_RemoveDatacenter(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
+	res1 := &primaryip.RData{
+		Name: "main",
+		Type: "ipv6",
+		Raw:  `datacenter = "hel1-dc1"`,
+	}
+	res1.SetRName("main")
+
+	res2 := testtemplate.DeepCopy(t, res1)
+	res2.Location = teste2e.TestLocationName
+	res2.Raw = ""
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: teste2e.PreCheck(t),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"hcloud": {
+						VersionConstraint: "1.66.1",
+						Source:            "hetznercloud/hcloud",
+					},
+				},
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_primary_ip", res1,
+				),
+			},
+			{
+				ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_primary_ip", res1,
+				),
+				ExpectError: regexp.MustCompile("The datacenter attribute is marked for removal, you must use the location\nattribute instead."),
+			},
+			{
+				ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_primary_ip", res2,
+				),
+			},
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"hcloud": {
+						VersionConstraint: "1.66.1",
+						Source:            "hetznercloud/hcloud",
+					},
+				},
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_primary_ip", res2,
+				),
+			},
+		},
+	})
+}

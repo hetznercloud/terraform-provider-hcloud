@@ -37,9 +37,6 @@ var (
 	// TestStorageBoxTypeUpgrade is the upgrade Storage Box type used in all tests
 	TestStorageBoxTypeUpgrade = getEnv("TEST_STORAGE_BOX_TYPE_UPGRADE", "bx21")
 
-	// TestDataCenter is the default datacenter where we execute our tests.
-	TestDataCenter = getEnv("TEST_DATACENTER", "hel1-dc2")
-
 	// TestLocationName is the default location where we execute our tests.
 	TestLocationName = getEnv("TEST_LOCATION", "hel1")
 )

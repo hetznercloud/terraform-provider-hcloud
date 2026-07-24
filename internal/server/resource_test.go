@@ -8,10 +8,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
-	"github.com/hashicorp/terraform-plugin-testing/statecheck"
-	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -1530,53 +1527,6 @@ func TestAccServerResource_EmptySSHKey(t *testing.T) {
 	})
 }
 
-func TestAccServerResource_DatacenterToLocation(t *testing.T) {
-	// Test for the "datacenter" deprecation, to make sure that its possible to move to "location" attribute
-	// See https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters
-
-	tmplMan := testtemplate.Manager{}
-
-	res1 := &server.RData{
-		Name:       "server-dc-to-location",
-		Type:       teste2e.TestServerType,
-		Image:      teste2e.TestImage,
-		Datacenter: teste2e.TestDataCenter,
-	}
-	res1.SetRName("dc_to_location")
-
-	res2 := testtemplate.DeepCopy(t, res1)
-	res2.Datacenter = ""
-	res2.LocationName = teste2e.TestLocationName
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
-		Steps: []resource.TestStep{
-			{
-				// Create server in Datacenter.
-				Config: tmplMan.Render(t, "testdata/r/hcloud_server", res1),
-				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(res1.TFID(), tfjsonpath.New("datacenter"), knownvalue.StringExact(teste2e.TestDataCenter)),
-					statecheck.ExpectKnownValue(res1.TFID(), tfjsonpath.New("location"), knownvalue.StringExact(teste2e.TestLocationName)),
-				},
-			},
-			{
-				// Change config to Location.
-				Config: tmplMan.Render(t, "testdata/r/hcloud_server", res2),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectEmptyPlan(),
-					},
-				},
-				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(res2.TFID(), tfjsonpath.New("datacenter"), knownvalue.StringExact(teste2e.TestDataCenter)),
-					statecheck.ExpectKnownValue(res2.TFID(), tfjsonpath.New("location"), knownvalue.StringExact(teste2e.TestLocationName)),
-				},
-			},
-		},
-	})
-}
-
 func TestAccServerResource_MigrateNetworkIDToSubnetID(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
@@ -1882,6 +1832,63 @@ func TestAccServerResource_MixedNetworkAndSubnetID(t *testing.T) {
 						return nil
 					}),
 					resource.TestCheckResourceAttr(res.TFID(), "network.#", "1"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccServerResource_RemoveDatacenter(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
+	res1 := &server.RData{
+		Name:  "main",
+		Type:  teste2e.TestServerType,
+		Image: teste2e.TestImage,
+		Raw:   `datacenter = "hel1-dc1"`,
+	}
+	res1.SetRName("main")
+
+	res2 := testtemplate.DeepCopy(t, res1)
+	res2.LocationName = teste2e.TestLocationName
+	res2.Raw = ""
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: teste2e.PreCheck(t),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"hcloud": {
+						VersionConstraint: "1.66.1",
+						Source:            "hetznercloud/hcloud",
+					},
+				},
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_server", res1,
+				),
+			},
+			{
+				ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_server", res1,
+				),
+				ExpectError: regexp.MustCompile("The datacenter attribute is marked for removal, you must use the location\nattribute instead."),
+			},
+			{
+				ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_server", res2,
+				),
+			},
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"hcloud": {
+						VersionConstraint: "1.66.1",
+						Source:            "hetznercloud/hcloud",
+					},
+				},
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_server", res2,
 				),
 			},
 		},

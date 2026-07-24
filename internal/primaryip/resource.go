@@ -2,9 +2,7 @@ package primaryip
 
 import (
 	"context"
-	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -15,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
@@ -22,6 +21,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/control"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/resourceutil"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/validateutil"
 )
 
 const ResourceType = "hcloud_primary_ip"
@@ -64,14 +64,10 @@ See the [Primary IP API documentation](https://docs.hetzner.cloud/reference/clou
 
 ### ''datacenter'' attribute
 
-The ''datacenter'' attribute is deprecated, use the ''location'' attribute instead.
+The ''datacenter'' attribute is marked for removal since ''v1.67.0'', you must use the ''location'' attribute instead.
 
-See our the [API changelog](https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters) for more details.
-
--> Please upgrade to ''v1.58.0+'' of the provider to avoid issues once the Hetzner Cloud API no longer accepts
-and returns the ''datacenter'' attribute. This version of the provider remains backward compatible by preserving
-the ''datacenter'' value in the state and by extracting the ''location'' name from the ''datacenter'' attribute when
-communicating with the API.
+See our [deprecation](https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters) and
+[removal](https://docs.hetzner.cloud/changelog#2026-07-01-removing-datacenters) changelog for more details.
 `)
 
 	resp.Schema.Attributes = map[string]schema.Attribute{
@@ -106,11 +102,8 @@ communicating with the API.
 			MarkdownDescription: "Name of the Datacenter for the Primary IP. See the [Hetzner Docs](https://docs.hetzner.com/cloud/general/locations/#what-datacenters-are-there) for more details about datacenters.",
 			Optional:            true,
 			Computed:            true,
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.RequiresReplace(),
-				stringplanmodifier.UseStateForUnknown(),
-			},
-			DeprecationMessage: "The datacenter attribute is deprecated and will be removed after 1 July 2026. Please use the location attribute instead. See https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters.",
+			DeprecationMessage:  datacenterDeprecationMessage,
+			Validators:          []validator.String{validateutil.IsRemoved(datacenterDeprecationMessage)},
 		},
 		"assignee_id": schema.Int64Attribute{
 			MarkdownDescription: "ID of the resource the Primary IP should be assigned to.",
@@ -156,7 +149,6 @@ func (r *Resource) ConfigValidators(_ context.Context) []resource.ConfigValidato
 	return []resource.ConfigValidator{
 		resourcevalidator.ExactlyOneOf(
 			path.MatchRoot("location"),
-			path.MatchRoot("datacenter"),
 			path.MatchRoot("assignee_id"),
 		),
 	}
@@ -214,17 +206,6 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	switch {
 	case !data.Location.IsUnknown() && !data.Location.IsNull():
 		opts.Location = data.Location.ValueString()
-	case !data.Datacenter.IsUnknown() && !data.Datacenter.IsNull():
-		// Backward compatible datacenter argument: datacenter hel1-dc2 => location hel1
-		parts := strings.Split(data.Datacenter.ValueString(), "-")
-		if len(parts) != 2 {
-			resp.Diagnostics.AddAttributeError(
-				path.Root("datacenter"),
-				"Invalid datacenter name",
-				fmt.Sprintf("Datacenter name is not valid, expected format $LOCATION-$DATACENTER, but got: %s", data.Datacenter.ValueString()),
-			)
-		}
-		opts.Location = parts[0]
 	case !data.AssigneeID.IsUnknown() && !data.AssigneeID.IsNull():
 		opts.AssigneeID = data.AssigneeID.ValueInt64Pointer()
 		opts.AssigneeType = data.AssigneeType.ValueString()
@@ -274,13 +255,6 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		return
 	}
 
-	// backwards-compatibility: Datacenter deprecation
-	//nolint:staticcheck
-	if in.Datacenter == nil && data.Datacenter.ValueString() != "" {
-		//nolint:staticcheck
-		in.Datacenter = &hcloud.Datacenter{Name: data.Datacenter.ValueString()}
-	}
-
 	resp.Diagnostics.Append(data.FromAPI(ctx, in)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -306,13 +280,6 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 	if in == nil {
 		resp.State.RemoveResource(ctx)
 		return
-	}
-
-	// backwards-compatibility: Datacenter deprecation
-	//nolint:staticcheck
-	if in.Datacenter == nil && data.Datacenter.ValueString() != "" {
-		//nolint:staticcheck
-		in.Datacenter = &hcloud.Datacenter{Name: data.Datacenter.ValueString()}
 	}
 
 	resp.Diagnostics.Append(data.FromAPI(ctx, in)...)
@@ -416,13 +383,6 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 	if err != nil {
 		resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
 		return
-	}
-
-	// backwards-compatibility: Datacenter deprecation
-	//nolint:staticcheck
-	if in.Datacenter == nil && plan.Datacenter.ValueString() != "" {
-		//nolint:staticcheck
-		in.Datacenter = &hcloud.Datacenter{Name: plan.Datacenter.ValueString()}
 	}
 
 	// Write data to state
