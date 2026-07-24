@@ -595,7 +595,7 @@ func TestAccPrimaryIPResource_RemoveDatacenter(t *testing.T) {
 				Config: tmplMan.Render(t,
 					"testdata/r/hcloud_primary_ip", res1,
 				),
-				ExpectError: regexp.MustCompile(`The datacenter attribute is marked for removal, you must use the location attribute instead.`),
+				ExpectError: regexp.MustCompile("The datacenter attribute is marked for removal, you must use the location\nattribute instead."),
 			},
 			{
 				ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
