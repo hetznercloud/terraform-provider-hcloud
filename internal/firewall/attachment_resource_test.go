@@ -55,12 +55,7 @@ func TestAccFirewallAttachmentResource_Servers(t *testing.T) {
 			},
 			{
 				ResourceName: fwAttRes.TFID(),
-				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_server", srvRes,
-					"testdata/r/hcloud_firewall", fwRes,
-					"testdata/r/hcloud_firewall_attachment", fwAttRes,
-				),
-				ImportState: true,
+				ImportState:  true,
 			},
 		},
 	})
@@ -110,12 +105,7 @@ func TestAccFirewallAttachmentResource_LabelSelectors(t *testing.T) {
 			},
 			{
 				ResourceName: fwAttRes.TFID(),
-				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_server", srvRes,
-					"testdata/r/hcloud_firewall", fwRes,
-					"testdata/r/hcloud_firewall_attachment", fwAttRes,
-				),
-				ImportState: true,
+				ImportState:  true,
 			},
 		},
 	})

@@ -82,7 +82,6 @@ jobs:
       - if: matrix.tool == 'opentofu'
         run: |
           echo TF_ACC_TERRAFORM_PATH="$(which tofu)" >> $GITHUB_ENV
-          echo TF_ACC_PROVIDER_NAMESPACE="hashicorp" >> $GITHUB_ENV
           echo TF_ACC_PROVIDER_HOST="registry.opentofu.org" >> $GITHUB_ENV
 
       - run: go test -v -timeout=30m -parallel=8 -coverprofile=coverage.txt -coverpkg=./... ./...
@@ -92,6 +91,7 @@ jobs:
           CERT_DOMAIN: hc-integrations-test.de
 
           TF_ACC: 1
+          TF_ACC_PROVIDER_NAMESPACE: hetznercloud
           TF_LOG: DEBUG
           TF_LOG_PATH_MASK: test-%s.log
 

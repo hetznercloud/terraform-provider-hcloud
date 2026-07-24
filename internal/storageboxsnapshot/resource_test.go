@@ -76,13 +76,8 @@ func TestAccStorageBoxSnapshotResource(t *testing.T) {
 			},
 			{
 				// Import
-
-				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_storage_box", resStorageBox,
-					"testdata/r/hcloud_storage_box_snapshot", resMinimal,
-				),
-				ImportState:  true,
 				ResourceName: resMinimal.TFID(),
+				ImportState:  true,
 				ImportStateIdFunc: func(_ *terraform.State) (string, error) {
 					return fmt.Sprintf("%d/%d", snapshot.StorageBox.ID, snapshot.ID), nil
 				},
