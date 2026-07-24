@@ -9,7 +9,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
+	"github.com/stretchr/testify/require"
 
+	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/hcloud-go/v2/hcloud/exp/kit/randutil"
 	"github.com/hetznercloud/hcloud-go/v2/hcloud/schema"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
@@ -113,6 +115,91 @@ func TestAccZoneRecordResource(t *testing.T) {
 					statecheck.ExpectKnownValue(resB2.TFID(), tfjsonpath.New("type"), knownvalue.StringExact("A")),
 					statecheck.ExpectKnownValue(resB2.TFID(), tfjsonpath.New("value"), knownvalue.StringExact("201.42.91.37")),
 					statecheck.ExpectKnownValue(resB2.TFID(), tfjsonpath.New("comment"), knownvalue.StringExact("updated comment")),
+				},
+			},
+		},
+	})
+}
+
+func TestAccZoneRecordResource_ChangedExternally(t *testing.T) {
+	// Regression test for https://github.com/hetznercloud/terraform-provider-hcloud/issues/1483
+	// Must be run with an older version of opentofu, e.g. tofu v1.11.6
+	tmplMan := testtemplate.Manager{}
+
+	resZone := &zone.RData{
+		Zone: schema.Zone{
+			Name: fmt.Sprintf("example-%s.com", randutil.GenerateID()),
+			Mode: "primary",
+		},
+	}
+	resZone.SetRName("main")
+
+	res := &zonerecord.RData{
+		Zone: resZone.TFID() + ".name",
+		ZoneRRSet: schema.ZoneRRSet{
+			Name: "www",
+			Type: "A",
+			Records: []schema.ZoneRRSetRecord{
+				{Value: "127.0.0.1", Comment: "initial"},
+			},
+		},
+	}
+	res.SetRName("record")
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckAPIResourceAllAbsent(zone.ResourceType, zone.GetAPIResource()),
+		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_zone", resZone,
+					"testdata/r/hcloud_zone_record", res,
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(res.TFID(), plancheck.ResourceActionCreate),
+					},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(res.TFID(), tfjsonpath.New("name"), knownvalue.StringExact("www")),
+					statecheck.ExpectKnownValue(res.TFID(), tfjsonpath.New("type"), knownvalue.StringExact("A")),
+					statecheck.ExpectKnownValue(res.TFID(), tfjsonpath.New("value"), knownvalue.StringExact("127.0.0.1")),
+				},
+			},
+			{
+				PreConfig: func() {
+					ctx := t.Context()
+					client, err := testsupport.CreateClient()
+					require.NoError(t, err, "failed to create client")
+
+					rrset := &hcloud.ZoneRRSet{
+						Zone: &hcloud.Zone{Name: resZone.Zone.Name},
+						Name: res.ZoneRRSet.Name,
+						Type: hcloud.ZoneRRSetType(res.ZoneRRSet.Type),
+					}
+
+					action, _, err := client.Zone.SetRRSetRecords(ctx, rrset, hcloud.ZoneRRSetSetRecordsOpts{
+						Records: []hcloud.ZoneRRSetRecord{{Value: "192.168.1.10", Comment: "changed"}},
+					})
+					require.NoError(t, err, "failed to trigger set rrset records")
+
+					err = client.Action.WaitFor(ctx, action)
+					require.NoError(t, err, "failed to set rrset records")
+				},
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_zone", resZone,
+					"testdata/r/hcloud_zone_record", res,
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(res.TFID(), plancheck.ResourceActionCreate),
+					},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(res.TFID(), tfjsonpath.New("name"), knownvalue.StringExact("www")),
+					statecheck.ExpectKnownValue(res.TFID(), tfjsonpath.New("type"), knownvalue.StringExact("A")),
+					statecheck.ExpectKnownValue(res.TFID(), tfjsonpath.New("value"), knownvalue.StringExact("127.0.0.1")),
 				},
 			},
 		},
