@@ -103,10 +103,8 @@ func TestAccStorageBoxResource(t *testing.T) {
 			},
 			{
 				// Import
-
-				Config:                  tmplMan.Render(t, "testdata/r/hcloud_storage_box", res),
-				ImportState:             true,
 				ResourceName:            res.TFID(),
+				ImportState:             true,
 				ImportStateId:           res.Name,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"password"}, // Not returned in the API
@@ -187,10 +185,8 @@ func TestAccStorageBoxResource(t *testing.T) {
 			{
 				// Import resource with all fields set
 				// Regression test for https://github.com/hetznercloud/terraform-provider-hcloud/issues/1287
-
-				Config:                  tmplMan.Render(t, "testdata/r/hcloud_storage_box", resOptional),
-				ImportState:             true,
 				ResourceName:            resOptional.TFID(),
+				ImportState:             true,
 				ImportStateId:           resOptional.Name,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"password", "ssh_keys"}, // Not returned in the API
