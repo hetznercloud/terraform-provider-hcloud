@@ -6,8 +6,10 @@
   ],
   "packageRules": [
     {
-      "matchPackagePrefixes": ["github.com/hashicorp/"],
-      "groupName": "hashicorp"
+      "groupName": "hashicorp",
+      "matchPackageNames": [
+        "github.com/hashicorp/{/,}**"
+      ]
     }
   ]
 }
