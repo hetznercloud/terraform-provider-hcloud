@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud/exp/deprecationutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/deprecation"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/datasourceutil"
@@ -119,7 +120,7 @@ func newResourceData(ctx context.Context, in *hcloud.ServerType) (resourceData, 
 				Available:   types.BoolValue(hcItem.Available),
 				Recommended: types.BoolValue(hcItem.Recommended),
 			}
-			m.DeprecationModel, newDiags = deprecation.NewDeprecationModel(ctx, hcItem)
+			m.DeprecationModel, newDiags = deprecation.NewLegacyDeprecationModel(ctx, hcItem)
 			diags.Append(newDiags...)
 
 			tfItem, newDiags := types.ObjectValueFrom(ctx, m.tfAttributesTypes(), m)
@@ -136,7 +137,7 @@ func newResourceData(ctx context.Context, in *hcloud.ServerType) (resourceData, 
 
 	data.IncludedTraffic = types.Int64Value(in.IncludedTraffic) // nolint:staticcheck // Keep as long as it is available
 
-	data.DeprecationModel, newDiags = deprecation.NewDeprecationModel(ctx, in)
+	data.DeprecationModel, newDiags = deprecation.NewLegacyDeprecationModel(ctx, in)
 	diags.Append(newDiags...)
 
 	return data, diags
@@ -327,6 +328,14 @@ func (d *dataSource) Read(ctx context.Context, req datasource.ReadRequest, resp 
 		// Should not happen, see [dataSource.ConfigValidators]
 		resp.Diagnostics.AddError("Unexpected internal error", "")
 		return
+	}
+
+	if message, unavailable := deprecationutil.ServerTypeMessage(result, ""); message != "" {
+		if unavailable {
+			resp.Diagnostics.AddWarning("Server Type unavailable", message+".")
+		} else {
+			resp.Diagnostics.AddWarning("Server Type deprecated", message+".")
+		}
 	}
 
 	data, diags := newResourceData(ctx, result)

@@ -41,8 +41,11 @@ resource "hcloud_load_balancer" "main" {
 
 ### Read-Only
 
+- `deprecation_announced` (String) Date of the Load Balancer Type deprecation announcement.
 - `description` (String) Description of the Load Balancer Type.
+- `is_deprecated` (Boolean) Whether the Load Balancer Type is deprecated.
 - `max_assigned_certificates` (Number) Maximum number of certificates that can be assigned for the Load Balancer of this type.
 - `max_connections` (Number) Maximum number of simultaneous open connections for the Load Balancer of this type.
 - `max_services` (Number) Maximum number of services for the Load Balancer of this type.
 - `max_targets` (Number) Maximum number of targets for the Load Balancer of this type.
+- `unavailable_after` (String) Date of the Load Balancer Type removal. After this date, the Load Balancer Type cannot be used anymore.

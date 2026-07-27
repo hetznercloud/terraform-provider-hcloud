@@ -18,6 +18,14 @@ func TestNewDeprecationModel(t *testing.T) {
 		data, diags := NewDeprecationModel(ctx, hcloud.ServerType{})
 		assert.Equal(t, false, diags.HasError())
 		assert.Equal(t, false, data.IsDeprecated.ValueBool())
+		assert.Equal(t, true, data.DeprecationAnnounced.IsNull())
+		assert.Equal(t, true, data.UnavailableAfter.IsNull())
+	}
+
+	{
+		data, diags := NewLegacyDeprecationModel(ctx, hcloud.ServerType{})
+		assert.Equal(t, false, diags.HasError())
+		assert.Equal(t, false, data.IsDeprecated.ValueBool())
 		assert.Equal(t, false, data.DeprecationAnnounced.IsNull())
 		assert.Equal(t, "", data.DeprecationAnnounced.ValueString())
 		assert.Equal(t, false, data.UnavailableAfter.IsNull())
@@ -25,7 +33,7 @@ func TestNewDeprecationModel(t *testing.T) {
 	}
 
 	{
-		data, diags := NewDeprecationModel(ctx, hcloud.ServerType{
+		data, diags := NewLegacyDeprecationModel(ctx, hcloud.ServerType{
 			DeprecatableResource: hcloud.DeprecatableResource{
 				Deprecation: &hcloud.DeprecationInfo{
 					Announced:        fakeTime,

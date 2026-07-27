@@ -12,8 +12,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/hcloud-go/v2/hcloud/exp/deprecationutil"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/deprecation"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/datasourceutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/merge"
 )
 
 const (
@@ -32,9 +35,11 @@ type resourceData struct {
 	MaxConnections          types.Int64  `tfsdk:"max_connections"`
 	MaxServices             types.Int64  `tfsdk:"max_services"`
 	MaxTargets              types.Int64  `tfsdk:"max_targets"`
+
+	deprecation.DeprecationModel
 }
 
-var resourceDataAttrTypes = map[string]attr.Type{
+var resourceDataAttrTypes = merge.Maps(map[string]attr.Type{
 	"id":                        types.Int64Type,
 	"name":                      types.StringType,
 	"description":               types.StringType,
@@ -42,11 +47,14 @@ var resourceDataAttrTypes = map[string]attr.Type{
 	"max_connections":           types.Int64Type,
 	"max_services":              types.Int64Type,
 	"max_targets":               types.Int64Type,
-}
+},
+	deprecation.AttrTypes(),
+)
 
-func newResourceData(_ context.Context, in *hcloud.LoadBalancerType) (resourceData, diag.Diagnostics) { //nolint:unparam
+func newResourceData(ctx context.Context, in *hcloud.LoadBalancerType) (resourceData, diag.Diagnostics) { //nolint:unparam
 	var data resourceData
 	var diags diag.Diagnostics
+	var newDiags diag.Diagnostics
 
 	data.ID = types.Int64Value(in.ID)
 	data.Name = types.StringValue(in.Name)
@@ -57,11 +65,14 @@ func newResourceData(_ context.Context, in *hcloud.LoadBalancerType) (resourceDa
 	data.MaxServices = types.Int64Value(int64(in.MaxServices))
 	data.MaxTargets = types.Int64Value(int64(in.MaxTargets))
 
+	data.DeprecationModel, newDiags = deprecation.NewDeprecationModel(ctx, in)
+	diags.Append(newDiags...)
+
 	return data, diags
 }
 
 func getCommonDataSchema(readOnly bool) map[string]schema.Attribute {
-	return map[string]schema.Attribute{
+	return merge.Maps(map[string]schema.Attribute{
 		"id": schema.Int64Attribute{
 			MarkdownDescription: "ID of the Load Balancer Type.",
 			Optional:            !readOnly,
@@ -92,7 +103,9 @@ func getCommonDataSchema(readOnly bool) map[string]schema.Attribute {
 			MarkdownDescription: "Maximum number of targets for the Load Balancer of this type.",
 			Computed:            true,
 		},
-	}
+	},
+		deprecation.DataSourceSchema("Load Balancer Type"),
+	)
 }
 
 // Single
@@ -186,6 +199,14 @@ func (d *dataSource) Read(ctx context.Context, req datasource.ReadRequest, resp 
 		// Should not happen, see [dataSource.ConfigValidators]
 		resp.Diagnostics.AddError("Unexpected internal error", "")
 		return
+	}
+
+	if message, unavailable := deprecationutil.LoadBalancerTypeMessage(result); message != "" {
+		if unavailable {
+			resp.Diagnostics.AddWarning("Load Balancer Type unavailable", message+".")
+		} else {
+			resp.Diagnostics.AddWarning("Load Balancer Type deprecated", message+".")
+		}
 	}
 
 	data, diags := newResourceData(ctx, result)
