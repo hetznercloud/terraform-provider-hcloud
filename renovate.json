@@ -8,7 +8,7 @@
     {
       "groupName": "hashicorp",
       "matchPackageNames": [
-        "github.com/hashicorp/{/,}**"
+        "github.com/hashicorp/**"
       ]
     }
   ]
