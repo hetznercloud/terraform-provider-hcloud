@@ -4,6 +4,9 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancertype"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
@@ -30,23 +33,29 @@ func TestAccLoadBalancerTypeDataSource(t *testing.T) {
 					"testdata/d/hcloud_load_balancer_type", byID,
 				),
 
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(byName.TFID(), "id", "1"),
-					resource.TestCheckResourceAttr(byName.TFID(), "name", "lb11"),
-					resource.TestCheckResourceAttr(byName.TFID(), "description", "LB11"),
-					resource.TestCheckResourceAttr(byName.TFID(), "max_assigned_certificates", "10"),
-					resource.TestCheckResourceAttr(byName.TFID(), "max_connections", "10000"),
-					resource.TestCheckResourceAttr(byName.TFID(), "max_services", "5"),
-					resource.TestCheckResourceAttr(byName.TFID(), "max_targets", "25"),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(byName.TFID(), tfjsonpath.New("id"), knownvalue.Int64Exact(1)),
+					statecheck.ExpectKnownValue(byName.TFID(), tfjsonpath.New("name"), knownvalue.StringExact("lb11")),
+					statecheck.ExpectKnownValue(byName.TFID(), tfjsonpath.New("description"), knownvalue.StringExact("LB11")),
+					statecheck.ExpectKnownValue(byName.TFID(), tfjsonpath.New("max_assigned_certificates"), knownvalue.Int64Exact(10)),
+					statecheck.ExpectKnownValue(byName.TFID(), tfjsonpath.New("max_connections"), knownvalue.Int64Exact(10000)),
+					statecheck.ExpectKnownValue(byName.TFID(), tfjsonpath.New("max_services"), knownvalue.Int64Exact(5)),
+					statecheck.ExpectKnownValue(byName.TFID(), tfjsonpath.New("max_targets"), knownvalue.Int64Exact(25)),
+					statecheck.ExpectKnownValue(byName.TFID(), tfjsonpath.New("is_deprecated"), knownvalue.Bool(false)),
+					statecheck.ExpectKnownValue(byName.TFID(), tfjsonpath.New("deprecation_announced"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(byName.TFID(), tfjsonpath.New("unavailable_after"), knownvalue.Null()),
 
-					resource.TestCheckResourceAttr(byID.TFID(), "id", "1"),
-					resource.TestCheckResourceAttr(byID.TFID(), "name", "lb11"),
-					resource.TestCheckResourceAttr(byID.TFID(), "description", "LB11"),
-					resource.TestCheckResourceAttr(byID.TFID(), "max_assigned_certificates", "10"),
-					resource.TestCheckResourceAttr(byID.TFID(), "max_connections", "10000"),
-					resource.TestCheckResourceAttr(byID.TFID(), "max_services", "5"),
-					resource.TestCheckResourceAttr(byID.TFID(), "max_targets", "25"),
-				),
+					statecheck.ExpectKnownValue(byID.TFID(), tfjsonpath.New("id"), knownvalue.Int64Exact(1)),
+					statecheck.ExpectKnownValue(byID.TFID(), tfjsonpath.New("name"), knownvalue.StringExact("lb11")),
+					statecheck.ExpectKnownValue(byID.TFID(), tfjsonpath.New("description"), knownvalue.StringExact("LB11")),
+					statecheck.ExpectKnownValue(byID.TFID(), tfjsonpath.New("max_assigned_certificates"), knownvalue.Int64Exact(10)),
+					statecheck.ExpectKnownValue(byID.TFID(), tfjsonpath.New("max_connections"), knownvalue.Int64Exact(10000)),
+					statecheck.ExpectKnownValue(byID.TFID(), tfjsonpath.New("max_services"), knownvalue.Int64Exact(5)),
+					statecheck.ExpectKnownValue(byID.TFID(), tfjsonpath.New("max_targets"), knownvalue.Int64Exact(25)),
+					statecheck.ExpectKnownValue(byID.TFID(), tfjsonpath.New("is_deprecated"), knownvalue.Bool(false)),
+					statecheck.ExpectKnownValue(byID.TFID(), tfjsonpath.New("deprecation_announced"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(byID.TFID(), tfjsonpath.New("unavailable_after"), knownvalue.Null()),
+				},
 			},
 		},
 	})
