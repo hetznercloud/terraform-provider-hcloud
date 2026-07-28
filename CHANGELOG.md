@@ -1,5 +1,18 @@
 # Changelog
 
+## [v1.68.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.68.0)
+
+[Compare to previous version](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.67.0...v1.68.0)
+
+### Features
+
+- **load_balancer_type**: add deprecation details and warnings (#1512) ([44a81e1](https://github.com/hetznercloud/terraform-provider-hcloud/commit/44a81e1431428444325c8a253a19bafa510ea73d))
+- **server_type**: add deprecation warnings (#1512) ([44a81e1](https://github.com/hetznercloud/terraform-provider-hcloud/commit/44a81e1431428444325c8a253a19bafa510ea73d))
+
+### Bug Fixes
+
+- **zone_record**: set identity after read/update (#1507) ([daf4b85](https://github.com/hetznercloud/terraform-provider-hcloud/commit/daf4b858c6f97b44d77beef9f3a625bf00b28780))
+
 ## [v1.67.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.67.0)
 
 [Compare to previous version](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.66.1...v1.67.0)
