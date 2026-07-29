@@ -81,12 +81,16 @@ func (m *serviceModel) FromAPI(ctx context.Context, hc *hcloud.LoadBalancerServi
 	m.Proxyprotocol = types.BoolValue(hc.Proxyprotocol)
 	m.Protocol = types.StringValue(string(hc.Protocol))
 
-	{
+	if hc.Protocol == hcloud.LoadBalancerServiceProtocolHTTP ||
+		hc.Protocol == hcloud.LoadBalancerServiceProtocolHTTPS {
+
 		value := serviceModelHTTP{}
 		diags.Append(value.FromAPI(ctx, &hc.HTTP)...)
 
 		m.HTTP, newDiags = value.ToTerraform(ctx)
 		diags.Append(newDiags...)
+	} else {
+		m.HTTP = types.ObjectNull((&serviceModelHTTP{}).tfAttributesTypes())
 	}
 
 	{
@@ -196,6 +200,8 @@ func (m *serviceModelHealthCheck) FromAPI(ctx context.Context, hc *hcloud.LoadBa
 
 		m.HTTP, newDiags = value.ToTerraform(ctx)
 		diags.Append(newDiags...)
+	} else {
+		m.HTTP = types.ObjectNull((&serviceModelHealthCheck{}).tfAttributesTypes())
 	}
 
 	return diags
