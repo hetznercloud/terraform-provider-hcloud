@@ -188,39 +188,25 @@ func (d *DataSourceService) Read(ctx context.Context, req datasource.ReadRequest
 		err error
 	)
 
-	switch {
-	case !data.ID.IsNull():
-		lb, svc, err = lookupLoadBalancerServiceID(ctx, data.ID.ValueString(), d.client)
-		if err != nil {
-			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
-			return
-		}
-
-	case !data.LoadBalancerID.IsNull() && !data.ListenPort.IsNull():
-		lb, _, err = d.client.LoadBalancer.GetByID(ctx, data.LoadBalancerID.ValueInt64())
-		if err != nil {
-			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
-			return
-		}
-		if lb == nil {
-			resp.Diagnostics.Append(hcloudutil.NotFoundDiagnostic("load balancer", "id", data.LoadBalancerID.String()))
-			return
-		}
-
-		listenPort := int(data.ListenPort.ValueInt32())
-		for _, _svc := range lb.Services {
-			if _svc.ListenPort == listenPort {
-				svc = &_svc
-				break
-			}
-		}
-		if svc == nil {
-			resp.Diagnostics.Append(hcloudutil.NotFoundDiagnostic("load balancer service", "listen_port", data.ListenPort.String()))
-			return
-		}
+	lb, _, err = d.client.LoadBalancer.GetByID(ctx, data.LoadBalancerID.ValueInt64())
+	if err != nil {
+		resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+		return
+	}
+	if lb == nil {
+		resp.Diagnostics.Append(hcloudutil.NotFoundDiagnostic("load balancer", "id", data.LoadBalancerID.String()))
+		return
 	}
 
-	if lb == nil || svc == nil {
+	listenPort := int(data.ListenPort.ValueInt32())
+	for _, _svc := range lb.Services {
+		if _svc.ListenPort == listenPort {
+			svc = &_svc
+			break
+		}
+	}
+	if svc == nil {
+		resp.Diagnostics.Append(hcloudutil.NotFoundDiagnostic("load balancer service", "listen_port", data.ListenPort.String()))
 		return
 	}
 
