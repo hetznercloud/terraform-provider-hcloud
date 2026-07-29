@@ -63,15 +63,15 @@ type dataSourceServiceListModel struct {
 	Services       types.List  `tfsdk:"services"`
 }
 
-func populateDataSourceServiceListModel(ctx context.Context, data *dataSourceServiceListModel, lb *hcloud.LoadBalancer, services []*hcloud.LoadBalancerService) diag.Diagnostics {
+func populateDataSourceServiceListModel(ctx context.Context, data *dataSourceServiceListModel, lb *hcloud.LoadBalancer, services []hcloud.LoadBalancerService) diag.Diagnostics {
 	var diags diag.Diagnostics
 	var newDiags diag.Diagnostics
 
 	tfItems := make([]attr.Value, 0, len(services))
 
-	for _, item := range services {
+	for _, svc := range services {
 		var value serviceModel
-		diags.Append(value.FromAPI(ctx, item)...)
+		diags.Append(value.FromAPI(ctx, &svc)...)
 
 		tfItem, newDiags := value.ToTerraform(ctx)
 		diags.Append(newDiags...)
@@ -104,12 +104,7 @@ func (d *DataSourceServiceList) Read(ctx context.Context, req datasource.ReadReq
 		return
 	}
 
-	var services []*hcloud.LoadBalancerService
-	for _, svc := range lb.Services {
-		services = append(services, &svc)
-	}
-
-	resp.Diagnostics.Append(populateDataSourceServiceListModel(ctx, &data, lb, services)...)
+	resp.Diagnostics.Append(populateDataSourceServiceListModel(ctx, &data, lb, lb.Services)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
