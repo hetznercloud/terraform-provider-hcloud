@@ -3,6 +3,7 @@ package loadbalancer
 import (
 	"context"
 	"fmt"
+	"slices"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -198,17 +199,14 @@ func (d *DataSourceService) Read(ctx context.Context, req datasource.ReadRequest
 		return
 	}
 
-	listenPort := int(data.ListenPort.ValueInt32())
-	for _, _svc := range lb.Services {
-		if _svc.ListenPort == listenPort {
-			svc = &_svc
-			break
-		}
-	}
-	if svc == nil {
-		resp.Diagnostics.Append(hcloudutil.NotFoundDiagnostic("load balancer service", "listen_port", data.ListenPort.String()))
+	index := slices.IndexFunc(lb.Services, func(o hcloud.LoadBalancerService) bool {
+		return o.ListenPort == int(data.ListenPort.ValueInt32())
+	})
+	if index < 0 {
+		resp.Diagnostics.Append(hcloudutil.NotFoundDiagnostic("load balancer service", "listen_port", data.ListenPort.ValueInt32()))
 		return
 	}
+	svc = &lb.Services[index]
 
 	resp.Diagnostics.Append(populateDataSourceServiceModel(ctx, &data, lb, svc)...)
 	if resp.Diagnostics.HasError() {
