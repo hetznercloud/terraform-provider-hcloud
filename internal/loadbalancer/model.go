@@ -201,7 +201,7 @@ func (m *serviceModelHealthCheck) FromAPI(ctx context.Context, hc *hcloud.LoadBa
 		m.HTTP, newDiags = value.ToTerraform(ctx)
 		diags.Append(newDiags...)
 	} else {
-		m.HTTP = types.ObjectNull((&serviceModelHealthCheck{}).tfAttributesTypes())
+		m.HTTP = types.ObjectNull((&serviceModelHealthCheckHTTP{}).tfAttributesTypes())
 	}
 
 	return diags
