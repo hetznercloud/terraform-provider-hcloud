@@ -88,6 +88,31 @@ type RDataInlineServerTarget struct {
 	ServerID string
 }
 
+// DDataService defines the fields for the "testdata/d/hcloud_load_balancer_service" template.
+type DDataService struct {
+	testtemplate.DataCommon
+
+	LoadBalancerID string
+	ListenPort     string
+}
+
+// TFID returns the data source identifier.
+func (d *DDataService) TFID() string {
+	return fmt.Sprintf("data.%s.%s", DataSourceServiceType, d.RName())
+}
+
+// DDataServiceList defines the fields for the "testdata/d/hcloud_load_balancer_services" template.
+type DDataServiceList struct {
+	testtemplate.DataCommon
+
+	LoadBalancerID string
+}
+
+// TFID returns the data source identifier.
+func (d *DDataServiceList) TFID() string {
+	return fmt.Sprintf("data.%s.%s", DataSourceServiceListType, d.RName())
+}
+
 // RDataService defines the fields for the
 // "testdata/r/hcloud_load_balancer_service" template.
 type RDataService struct {
