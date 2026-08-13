@@ -7,12 +7,9 @@ description: |-
   See the Primary IP API documentation https://docs.hetzner.cloud/reference/cloud#tag/primary-ips for more details.
   Deprecations
   datacenter attribute
-  The datacenter attribute is deprecated, use the location attribute instead.
-  See our the API changelog https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters for more details.
-  -> Please upgrade to v1.58.0+ of the provider to avoid issues once the Hetzner Cloud API no longer accepts
-  and returns the datacenter attribute. This version of the provider remains backward compatible by preserving
-  the datacenter value in the state and by extracting the location name from the datacenter attribute when
-  communicating with the API.
+  The datacenter attribute is marked for removal since v1.67.0, you must use the location attribute instead.
+  See our deprecation https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters and
+  removal https://docs.hetzner.cloud/changelog#2026-07-01-removing-datacenters changelog for more details.
 ---
 
 # hcloud_primary_ip (Resource)
@@ -25,14 +22,10 @@ See the [Primary IP API documentation](https://docs.hetzner.cloud/reference/clou
 
 ### `datacenter` attribute
 
-The `datacenter` attribute is deprecated, use the `location` attribute instead.
+The `datacenter` attribute is marked for removal since `v1.67.0`, you must use the `location` attribute instead.
 
-See our the [API changelog](https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters) for more details.
-
--> Please upgrade to `v1.58.0+` of the provider to avoid issues once the Hetzner Cloud API no longer accepts
-and returns the `datacenter` attribute. This version of the provider remains backward compatible by preserving
-the `datacenter` value in the state and by extracting the `location` name from the `datacenter` attribute when
-communicating with the API.
+See our [deprecation](https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters) and
+[removal](https://docs.hetzner.cloud/changelog#2026-07-01-removing-datacenters) changelog for more details.
 
 ## Example Usage
 

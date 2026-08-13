@@ -562,67 +562,19 @@ func TestAccPrimaryIPResource_DeleteProtection(t *testing.T) {
 	})
 }
 
-func TestAccPrimaryIPResource_DatacenterToLocation(t *testing.T) {
-	// Test for the "datacenter" deprecation, to make sure that its possible to move to "location" attribute
-	// See https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters
+func TestAccPrimaryIPResource_RemoveDatacenter(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	res1 := &primaryip.RData{
-		Name:       "datacenter-to-location",
-		Type:       "ipv6",
-		Datacenter: teste2e.TestDataCenter,
+		Name: "main",
+		Type: "ipv6",
+		Raw:  `datacenter = "hel1-dc1"`,
 	}
 	res1.SetRName("main")
 
 	res2 := testtemplate.DeepCopy(t, res1)
-	res2.Datacenter = ""
 	res2.Location = teste2e.TestLocationName
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
-		Steps: []resource.TestStep{
-			{
-				// Create primary IP in Datacenter.
-				Config: tmplMan.Render(t, "testdata/r/hcloud_primary_ip", res1),
-				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(res1.TFID(), tfjsonpath.New("datacenter"), knownvalue.StringExact(teste2e.TestDataCenter)),
-					statecheck.ExpectKnownValue(res1.TFID(), tfjsonpath.New("location"), knownvalue.StringExact(teste2e.TestLocationName)),
-				},
-			},
-			{
-				// Change config to Location.
-				Config: tmplMan.Render(t, "testdata/r/hcloud_primary_ip", res2),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
-				},
-				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(res1.TFID(), tfjsonpath.New("datacenter"), knownvalue.StringExact(teste2e.TestDataCenter)),
-					statecheck.ExpectKnownValue(res1.TFID(), tfjsonpath.New("location"), knownvalue.StringExact(teste2e.TestLocationName)),
-				},
-			},
-		},
-	})
-}
-
-func TestAccPrimaryIPResource_DatacenterToLocationForceNew(t *testing.T) {
-	// Test for the "datacenter" deprecation, to make sure that its possible to move to "location" attribute
-	// See https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters
-	tmplMan := testtemplate.Manager{}
-
-	res1 := &primaryip.RData{
-		Name:         "datacenter-to-location",
-		Type:         "ipv6",
-		Datacenter:   teste2e.TestDataCenter,
-		AssigneeType: "server", // Attribute was still required in previous versions
-		AutoDelete:   new(false),
-	}
-	res1.SetRName("main")
-
-	res2 := testtemplate.DeepCopy(t, res1)
-	res2.Datacenter = ""
-	res2.Location = teste2e.TestLocationName
-	res2.AssigneeType = ""
+	res2.Raw = ""
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: teste2e.PreCheck(t),
@@ -630,66 +582,37 @@ func TestAccPrimaryIPResource_DatacenterToLocationForceNew(t *testing.T) {
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
 					"hcloud": {
-						VersionConstraint: "1.57.0",
+						VersionConstraint: "1.66.1",
 						Source:            "hetznercloud/hcloud",
 					},
 				},
-				// Create primary IP in Datacenter.
-				Config: tmplMan.Render(t, "testdata/r/hcloud_primary_ip", res1),
-				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(res1.TFID(), tfjsonpath.New("datacenter"), knownvalue.StringExact(teste2e.TestDataCenter)),
-				},
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_primary_ip", res1,
+				),
 			},
 			{
 				ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
-				// Change config to Location.
-				Config: tmplMan.Render(t, "testdata/r/hcloud_primary_ip", res2),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
-				},
-				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(res2.TFID(), tfjsonpath.New("datacenter"), knownvalue.StringExact(teste2e.TestDataCenter)),
-					statecheck.ExpectKnownValue(res2.TFID(), tfjsonpath.New("location"), knownvalue.StringExact(teste2e.TestLocationName)),
-				},
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_primary_ip", res1,
+				),
+				ExpectError: regexp.MustCompile("The datacenter attribute is marked for removal, you must use the location\nattribute instead."),
 			},
-		},
-	})
-}
-
-func TestAccPrimaryIPResource_UpgradePluginFramework(t *testing.T) {
-	tmplMan := testtemplate.Manager{}
-
-	res := &primaryip.RData{
-		Name:         "main",
-		Type:         "ipv6",
-		Location:     teste2e.TestLocationName,
-		AssigneeType: "server",
-		// Labels will default {} after the upgrade, this is a workaround to make the tests pass
-		Labels:     map[string]string{"key": "value"},
-		AutoDelete: new(false),
-	}
-	res.SetRName("main")
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck: teste2e.PreCheck(t),
-		Steps: []resource.TestStep{
+			{
+				ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_primary_ip", res2,
+				),
+			},
 			{
 				ExternalProviders: map[string]resource.ExternalProvider{
 					"hcloud": {
-						VersionConstraint: "1.60.1",
+						VersionConstraint: "1.66.1",
 						Source:            "hetznercloud/hcloud",
 					},
 				},
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_primary_ip", res,
+					"testdata/r/hcloud_primary_ip", res2,
 				),
-			},
-			{
-				ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
-				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_primary_ip", res,
-				),
-				PlanOnly: true,
 			},
 		},
 	})

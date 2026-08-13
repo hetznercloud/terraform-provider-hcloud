@@ -54,6 +54,7 @@ func Resource() *schema.Resource {
 			"image": {
 				Type:     schema.TypeString,
 				Optional: true,
+				Computed: true,
 				ForceNew: true,
 				ValidateFunc: func(val any, key string) (i []string, errors []error) {
 					image := val.(string)
@@ -72,9 +73,16 @@ func Resource() *schema.Resource {
 			"datacenter": {
 				Type:       schema.TypeString,
 				Optional:   true,
-				ForceNew:   true,
 				Computed:   true,
-				Deprecated: "The datacenter attribute is deprecated and will be removed after 1 July 2026. Please use the location attribute instead. See https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters.",
+				Deprecated: datacenterDeprecationMessage,
+				ValidateDiagFunc: func(_ any, path cty.Path) diag.Diagnostics {
+					return diag.Diagnostics{diag.Diagnostic{
+						AttributePath: path,
+						Severity:      diag.Error,
+						Summary:       "Removed Attribute",
+						Detail:        datacenterDeprecationMessage,
+					}}
+				},
 			},
 			"user_data": {
 				Type:             schema.TypeString,
@@ -347,24 +355,10 @@ func resourceServerCreate(ctx context.Context, d *schema.ResourceData, m any) (d
 		UserData: d.Get("user_data").(string),
 	}
 
-	if location, ok := d.GetOk("location"); ok {
-		opts.Location = &hcloud.Location{Name: location.(string)}
-	} else if datacenter, ok := d.GetOk("datacenter"); ok {
-		// Backward compatible datacenter argument.
-		// datacenter hel1-dc2 => location hel1
-		parts := strings.SplitN(datacenter.(string), "-", 2)
-
-		if len(parts) != 2 {
-			diags = append(diags, diag.Errorf("Datacenter name is not valid, expected format $LOCATION-$DATACENTER, but got: %s", datacenter.(string))...)
-			return
-		}
-
-		locationName := parts[0]
-		opts.Location = &hcloud.Location{Name: locationName}
-	}
 	locationName := ""
-	if opts.Location != nil {
-		locationName = opts.Location.Name
+	if location, ok := d.GetOk("location"); ok {
+		locationName = location.(string)
+		opts.Location = &hcloud.Location{Name: locationName}
 	}
 
 	serverTypeDeprecationPrinted := false
@@ -1306,18 +1300,6 @@ func getServerAttributes(d *schema.ResourceData, s *hcloud.Server, forceSetNetwo
 		res["placement_group_id"] = nil
 	}
 
-	// Pass through datacenter name as long as it is returned from the API.
-	//
-	// If the attribute is not returned from the API, we never set the attribute,
-	// so whatever is in the state or user config is kept.
-	//
-	// See https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters
-	//nolint:staticcheck // Backwards-compatibility
-	if s.Datacenter != nil {
-		//nolint:staticcheck // Backwards-compatibility
-		res["datacenter"] = s.Datacenter.Name
-	}
-
 	return res
 }
 
@@ -1491,7 +1473,7 @@ func resourceServerCustomizeDiff(_ context.Context, d *schema.ResourceDiff, _ an
 
 func validateUniqueNetworkIDs(d *schema.ResourceDiff) error {
 	// Validate that at least one of network_id or subnet_id is specified.
-	if rawNetworks := d.GetRawConfig().GetAttr("network"); !rawNetworks.IsNull() {
+	if rawNetworks := d.GetRawConfig().GetAttr("network"); rawNetworks.IsWhollyKnown() && !rawNetworks.IsNull() {
 		for it := rawNetworks.ElementIterator(); it.Next(); {
 			_, networkVal := it.Element()
 

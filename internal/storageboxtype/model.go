@@ -57,7 +57,7 @@ func (m *model) FromAPI(ctx context.Context, hc *hcloud.StorageBoxType) diag.Dia
 	m.SubaccountsLimit = types.Int64Value(int64(hc.SubaccountsLimit))
 	m.Size = types.Int64Value(hc.Size)
 
-	m.DeprecationModel, newDiags = deprecation.NewDeprecationModel(ctx, hc)
+	m.DeprecationModel, newDiags = deprecation.NewLegacyDeprecationModel(ctx, hc)
 	diags.Append(newDiags...)
 
 	return diags

@@ -7,9 +7,6 @@ resource "hcloud_primary_ip" "{{ .RName }}" {
   {{- if .Location }}
   location       = "{{ .Location }}"
   {{ end }}
-  {{- if .Datacenter }}
-  datacenter       = "{{ .Datacenter }}"
-  {{ end }}
   {{- if .AssigneeType }}
   assignee_type       = "{{ .AssigneeType }}"
   {{ end }}

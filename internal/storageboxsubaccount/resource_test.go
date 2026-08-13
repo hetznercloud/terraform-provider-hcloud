@@ -98,13 +98,8 @@ func TestAccStorageBoxSubaccountResource(t *testing.T) {
 			},
 			{
 				// Import
-
-				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_storage_box", resStorageBox,
-					"testdata/r/hcloud_storage_box_subaccount", res,
-				),
-				ImportState:  true,
 				ResourceName: res.TFID(),
+				ImportState:  true,
 				ImportStateIdFunc: func(_ *terraform.State) (string, error) {
 					return fmt.Sprintf("%d/%d", subaccount.StorageBox.ID, subaccount.ID), nil
 				},

@@ -30,6 +30,23 @@ func NewDeprecationModel(_ context.Context, in hcloud.Deprecatable) (Deprecation
 		data.UnavailableAfter = types.StringValue(in.UnavailableAfter().Format(time.RFC3339))
 	} else {
 		data.IsDeprecated = types.BoolValue(false)
+		data.DeprecationAnnounced = types.StringNull()
+		data.UnavailableAfter = types.StringNull()
+	}
+
+	return data, diags
+}
+
+func NewLegacyDeprecationModel(_ context.Context, in hcloud.Deprecatable) (DeprecationModel, diag.Diagnostics) {
+	var data DeprecationModel
+	var diags diag.Diagnostics
+
+	if in.IsDeprecated() {
+		data.IsDeprecated = types.BoolValue(true)
+		data.DeprecationAnnounced = types.StringValue(in.DeprecationAnnounced().Format(time.RFC3339))
+		data.UnavailableAfter = types.StringValue(in.UnavailableAfter().Format(time.RFC3339))
+	} else {
+		data.IsDeprecated = types.BoolValue(false)
 
 		// TODO: Stored values should be types.StringNull(), but we use an empty string
 		// for backward compatibility with the SDK.

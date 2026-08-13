@@ -13,6 +13,8 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/resourceutil"
 )
 
+const datacenterDeprecationMessage = "The datacenter attribute is marked for removal, you must use the location attribute instead. See https://docs.hetzner.cloud/changelog#2026-07-01-removing-datacenters."
+
 type model struct {
 	ID               types.Int64  `tfsdk:"id"`
 	Name             types.String `tfsdk:"name"`
@@ -68,20 +70,7 @@ func (m *model) FromAPI(ctx context.Context, hc *hcloud.PrimaryIP) diag.Diagnost
 	}
 
 	m.Location = types.StringValue(hc.Location.Name)
-	// Pass through datacenter name as long as it is returned from the API.
-	//
-	// If the attribute is not returned from the API, we never set the attribute,
-	// so whatever is in the state or user config is kept.
-	//
-	// See https://docs.hetzner.cloud/changelog#2025-12-16-phasing-out-datacenters
-	//nolint:staticcheck // Backwards-compatibility
-	if hc.Datacenter != nil {
-		//nolint:staticcheck // Backwards-compatibility
-		m.Datacenter = types.StringValue(hc.Datacenter.Name)
-	} else {
-		m.Datacenter = types.StringNull()
-	}
-
+	m.Datacenter = types.StringNull()
 	m.AssigneeID = types.Int64Value(hc.AssigneeID)
 	m.AssigneeType = types.StringValue(hc.AssigneeType)
 

@@ -14,7 +14,7 @@ import (
 func TestAccServerTypeDataSource(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
-	byName := &servertype.DData{ServerTypeName: teste2e.TestServerType}
+	byName := &servertype.DData{ServerTypeName: "cpx22"}
 	byName.SetRName("by_name")
 
 	byID := &servertype.DData{ServerTypeID: "109"}

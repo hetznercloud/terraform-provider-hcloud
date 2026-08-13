@@ -20,10 +20,10 @@ var (
 	TestImageID = getEnv("TEST_IMAGE_ID", "161547269")
 
 	// TestServerType is the default server type used in all tests
-	TestServerType = getEnv("TEST_SERVER_TYPE", "cpx22")
+	TestServerType = getEnv("TEST_SERVER_TYPE", "cpx12")
 
 	// TestServerTypeUpgrade is the upgrade server type used in all tests
-	TestServerTypeUpgrade = getEnv("TEST_SERVER_TYPE_UPGRADE", "cpx32")
+	TestServerTypeUpgrade = getEnv("TEST_SERVER_TYPE_UPGRADE", "cpx22")
 
 	// TestArchitecture is the default architecture used in all tests, should match the architecture of the TestServerType.
 	TestArchitecture = getEnv("TEST_ARCHITECTURE", string(hcloud.ArchitectureX86))
@@ -37,11 +37,14 @@ var (
 	// TestStorageBoxTypeUpgrade is the upgrade Storage Box type used in all tests
 	TestStorageBoxTypeUpgrade = getEnv("TEST_STORAGE_BOX_TYPE_UPGRADE", "bx21")
 
-	// TestDataCenter is the default datacenter where we execute our tests.
-	TestDataCenter = getEnv("TEST_DATACENTER", "hel1-dc2")
-
 	// TestLocationName is the default location where we execute our tests.
 	TestLocationName = getEnv("TEST_LOCATION", "hel1")
+
+	// TestCertificateDomain is the domain used to create managed certificates during
+	// tests. Tests using this value should skip if empty.
+	//
+	// The domain specified here must be available in the account running the tests.
+	TestCertificateDomain = getEnv("TEST_CERTIFICATE_DOMAIN", "")
 )
 
 // PreCheck checks if all conditions for an acceptance test are
