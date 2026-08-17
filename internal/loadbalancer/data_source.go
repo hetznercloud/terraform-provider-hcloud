@@ -100,8 +100,9 @@ func getCommonDataSchema() map[string]*schema.Schema {
 			},
 		},
 		"service": {
-			Type:     schema.TypeList,
-			Computed: true,
+			Type:       schema.TypeList,
+			Computed:   true,
+			Deprecated: "Does not work. Use the hcloud_load_balancer_service(s) data source instead.",
 			Elem: &schema.Resource{
 				Schema: map[string]*schema.Schema{
 					"protocol": {
