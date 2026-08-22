@@ -25,6 +25,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancer"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancertype"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/location"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/pricing"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/primaryip"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/rdns"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
@@ -216,6 +217,7 @@ func (p *PluginProvider) DataSources(_ context.Context) []func() datasource.Data
 		loadbalancertype.NewDataSourceList,
 		location.NewDataSource,
 		location.NewDataSourceList,
+		pricing.NewDataSource,
 		primaryip.NewDataSource,
 		primaryip.NewDataSourceList,
 		servertype.NewDataSource,
