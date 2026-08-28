@@ -18,9 +18,11 @@ require (
 	github.com/hashicorp/terraform-plugin-testing v1.16.0
 	github.com/hetznercloud/hcloud-go/v2 v2.47.0
 	github.com/joho/godotenv v1.5.1
-	github.com/stretchr/testify v1.12.0
+	github.com/stretchr/testify v1.12.1
 	golang.org/x/net v0.57.0
 )
+
+require go.yaml.in/yaml/v3 v3.0.5 // indirect
 
 require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
