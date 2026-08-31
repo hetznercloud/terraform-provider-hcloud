@@ -2,12 +2,13 @@ name: Cut fork release
 
 # Watches hetznercloud/terraform-provider-hcloud's tags. For every new
 # upstream release tag not yet mirrored here, merges this fork's feature
-# branch ($FEATURE_BRANCH) onto that tag and pushes the result as a new
-# tag whose patch number is upstream's patch plus $PATCH_OFFSET, e.g.
-# upstream v1.69.0 -> fork v1.69.900. Pushing that tag triggers
-# .github/workflows/release.yml (GoReleaser), which builds and publishes
-# it exactly like an upstream release, just with the fork's feature
-# merged in.
+# branch ($FEATURE_BRANCH) onto that tag and pushes the result as a tag
+# with the SAME name, e.g. upstream v1.69.0 -> fork v1.69.0 (they're
+# different commits in different repos, published under different
+# Terraform Registry provider addresses - see MAINTAINING.md). Pushing
+# that tag triggers .github/workflows/release.yml (GoReleaser), which
+# builds and publishes it exactly like an upstream release, just with the
+# fork's feature merged in.
 #
 # GitHub Actions can't watch another repo's tags directly, so this polls
 # on a schedule instead. A merge conflict opens an issue rather than
@@ -32,10 +33,6 @@ concurrency:
 env:
   GH_TOKEN: ${{ secrets.SYNC_PAT || secrets.GITHUB_TOKEN }}
   FEATURE_BRANCH: allow-rebuilding-with-image-or-user-data
-  # Offset added to upstream's patch number to build a fork tag, e.g.
-  # upstream v1.69.0 -> fork v1.69.900. Must match scripts/cut-fork-tag.sh's
-  # default (also settable there via the same env var).
-  PATCH_OFFSET: "900"
 
 jobs:
   cut:
@@ -73,18 +70,17 @@ jobs:
           all_base_tags=$(git for-each-ref 'refs/upstream-tags/v*' --format='%(refname:short)' \
             | sed -E 's#^upstream-tags/##' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V)
 
-          # Fork tags don't encode their base upstream tag in their name
-          # (it's the base's patch + $PATCH_OFFSET, indistinguishable from
-          # a plain version bump), so read it back from the annotation
-          # cut-fork-tag.sh records on each fork tag instead.
-          forked_bases=$(git for-each-ref 'refs/tags/v*' --format='%(contents:subject)' \
-            | sed -nE 's/^Fork release of (v[0-9]+\.[0-9]+\.[0-9]+)$/\1/p' | sort -Vu)
-          newest_forked_base=$(echo "$forked_bases" | tail -1)
+          # Fork tags now share their base upstream tag's exact name, so
+          # a fork tag that already exists locally (fetched from origin
+          # above) means that upstream tag has already been released.
+          existing_fork_tags=$(git for-each-ref 'refs/tags/v*' --format='%(refname:short)' \
+            | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V)
+          newest_forked=$(echo "$existing_fork_tags" | tail -1)
 
-          if [[ -n "$newest_forked_base" ]]; then
+          if [[ -n "$newest_forked" ]]; then
             # Only consider upstream tags strictly newer than the newest
             # one we've already cut a fork release for.
-            candidates=$(echo "$all_base_tags" | awk -v b="$newest_forked_base" 'found{print} $0==b{found=1}')
+            candidates=$(echo "$all_base_tags" | awk -v b="$newest_forked" 'found{print} $0==b{found=1}')
           else
             # No fork release exists yet - bootstrap from the latest
             # upstream tag only, don't backfill this fork's entire

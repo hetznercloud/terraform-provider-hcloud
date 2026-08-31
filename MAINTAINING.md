@@ -46,19 +46,16 @@ below); that only gets merged onto release tags, as described next.
 `.github/workflows/cut-fork-release.yml` watches upstream's tags (polled
 daily, since GitHub Actions can't watch another repo's tags directly). For
 every upstream release tag it hasn't seen yet, it merges the fork's
-feature branch onto that tag and pushes the result as a new tag whose
-patch number is upstream's patch plus a fixed offset:
+feature branch onto that tag and pushes the result as a tag with the
+**same name**:
 
 ```
 upstream tag: v1.69.0
-fork tag:     v1.69.900
+fork tag:     v1.69.0
 ```
 
-If the fork's feature branch is later re-merged onto the same upstream
-tag (e.g. after resolving a conflict by hand), the next one becomes
-`v1.69.901`, and so on - see `scripts/cut-fork-tag.sh`. On first run
-(no fork tags exist yet), it only bootstraps from the latest upstream tag
-rather than backfilling this fork's entire release history.
+On first run (no fork tags exist yet), it only bootstraps from the latest
+upstream tag rather than backfilling this fork's entire release history.
 
 The merge commit is also pushed to a rolling `fork-release` branch so
 it's inspectable on GitHub, but that branch is force-pushed on every run
@@ -74,24 +71,21 @@ there if that changes.
 
 ### Versioning scheme
 
-Fork tags are ordinary `vX.Y.Z` tags - the patch number is upstream's
-patch plus `PATCH_OFFSET` (900, set in both `cut-fork-release.yml` and
-defaulted in `cut-fork-tag.sh`), e.g. upstream `v1.69.0` becomes fork
-`v1.69.900`. Unlike the semver build-metadata suffix (`+n`) this used to
-use, this is a real, strictly-increasing version bump, which is required
-for the Terraform Registry to recognize the tag as a release at all (it
-doesn't parse `+build` metadata as a valid provider version) and for
-`>=` version constraints to resolve to it as newer than the upstream base
-it's built from.
+Fork tags reuse the exact upstream tag name they're built from, e.g.
+upstream `v1.69.0` becomes fork `v1.69.0` too. This is safe because the
+two live in different repos and are published under different Terraform
+Registry provider addresses (`hetznercloud/hcloud` vs. `svanrossem/hcloud`)
+- there's no registry or tooling that would ever compare them directly,
+even though the commits (and therefore checksums) differ.
 
-The large offset is what keeps a fork tag from ever colliding with a
-genuine upstream release: Hetzner would need to ship 900 patch releases
-under the same minor version before `v1.69.900` became a real upstream
-tag. Because the tag name itself no longer encodes which upstream tag it
-was cut from once re-cuts increment past the offset (`v1.69.901`, ...),
-`cut-fork-tag.sh` records that in the tag's annotation instead
-(`Fork release of v1.69.0`) - `cut-fork-release.yml` reads that back to
-know which upstream tags are already forked.
+The trade-off: because the name alone doesn't distinguish "the fork's
+v1.69.0" from "upstream's v1.69.0", re-cutting a fork tag (e.g. after
+resolving a merge conflict by hand) requires explicitly deleting and
+force-pushing it rather than just bumping a number - see "Cutting a
+release by hand" below. `cut-fork-tag.sh` still annotates each fork tag
+(`Fork release of upstream vX.Y.Z, includes <branch>`) for a quick way to
+tell a fork tag apart from a genuine upstream one when both are checked
+out locally.
 
 ### Cutting a release by hand
 
@@ -99,6 +93,16 @@ know which upstream tags are already forked.
 git fetch upstream --tags
 git fetch origin allow-rebuilding-with-image-or-user-data
 scripts/cut-fork-tag.sh v1.69.0   # replace with the upstream tag to build on
+```
+
+To re-cut a fork tag that already exists (e.g. after fixing a conflict
+that previously opened an issue), delete it first - locally and on
+`origin` - then run the command above again:
+
+```sh
+git tag -d v1.69.0
+git push origin :refs/tags/v1.69.0
+scripts/cut-fork-tag.sh v1.69.0
 ```
 
 This merges the feature branch onto the given upstream tag, and pushes
