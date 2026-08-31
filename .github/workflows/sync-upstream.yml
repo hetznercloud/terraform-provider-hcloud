@@ -1,0 +1,72 @@
+name: Sync upstream
+
+# Keeps this fork's `main` up to date with
+# hetznercloud/terraform-provider-hcloud's `main`.
+#
+# This opens a PR via the GitHub CLI and tries to land it right away,
+# falling back to auto-merge, then to just leaving the PR open - it never
+# pushes to `main` directly and never drops a change silently. A merge
+# conflict opens an issue instead of a PR. See scripts/sync-branch.sh for
+# the shared logic, and MAINTAINING.md for the manual equivalent.
+#
+# The fork's own feature branch is no longer merged into `main` - it's
+# merged onto each new upstream release tag instead, by
+# .github/workflows/cut-fork-release.yml.
+
+on:
+  schedule:
+    # Every day at 00:00 UTC.
+    - cron: "0 0 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: sync-upstream
+  cancel-in-progress: false
+
+env:
+  GH_TOKEN: ${{ secrets.SYNC_PAT || secrets.GITHUB_TOKEN }}
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    # Never run this on upstream itself if the workflow file ever ends up
+    # there via a PR from this fork.
+    if: github.repository != 'hetznercloud/terraform-provider-hcloud'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          token: ${{ env.GH_TOKEN }}
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Fetch upstream
+        run: |
+          git remote add upstream https://github.com/hetznercloud/terraform-provider-hcloud.git 2>/dev/null || true
+          git fetch upstream --tags --quiet
+
+      - name: Sync upstream/main into main
+        run: |
+          upstream_tag=$(git describe --tags --abbrev=0 --match 'v*' upstream/main 2>/dev/null || true)
+
+          body_file=$(mktemp)
+          {
+            echo 'Automated merge of `upstream/main` into `main`.'
+            echo
+            echo "Fork releases for tagged upstream versions are cut automatically by"
+            echo '`.github/workflows/cut-fork-release.yml` - no manual tagging needed.'
+            echo "See MAINTAINING.md for details or to cut one by hand."
+          } >"$body_file"
+
+          scripts/sync-branch.sh upstream/main sync-upstream \
+            "Sync with upstream${upstream_tag:+ ($upstream_tag)}" \
+            "$body_file"

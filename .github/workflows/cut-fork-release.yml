@@ -1,0 +1,108 @@
+name: Cut fork release
+
+# Watches hetznercloud/terraform-provider-hcloud's tags. For every new
+# upstream release tag not yet mirrored here, merges this fork's feature
+# branch ($FEATURE_BRANCH) onto that tag and pushes the result as a new
+# tag whose patch number is upstream's patch plus $PATCH_OFFSET, e.g.
+# upstream v1.69.0 -> fork v1.69.900. Pushing that tag triggers
+# .github/workflows/release.yml (GoReleaser), which builds and publishes
+# it exactly like an upstream release, just with the fork's feature
+# merged in.
+#
+# GitHub Actions can't watch another repo's tags directly, so this polls
+# on a schedule instead. A merge conflict opens an issue rather than
+# failing silently. See scripts/cut-fork-tag.sh for the per-tag logic and
+# MAINTAINING.md for the manual equivalent and the versioning scheme.
+
+on:
+  schedule:
+    # Every day at 00:15 UTC - offset from sync-upstream.yml's :00 so
+    # main is refreshed first.
+    - cron: "15 0 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: cut-fork-release
+  cancel-in-progress: false
+
+env:
+  GH_TOKEN: ${{ secrets.SYNC_PAT || secrets.GITHUB_TOKEN }}
+  FEATURE_BRANCH: allow-rebuilding-with-image-or-user-data
+  # Offset added to upstream's patch number to build a fork tag, e.g.
+  # upstream v1.69.0 -> fork v1.69.900. Must match scripts/cut-fork-tag.sh's
+  # default (also settable there via the same env var).
+  PATCH_OFFSET: "900"
+
+jobs:
+  cut:
+    runs-on: ubuntu-latest
+    # Never run this on upstream itself if the workflow file ever ends up
+    # there via a PR from this fork.
+    if: github.repository != 'hetznercloud/terraform-provider-hcloud'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          token: ${{ env.GH_TOKEN }}
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Fetch upstream tags and the feature branch
+        run: |
+          git remote add upstream https://github.com/hetznercloud/terraform-provider-hcloud.git 2>/dev/null || true
+          # Fetched into a separate ref namespace, not refs/tags - fork
+          # tags are now plain vX.Y.Z too (just with a big offset patch
+          # number), so fetching both remotes' tags into the same
+          # refs/tags namespace would risk name collisions and would make
+          # it impossible to tell "real upstream tag" apart from "our own
+          # fork tag" below.
+          git fetch upstream '+refs/tags/*:refs/upstream-tags/*' --quiet
+          git fetch origin --tags --quiet
+          git fetch origin "$FEATURE_BRANCH" --quiet
+
+      - name: Find upstream tags without a fork release yet
+        run: |
+          all_base_tags=$(git for-each-ref 'refs/upstream-tags/v*' --format='%(refname:short)' \
+            | sed -E 's#^upstream-tags/##' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V)
+
+          # Fork tags don't encode their base upstream tag in their name
+          # (it's the base's patch + $PATCH_OFFSET, indistinguishable from
+          # a plain version bump), so read it back from the annotation
+          # cut-fork-tag.sh records on each fork tag instead.
+          forked_bases=$(git for-each-ref 'refs/tags/v*' --format='%(contents:subject)' \
+            | sed -nE 's/^Fork release of (v[0-9]+\.[0-9]+\.[0-9]+)$/\1/p' | sort -Vu)
+          newest_forked_base=$(echo "$forked_bases" | tail -1)
+
+          if [[ -n "$newest_forked_base" ]]; then
+            # Only consider upstream tags strictly newer than the newest
+            # one we've already cut a fork release for.
+            candidates=$(echo "$all_base_tags" | awk -v b="$newest_forked_base" 'found{print} $0==b{found=1}')
+          else
+            # No fork release exists yet - bootstrap from the latest
+            # upstream tag only, don't backfill this fork's entire
+            # release history.
+            candidates=$(echo "$all_base_tags" | tail -1)
+          fi
+
+          if [[ -z "$candidates" ]]; then
+            echo "No new upstream tags to release."
+          fi
+
+          printf '%s\n' "$candidates" >candidates.txt
+
+      - name: Cut a fork release for each new upstream tag
+        run: |
+          while IFS= read -r tag; do
+            [[ -z "$tag" ]] && continue
+            echo "::group::$tag"
+            scripts/cut-fork-tag.sh "$tag"
+            echo "::endgroup::"
+          done <candidates.txt

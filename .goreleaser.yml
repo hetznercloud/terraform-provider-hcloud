@@ -17,21 +17,13 @@ builds:
       - -w
       - -X github.com/hetznercloud/terraform-provider-hcloud/hcloud.Version={{ .Version }}
       - -X github.com/hetznercloud/terraform-provider-hcloud/hcloud.Commit={{ .Commit }}
+    # Fork-only change: this fork is only consumed on Linux, so only build
+    # for Linux to keep release times down. See MAINTAINING.md.
     goos:
-      - freebsd
-      - windows
       - linux
-      - darwin
     goarch:
       - amd64
-      - "386"
-      - arm
       - arm64
-    ignore:
-      - goos: darwin
-        goarch: "386"
-      - goos: windows
-        goarch: arm
     binary: "{{ .ProjectName }}_v{{ .Version }}"
 
 archives:
