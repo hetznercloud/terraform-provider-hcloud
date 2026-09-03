@@ -363,6 +363,15 @@ func resourceLoadBalancerDelete(ctx context.Context, d *schema.ResourceData, m a
 		return nil
 	}
 
+	// As documented, delete protection only prevents other API consumers from
+	// deleting the resource; Terraform lifts the protection so it can delete the
+	// Load Balancer it manages. (#1206)
+	if loadBalancer.Protection.Delete {
+		if err := setProtection(ctx, client, loadBalancer, false); err != nil {
+			return hcloudutil.ErrorToDiag(err)
+		}
+	}
+
 	if _, err := client.LoadBalancer.Delete(ctx, loadBalancer); err != nil {
 		if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
 			// loadBalancer has already been deleted

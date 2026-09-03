@@ -248,3 +248,36 @@ func TestAccLoadBalancerResource_Protection(t *testing.T) {
 		},
 	})
 }
+
+// TestAccLoadBalancerResource_DeleteProtectionLifted is a regression test for
+// #1206: Terraform must be able to delete a Load Balancer that still has delete
+// protection enabled (protection only guards against other API consumers). The
+// configuration never disables protection, so the CheckDestroy step deletes a
+// still-protected Load Balancer, which fails without the fix.
+func TestAccLoadBalancerResource_DeleteProtectionLifted(t *testing.T) {
+	var lb hcloud.LoadBalancer
+
+	res := &loadbalancer.RData{
+		Name:             "load-balancer-delete-protection-lifted",
+		LocationName:     teste2e.TestLocationName,
+		DeleteProtection: true,
+	}
+
+	tmplMan := testtemplate.Manager{}
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckResourcesDestroyed(loadbalancer.ResourceType, loadbalancer.ByID(t, &lb)),
+		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_load_balancer", res,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckResourceExists(res.TFID(), loadbalancer.ByID(t, &lb)),
+					resource.TestCheckResourceAttr(res.TFID(), "delete_protection", "true"),
+				),
+			},
+		},
+	})
+}
