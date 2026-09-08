@@ -13,9 +13,8 @@ import (
 // APIErrorDiagnostics creates diagnostics from the errors that occurred during an API requests.
 func APIErrorDiagnostics(err error) diag.Diagnostics {
 	var diagnostics diag.Diagnostics
-	var hcloudErr hcloud.Error
 
-	if errors.As(err, &hcloudErr) {
+	if hcloudErr, ok := errors.AsType[hcloud.Error](err); ok {
 		statusCodeMessage := ""
 		if errResponse := hcloudErr.Response(); errResponse != nil {
 			statusCodeMessage = fmt.Sprintf("Status code: %d\n", errResponse.StatusCode)
@@ -88,8 +87,7 @@ func APIErrorDiagnostics(err error) diag.Diagnostics {
 
 // APIErrorIsNotFound check whether the error is an API request Not Found error.
 func APIErrorIsNotFound(err error) bool {
-	var hcloudErr hcloud.Error
-	if errors.As(err, &hcloudErr) {
+	if hcloudErr, ok := errors.AsType[hcloud.Error](err); ok {
 		return hcloud.IsError(hcloudErr, hcloud.ErrorCodeNotFound)
 	}
 	return false
