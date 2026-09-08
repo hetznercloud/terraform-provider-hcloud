@@ -5,6 +5,11 @@
 
 - Documentation: https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs
 
+> **Note:** This is a patched fork of the official provider that adds the
+> `hcloud_server_rebuild` action, letting you rebuild a server in place from a
+> Terraform config. See [`docs/actions/server_rebuild.md`](docs/actions/server_rebuild.md)
+> for details.
+
 ## Requirements
 
 - [Terraform](https://developer.hashicorp.com/terraform/install) or [OpenTofu](https://opentofu.org/docs/intro/install/)

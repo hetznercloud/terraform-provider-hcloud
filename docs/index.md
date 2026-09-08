@@ -10,6 +10,10 @@ The Hetzner Cloud (hcloud) provider is used to interact with the resources suppo
 
 Use the navigation to the left to read about the available resources.
 
+-> This is a patched fork of the official `hetznercloud/hcloud` provider that adds the
+[`hcloud_server_rebuild`](actions/server_rebuild.md) action, letting you rebuild a server
+in place from a Terraform config.
+
 ## Example Usage
 
 ```terraform
