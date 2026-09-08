@@ -169,12 +169,7 @@ func Resource() *schema.Resource {
 			"public_net": {
 				Type:     schema.TypeSet,
 				Optional: true,
-				DiffSuppressFunc: func(_, _, _ string, d *schema.ResourceData) bool {
-					// Diff is only valid if "public_net" resource is set in
-					// terraform configuration.
-					_, ok := d.GetOk("public_net")
-					return !ok // Negate because we do **not** want to suppress the diff.
-				},
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"ipv4_enabled": {
