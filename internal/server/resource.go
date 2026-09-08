@@ -1257,19 +1257,29 @@ func getServerAttributes(d *schema.ResourceData, s *hcloud.Server, forceSetNetwo
 		"firewall_ids":       firewallIDs,
 		"primary_disk_size":  s.PrimaryDiskSize,
 	}
+	resPublicNet := []map[string]any{{}}
+
 	if s.PublicNet.IPv4.IsUnspecified() {
 		res["ipv4_address"] = nil
+		resPublicNet[0]["ipv4_enabled"] = false
 	} else {
 		res["ipv4_address"] = s.PublicNet.IPv4.IP.String()
+		resPublicNet[0]["ipv4_enabled"] = true
+		resPublicNet[0]["ipv4"] = s.PublicNet.IPv4.ID
 	}
 
 	if len(s.PublicNet.IPv6.IP) == 0 {
 		// No IPv6 Primary IP assigned
 		res["ipv6_address"] = nil
+		resPublicNet[0]["ipv6_enabled"] = false
 	} else {
 		// Set first IP in assigned subnet range
 		res["ipv6_address"] = s.PublicNet.IPv6.IP.String() + "1"
+		resPublicNet[0]["ipv6_enabled"] = true
+		resPublicNet[0]["ipv6"] = s.PublicNet.IPv6.ID
 	}
+
+	res["public_net"] = resPublicNet
 
 	if s.Image != nil {
 		if s.Image.Name != "" && util.FormatID(s.Image.ID) != d.Get("image") {
