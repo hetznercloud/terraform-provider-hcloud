@@ -24,7 +24,12 @@ func TestModel(t *testing.T) {
 			Architecture: hcloud.ArchitectureX86,
 			RapidDeploy:  true,
 			Created:      time.Date(2026, 5, 1, 17, 0, 0, 0, time.UTC),
-			Deprecated:   time.Date(2026, 5, 20, 10, 0, 0, 0, time.UTC),
+			DeprecatableResource: hcloud.DeprecatableResource{
+				Deprecation: &hcloud.DeprecationInfo{
+					Announced:        time.Date(2026, 5, 20, 10, 0, 0, 0, time.UTC),
+					UnavailableAfter: time.Date(2026, 8, 20, 10, 0, 0, 0, time.UTC),
+				},
+			},
 		}
 		o := &model{}
 		assert.Nil(t, o.FromAPI(ctx, in))

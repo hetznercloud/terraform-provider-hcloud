@@ -14,13 +14,15 @@ import (
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/hcloud-go/v2/hcloud/exp/deprecationutil"
 	"github.com/hetznercloud/hcloud-go/v2/hcloud/exp/kit/sliceutil"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/deprecation"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/datasourceutil"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/merge"
 )
 
 func getCommonDataSourceSchema(readOnly bool) map[string]schema.Attribute {
-	return map[string]schema.Attribute{
+	return merge.Maps(map[string]schema.Attribute{
 		"id": schema.Int64Attribute{
 			MarkdownDescription: "ID of the Image.",
 			Optional:            !readOnly,
@@ -63,8 +65,11 @@ func getCommonDataSourceSchema(readOnly bool) map[string]schema.Attribute {
 		"deprecated": schema.StringAttribute{
 			MarkdownDescription: "Point in time when the Image was marked as deprecated (in RFC3339 format).",
 			Computed:            true,
+			DeprecationMessage:  "This attribute is deprecated, use deprecation_announced instead.",
 		},
-	}
+	},
+		deprecation.DataSourceSchema("Image"),
+	)
 }
 
 const DataSourceType = "hcloud_image"
