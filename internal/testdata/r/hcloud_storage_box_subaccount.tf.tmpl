@@ -4,7 +4,15 @@ resource "hcloud_storage_box_subaccount" "{{ .RName }}" {
   storage_box_id = {{ .StorageBox }}
 
   home_directory = "{{ .HomeDirectory }}"
-  password       = "{{ .Password }}"
+
+  {{ if .Password -}}
+  password = "{{ .Password }}"
+  {{- end }}
+
+  {{ if .PasswordWO -}}
+  password_wo         = "{{ .PasswordWO }}"
+  password_wo_version = {{ .PasswordWOVersion }}
+  {{- end }}
 
   {{ if .Name -}}
   name = "{{ .Name }}"

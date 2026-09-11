@@ -4,7 +4,15 @@ resource "hcloud_storage_box" "{{ .RName }}" {
     name             = "{{ .Name }}"
     storage_box_type = "{{ .StorageBoxType.Name }}"
     location         = "{{ .Location.Name }}"
-    password         = "{{ .Password }}"
+
+    {{ if .Password -}}
+    password = "{{ .Password }}"
+    {{- end }}
+
+    {{ if .PasswordWO -}}
+    password_wo         = "{{ .PasswordWO }}"
+    password_wo_version = {{ .PasswordWOVersion }}
+    {{- end }}
 
     {{- if .Labels }}
     labels = {{ .Labels | toPrettyJson }}

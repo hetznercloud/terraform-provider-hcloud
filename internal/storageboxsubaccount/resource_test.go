@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
+	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/hcloud-go/v2/hcloud/exp/kit/randutil"
@@ -172,6 +173,100 @@ func TestAccStorageBoxSubaccountResource(t *testing.T) {
 					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("access_settings").AtMapKey("webdav_enabled"), knownvalue.Bool(false)),
 					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("access_settings").AtMapKey("readonly"), knownvalue.Bool(true)),
 					statecheck.ExpectKnownValue(resOptional.TFID(), tfjsonpath.New("labels"), knownvalue.MapExact(map[string]knownvalue.Check{"key": knownvalue.StringExact("value")})),
+				},
+			},
+		},
+	})
+}
+
+func TestAccStorageBoxSubaccountResource_WriteOnlyPassword(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
+	subaccount := &hcloud.StorageBoxSubaccount{}
+
+	resStorageBox := &storagebox.RData{
+		StorageBox: schema.StorageBox{
+			Name:           fmt.Sprintf("storage-box-subaccount-wo-%s", randutil.GenerateID()),
+			StorageBoxType: schema.StorageBoxType{Name: teste2e.TestStorageBoxType},
+			Location:       schema.Location{Name: teste2e.TestLocationName},
+		},
+		Password: storagebox.GeneratePassword(t),
+	}
+	resStorageBox.SetRName("default")
+
+	res := &storageboxsubaccount.RData{
+		StorageBox:        resStorageBox.TFID() + ".id",
+		HomeDirectory:     "test",
+		PasswordWO:        storagebox.GeneratePassword(t),
+		PasswordWOVersion: 1,
+	}
+	res.SetRName("subaccount")
+
+	// A new value under the same version: the write-only value is not in the state,
+	// so nothing can compare it, and the version is what says whether it changed.
+	resSameVersion := testtemplate.DeepCopy(t, res)
+	resSameVersion.PasswordWO = storagebox.GeneratePassword(t)
+
+	resNextVersion := testtemplate.DeepCopy(t, resSameVersion)
+	resNextVersion.PasswordWOVersion = 2
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: teste2e.PreCheck(t),
+		// Write-only arguments need Terraform 1.11 / OpenTofu 1.11 or later.
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.SkipBelow(tfversion.Version1_11_0),
+		},
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckAPIResourceAllAbsent(storageboxsubaccount.ResourceType, storageboxsubaccount.GetAPIResource()),
+		Steps: []resource.TestStep{
+			{
+				// Create with a write-only password
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_storage_box", resStorageBox,
+					"testdata/r/hcloud_storage_box_subaccount", res,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckAPIResourcePresent(res.TFID(), testsupport.CopyAPIResource(subaccount, storageboxsubaccount.GetAPIResource())),
+				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(res.TFID(), tfjsonpath.New("username"), testsupport.StringExactFromFunc(func() string { return subaccount.Username })),
+					// The point of the whole attribute: neither the value nor a copy
+					// of it under `password` is written to the state.
+					statecheck.ExpectKnownValue(res.TFID(), tfjsonpath.New("password"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(res.TFID(), tfjsonpath.New("password_wo"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(res.TFID(), tfjsonpath.New("password_wo_version"), knownvalue.Int64Exact(1)),
+				},
+			},
+			{
+				// A different write-only value under the same version changes nothing
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_storage_box", resStorageBox,
+					"testdata/r/hcloud_storage_box_subaccount", resSameVersion,
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+			},
+			{
+				// Raising the version resets the password, and updates rather than replaces
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_storage_box", resStorageBox,
+					"testdata/r/hcloud_storage_box_subaccount", resNextVersion,
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resNextVersion.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckAPIResourcePresent(resNextVersion.TFID(), testsupport.CopyAPIResource(subaccount, storageboxsubaccount.GetAPIResource())),
+				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resNextVersion.TFID(), tfjsonpath.New("password"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(resNextVersion.TFID(), tfjsonpath.New("password_wo"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(resNextVersion.TFID(), tfjsonpath.New("password_wo_version"), knownvalue.Int64Exact(2)),
 				},
 			},
 		},
