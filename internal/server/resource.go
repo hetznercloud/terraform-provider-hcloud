@@ -1248,7 +1248,6 @@ func getServerAttributes(d *schema.ResourceData, s *hcloud.Server, forceSetNetwo
 		"location":           s.Location.Name,
 		"status":             s.Status,
 		"server_type":        s.ServerType.Name,
-		"ipv6_network":       s.PublicNet.IPv6.Network.String(),
 		"backup_window":      s.BackupWindow,
 		"backups":            s.BackupWindow != "",
 		"labels":             s.Labels,
@@ -1266,9 +1265,11 @@ func getServerAttributes(d *schema.ResourceData, s *hcloud.Server, forceSetNetwo
 	if len(s.PublicNet.IPv6.IP) == 0 {
 		// No IPv6 Primary IP assigned
 		res["ipv6_address"] = nil
+		res["ipv6_network"] = nil
 	} else {
 		// Set first IP in assigned subnet range
 		res["ipv6_address"] = s.PublicNet.IPv6.IP.String() + "1"
+		res["ipv6_network"] = s.PublicNet.IPv6.Network.String()
 	}
 
 	if s.Image != nil {
