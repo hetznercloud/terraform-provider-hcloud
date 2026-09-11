@@ -10,7 +10,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/deprecation"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/merge"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/resourceutil"
 )
 
@@ -25,14 +27,17 @@ type model struct {
 	OSVersion    types.String `tfsdk:"os_version"`
 	Architecture types.String `tfsdk:"architecture"`
 	RapidDeploy  types.Bool   `tfsdk:"rapid_deploy"`
-	Deprecated   types.String `tfsdk:"deprecated"`
+	// Deprecated
+	Deprecated types.String `tfsdk:"deprecated"`
+
+	deprecation.DeprecationModel
 }
 
 var _ util.ModelFromAPI[*hcloud.Image] = &model{}
 var _ util.ModelToTerraform[types.Object] = &model{}
 
 func (m *model) tfAttributesTypes() map[string]attr.Type {
-	return map[string]attr.Type{
+	return merge.Maps(map[string]attr.Type{
 		"id":           types.Int64Type,
 		"type":         types.StringType,
 		"name":         types.StringType,
@@ -44,7 +49,9 @@ func (m *model) tfAttributesTypes() map[string]attr.Type {
 		"architecture": types.StringType,
 		"rapid_deploy": types.BoolType,
 		"deprecated":   types.StringType,
-	}
+	},
+		deprecation.AttrTypes(),
+	)
 }
 
 func (m *model) tfType() attr.Type {
@@ -67,8 +74,11 @@ func (m *model) FromAPI(ctx context.Context, hc *hcloud.Image) diag.Diagnostics 
 	m.Architecture = types.StringValue(string(hc.Architecture))
 	m.RapidDeploy = types.BoolValue(hc.RapidDeploy)
 
-	if !hc.Deprecated.IsZero() {
-		m.Deprecated = types.StringValue(hc.Deprecated.Format(time.RFC3339))
+	m.DeprecationModel, newDiags = deprecation.NewDeprecationModel(ctx, hc)
+	diags.Append(newDiags...)
+
+	if hc.IsDeprecated() {
+		m.Deprecated = types.StringValue(hc.Deprecation.Announced.Format(time.RFC3339))
 	} else {
 		m.Deprecated = types.StringNull()
 	}

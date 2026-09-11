@@ -51,12 +51,15 @@ Read-Only:
 
 - `architecture` (String) CPU architecture compatible with the Image.
 - `created` (String) Point in time when the Image was created (in RFC3339 format).
-- `deprecated` (String) Point in time when the Image was marked as deprecated (in RFC3339 format).
+- `deprecated` (String, Deprecated) Point in time when the Image was marked as deprecated (in RFC3339 format).
+- `deprecation_announced` (String) Date of the Image deprecation announcement.
 - `description` (String) Description of the Image.
 - `id` (Number) ID of the Image.
+- `is_deprecated` (Boolean) Whether the Image is deprecated.
 - `labels` (Map of String) User-defined [labels](https://docs.hetzner.cloud/reference/cloud#labels) (key-value pairs) for the resource.
 - `name` (String) Name of the Image, only present when the type is `system`.
 - `os_flavor` (String) Flavor of the operating system contained in the Image.
 - `os_version` (String) Version of the operating system contained in the Image.
 - `rapid_deploy` (Boolean) Whether the Image is optimized for a rapid deployment.
 - `type` (String) Type of the Image, for example `system`, `backup` or `snapshot`.
+- `unavailable_after` (String) Date of the Image removal. After this date, the Image cannot be used anymore.
