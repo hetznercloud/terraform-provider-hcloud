@@ -48,6 +48,9 @@ func TestModel(t *testing.T) {
 		assert.Equal(t, true, o.RapidDeploy.ValueBool())
 		assert.Equal(t, "2026-05-01T17:00:00Z", o.Created.ValueString())
 		assert.Equal(t, "2026-05-20T10:00:00Z", o.Deprecated.ValueString())
+		assert.True(t, o.IsDeprecated.ValueBool())
+		assert.Equal(t, "2026-05-20T10:00:00Z", o.DeprecationAnnounced.ValueString())
+		assert.Equal(t, "2026-08-20T10:00:00Z", o.UnavailableAfter.ValueString())
 	})
 
 	t.Run("snapshot", func(t *testing.T) {
@@ -80,5 +83,8 @@ func TestModel(t *testing.T) {
 		assert.Equal(t, false, o.RapidDeploy.ValueBool())
 		assert.Equal(t, "2026-05-01T17:00:00Z", o.Created.ValueString())
 		assert.True(t, o.Deprecated.IsNull())
+		assert.False(t, o.IsDeprecated.ValueBool())
+		assert.True(t, o.DeprecationAnnounced.IsNull())
+		assert.True(t, o.UnavailableAfter.IsNull())
 	})
 }
