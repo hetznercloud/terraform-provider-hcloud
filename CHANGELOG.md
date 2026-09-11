@@ -1,5 +1,19 @@
 # Changelog
 
+## [v1.69.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.69.0)
+
+[Compare to previous version](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.68.0...v1.69.0)
+
+### Features
+
+- **image**: add deprecation info to data sources (#1529) ([abfc55a](https://github.com/hetznercloud/terraform-provider-hcloud/commit/abfc55a6a7702d03e094e30cd06849feecf86e24))
+- drop support for terraform v1.14 (#1531) ([67e5c0c](https://github.com/hetznercloud/terraform-provider-hcloud/commit/67e5c0cf18fc969ede64c28bac67cd6d5a504d13))
+- add support for terraform v1.16 (#1531) ([67e5c0c](https://github.com/hetznercloud/terraform-provider-hcloud/commit/67e5c0cf18fc969ede64c28bac67cd6d5a504d13))
+
+### Bug Fixes
+
+- **server**: only write `ipv6_network` value to state if defined (#1526) ([c7ffc2f](https://github.com/hetznercloud/terraform-provider-hcloud/commit/c7ffc2f0b7f1e2d7ce455d4070ec3fb6b072f153))
+
 ## [v1.68.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.68.0)
 
 [Compare to previous version](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.67.0...v1.68.0)
