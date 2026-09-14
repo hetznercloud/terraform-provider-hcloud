@@ -36,7 +36,7 @@ func Resource() *schema.Resource {
 		CustomizeDiff: resourceServerCustomizeDiff,
 
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			StateContext: resourceServerImport,
 		},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(90 * time.Minute),
@@ -1552,4 +1552,44 @@ func validateUniqueNetworkIDs(d *schema.ResourceDiff) error {
 	}
 
 	return nil
+}
+
+func resourceServerImport(ctx context.Context, d *schema.ResourceData, m any) ([]*schema.ResourceData, error) {
+	client := m.(*hcloud.Client)
+
+	serverID, err := util.ParseID(d.Id())
+	if err != nil {
+		return nil, err
+	}
+
+	s, _, err := client.Server.GetByID(ctx, serverID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Import public net to prevent a power cycle during first update. The update public
+	// net logic is not idempotent.
+	{
+		resPublicNet := []map[string]any{{}}
+		if s.PublicNet.IPv4.IsUnspecified() {
+			resPublicNet[0]["ipv4_enabled"] = false
+			resPublicNet[0]["ipv4"] = nil
+		} else {
+			resPublicNet[0]["ipv4_enabled"] = true
+			resPublicNet[0]["ipv4"] = s.PublicNet.IPv4.ID
+		}
+		if len(s.PublicNet.IPv6.IP) == 0 {
+			resPublicNet[0]["ipv6_enabled"] = false
+			resPublicNet[0]["ipv6"] = nil
+		} else {
+			resPublicNet[0]["ipv6_enabled"] = true
+			resPublicNet[0]["ipv6"] = s.PublicNet.IPv6.ID
+		}
+
+		if err := d.Set("public_net", resPublicNet); err != nil {
+			log.Fatalf("could not set '%v' to '%s': %s", resPublicNet, "public_net", err)
+		}
+	}
+
+	return []*schema.ResourceData{d}, nil
 }
