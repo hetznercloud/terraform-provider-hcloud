@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
+	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/hcloud-go/v2/hcloud/exp/kit/randutil"
@@ -190,6 +191,81 @@ func TestAccStorageBoxResource(t *testing.T) {
 				ImportStateId:           resOptional.Name,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"password", "ssh_keys"}, // Not returned in the API
+			},
+		},
+	})
+}
+
+func TestAccStorageBoxResource_WriteOnlyPassword(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
+	storageBox := &hcloud.StorageBox{}
+
+	res := &storagebox.RData{
+		StorageBox: schema.StorageBox{
+			Name:           fmt.Sprintf("storage-box-wo-%s", randutil.GenerateID()),
+			StorageBoxType: schema.StorageBoxType{Name: teste2e.TestStorageBoxType},
+			Location:       schema.Location{Name: teste2e.TestLocationName},
+		},
+		PasswordWO:        storagebox.GeneratePassword(t),
+		PasswordWOVersion: 1,
+	}
+	res.SetRName("storage_box_wo")
+
+	// A new value under the same version: the write-only value is not in the state,
+	// so nothing can compare it, and the version is what says whether it changed.
+	resSameVersion := testtemplate.DeepCopy(t, res)
+	resSameVersion.PasswordWO = storagebox.GeneratePassword(t)
+
+	resNextVersion := testtemplate.DeepCopy(t, resSameVersion)
+	resNextVersion.PasswordWOVersion = 2
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck: teste2e.PreCheck(t),
+		// Write-only arguments need Terraform 1.11 / OpenTofu 1.11 or later.
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.SkipBelow(tfversion.Version1_11_0),
+		},
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckAPIResourceAllAbsent(storagebox.ResourceType, storagebox.GetAPIResource()),
+		Steps: []resource.TestStep{
+			{
+				// Create with a write-only password
+				Config: tmplMan.Render(t, "testdata/r/hcloud_storage_box", res),
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckAPIResourcePresent(res.TFID(), testsupport.CopyAPIResource(storageBox, storagebox.GetAPIResource())),
+				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(res.TFID(), tfjsonpath.New("username"), testsupport.StringExactFromFunc(func() string { return storageBox.Username })),
+					// The point of the whole attribute: neither the value nor a copy
+					// of it under `password` is written to the state.
+					statecheck.ExpectKnownValue(res.TFID(), tfjsonpath.New("password"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(res.TFID(), tfjsonpath.New("password_wo"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(res.TFID(), tfjsonpath.New("password_wo_version"), knownvalue.Int64Exact(1)),
+				},
+			},
+			{
+				// A different write-only value under the same version changes nothing
+				Config: tmplMan.Render(t, "testdata/r/hcloud_storage_box", resSameVersion),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+			},
+			{
+				// Raising the version resets the password, and updates rather than replaces
+				Config: tmplMan.Render(t, "testdata/r/hcloud_storage_box", resNextVersion),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resNextVersion.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resNextVersion.TFID(), tfjsonpath.New("password"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(resNextVersion.TFID(), tfjsonpath.New("password_wo"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(resNextVersion.TFID(), tfjsonpath.New("password_wo_version"), knownvalue.Int64Exact(2)),
+				},
 			},
 		},
 	})
