@@ -13,8 +13,10 @@ description: |-
   RRSets of type SOA:
   SOA records are created or deleted by the Hetzner Cloud API when creating or deleting
   the parent Zone, therefor this Terraform resource will:
-  import the RRSet in the state, instead of creating it.remove the RRSet from the state, instead of deleting it.set the SOA record SERIAL value to 0 before saving it to the state, as this value is automatically
-  incremented by the API and would cause issues otherwise.
+  import the RRSet in the state, instead of creating it.remove the RRSet from the state, instead of deleting it.update the existing API-managed RRSet with your configured records on create, instead of
+  creating a new one.set the SOA record SERIAL value to 0 before saving it to the state, as this value is automatically
+  incremented by the API and would cause issues otherwise. You must therefore set the SERIAL field
+  of your SOA records to 0 in your configuration.
 ---
 
 # hcloud_zone_rrset (Resource)
@@ -39,8 +41,11 @@ the parent Zone, therefor this Terraform resource will:
 
 - import the RRSet in the state, instead of creating it.
 - remove the RRSet from the state, instead of deleting it.
+- update the existing API-managed RRSet with your configured `records` on create, instead of
+  creating a new one.
 - set the SOA record SERIAL value to 0 before saving it to the state, as this value is automatically
-  incremented by the API and would cause issues otherwise.
+  incremented by the API and would cause issues otherwise. You must therefore set the SERIAL field
+  of your SOA `records` to 0 in your configuration.
 
 ## Example Usage
 
