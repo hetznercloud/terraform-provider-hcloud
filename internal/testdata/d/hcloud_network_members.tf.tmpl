@@ -1,0 +1,9 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+data "hcloud_network_members" "{{ .RName }}" {
+  network_id = {{ .NetworkID }}
+
+  {{ if .WithType -}}with_type  = {{ .WithType | toPrettyJson }}{{ end }}
+  {{ if .WithStatus -}}with_status = {{ .WithStatus | toPrettyJson }}{{ end }}
+  {{ if .WithSubnet -}}with_subnet = {{ .WithSubnet | toPrettyJson }}{{ end }}
+}
