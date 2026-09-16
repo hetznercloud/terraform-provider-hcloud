@@ -1,0 +1,5 @@
+{{- /* vim: set ft=terraform: */ -}}
+
+data "hcloud_load_balancer_services" "{{ .RName }}" {
+  {{ if .LoadBalancerID -}} load_balancer_id = {{ .LoadBalancerID }}{{ end }}
+}
