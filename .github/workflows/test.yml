@@ -27,6 +27,10 @@ jobs:
         with:
           go-version-file: go.mod
 
+      - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4
+        with:
+          terraform_wrapper: false
+
       - run: go test -v -timeout=30s -parallel=8 -coverprofile=coverage.txt -coverpkg=./... ./...
 
       - uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7
