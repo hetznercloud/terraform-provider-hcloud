@@ -16,3 +16,11 @@ data "hcloud_network_members" "by_subnet" {
 data "hcloud_network_members" "all" {
   network_id = hcloud_network.example.id
 }
+
+locals {
+  // A list of all IPs in the network
+  network_ips = flatten([
+    for m in data.hcloud_network_members.all.members :
+    concat([m.ip], tolist(m.alias_ips))
+  ])
+}
