@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -18,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
@@ -35,6 +33,7 @@ const ResourceType = "hcloud_storage_box_subaccount"
 var _ resource.Resource = (*Resource)(nil)
 var _ resource.ResourceWithConfigure = (*Resource)(nil)
 var _ resource.ResourceWithImportState = (*Resource)(nil)
+var _ resource.ResourceWithConfigValidators = (*Resource)(nil)
 
 type Resource struct {
 	client *hcloud.Client
@@ -121,25 +120,16 @@ See the [Storage Box Subaccounts API documentation](https://docs.hetzner.cloud/r
 			MarkdownDescription: "Password of the Storage Box Subaccount. Stored in the Terraform state; use `password_wo` to keep it out. Exactly one of `password` and `password_wo` must be set. For more details, see the [Storage Boxes password policy](https://docs.hetzner.cloud/reference/hetzner#storage-boxes-password-policy).",
 			Optional:            true,
 			Sensitive:           true,
-			Validators: []validator.String{
-				stringvalidator.ExactlyOneOf(path.MatchRoot("password_wo")),
-			},
 		},
 		"password_wo": schema.StringAttribute{
 			MarkdownDescription: "Password of the Storage Box Subaccount, as a [write-only argument](https://developer.hashicorp.com/terraform/language/resources/ephemeral/write-only): it is never written to the Terraform state. Requires `password_wo_version`. For more details, see the [Storage Boxes password policy](https://docs.hetzner.cloud/reference/hetzner#storage-boxes-password-policy).",
 			Optional:            true,
 			Sensitive:           true,
 			WriteOnly:           true,
-			Validators: []validator.String{
-				stringvalidator.AlsoRequires(path.MatchRoot("password_wo_version")),
-			},
 		},
 		"password_wo_version": schema.Int64Attribute{
-			MarkdownDescription: "Version of `password_wo`. The value of `password_wo` cannot be compared against the API or the state, so a password change is triggered by incrementing this instead.",
+			MarkdownDescription: "Version of `password_wo`. The value of `password_wo` cannot be compared against the API or the state, so a password change is triggered by changing this value instead, e.g. by incrementing it.",
 			Optional:            true,
-			Validators: []validator.Int64{
-				int64validator.AlsoRequires(path.MatchRoot("password_wo")),
-			},
 		},
 		"server": schema.StringAttribute{
 			MarkdownDescription: "FQDN of the Storage Box Subaccount.",
@@ -230,6 +220,19 @@ func (m *resourceModel) ToTerraform(ctx context.Context) (types.Object, diag.Dia
 	return types.ObjectValueFrom(ctx, m.tfAttributesTypes(), m)
 }
 
+func (r *Resource) ConfigValidators(_ context.Context) []resource.ConfigValidator {
+	return []resource.ConfigValidator{
+		resourcevalidator.ExactlyOneOf(
+			path.MatchRoot("password"),
+			path.MatchRoot("password_wo"),
+		),
+		resourcevalidator.RequiredTogether(
+			path.MatchRoot("password_wo"),
+			path.MatchRoot("password_wo_version"),
+		),
+	}
+}
+
 func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data, config resourceModel
 
@@ -243,10 +246,8 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 
 	password, ok := data.password(&config)
 	if !ok {
-		resp.Diagnostics.AddError(
-			"Missing password",
-			"Exactly one of `password` and `password_wo` must be set, and neither carries a value.",
-		)
+		// Should not happen, see [Resource.ConfigValidators]
+		resp.Diagnostics.AddError("Unexpected internal error", "Neither `password` nor `password_wo` carries a value.")
 		return
 	}
 
@@ -403,10 +404,8 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 	if resetPassword {
 		password, ok := plan.password(&config)
 		if !ok {
-			resp.Diagnostics.AddError(
-				"Missing password",
-				"Exactly one of `password` and `password_wo` must be set, and neither carries a value.",
-			)
+			// Should not happen, see [Resource.ConfigValidators]
+			resp.Diagnostics.AddError("Unexpected internal error", "Neither `password` nor `password_wo` carries a value.")
 			return
 		}
 

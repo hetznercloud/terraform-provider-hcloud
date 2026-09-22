@@ -82,7 +82,7 @@ resource "hcloud_storage_box_subaccount" "team_beaver" {
 - `name` (String) Name of the Storage Box Subaccount.
 - `password` (String, Sensitive) Password of the Storage Box Subaccount. Stored in the Terraform state; use `password_wo` to keep it out. Exactly one of `password` and `password_wo` must be set. For more details, see the [Storage Boxes password policy](https://docs.hetzner.cloud/reference/hetzner#storage-boxes-password-policy).
 - `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Password of the Storage Box Subaccount, as a [write-only argument](https://developer.hashicorp.com/terraform/language/resources/ephemeral/write-only): it is never written to the Terraform state. Requires `password_wo_version`. For more details, see the [Storage Boxes password policy](https://docs.hetzner.cloud/reference/hetzner#storage-boxes-password-policy).
-- `password_wo_version` (Number) Version of `password_wo`. The value of `password_wo` cannot be compared against the API or the state, so a password change is triggered by incrementing this instead.
+- `password_wo_version` (Number) Version of `password_wo`. The value of `password_wo` cannot be compared against the API or the state, so a password change is triggered by changing this value instead, e.g. by incrementing it.
 
 ### Read-Only
 

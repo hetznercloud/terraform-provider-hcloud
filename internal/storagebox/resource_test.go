@@ -2,6 +2,7 @@ package storagebox_test
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -220,6 +221,14 @@ func TestAccStorageBoxResource_WriteOnlyPassword(t *testing.T) {
 	resNextVersion := testtemplate.DeepCopy(t, resSameVersion)
 	resNextVersion.PasswordWOVersion = 2
 
+	resStoredPassword := testtemplate.DeepCopy(t, resNextVersion)
+	resStoredPassword.PasswordWO = ""
+	resStoredPassword.PasswordWOVersion = 0
+	resStoredPassword.Password = storagebox.GeneratePassword(t)
+
+	resBackToWriteOnly := testtemplate.DeepCopy(t, res)
+	resBackToWriteOnly.PasswordWOVersion = 3
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck: teste2e.PreCheck(t),
 		// Write-only arguments need Terraform 1.11 / OpenTofu 1.11 or later.
@@ -266,6 +275,79 @@ func TestAccStorageBoxResource_WriteOnlyPassword(t *testing.T) {
 					statecheck.ExpectKnownValue(resNextVersion.TFID(), tfjsonpath.New("password_wo"), knownvalue.Null()),
 					statecheck.ExpectKnownValue(resNextVersion.TFID(), tfjsonpath.New("password_wo_version"), knownvalue.Int64Exact(2)),
 				},
+			},
+			{
+				// Moving to a stored password resets it and drops the version
+				Config: tmplMan.Render(t, "testdata/r/hcloud_storage_box", resStoredPassword),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resStoredPassword.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resStoredPassword.TFID(), tfjsonpath.New("password"), knownvalue.StringExact(resStoredPassword.Password)),
+					statecheck.ExpectKnownValue(resStoredPassword.TFID(), tfjsonpath.New("password_wo_version"), knownvalue.Null()),
+				},
+			},
+			{
+				// Moving back to a write-only password drops the stored one from the state
+				Config: tmplMan.Render(t, "testdata/r/hcloud_storage_box", resBackToWriteOnly),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resBackToWriteOnly.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resBackToWriteOnly.TFID(), tfjsonpath.New("password"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(resBackToWriteOnly.TFID(), tfjsonpath.New("password_wo"), knownvalue.Null()),
+					statecheck.ExpectKnownValue(resBackToWriteOnly.TFID(), tfjsonpath.New("password_wo_version"), knownvalue.Int64Exact(3)),
+				},
+			},
+		},
+	})
+}
+
+func TestStorageBoxResource_PasswordValidation(t *testing.T) {
+	t.Parallel()
+
+	config := func(attrs string) string {
+		return fmt.Sprintf(`
+		resource "hcloud_storage_box" "test" {
+		  name             = "test"
+		  storage_box_type = "bx11"
+		  location         = "fsn1"
+		  %s
+		}`, attrs)
+	}
+
+	resource.UnitTest(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.SkipBelow(tfversion.Version1_11_0),
+		},
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
+		Steps: []resource.TestStep{
+			{
+				Config:      config(``),
+				ExpectError: regexp.MustCompile(`Missing Attribute Configuration`),
+			},
+			{
+				Config: config(`
+				  password            = "a"
+				  password_wo         = "b"
+				  password_wo_version = 1
+				`),
+				ExpectError: regexp.MustCompile(`(?s)Invalid Attribute Combination.*Exactly one of these attributes must be configured`),
+			},
+			{
+				Config:      config(`password_wo = "b"`),
+				ExpectError: regexp.MustCompile(`These attributes must be configured together`),
+			},
+			{
+				Config: config(`
+				  password            = "a"
+				  password_wo_version = 1
+				`),
+				ExpectError: regexp.MustCompile(`These attributes must be configured together`),
 			},
 		},
 	})
