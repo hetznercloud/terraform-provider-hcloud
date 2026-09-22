@@ -1,5 +1,13 @@
 # Changelog
 
+## [v1.70.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.70.0)
+
+[Compare to previous version](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.69.0...v1.70.0)
+
+### Features
+
+- add hcloud_network_members data-source (#1535) ([2c25a00](https://github.com/hetznercloud/terraform-provider-hcloud/commit/2c25a00b03f8e5dd9f3fc728c189a29f3cb6f373))
+
 ## [v1.69.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.69.0)
 
 [Compare to previous version](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.68.0...v1.69.0)
