@@ -132,6 +132,8 @@ github.com/hetznercloud/hcloud-go/v2 v2.47.0 h1:SI7C4cvdYReb2aHUEQ8KBMOqxNnmd4hO
 github.com/hetznercloud/hcloud-go/v2 v2.47.0/go.mod h1:pdG7fFGlYsCAaJ9r0QOIF0O6wQcpbJxT2VT8aP6XlIc=
 github.com/hetznercloud/hcloud-go/v2 v2.48.0 h1:P3biOxqEufOxp2xBEZTZGIl56xK4sFbwLkCW/52AbiE=
 github.com/hetznercloud/hcloud-go/v2 v2.48.0/go.mod h1:J9QH6j8pRH0K3+HlqgOlQ8abXagWTD/GpTkfra2et+g=
+github.com/hetznercloud/hcloud-go/v2 v2.49.0 h1:QXONxfgXIF99PFJknkVw+LrQQB4PB5IbEjEDh4Hfmig=
+github.com/hetznercloud/hcloud-go/v2 v2.49.0/go.mod h1:J9QH6j8pRH0K3+HlqgOlQ8abXagWTD/GpTkfra2et+g=
 github.com/huandu/xstrings v1.3.3 h1:/Gcsuc1x8JVbJ9/rlye4xZnVAbEkGauT8lbebqcQws4=
 github.com/huandu/xstrings v1.3.3/go.mod h1:y5/lhBue+AyNmUVz9RLU9xbLR0o4KIIExikq4ovT0aE=
 github.com/imdario/mergo v0.3.15 h1:M8XP7IuFNsqUx6VPK2P9OSmsYsI/YFaGil0uD21V3dM=
