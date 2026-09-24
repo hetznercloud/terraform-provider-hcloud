@@ -12,6 +12,13 @@ resource "hcloud_load_balancer" "{{ .RName }}" {
   {{ end }}
 
   {{- /* Optional properties */}}
+  {{- if .IPv4ID }}
+  ipv4_id = {{ .IPv4ID }}
+  {{ end }}
+  {{- if .IPv6ID }}
+  ipv6_id = {{ .IPv6ID }}
+  {{ end }}
+
   {{- if .Algorithm }}
   algorithm {
     type = "{{ .Algorithm }}"

@@ -45,6 +45,18 @@ func Resource() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"ipv4_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+				Computed: true,
+				ForceNew: true,
+			},
+			"ipv6_id": {
+				Type:     schema.TypeInt,
+				Optional: true,
+				Computed: true,
+				ForceNew: true,
+			},
 			"location": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -157,6 +169,20 @@ func resourceLoadBalancerCreate(ctx context.Context, d *schema.ResourceData, m a
 	}
 	if targets, ok := d.GetOk("target"); ok {
 		opts.Targets = parseTerraformTarget(targets.(*schema.Set))
+	}
+
+	{
+		publicNet := &hcloud.LoadBalancerCreateOptsPublicNet{}
+		if id, ok := d.GetOk("ipv4_id"); ok {
+			publicNet.IPv4 = &hcloud.PrimaryIP{ID: util.CastInt64(id)}
+		}
+		if id, ok := d.GetOk("ipv6_id"); ok {
+			publicNet.IPv6 = &hcloud.PrimaryIP{ID: util.CastInt64(id)}
+		}
+
+		if publicNet.IPv4 != nil || publicNet.IPv6 != nil {
+			opts.PublicNet = publicNet
+		}
 	}
 
 	res, _, err := c.LoadBalancer.Create(ctx, opts)
@@ -393,13 +419,22 @@ func getLoadBalancerAttributes(lb *hcloud.LoadBalancer) map[string]any {
 		"name":               lb.Name,
 		"load_balancer_type": lb.LoadBalancerType.Name,
 		"ipv4":               lb.PublicNet.IPv4.IP.String(),
+		"ipv4_id":            nil,
 		"ipv6":               lb.PublicNet.IPv6.IP.String(),
+		"ipv6_id":            nil,
 		"location":           lb.Location.Name,
 		"algorithm":          algorithmToTerraformAlgorithm(lb.Algorithm),
 		"network_zone":       lb.Location.NetworkZone,
 		"labels":             lb.Labels,
 		"target":             targetToTerraformTargets(lb.Targets),
 		"delete_protection":  lb.Protection.Delete,
+	}
+
+	if lb.PublicNet.IPv4.ID != 0 {
+		res["ipv4_id"] = lb.PublicNet.IPv4.ID
+	}
+	if lb.PublicNet.IPv6.ID != 0 {
+		res["ipv6_id"] = lb.PublicNet.IPv6.ID
 	}
 
 	if len(lb.PrivateNet) > 0 {
