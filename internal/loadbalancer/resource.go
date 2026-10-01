@@ -389,11 +389,16 @@ func resourceLoadBalancerDelete(ctx context.Context, d *schema.ResourceData, m a
 		return nil
 	}
 
-	if _, err := client.LoadBalancer.Delete(ctx, loadBalancer); err != nil {
+	result, _, err := client.LoadBalancer.DeleteWithResult(ctx, loadBalancer)
+	if err != nil {
 		if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
 			// loadBalancer has already been deleted
 			return nil
 		}
+		return hcloudutil.ErrorToDiag(err)
+	}
+
+	if err = client.Action.WaitFor(ctx, result.Action); err != nil {
 		return hcloudutil.ErrorToDiag(err)
 	}
 
