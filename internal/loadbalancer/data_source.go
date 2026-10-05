@@ -45,6 +45,14 @@ func getCommonDataSchema() map[string]*schema.Schema {
 			Type:     schema.TypeString,
 			Computed: true,
 		},
+		"ipv4_id": {
+			Type:     schema.TypeInt,
+			Computed: true,
+		},
+		"ipv6_id": {
+			Type:     schema.TypeInt,
+			Computed: true,
+		},
 		"location": {
 			Type:     schema.TypeString,
 			ForceNew: true,

@@ -75,6 +75,8 @@ type RData struct {
 	ServerTargets    []RDataInlineServerTarget
 	Labels           map[string]string
 	DeleteProtection bool
+	IPv4ID           string
+	IPv6ID           string
 }
 
 // TFID returns the resource identifier.

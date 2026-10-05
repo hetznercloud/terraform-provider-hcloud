@@ -39,6 +39,8 @@ resource "hcloud_load_balancer_target" "load_balancer_target" {
 - `algorithm` - (Optional) Configuration of the algorithm the Load Balancer use.
 - `labels` - (Optional, map) User-defined labels (key-value pairs) should be created with.
 - `delete_protection` - (Optional, bool) Enable or disable delete protection. See ["Delete Protection"](../index.html.markdown#delete-protection) in the Provider Docs for details.
+- `ipv4_id` - (Optional, string) ID of the Primary IPv4 for the Load Balancer.
+- `ipv6_id` - (Optional, string) ID of the Primary IPv6 for the Load Balancer.
 
 `algorithm` support the following fields:
 
