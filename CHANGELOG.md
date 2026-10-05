@@ -1,5 +1,29 @@
 # Changelog
 
+## [v1.70.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.70.0)
+
+[Compare to previous version](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.69.0...v1.70.0)
+
+### Load Balancers can now be created with existing Primary IPs
+
+Primary IPs, which were previously available exclusively for Servers, are now also available for Load Balancers. When creating a Load Balancer, you can assign an [existing Primary IP](https://docs.hetzner.cloud/reference/cloud#tag/primary-ips/list_primary_ips) instead of having an IP address allocated automatically. Currently, you cannot change the Primary IP once the Load Balancer has been created.
+
+To support this change, we added the following attributes to the `hcloud_load_balancer` resource:
+
+- `ipv4_id`: ID of an IPv4 Primary IP to assign to the Load Balancer.
+- `ipv6_id`:  ID of an IPv6 Primary IP to assign to the Load Balancer.
+
+If you omit a property, a new Primary IP of that version is allocated for the Load Balancer, as before.
+
+A Primary IP can currently only be assigned when the Load Balancer is created. It stays assigned for the entire lifetime of the Load Balancer.
+
+Related to https://docs.hetzner.cloud/changelog#2026-10-05-load-balancers-can-use-existing-primary-ips.
+
+### Features
+
+- add hcloud_network_members data-source (#1535) ([2c25a00](https://github.com/hetznercloud/terraform-provider-hcloud/commit/2c25a00b03f8e5dd9f3fc728c189a29f3cb6f373))
+- **load_balancer**: allow creating load balancers with primary ips (#1544) ([024a6f0](https://github.com/hetznercloud/terraform-provider-hcloud/commit/024a6f0118d7aa968f141dc71b6638e8ac0e5544))
+
 ## [v1.69.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.69.0)
 
 [Compare to previous version](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.68.0...v1.69.0)
