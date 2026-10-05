@@ -12,6 +12,8 @@ import (
 )
 
 func TestAccDatacenterDataSource(t *testing.T) {
+	t.Skip("datacenters endpoint now return HTTP 410")
+
 	tmplMan := testtemplate.Manager{}
 
 	dcByName := &datacenter.DData{
@@ -45,6 +47,8 @@ func TestAccDatacenterDataSource(t *testing.T) {
 }
 
 func TestAccDatacenterDataSourceList(t *testing.T) {
+	t.Skip("datacenters endpoint now return HTTP 410")
+
 	tmplMan := testtemplate.Manager{}
 
 	datacentersD := &datacenter.DDataList{}
