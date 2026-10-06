@@ -40,7 +40,6 @@ resource "hcloud_primary_ip" "primary_ip_1" {
 name          = "primary_ip_test"
 location      = "hel1"
 type          = "ipv4"
-assignee_type = "server"
 auto_delete   = true
   labels = {
     "hallo" : "welt"
