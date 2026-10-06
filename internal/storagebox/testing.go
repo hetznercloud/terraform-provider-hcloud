@@ -51,9 +51,11 @@ func (d *DDataList) TFID() string {
 type RData struct {
 	testtemplate.DataCommon
 	schema.StorageBox
-	Password string // nolint: gosec
-	SSHKeys  []string
-	Raw      string
+	Password          string // nolint: gosec
+	PasswordWO        string // nolint: gosec
+	PasswordWOVersion int
+	SSHKeys           []string
+	Raw               string
 }
 
 // TFID returns the resource identifier.
