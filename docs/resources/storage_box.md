@@ -53,7 +53,7 @@ resource "hcloud_storage_box" "ssh_key" {
   # You can set the initial SSH Keys as an attribute on the resource, but these
   # can not be updated through the API and through the terraform provider.
   # If this attribute is ever changed, the provider will mark the resource as
-  # "requires replacement" and you could loose the data stored on the Storage Box.
+  # "requires replacement" and you could lose the data stored on the Storage Box.
   ssh_keys = [
     hcloud_ssh_key.my_key.public_key,
     file("~/.ssh/id_ed25519.pub"),
