@@ -99,7 +99,7 @@ func TestAccLoadBalancerResource_PublicNet(t *testing.T) {
 	res2.IPv4ID = ""
 	res2.IPv6ID = ""
 
-	// Replace the ipv6 with a new one should trigger a replace and loose the original ipv4
+	// Replace the ipv6 with a new one should trigger a replace and lose the original ipv4
 	res3 := testtemplate.DeepCopy(t, res2)
 	res3.IPv4ID = ""
 	res3.IPv6ID = ips.PrimaryIPv6D.TFID() + ".id"
