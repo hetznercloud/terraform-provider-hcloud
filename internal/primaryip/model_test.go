@@ -22,7 +22,7 @@ func TestModel(t *testing.T) {
 			Network:      nil,
 			Location:     &hcloud.Location{Name: "fsn1"},
 			AssigneeID:   0,
-			AssigneeType: "server",
+			AssigneeType: "unassigned",
 			AutoDelete:   false,
 			Labels:       map[string]string{"key": "value"},
 			Protection:   hcloud.PrimaryIPProtection{Delete: true},
@@ -37,7 +37,7 @@ func TestModel(t *testing.T) {
 		assert.True(t, o.IPNetwork.IsNull())
 		assert.Equal(t, "fsn1", o.Location.ValueString())
 		assert.Equal(t, int64(0), o.AssigneeID.ValueInt64())
-		assert.Equal(t, "server", o.AssigneeType.ValueString())
+		assert.Equal(t, "unassigned", o.AssigneeType.ValueString())
 		assert.Equal(t, false, o.AutoDelete.ValueBool())
 
 		labels := map[string]string{}
@@ -59,7 +59,7 @@ func TestModel(t *testing.T) {
 			Network:      network,
 			Location:     &hcloud.Location{Name: "fsn1"},
 			AssigneeID:   0,
-			AssigneeType: "server",
+			AssigneeType: "unassigned",
 			AutoDelete:   false,
 			Labels:       map[string]string{"key": "value"},
 			Protection:   hcloud.PrimaryIPProtection{Delete: true},
@@ -74,7 +74,7 @@ func TestModel(t *testing.T) {
 		assert.Equal(t, "2001:db8::/64", o.IPNetwork.ValueString())
 		assert.Equal(t, "fsn1", o.Location.ValueString())
 		assert.Equal(t, int64(0), o.AssigneeID.ValueInt64())
-		assert.Equal(t, "server", o.AssigneeType.ValueString())
+		assert.Equal(t, "unassigned", o.AssigneeType.ValueString())
 		assert.Equal(t, false, o.AutoDelete.ValueBool())
 
 		labels := map[string]string{}

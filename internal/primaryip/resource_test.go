@@ -63,7 +63,7 @@ func TestAccPrimaryIPResource(t *testing.T) {
 					statecheck.ExpectKnownValue(res1.TFID(), tfjsonpath.New("location"), knownvalue.StringExact(teste2e.TestLocationName)),
 					statecheck.ExpectKnownValue(res1.TFID(), tfjsonpath.New("labels"), knownvalue.MapExact(map[string]knownvalue.Check{"key": knownvalue.StringExact("value")})),
 					statecheck.ExpectKnownValue(res1.TFID(), tfjsonpath.New("assignee_id"), knownvalue.Int64Exact(0)),
-					statecheck.ExpectKnownValue(res1.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("server")),
+					statecheck.ExpectKnownValue(res1.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("unassigned")),
 					statecheck.ExpectKnownValue(res1.TFID(), tfjsonpath.New("ip_address"), testsupport.StringExactFromFunc(func() string { return hcPrimaryIP.IP.String() })),
 					statecheck.ExpectKnownValue(res1.TFID(), tfjsonpath.New("delete_protection"), knownvalue.Bool(true)),
 					statecheck.ExpectKnownValue(res1.TFID(), tfjsonpath.New("auto_delete"), knownvalue.Bool(false)),
@@ -91,7 +91,7 @@ func TestAccPrimaryIPResource(t *testing.T) {
 					statecheck.ExpectKnownValue(res3.TFID(), tfjsonpath.New("location"), knownvalue.StringExact(teste2e.TestLocationName)),
 					statecheck.ExpectKnownValue(res3.TFID(), tfjsonpath.New("labels"), knownvalue.MapExact(map[string]knownvalue.Check{"key": knownvalue.StringExact("changed")})),
 					statecheck.ExpectKnownValue(res3.TFID(), tfjsonpath.New("assignee_id"), knownvalue.Int64Exact(0)),
-					statecheck.ExpectKnownValue(res3.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("server")),
+					statecheck.ExpectKnownValue(res3.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("unassigned")),
 					statecheck.ExpectKnownValue(res3.TFID(), tfjsonpath.New("ip_address"), testsupport.StringExactFromFunc(func() string { return hcPrimaryIP.IP.String() })),
 					statecheck.ExpectKnownValue(res3.TFID(), tfjsonpath.New("delete_protection"), knownvalue.Bool(false)),
 					statecheck.ExpectKnownValue(res3.TFID(), tfjsonpath.New("auto_delete"), knownvalue.Bool(true)),
@@ -224,9 +224,9 @@ func TestAccPrimaryIPResource_WithServer(t *testing.T) {
 					statecheck.ExpectKnownValue(res1A.TFID(), tfjsonpath.New("assignee_id"), knownvalue.Int64Exact(0)),
 					statecheck.ExpectKnownValue(res1B.TFID(), tfjsonpath.New("assignee_id"), knownvalue.Int64Exact(0)),
 					statecheck.ExpectKnownValue(res1C.TFID(), tfjsonpath.New("assignee_id"), knownvalue.Int64Exact(0)),
-					statecheck.ExpectKnownValue(res1A.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("server")),
-					statecheck.ExpectKnownValue(res1B.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("server")),
-					statecheck.ExpectKnownValue(res1C.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("server")),
+					statecheck.ExpectKnownValue(res1A.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("unassigned")),
+					statecheck.ExpectKnownValue(res1B.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("unassigned")),
+					statecheck.ExpectKnownValue(res1C.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("unassigned")),
 				},
 			},
 			{
@@ -274,7 +274,7 @@ func TestAccPrimaryIPResource_WithServer(t *testing.T) {
 					statecheck.ExpectKnownValue(res2C.TFID(), tfjsonpath.New("type"), knownvalue.StringExact("ipv4")),
 					statecheck.ExpectKnownValue(res2A.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("server")),
 					statecheck.ExpectKnownValue(res2B.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("server")),
-					statecheck.ExpectKnownValue(res2C.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("server")),
+					statecheck.ExpectKnownValue(res2C.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("unassigned")),
 				},
 			},
 			{
@@ -361,7 +361,7 @@ func TestAccPrimaryIPResource_AssigneeIDRegression(t *testing.T) {
 					// Because the primary ips were created before the server, the
 					// assignee_id is not refreshed after being attached to the server.
 					statecheck.ExpectKnownValue(res1.TFID(), tfjsonpath.New("assignee_id"), knownvalue.Int64Exact(0)),
-					statecheck.ExpectKnownValue(res1.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("server")),
+					statecheck.ExpectKnownValue(res1.TFID(), tfjsonpath.New("assignee_type"), knownvalue.StringExact("unassigned")),
 				},
 			},
 			{
