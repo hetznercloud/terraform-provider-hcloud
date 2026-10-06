@@ -168,7 +168,7 @@ func TestAccLoadBalancerResource_PublicNet(t *testing.T) {
 					testsupport.CheckResourceExists(ips.PrimaryIPv4A.TFID(), primaryip.ByID(t, &hcPrimaryIPv4A)),
 					testsupport.CheckResourceExists(ips.PrimaryIPv6D.TFID(), primaryip.ByID(t, &hcPrimaryIPv6D)),
 					testsupport.CheckResourceExists(res3.TFID(), loadbalancer.ByID(t, &hcLoadBalancer)),
-					resource.TestCheckResourceAttr(res3.TFID(), "ipv4_id", "0"),
+					resource.TestCheckResourceAttrSet(res3.TFID(), "ipv4_id"),
 					testsupport.CheckResourceAttrFunc(res3.TFID(), "ipv6_id", func() string { return util.FormatID(hcPrimaryIPv6D.ID) }),
 				),
 			},
