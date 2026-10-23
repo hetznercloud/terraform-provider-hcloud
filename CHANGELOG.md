@@ -1,5 +1,13 @@
 # Changelog
 
+## [v1.70.1](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.70.1)
+
+[Compare to previous version](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.70.0...v1.70.1)
+
+### Bug Fixes
+
+- update Go to mitigate CVE-2026-111943 (#1551) ([0db22b8](https://github.com/hetznercloud/terraform-provider-hcloud/commit/0db22b886ab0934e351992a234ecc03d231ced36))
+
 ## [v1.70.0](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.70.0)
 
 [Compare to previous version](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.69.0...v1.70.0)
