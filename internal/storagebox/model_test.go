@@ -33,7 +33,7 @@ func TestModel(t *testing.T) {
 			MaxSnapshots: 10,
 			Minute:       16,
 			Hour:         18,
-			DayOfWeek:    hcloud.Ptr(time.Weekday(3)),
+			DayOfWeek:    new(time.Weekday(3)),
 		},
 	}
 	o := &commonModel{}
