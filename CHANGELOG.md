@@ -1,5 +1,21 @@
 # Changelog
 
+## [v1.70.2](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.70.2)
+
+[Compare to previous version](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.70.1...v1.70.2)
+
+### Mark DNS Zone TSIG key attribute as sensitive
+
+The DNS Zone TSIG key was declared as a plain string with no `Sensitive: true`, in both the resource and the data source, so Terraform rendered its value verbatim in terraform plan and terraform apply output. This release marks the attributes as sensitive.
+
+Details can be found in the security advisory [GHSA-jx87-47g9-rmx3](https://github.com/hetznercloud/terraform-provider-hcloud/security/advisories/GHSA-jx87-47g9-rmx3).
+
+Thanks to @kta1kri for responsibly reporting this vulnerability.
+
+### Bug Fixes
+
+- **zone**: mark tsig_key attribute as sensitive ([76bd70c](https://github.com/hetznercloud/terraform-provider-hcloud/commit/76bd70c720fd2b13c67e61687fa4742680f5686b))
+
 ## [v1.70.1](https://github.com/hetznercloud/terraform-provider-hcloud/releases/tag/v1.70.1)
 
 [Compare to previous version](https://github.com/hetznercloud/terraform-provider-hcloud/compare/v1.70.0...v1.70.1)
