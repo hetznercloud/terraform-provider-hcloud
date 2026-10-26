@@ -102,7 +102,7 @@ Optional:
 
 - `port` (Number) Port of the primary nameserver.
 - `tsig_algorithm` (String) Transaction signature (TSIG) algorithm used to generate the TSIG key.
-- `tsig_key` (String) Transaction signature (TSIG) key
+- `tsig_key` (String, Sensitive) Transaction signature (TSIG) key
 
 
 <a id="nestedatt--authoritative_nameservers"></a>

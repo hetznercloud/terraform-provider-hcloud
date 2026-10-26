@@ -123,6 +123,7 @@ See the [Zones API documentation](https://docs.hetzner.cloud/reference/cloud#zon
 					"tsig_key": schema.StringAttribute{
 						MarkdownDescription: "Transaction signature (TSIG) key",
 						Optional:            true,
+						Sensitive:           true,
 					},
 				},
 			},

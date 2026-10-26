@@ -64,6 +64,7 @@ func getCommonDataSourceSchema(readOnly bool) map[string]schema.Attribute {
 					"tsig_key": schema.StringAttribute{
 						MarkdownDescription: "Transaction signature (TSIG) key",
 						Computed:            true,
+						Sensitive:           true,
 					},
 				},
 			},
