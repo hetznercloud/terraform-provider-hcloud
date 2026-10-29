@@ -76,8 +76,11 @@ the parent Zone, therefor this Terraform resource will:
 
 - import the RRSet in the state, instead of creating it.
 - remove the RRSet from the state, instead of deleting it.
+- update the existing API-managed RRSet with your configured ''records'' on create, instead of
+  creating a new one.
 - set the SOA record SERIAL value to 0 before saving it to the state, as this value is automatically
-  incremented by the API and would cause issues otherwise.
+  incremented by the API and would cause issues otherwise. You must therefore set the SERIAL field
+  of your SOA ''records'' to 0 in your configuration.
 `)
 
 	resp.Schema.Attributes = map[string]schema.Attribute{
@@ -179,13 +182,11 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	var err error
 	var actions []*hcloud.Action
 
-	// SOA records are managed by the backend
+	// SOA RRSets are created by the API together with the parent Zone, so they
+	// cannot be created a second time. Instead, look up the existing RRSet and
+	// update it with the user-provided records, so the SOA record can still be
+	// managed through this resource in a single apply (see issue #1289).
 	if data.Type.ValueString() == string(hcloud.ZoneRRSetTypeSOA) {
-		resp.Diagnostics.AddWarning(
-			"SOA records are managed by the API",
-			"Importing the SOA record (managed by the API) in the state.",
-		)
-
 		rrset, _, err := r.client.Zone.GetRRSetByNameAndType(ctx, zone, opts.Name, opts.Type)
 		if err != nil {
 			resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
@@ -193,8 +194,21 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		}
 		if rrset == nil {
 			resp.Diagnostics.Append(hcloudutil.NotFoundDiagnostic("zone rrset", "id", fmt.Sprintf("%s/%s", opts.Name, opts.Type)))
+			return
 		}
 		result.RRSet = rrset
+
+		// Push the user-provided records onto the pre-existing SOA RRSet.
+		if len(opts.Records) > 0 {
+			action, _, err := r.client.Zone.SetRRSetRecords(ctx, rrset, hcloud.ZoneRRSetSetRecordsOpts{
+				Records: opts.Records,
+			})
+			if err != nil {
+				resp.Diagnostics.Append(hcloudutil.APIErrorDiagnostics(err)...)
+				return
+			}
+			actions = append(actions, action)
+		}
 	} else {
 
 		result, _, err = r.client.Zone.CreateRRSet(ctx, zone, opts)
@@ -446,6 +460,12 @@ func (r *Resource) ImportState(ctx context.Context, req resource.ImportStateRequ
 }
 
 // OverrideRecordsSOASerial set the serial value to 0 in a SOA Resource Record Set.
+//
+// The API automatically increments the SOA SERIAL field on every change, so a
+// value returned from the API can never be predicted from the configuration.
+// Normalizing it to 0 both in the state (here) and in the configuration (the
+// user is required to set SERIAL to 0) keeps plan and apply consistent and
+// avoids a perpetual diff.
 func OverrideRecordsSOASerial(hc *hcloud.ZoneRRSet) {
 	if hc.Type != hcloud.ZoneRRSetTypeSOA {
 		return
