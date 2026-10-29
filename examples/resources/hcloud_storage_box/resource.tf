@@ -51,3 +51,19 @@ resource "hcloud_storage_box" "ssh_key" {
     prevent_destroy = true
   }
 }
+
+# Keep the password out of the state: an ephemeral value can only be assigned to
+# a write-only argument, and `password_wo_version` is what a change is read off.
+
+ephemeral "random_password" "backup" {
+  length = 32
+}
+
+resource "hcloud_storage_box" "backup" {
+  name             = "backup"
+  storage_box_type = "bx11"
+  location         = "fsn1"
+
+  password_wo         = ephemeral.random_password.backup.result
+  password_wo_version = 1
+}
