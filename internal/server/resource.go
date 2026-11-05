@@ -844,6 +844,9 @@ func publicNetUpdateDecision(ctx context.Context,
 	serverIPID int64,
 	ipType hcloud.PrimaryIPType) diag.Diagnostics {
 	switch {
+	// the primary ip is already assigned to the server, e.g. after an import
+	case ipEnabled && ipID != 0 && ipID == serverIPID:
+		return nil
 	// if ip set true + ip id, remove all previous assigned ipv4 + assign new
 	case ipEnabled && ipID != 0:
 		if serverIPID != 0 {
