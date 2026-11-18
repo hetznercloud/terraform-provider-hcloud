@@ -1,6 +1,6 @@
 module tools
 
-go 1.26.10
+go 1.26.11
 
 tool github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
 
