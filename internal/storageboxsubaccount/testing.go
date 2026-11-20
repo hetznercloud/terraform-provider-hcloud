@@ -59,12 +59,14 @@ func (d *DDataList) TFID() string {
 type RData struct {
 	testtemplate.DataCommon
 
-	StorageBox    string
-	HomeDirectory string
-	Name          string
-	Password      string // nolint: gosec
-	Description   string
-	Labels        map[string]string
+	StorageBox        string
+	HomeDirectory     string
+	Name              string
+	Password          string // nolint: gosec
+	PasswordWO        string // nolint: gosec
+	PasswordWOVersion int
+	Description       string
+	Labels            map[string]string
 
 	Raw string
 }
