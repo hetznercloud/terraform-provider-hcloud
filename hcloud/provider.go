@@ -15,6 +15,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/certificate"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/firewall"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/floatingip"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/floatingipassignement"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancer"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/network"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/placementgroup"
@@ -75,24 +76,24 @@ func Provider() *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			certificate.UploadedResourceType:  certificate.UploadedResource(),
-			certificate.ResourceType:          certificate.UploadedResource(), // Alias for backwards compatibility.
-			certificate.ManagedResourceType:   certificate.ManagedResource(),
-			firewall.ResourceType:             firewall.Resource(),
-			firewall.AttachmentResourceType:   firewall.AttachmentResource(),
-			floatingip.AssignmentResourceType: floatingip.AssignmentResource(),
-			floatingip.ResourceType:           floatingip.Resource(),
-			loadbalancer.ResourceType:         loadbalancer.Resource(),
-			loadbalancer.ServiceResourceType:  loadbalancer.ServiceResource(),
-			loadbalancer.TargetResourceType:   loadbalancer.TargetResource(),
-			network.ResourceType:              network.Resource(),
-			network.RouteResourceType:         network.RouteResource(),
-			network.SubnetResourceType:        network.SubnetResource(),
-			server.ResourceType:               server.Resource(),
-			snapshot.ResourceType:             snapshot.Resource(),
-			volume.AttachmentResourceType:     volume.AttachmentResource(),
-			volume.ResourceType:               volume.Resource(),
-			placementgroup.ResourceType:       placementgroup.Resource(),
+			certificate.UploadedResourceType:   certificate.UploadedResource(),
+			certificate.ResourceType:           certificate.UploadedResource(), // Alias for backwards compatibility.
+			certificate.ManagedResourceType:    certificate.ManagedResource(),
+			firewall.ResourceType:              firewall.Resource(),
+			firewall.AttachmentResourceType:    firewall.AttachmentResource(),
+			floatingipassignement.ResourceType: floatingipassignement.Resource(),
+			floatingip.ResourceType:            floatingip.Resource(),
+			loadbalancer.ResourceType:          loadbalancer.Resource(),
+			loadbalancer.ServiceResourceType:   loadbalancer.ServiceResource(),
+			loadbalancer.TargetResourceType:    loadbalancer.TargetResource(),
+			network.ResourceType:               network.Resource(),
+			network.RouteResourceType:          network.RouteResource(),
+			network.SubnetResourceType:         network.SubnetResource(),
+			server.ResourceType:                server.Resource(),
+			snapshot.ResourceType:              snapshot.Resource(),
+			volume.AttachmentResourceType:      volume.AttachmentResource(),
+			volume.ResourceType:                volume.Resource(),
+			placementgroup.ResourceType:        placementgroup.Resource(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			certificate.DataSourceType:        certificate.DataSource(),
