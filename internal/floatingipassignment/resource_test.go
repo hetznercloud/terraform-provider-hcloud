@@ -1,109 +1,132 @@
 package floatingipassignment_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/floatingip"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/floatingipassignment"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testmux"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testsupport"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/testtemplate"
 )
 
-func TestAccFloatingIPAssignmentResource(t *testing.T) {
-	var s hcloud.Server
-	var s2 hcloud.Server
-	var f hcloud.FloatingIP
+func TestAccFloatingIPResourceAssignment(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
-	resSSHKey := sshkey.NewRData(t, "server-floating-ip-basic")
-	resServer := &server.RData{
-		Name:  "fip-assignment",
-		Type:  teste2e.TestServerType,
-		Image: teste2e.TestImage,
-		Labels: map[string]string{
-			"tf-test": fmt.Sprintf("tf-test-fip-assignment-%d", tmplMan.RandInt),
-		},
-		SSHKeys: []string{resSSHKey.TFID() + ".id"},
-	}
-	resServer.SetRName("server_assignment")
+	var hcFloatingIPA hcloud.FloatingIP
+	var hcFloatingIPB hcloud.FloatingIP
+	var hcServerA hcloud.Server
+	var hcServerB hcloud.Server
 
-	resServer2 := &server.RData{
-		Name:  "fip-assignment-2",
-		Type:  teste2e.TestServerType,
-		Image: teste2e.TestImage,
-		Labels: map[string]string{
-			"tf-test": fmt.Sprintf("tf-test-fip-assignment-%d", tmplMan.RandInt),
-		},
-		SSHKeys: []string{resSSHKey.TFID() + ".id"},
-	}
-	resServer2.SetRName("server2_assignment")
+	srvs := server.NewBlueprint(t)
 
-	resFloatingIP := &floatingip.RData{
-		Name:             "fip-assignment",
+	resFloatingIPA := &floatingip.RData{
+		Name:             "floating-ipv6",
+		Type:             "ipv6",
+		HomeLocationName: teste2e.TestLocationName,
+	}
+	resFloatingIPA.SetRName("ipv6")
+
+	resFloatingIPB := &floatingip.RData{
+		Name:             "floating-ipv4",
 		Type:             "ipv4",
 		HomeLocationName: teste2e.TestLocationName,
 	}
-	resFloatingIP.SetRName("floating_ip_assignment")
+	resFloatingIPB.SetRName("ipv4")
 
-	res := &floatingipassignment.RData{
-		FloatingIPID: resFloatingIP.TFID() + ".id",
-		ServerID:     resServer.TFID() + ".id",
+	resA1 := &floatingipassignment.RData{
+		FloatingIPID: resFloatingIPA.TFID() + ".id",
+		ServerID:     srvs.ServerA.TFID() + ".id",
 	}
+	resA1.SetRName("ipv6")
 
-	resMove := &floatingipassignment.RData{
-		FloatingIPID: resFloatingIP.TFID() + ".id",
-		ServerID:     resServer2.TFID() + ".id",
+	resB1 := &floatingipassignment.RData{
+		FloatingIPID: resFloatingIPB.TFID() + ".id",
+		ServerID:     srvs.ServerA.TFID() + ".id",
 	}
+	resB1.SetRName("ipv4")
+
+	resA3 := testtemplate.DeepCopy(t, resA1)
+	resA3.ServerID = srvs.ServerB.TFID() + ".id"
+
+	resB3 := testtemplate.DeepCopy(t, resB1)
+	resB3.ServerID = srvs.ServerB.TFID() + ".id"
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
 		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
-		CheckDestroy:             testsupport.CheckResourcesDestroyed(server.ResourceType, server.ByID(t, &s)),
+		CheckDestroy:             testsupport.CheckAPIResourceAllAbsent(floatingip.ResourceType, floatingip.GetAPIResource()),
 		Steps: []resource.TestStep{
 			{
-				// Create a new Floating IP Assignment
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", resSSHKey,
-					"testdata/r/hcloud_server", resServer,
-					"testdata/r/hcloud_server", resServer2,
-					"testdata/r/hcloud_floating_ip", resFloatingIP,
-					"testdata/r/hcloud_floating_ip_assignment", res,
+					"testdata/r/hcloud_server", srvs.ServerA,
+					"testdata/r/hcloud_server", srvs.ServerB,
+					"testdata/r/hcloud_floating_ip", resFloatingIPA,
+					"testdata/r/hcloud_floating_ip", resFloatingIPB,
+					"testdata/r/hcloud_floating_ip_assignment", resA1,
+					"testdata/r/hcloud_floating_ip_assignment", resB1,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resA1.TFID(), plancheck.ResourceActionCreate),
+						plancheck.ExpectResourceAction(resB1.TFID(), plancheck.ResourceActionCreate),
+					},
+				},
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(resServer.TFID(), server.ByID(t, &s)),
-					testsupport.CheckResourceExists(resFloatingIP.TFID(), floatingip.ByID(t, &f)),
+					testsupport.CheckAPIResourcePresent(resFloatingIPA.TFID(), testsupport.CopyAPIResource(&hcFloatingIPA, floatingip.GetAPIResource())),
+					testsupport.CheckAPIResourcePresent(resFloatingIPB.TFID(), testsupport.CopyAPIResource(&hcFloatingIPB, floatingip.GetAPIResource())),
+					testsupport.CheckAPIResourcePresent(srvs.ServerA.TFID(), testsupport.CopyAPIResource(&hcServerA, server.GetAPIResource())),
+					testsupport.CheckAPIResourcePresent(srvs.ServerB.TFID(), testsupport.CopyAPIResource(&hcServerB, server.GetAPIResource())),
 				),
-			},
-			{
-				// Try to import the newly created Floating IP assignment
-				ResourceName:      res.TFID(),
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateIdFunc: func(_ *terraform.State) (string, error) {
-					return fmt.Sprintf("%d", f.ID), nil
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resA1.TFID(), tfjsonpath.New("floating_ip_id"), testsupport.Int64ExactFromFunc(func() int64 { return hcFloatingIPA.ID })),
+					statecheck.ExpectKnownValue(resA1.TFID(), tfjsonpath.New("server_id"), testsupport.Int64ExactFromFunc(func() int64 { return hcServerA.ID })),
+
+					statecheck.ExpectKnownValue(resB1.TFID(), tfjsonpath.New("floating_ip_id"), testsupport.Int64ExactFromFunc(func() int64 { return hcFloatingIPB.ID })),
+					statecheck.ExpectKnownValue(resB1.TFID(), tfjsonpath.New("server_id"), testsupport.Int64ExactFromFunc(func() int64 { return hcServerA.ID })),
 				},
 			},
 			{
-				// Move the floating IP to another server
+				ResourceName:      resA1.TFID(),
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
 				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_ssh_key", resSSHKey,
-					"testdata/r/hcloud_server", resServer,
-					"testdata/r/hcloud_server", resServer2,
-					"testdata/r/hcloud_floating_ip", resFloatingIP,
-					"testdata/r/hcloud_floating_ip_assignment", resMove,
+					"testdata/r/hcloud_server", srvs.ServerA,
+					"testdata/r/hcloud_server", srvs.ServerB,
+					"testdata/r/hcloud_floating_ip", resFloatingIPA,
+					"testdata/r/hcloud_floating_ip", resFloatingIPB,
+					"testdata/r/hcloud_floating_ip_assignment", resA3,
+					"testdata/r/hcloud_floating_ip_assignment", resB3,
 				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resA3.TFID(), plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(resB3.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
 				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(resServer2.TFID(), server.ByID(t, &s2)),
-					testsupport.CheckResourceExists(resFloatingIP.TFID(), floatingip.ByID(t, &f)),
+					testsupport.CheckAPIResourcePresent(resFloatingIPA.TFID(), testsupport.CopyAPIResource(&hcFloatingIPA, floatingip.GetAPIResource())),
+					testsupport.CheckAPIResourcePresent(resFloatingIPB.TFID(), testsupport.CopyAPIResource(&hcFloatingIPB, floatingip.GetAPIResource())),
+					testsupport.CheckAPIResourcePresent(srvs.ServerA.TFID(), testsupport.CopyAPIResource(&hcServerA, server.GetAPIResource())),
+					testsupport.CheckAPIResourcePresent(srvs.ServerB.TFID(), testsupport.CopyAPIResource(&hcServerB, server.GetAPIResource())),
 				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resA3.TFID(), tfjsonpath.New("floating_ip_id"), testsupport.Int64ExactFromFunc(func() int64 { return hcFloatingIPA.ID })),
+					statecheck.ExpectKnownValue(resA3.TFID(), tfjsonpath.New("server_id"), testsupport.Int64ExactFromFunc(func() int64 { return hcServerB.ID })),
+
+					statecheck.ExpectKnownValue(resB3.TFID(), tfjsonpath.New("floating_ip_id"), testsupport.Int64ExactFromFunc(func() int64 { return hcFloatingIPB.ID })),
+					statecheck.ExpectKnownValue(resB3.TFID(), tfjsonpath.New("server_id"), testsupport.Int64ExactFromFunc(func() int64 { return hcServerB.ID })),
+				},
 			},
 		},
 	})
