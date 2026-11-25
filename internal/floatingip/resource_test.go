@@ -90,10 +90,9 @@ func TestAccFloatingIPResource(t *testing.T) {
 				},
 			},
 			{
-				ResourceName:            resA1.TFID(),
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"datacenter"},
+				ResourceName:      resA1.TFID(),
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			{
 				Config: tmplMan.Render(t,
@@ -171,10 +170,9 @@ func TestAccFloatingIPResource_Protection(t *testing.T) {
 				},
 			},
 			{
-				ResourceName:            resA1.TFID(),
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"datacenter"},
+				ResourceName:      resA1.TFID(),
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			{
 				Config: tmplMan.Render(t,
@@ -207,18 +205,16 @@ func TestAccFloatingIPResource_Server(t *testing.T) {
 	srvs := server.NewBlueprint(t)
 
 	resA1 := &floatingip.RData{
-		Name:             "floating-ipv6",
-		Type:             "ipv6",
-		HomeLocationName: teste2e.TestLocationName,
-		ServerID:         srvs.ServerA.TFID() + ".id",
+		Name:     "floating-ipv6",
+		Type:     "ipv6",
+		ServerID: srvs.ServerA.TFID() + ".id",
 	}
 	resA1.SetRName("ipv6")
 
 	resB1 := &floatingip.RData{
-		Name:             "floating-ipv4",
-		Type:             "ipv4",
-		HomeLocationName: teste2e.TestLocationName,
-		ServerID:         srvs.ServerA.TFID() + ".id",
+		Name:     "floating-ipv4",
+		Type:     "ipv4",
+		ServerID: srvs.ServerA.TFID() + ".id",
 	}
 	resB1.SetRName("ipv4")
 
@@ -229,7 +225,7 @@ func TestAccFloatingIPResource_Server(t *testing.T) {
 	resB3 := testtemplate.DeepCopy(t, resB1)
 	resB3.ServerID = srvs.ServerB.TFID() + ".id"
 
-	// Remove Server ID
+	// Remove/Omit Server ID
 	resA4 := testtemplate.DeepCopy(t, resA3)
 	resA4.ServerID = ""
 
@@ -263,20 +259,19 @@ func TestAccFloatingIPResource_Server(t *testing.T) {
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resA1.TFID(), tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("floating-ipv6--%d", tmplMan.RandInt))),
 					statecheck.ExpectKnownValue(resA1.TFID(), tfjsonpath.New("type"), knownvalue.StringExact(resA1.Type)),
-					statecheck.ExpectKnownValue(resA1.TFID(), tfjsonpath.New("home_location"), knownvalue.StringExact(teste2e.TestLocationName)),
+					statecheck.ExpectKnownValue(resA1.TFID(), tfjsonpath.New("home_location"), knownvalue.StringExact(srvs.ServerA.LocationName)),
 					statecheck.ExpectKnownValue(resA1.TFID(), tfjsonpath.New("server_id"), testsupport.Int64ExactFromFunc(func() int64 { return hcServerA.ID })),
 
 					statecheck.ExpectKnownValue(resB1.TFID(), tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("floating-ipv4--%d", tmplMan.RandInt))),
 					statecheck.ExpectKnownValue(resB1.TFID(), tfjsonpath.New("type"), knownvalue.StringExact(resB1.Type)),
-					statecheck.ExpectKnownValue(resB1.TFID(), tfjsonpath.New("home_location"), knownvalue.StringExact(teste2e.TestLocationName)),
+					statecheck.ExpectKnownValue(resB1.TFID(), tfjsonpath.New("home_location"), knownvalue.StringExact(srvs.ServerA.LocationName)),
 					statecheck.ExpectKnownValue(resB1.TFID(), tfjsonpath.New("server_id"), testsupport.Int64ExactFromFunc(func() int64 { return hcServerA.ID })),
 				},
 			},
 			{
-				ResourceName:            resA1.TFID(),
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"datacenter"},
+				ResourceName:      resA1.TFID(),
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			{
 				Config: tmplMan.Render(t,
@@ -311,7 +306,6 @@ func TestAccFloatingIPResource_Server(t *testing.T) {
 				),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						// Make sure that it's actually an update and not a replacement
 						plancheck.ExpectResourceAction(resA4.TFID(), plancheck.ResourceActionNoop),
 						plancheck.ExpectResourceAction(resB4.TFID(), plancheck.ResourceActionNoop),
 					},
