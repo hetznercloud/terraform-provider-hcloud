@@ -15,6 +15,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/certificate"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/firewall"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/floatingip"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/floatingipassignment"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancer"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/network"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/placementgroup"
@@ -80,7 +81,7 @@ func Provider() *schema.Provider {
 			certificate.ManagedResourceType:   certificate.ManagedResource(),
 			firewall.ResourceType:             firewall.Resource(),
 			firewall.AttachmentResourceType:   firewall.AttachmentResource(),
-			floatingip.AssignmentResourceType: floatingip.AssignmentResource(),
+			floatingipassignment.ResourceType: floatingipassignment.Resource(),
 			floatingip.ResourceType:           floatingip.Resource(),
 			loadbalancer.ResourceType:         loadbalancer.Resource(),
 			loadbalancer.ServiceResourceType:  loadbalancer.ServiceResource(),

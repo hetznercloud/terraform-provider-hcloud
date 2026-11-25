@@ -1,4 +1,4 @@
-package floatingip
+package floatingipassignment
 
 import (
 	"context"
@@ -12,12 +12,12 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/util/hcloudutil"
 )
 
-// AssignmentResourceType is the type name of the Hetzner Cloud FloatingIP resource.
-const AssignmentResourceType = "hcloud_floating_ip_assignment"
+// ResourceType is the type name of the Hetzner Cloud FloatingIP resource.
+const ResourceType = "hcloud_floating_ip_assignment"
 
-// AssignmentResource creates a new Terraform schema for the
+// Resource creates a new Terraform schema for the
 // hcloud_floating_ip_assignment resource.
-func AssignmentResource() *schema.Resource {
+func Resource() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourceFloatingIPAssignmentCreate,
 		ReadContext:   resourceFloatingIPAssignmentRead,
@@ -38,6 +38,15 @@ func AssignmentResource() *schema.Resource {
 			},
 		},
 	}
+}
+
+func resourceFloatingIPIsNotFound(err error, d *schema.ResourceData) bool {
+	if hcloud.IsError(err, hcloud.ErrorCodeNotFound) {
+		log.Printf("[WARN] Floating IP (%s) not found, removing from state", d.Id())
+		d.SetId("")
+		return true
+	}
+	return false
 }
 
 func resourceFloatingIPAssignmentCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {

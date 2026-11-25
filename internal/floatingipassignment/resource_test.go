@@ -1,4 +1,4 @@
-package floatingip_test
+package floatingipassignment_test
 
 import (
 	"fmt"
@@ -9,6 +9,7 @@ import (
 
 	"github.com/hetznercloud/hcloud-go/v2/hcloud"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/floatingip"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/floatingipassignment"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/server"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/sshkey"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/teste2e"
@@ -53,12 +54,12 @@ func TestAccFloatingIPAssignmentResource(t *testing.T) {
 	}
 	resFloatingIP.SetRName("floating_ip_assignment")
 
-	res := &floatingip.RDataAssignment{
+	res := &floatingipassignment.RData{
 		FloatingIPID: resFloatingIP.TFID() + ".id",
 		ServerID:     resServer.TFID() + ".id",
 	}
 
-	resMove := &floatingip.RDataAssignment{
+	resMove := &floatingipassignment.RData{
 		FloatingIPID: resFloatingIP.TFID() + ".id",
 		ServerID:     resServer2.TFID() + ".id",
 	}
