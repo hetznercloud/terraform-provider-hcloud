@@ -8,7 +8,7 @@ import (
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/certificate"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/firewall"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/floatingip"
-	"github.com/hetznercloud/terraform-provider-hcloud/internal/floatingipassignement"
+	"github.com/hetznercloud/terraform-provider-hcloud/internal/floatingipassignment"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/loadbalancer"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/network"
 	"github.com/hetznercloud/terraform-provider-hcloud/internal/placementgroup"
@@ -31,7 +31,7 @@ func TestProvider_Resources(t *testing.T) {
 		firewall.AttachmentResourceType,
 		certificate.UploadedResourceType,
 		certificate.ManagedResourceType,
-		floatingipassignement.ResourceType,
+		floatingipassignment.ResourceType,
 		floatingip.ResourceType,
 		loadbalancer.ResourceType,
 		loadbalancer.ServiceResourceType,

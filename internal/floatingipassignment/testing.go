@@ -1,4 +1,4 @@
-package floatingipassignement
+package floatingipassignment
 
 import (
 	"fmt"
