@@ -29,7 +29,6 @@ func TestAccFloatingIPResource(t *testing.T) {
 		Name:             "floating-ipv6",
 		Type:             "ipv6",
 		HomeLocationName: teste2e.TestLocationName,
-		DeleteProtection: true,
 		Labels:           map[string]string{"key": "value"},
 	}
 	resA1.SetRName("ipv6")
@@ -38,7 +37,6 @@ func TestAccFloatingIPResource(t *testing.T) {
 		Name:             "floating-ipv4",
 		Type:             "ipv4",
 		HomeLocationName: teste2e.TestLocationName,
-		DeleteProtection: true,
 		Labels:           map[string]string{"key": "value"},
 	}
 	resB1.SetRName("ipv4")
@@ -46,12 +44,10 @@ func TestAccFloatingIPResource(t *testing.T) {
 	resA3 := testtemplate.DeepCopy(t, resA1)
 	resA3.Name = resA1.Name + "-changed"
 	resA3.Labels = map[string]string{"key": "changed"}
-	resA3.DeleteProtection = false
 
 	resB3 := testtemplate.DeepCopy(t, resB1)
 	resB3.Name = resB1.Name + "-changed"
 	resB3.Labels = map[string]string{"key": "changed"}
-	resB3.DeleteProtection = false
 
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 teste2e.PreCheck(t),
@@ -80,7 +76,7 @@ func TestAccFloatingIPResource(t *testing.T) {
 					statecheck.ExpectKnownValue(resA1.TFID(), tfjsonpath.New("labels"), knownvalue.MapExact(map[string]knownvalue.Check{"key": knownvalue.StringExact("value")})),
 					statecheck.ExpectKnownValue(resA1.TFID(), tfjsonpath.New("ip_address"), testsupport.StringExactFromFunc(func() string { return hcFloatingIPA.IP.String() })),
 					statecheck.ExpectKnownValue(resA1.TFID(), tfjsonpath.New("ip_network"), testsupport.StringExactFromFunc(func() string { return hcFloatingIPA.Network.String() })),
-					statecheck.ExpectKnownValue(resA1.TFID(), tfjsonpath.New("delete_protection"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(resA1.TFID(), tfjsonpath.New("delete_protection"), knownvalue.Bool(false)),
 					statecheck.ExpectKnownValue(resA1.TFID(), tfjsonpath.New("server_id"), knownvalue.Null()),
 
 					statecheck.ExpectKnownValue(resB1.TFID(), tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("floating-ipv4--%d", tmplMan.RandInt))),
@@ -89,7 +85,7 @@ func TestAccFloatingIPResource(t *testing.T) {
 					statecheck.ExpectKnownValue(resB1.TFID(), tfjsonpath.New("labels"), knownvalue.MapExact(map[string]knownvalue.Check{"key": knownvalue.StringExact("value")})),
 					statecheck.ExpectKnownValue(resB1.TFID(), tfjsonpath.New("ip_address"), testsupport.StringExactFromFunc(func() string { return hcFloatingIPB.IP.String() })),
 					statecheck.ExpectKnownValue(resB1.TFID(), tfjsonpath.New("ip_network"), knownvalue.Null()),
-					statecheck.ExpectKnownValue(resB1.TFID(), tfjsonpath.New("delete_protection"), knownvalue.Bool(true)),
+					statecheck.ExpectKnownValue(resB1.TFID(), tfjsonpath.New("delete_protection"), knownvalue.Bool(false)),
 					statecheck.ExpectKnownValue(resB1.TFID(), tfjsonpath.New("server_id"), knownvalue.Null()),
 				},
 			},
@@ -135,7 +131,72 @@ func TestAccFloatingIPResource(t *testing.T) {
 	})
 }
 
-func TestAccFloatingIPResource_WithServer(t *testing.T) {
+func TestAccFloatingIPResource_Protection(t *testing.T) {
+	tmplMan := testtemplate.Manager{}
+
+	var hcFloatingIPA hcloud.FloatingIP
+
+	resA1 := &floatingip.RData{
+		Name:             "floating-ipv6",
+		Type:             "ipv6",
+		HomeLocationName: teste2e.TestLocationName,
+		DeleteProtection: true,
+	}
+	resA1.SetRName("ipv6")
+
+	resA3 := testtemplate.DeepCopy(t, resA1)
+	resA3.DeleteProtection = false
+
+	resource.ParallelTest(t, resource.TestCase{
+		PreCheck:                 teste2e.PreCheck(t),
+		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
+		CheckDestroy:             testsupport.CheckAPIResourceAllAbsent(floatingip.ResourceType, floatingip.GetAPIResource()),
+		Steps: []resource.TestStep{
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_floating_ip", resA1,
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resA1.TFID(), plancheck.ResourceActionCreate),
+					},
+				},
+				Check: resource.ComposeTestCheckFunc(
+					testsupport.CheckAPIResourcePresent(resA1.TFID(), testsupport.CopyAPIResource(&hcFloatingIPA, floatingip.GetAPIResource())),
+				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resA1.TFID(), tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("floating-ipv6--%d", tmplMan.RandInt))),
+					statecheck.ExpectKnownValue(resA1.TFID(), tfjsonpath.New("type"), knownvalue.StringExact(resA1.Type)),
+					statecheck.ExpectKnownValue(resA1.TFID(), tfjsonpath.New("delete_protection"), knownvalue.Bool(true)),
+				},
+			},
+			{
+				ResourceName:            resA1.TFID(),
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"datacenter"},
+			},
+			{
+				Config: tmplMan.Render(t,
+					"testdata/r/hcloud_floating_ip", resA3,
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						// Make sure that it's actually an update and not a replacement
+						plancheck.ExpectResourceAction(resA3.TFID(), plancheck.ResourceActionUpdate),
+					},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resA3.TFID(), tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("floating-ipv6--%d", tmplMan.RandInt))),
+					statecheck.ExpectKnownValue(resA3.TFID(), tfjsonpath.New("type"), knownvalue.StringExact(resA3.Type)),
+					statecheck.ExpectKnownValue(resA3.TFID(), tfjsonpath.New("delete_protection"), knownvalue.Bool(false)),
+				},
+			},
+		},
+	})
+}
+
+func TestAccFloatingIPResource_Server(t *testing.T) {
 	tmplMan := testtemplate.Manager{}
 
 	var hcFloatingIPA hcloud.FloatingIP
@@ -264,57 +325,6 @@ func TestAccFloatingIPResource_WithServer(t *testing.T) {
 					statecheck.ExpectKnownValue(resB4.TFID(), tfjsonpath.New("type"), knownvalue.StringExact(resB4.Type)),
 					statecheck.ExpectKnownValue(resB4.TFID(), tfjsonpath.New("server_id"), testsupport.Int64ExactFromFunc(func() int64 { return hcServerB.ID })),
 				},
-			},
-		},
-	})
-}
-
-func TestAccFloatingIPResource_Protection(t *testing.T) {
-	var (
-		fip hcloud.FloatingIP
-
-		res = &floatingip.RData{
-			Name:             "floatingip-protection",
-			Type:             "ipv4",
-			Labels:           nil,
-			HomeLocationName: teste2e.TestLocationName,
-			DeleteProtection: true,
-		}
-
-		updateProtection = func(d *floatingip.RData, protection bool) *floatingip.RData {
-			d.DeleteProtection = protection
-			return d
-		}
-	)
-
-	tmplMan := testtemplate.Manager{}
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 teste2e.PreCheck(t),
-		ProtoV6ProviderFactories: testmux.ProtoV6ProviderFactories(),
-		CheckDestroy:             testsupport.CheckResourcesDestroyed(floatingip.ResourceType, floatingip.ByID(t, &fip)),
-		Steps: []resource.TestStep{
-			{
-				// Create a new Floating IP using the required values
-				// only.
-				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_floating_ip", res,
-				),
-				Check: resource.ComposeTestCheckFunc(
-					testsupport.CheckResourceExists(res.TFID(), floatingip.ByID(t, &fip)),
-					resource.TestCheckResourceAttr(res.TFID(), "name",
-						fmt.Sprintf("floatingip-protection--%d", tmplMan.RandInt)),
-					resource.TestCheckResourceAttr(res.TFID(), "type", res.Type),
-					resource.TestCheckResourceAttr(res.TFID(), "delete_protection", fmt.Sprintf("%t", res.DeleteProtection)),
-				),
-			},
-			{
-				// Update delete protection
-				Config: tmplMan.Render(t,
-					"testdata/r/hcloud_floating_ip", updateProtection(res, false),
-				),
-				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(res.TFID(), "delete_protection", fmt.Sprintf("%t", res.DeleteProtection)),
-				),
 			},
 		},
 	})
