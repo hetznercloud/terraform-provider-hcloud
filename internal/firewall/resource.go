@@ -144,14 +144,8 @@ func resourceFirewallCreate(ctx context.Context, d *schema.ResourceData, m any) 
 	client := m.(*hcloud.Client)
 
 	opts := hcloud.FirewallCreateOpts{
-		Name: d.Get("name").(string),
-	}
-	if rules, ok := d.GetOk("rule"); ok {
-		for _, tfRawRule := range rules.(*schema.Set).List() {
-			if rule, ok := toHcloudRule(tfRawRule); ok {
-				opts.Rules = append(opts.Rules, rule)
-			}
-		}
+		Name:  d.Get("name").(string),
+		Rules: getRulesFromResourceData(d),
 	}
 	if labels, ok := d.GetOk("labels"); ok {
 		tmpLabels := make(map[string]string)
@@ -181,6 +175,18 @@ func resourceFirewallCreate(ctx context.Context, d *schema.ResourceData, m any) 
 	d.SetId(util.FormatID(res.Firewall.ID))
 
 	return resourceFirewallRead(ctx, d, m)
+}
+
+func getRulesFromResourceData(d *schema.ResourceData) []hcloud.FirewallRule {
+	rules := []hcloud.FirewallRule{}
+	if tfRules, ok := d.GetOk("rule"); ok {
+		for _, tfRawRule := range tfRules.(*schema.Set).List() {
+			if rule, ok := toHcloudRule(tfRawRule); ok {
+				rules = append(rules, rule)
+			}
+		}
+	}
+	return rules
 }
 
 func toHcloudRule(tfRawRule any) (hcloud.FirewallRule, bool) {
@@ -306,23 +312,16 @@ func resourceFirewallUpdate(ctx context.Context, d *schema.ResourceData, m any) 
 	}
 
 	if d.HasChange("rule") {
-		if tfRules, ok := d.GetOk("rule"); ok {
-			var rules []hcloud.FirewallRule
-			for _, tfRawRule := range tfRules.(*schema.Set).List() {
-				if rule, ok := toHcloudRule(tfRawRule); ok {
-					rules = append(rules, rule)
-				}
+		rules := getRulesFromResourceData(d)
+		actions, _, err := client.Firewall.SetRules(ctx, firewall, hcloud.FirewallSetRulesOpts{Rules: rules})
+		if err != nil {
+			if resourceFirewallIsNotFound(err, d) {
+				return nil
 			}
-			actions, _, err := client.Firewall.SetRules(ctx, firewall, hcloud.FirewallSetRulesOpts{Rules: rules})
-			if err != nil {
-				if resourceFirewallIsNotFound(err, d) {
-					return nil
-				}
-				return hcloudutil.ErrorToDiag(err)
-			}
-			if err := waitForFirewallActions(ctx, client, actions, firewall); err != nil {
-				return hcloudutil.ErrorToDiag(err)
-			}
+			return hcloudutil.ErrorToDiag(err)
+		}
+		if err := waitForFirewallActions(ctx, client, actions, firewall); err != nil {
+			return hcloudutil.ErrorToDiag(err)
 		}
 	}
 
