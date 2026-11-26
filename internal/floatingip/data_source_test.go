@@ -171,7 +171,7 @@ func TestAccFloatingIPDataSource(t *testing.T) {
 	})
 }
 
-func TestAccPrimaryIPDataSourceList_new(t *testing.T) {
+func TestAccPrimaryIPDataSourceList(t *testing.T) {
 	res := &floatingip.RData{
 		Name:             "main",
 		Type:             "ipv6",
