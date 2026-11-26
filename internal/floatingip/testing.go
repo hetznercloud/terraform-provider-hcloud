@@ -42,7 +42,9 @@ type DData struct {
 
 	FloatingIPID   string
 	FloatingIPName string
+	FloatingIPIP   string
 	LabelSelector  string
+	Raw            string
 }
 
 // TFID returns the data source identifier.
@@ -55,6 +57,7 @@ type DDataList struct {
 	testtemplate.DataCommon
 
 	LabelSelector string
+	Raw           string
 }
 
 // TFID DDataList the data source identifier.

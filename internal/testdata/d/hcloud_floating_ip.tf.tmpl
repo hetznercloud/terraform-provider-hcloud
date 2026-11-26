@@ -1,7 +1,11 @@
 {{- /* vim: set ft=terraform: */ -}}
 
 data "hcloud_floating_ip" "{{ .RName }}" {
-  {{ if .FloatingIPID -}}    id            = {{ .FloatingIPID }}{{ end -}}
-  {{ if .FloatingIPName -}}  name          =  {{ .FloatingIPName }}{{ end -}}
-  {{ if .LabelSelector -}}    with_selector = "{{ .LabelSelector }}"{{ end }}
+  {{ if .FloatingIPID -}}    id            =  {{ .FloatingIPID }}   {{ end -}}
+  {{ if .FloatingIPName -}}  name          =  {{ .FloatingIPName }} {{ end -}}
+  {{ if .FloatingIPIP -}}  ip_address      =  {{ .FloatingIPIP }}   {{ end -}}
+  {{ if .LabelSelector -}}  with_selector = "{{ .LabelSelector }}"{{ end }}
+{{- if .Raw }}
+{{ .Raw | indent 2 }}
+{{- end }}
 }
